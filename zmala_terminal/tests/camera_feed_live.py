@@ -95,6 +95,10 @@ def main():
     # File mode also replaces the camera with a static picture. Keep normal
     # capture enabled when testing the real webcams in both directions.
     use_files(engine.core, int(not moving))
+    if not moving and args.check_audio:
+        # File playback writes decoded PCM to disk, never to a speaker. Measure
+        # the incoming signal before the user's 0% listening-volume attenuation.
+        engine.core_set_playback_gain_db(engine.core, 0)
     recording_folder = tempfile.TemporaryDirectory() if args.check_audio else None
     if recording_folder:
         record = engine.dll.linphone_core_set_record_file

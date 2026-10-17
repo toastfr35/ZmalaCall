@@ -27,6 +27,7 @@ from platforms.tv_control import TVControl
 from platforms.presenter_input import PresenterInput
 from volume_control import VolumeControl
 from platforms.argon_fan import ArgonFan
+from usb_power import UsbPower
 
 from theme import BG
 from ui.display import TerminalDisplay
@@ -65,6 +66,7 @@ class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, C
         self.pointer_serial = 0
         self.engine = None
         self.case_fan = ArgonFan()
+        self.usb_power = UsbPower(ROOT)
         self.pending_config = None
         self.engine_retry_at = 0
         self.current_settings = {}
@@ -273,6 +275,9 @@ class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, C
         if time.monotonic() < getattr(self, 'engine_retry_at', 0):
             self.pending_config = config
             return
+        if not self.usb_media_ready():
+            self.pending_config = config
+            return
         old_sip = self.model.config.get('sip') if self.model.config else None
         from audio_processing import requested_profile
         # Recreate the native audio graph only while idle. In-call updates stay
@@ -313,6 +318,9 @@ class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, C
                 old.close()
             self.engine = Engine(config, self.call_event, self.registration_event, self.video_window,
                                  profile=self.profile, on_message=self.message_event, preview_window=self.preview_window)
+            if getattr(self, 'usb_power', None) and self.usb_power.enabled:
+                # Wake the speaker before playing the incoming-call melody.
+                self.engine.core_set_ring(self.engine.core, None)
             self.current_settings = dict(config.get('terminal_settings', {}))
         else:
             self.engine.config = config
@@ -375,6 +383,7 @@ class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, C
             return
         self.closed = True
         self.case_fan.close()
+        self.usb_power.close()
         self.presenter_input.close()
         self.volume_control.close()
         if self.tv_check:

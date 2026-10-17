@@ -54,7 +54,11 @@ class TVCheck:
             valid = all(isinstance(saved.get(kind), dict) and saved[kind].get('status') in
                         ('pending', 'running', 'passed', 'failed', 'skipped') and
                         isinstance(saved[kind].get('attempts'), int) for kind in ('power', 'source'))
-            self.record = saved if valid and saved.get('version') == 1 and saved.get('identity') == value and not error else {
+            # A standby/unplugged TV may temporarily have no EDID or CEC route.
+            # That is not evidence of a new television. Keep completed checks
+            # so restarting the terminal does not block SIP behind setup.
+            same_tv = saved.get('identity') == value or (value is None and saved.get('complete') is True)
+            self.record = saved if valid and saved.get('version') == 1 and same_tv and not error else {
                 'version': 1, 'identity': value, 'power': {'status': 'pending', 'attempts': 0},
                 'source': {'status': 'pending', 'attempts': 0}, 'complete': False}
             self.transport.resume_network(self.record.get('network_paired', False))

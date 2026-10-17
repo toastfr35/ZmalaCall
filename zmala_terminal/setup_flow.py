@@ -58,6 +58,9 @@ class ProvisioningFlow:
         if (self.enrollment.value or {}).get('wifi_cleanup'):
             self.start_wifi_cleanup()
             return
+        ready = getattr(self, 'usb_media_ready', None)
+        if ready and not ready():
+            return
         self.render()
         self.root.update_idletasks()
         try:

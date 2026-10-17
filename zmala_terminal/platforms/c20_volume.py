@@ -29,6 +29,15 @@ def status():
         return _desired, _applied, _failed
 
 
+def reapply():
+    """A USB power cycle resets the hardware even if the desired level is unchanged."""
+    global _applied
+    with _condition:
+        _applied = None
+        if _desired is not None:
+            request(_desired)
+
+
 def request(percent):
     """Coalesce mixer changes on one worker, never blocking Liblinphone/Tk."""
     global _desired, _worker

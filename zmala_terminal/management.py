@@ -23,6 +23,22 @@ def defer_auto_answer(model, tv, now):
 
 
 class ManagementLoop:
+    def usb_media_ready(self):
+        power = getattr(self, 'usb_power', None)
+        if not power or not power.enabled:
+            return True
+        power.require()
+        power.refresh(self.engine)
+        return power.ready
+
+    def tick_usb(self):
+        power = getattr(self, 'usb_power', None)
+        if power and power.enabled:
+            active = bool(self.setup_stage or self.scanner or self.model.state != State.HOME
+                          or self.engine and self.engine.call or self.settings_open)
+            power.update(active, self.presenter_input.battery, self.model.state == State.RINGING)
+            power.refresh(self.engine)
+
     def poll_wifi(self):
         """Refresh wireless status independently of setup and server availability."""
         if self.network_worker_busy:
@@ -173,6 +189,9 @@ class ManagementLoop:
             self.press('red')
         if self.model.deadline:
             state = self.model.state
+            power = getattr(self, 'usb_power', None)
+            if state == State.RINGING and power and not power.ready:
+                self.model.deadline = max(self.model.deadline, now + self.model.config['auto_answer_seconds'])
             defer_auto_answer(self.model, getattr(self, 'tv_control', None), now)
             self.action(self.model.tick(now))
             countdown = (self.model.state, max(1, math.ceil(self.model.deadline-now)) if self.model.deadline else None)
@@ -185,6 +204,7 @@ class ManagementLoop:
         if self.closed:
             return
         try:
+            self.tick_usb()
             if self.engine:
                 self.engine.iterate()
             self.update_video_message()

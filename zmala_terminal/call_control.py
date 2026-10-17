@@ -120,6 +120,15 @@ class CallControl:
                     self.messages.put(('dial-ready', (generation, serial, contact, available, timeout)))
                 threading.Thread(target=check, daemon=True).start()
             elif action == 'answer':
+                ready = getattr(self, 'usb_media_ready', None)
+                if ready and not ready():
+                    generation, call = self.generation, self.engine.call
+                    self.root.after(100, lambda: self.action('answer')
+                        if not self.closed and self.generation == generation and self.engine
+                        and self.engine.call == call and self.model.state == State.CONNECTING else None)
+                    return
+                if getattr(self, 'usb_power', None):
+                    self.usb_power.stop_ringing()
                 self.engine.answer()
             elif action in ('end', 'decline'):
                 self.dial_serial += 1
@@ -158,6 +167,10 @@ class CallControl:
             self.notice = 'offline'
         else:
             try:
+                ready = getattr(self, 'usb_media_ready', None)
+                if ready and not ready():
+                    self.root.after(100, lambda: self.dial_ready(generation, serial, contact, available, ring_timeout))
+                    return
                 self.outgoing_deadline = time.monotonic() + ring_timeout
                 self.engine.dial(contact['sip_uri'])
             except Exception:

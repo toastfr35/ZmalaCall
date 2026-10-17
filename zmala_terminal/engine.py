@@ -342,9 +342,37 @@ class Engine(LinphoneAPI):
         if not WINDOWS:
             from platforms.c20_volume import configure
             configure(self.config.get('c20_speaker_volume', 50))
+            # C20's hardware 0% is -28 dB, not silence. Mute call playback too.
+            self.sync_speaker_mute()
         else:
             percent = self.config.get('c20_speaker_volume', 50)
             self.core_set_playback_gain_db(self.core, 20*math.log10(percent/100) if percent else -120)
+
+    def sync_speaker_mute(self):
+        """Follow local remote gestures as well as server volume changes."""
+        if WINDOWS:
+            return
+        from platforms.c20_volume import status
+        desired, _, _ = status()
+        muted = desired == 0
+        if getattr(self, '_speaker_muted', None) != muted:
+            self.core_set_playback_gain_db(self.core, -120 if muted else 0)
+            self._speaker_muted = muted
+
+    def refresh_usb_devices(self):
+        """Re-enumerate native devices after C20 power-up without dropping SIP."""
+        if WINDOWS:
+            return
+        if self.call and self.call_get_state(self.call) in (7, 8):
+            return False  # Never replace device lists underneath running streams.
+        for name in ('linphone_core_reload_sound_devices', 'linphone_core_reload_video_devices'):
+            function = getattr(self.dll, name)
+            function.argtypes, function.restype = [P], None
+            function(self.core)
+        self.apply_settings(self.config.get('terminal_settings', {}))
+        from platforms.c20_volume import reapply
+        reapply()
+        logging.info('C20 devices refreshed after USB wake')
 
     def devices(self):
         def strings(pointer):
@@ -406,6 +434,7 @@ class Engine(LinphoneAPI):
         return result
 
     def iterate(self):
+        self.sync_speaker_mute()
         self.core_iterate(self.core)
         now = time.monotonic()
         if WINDOWS and self.call and self.call_get_state(self.call) == 8 and now >= self._next_video_probe:

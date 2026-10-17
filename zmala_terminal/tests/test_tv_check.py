@@ -99,6 +99,17 @@ class CheckTests(unittest.TestCase):
         resumed.poll()
         self.assertEqual(resumed.page, 'power_ready')
 
+    def test_completed_checks_survive_temporarily_unavailable_tv(self):
+        saved = {'version': 1, 'identity': IDENTITY, 'complete': True,
+                 'power': {'status': 'passed', 'attempts': 1},
+                 'source': {'status': 'passed', 'attempts': 1}}
+        self.path.write_text(json.dumps(saved))
+        resumed = TVCheck(self.path, self.transport)
+        resumed.messages.put(('probe', None, False))
+        resumed.poll()
+        self.assertEqual(resumed.page, 'done')
+        self.assertEqual(resumed.record['identity'], IDENTITY)
+
     def test_changed_hdmi_port_invalidates_results(self):
         c = self.check
         c.button('red')
