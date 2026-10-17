@@ -362,3 +362,50 @@ Windows sent about 16 fps; the receiver's sampled rate varied around the Pi's
 measurements exceeded the camera's 30 fps maximum, so this is configuration
 and continuity verification, not a passed sustained-frame-rate benchmark.
 Both terminals were restored to 1080p15 and confirmed to apply that setting.
+
+## 1080p20 bottleneck investigation (2026-10-17)
+
+Both terminals are now configured for 1080p20 at the user's request (3334 kbit/s
+sending allowance each), with speaker volume still zero. Temporary profiling
+was removed after testing; both terminals returned home and registered.
+
+- A 70-second real-camera call sustained video. Windows sent about 15–16 fps;
+  its media process used about 0.41 CPU cores. Filter elapsed time was about
+  70 ms/second for encoding and 115 ms/second for received H.264 decoding.
+  Replacing only the Windows camera with the SDK moving test pattern produced
+  an exact 20 fps sending rate at 1920×1080 in the following 45-second call.
+  The Pi reported approximately 19.9 fps over the settled synthetic interval.
+- The C930e's exposure control reported automatic exposure at -4. This means
+  1/16 second (62.5 ms), longer than the 50 ms frame period needed for 20 fps.
+  The capture SDK selected a 1920×1080 NV12 mode labelled 24 fps, but measured
+  only 439 camera samples in the approximately 30-second capture test. Mode
+  metadata therefore did not establish the actual camera throughput.
+- A temporary manual exposure of -5 (1/32 second) set **after capture began**
+  raised Windows sending to 20 fps throughout the final 12 seconds of the
+  confirmation call, with zero reported RTP loss during that interval.
+  Setting exposure before opening capture was insufficient: opening the
+  camera changed the reported value back to -4. Automatic exposure was
+  restored afterward; actual fps can fall again in low light. The exposure
+  units are documented by
+  [Microsoft](https://learn.microsoft.com/en-us/windows/win32/api/strmif/ne-strmif-cameracontrolproperty).
+- The terminal Pi averaged approximately 59% total CPU, at 38.5°C with no
+  throttling. Its busiest video thread used about 67% of one core. Profiled
+  filter elapsed time was approximately 337 ms/second for video display
+  (including the self-view) and 225 ms/second for the MJPEG/framing wrapper.
+  These are wall-time measurements, not CPU percentages. H.264 decoding
+  already ran on two worker threads, using about 19% of one core each.
+  During the real-camera short-exposure interval, Pi receive/display samples
+  still varied around 14–20 fps despite Windows sending 20. This does not
+  establish sustained 20 displayed fps for complex live video.
+- The server averaged approximately 4% total CPU. Pi Wi-Fi reported a strong
+  -46 dBm signal and a 72.2 Mbit/s link on 2.4 GHz. Real-camera steady-state
+  samples reported zero RTP loss, but receive jitter and bursty frame delivery
+  remained visible. Link rate alone does not exclude wireless latency.
+
+The first improvement for term1 is sufficient lighting or an explicit
+frame-rate-priority exposure option, with the brightness/noise tradeoff made
+visible. For the Pi, prioritize moving MJPEG decoding/framing off the shared
+video ticker and reducing preview/display work; compare Ethernet with Wi-Fi
+before attributing all display gaps to processing. A faster server would not
+address the measured limits. The 20 fps setting remains a target, not a promise
+that every camera or display delivers every frame.
