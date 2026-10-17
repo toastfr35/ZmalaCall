@@ -34,8 +34,12 @@ jobs:
         run: .venv/bin/doorstop --no-reformat --error-all --no-review-check --project "$GITHUB_WORKSPACE"
       - name: Native video worker and preview regressions
         run: |
-          sudo apt-get install -y libmediastreamer-dev
-          sh build_tools/linux/test-video-workers.sh
+          # Match the supported Pi OS SDK; Ubuntu 24.04 ships an older API.
+          docker run --rm -v "$PWD:/work" -w /work debian:trixie-slim sh -ec '
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential python3-pil libmediastreamer-dev libegl-dev libgles-dev libglew-dev
+            sh build_tools/linux/test-video-workers.sh
+          '
   windows:
     runs-on: windows-latest
     steps:
