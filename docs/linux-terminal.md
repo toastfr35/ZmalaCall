@@ -29,8 +29,11 @@ The illustrated fresh-card installation guide is available as an
 and [PDF](../output/pdf/ZmalaCall-Pi4-Installation-Guide.pdf).
 It includes the Imager settings, Argon case connections and remote/QR setup.
 
-Download the installer from the [Build terminal installer workflow](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-terminal-installer.yml).
-Download the installer and guide from the [latest public release](https://github.com/toastfr35/ZmalaCall/releases/latest); no GitHub sign-in is required. For an unreleased build, sign in to GitHub and download the artifact from a successful **Build terminal installer** workflow run. Extract the archive and run **`zmala_terminal_setup.exe`** on Windows.
+Download the installer and guide from the
+[latest public release](https://github.com/toastfr35/ZmalaCall/releases/latest);
+no GitHub sign-in is required. For an unreleased build, sign in and download the
+artifact from a successful [Build terminal installer workflow](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-terminal-installer.yml)
+run. Extract the archive and run **`zmala_terminal_setup.exe`** on Windows.
 
 1. The Pi hostname is `zmala`; its local network address is `zmala.local`.
    Leave that address in the installer, or enter its Ethernet IP if name
