@@ -125,6 +125,8 @@ export function buildMediaFields(devices, media, id) {
       'Experimental · Pi C20 camera. Keeps people in view, up to 2× zoom. Applies during calls.',
     ),
   );
+  // Keep help beneath the switch caption rather than as a third flex column.
+  framing.classList.add('checkbox-help');
   const audio = terminalSelect(
     devices,
     'Audio processing',

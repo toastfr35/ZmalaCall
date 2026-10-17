@@ -66,6 +66,13 @@ export function accountRows() {
       iconButton(`Delete account ${id}`, 'trash', () => deleteAccount(id)),
     );
     row.append(actions);
+    // Keep table semantics and expose column labels when rows stack on phones.
+    row.setAttribute('role', 'row');
+    for (const [index, title] of ['Account', 'Type', 'Groups', 'SIP status', 'Actions'].entries()) {
+      const cell = row.children[index];
+      cell.setAttribute('role', 'cell');
+      cell.setAttribute('data-label', title);
+    }
     tbody.append(row);
   }
   if (!entries.length) {
@@ -118,13 +125,19 @@ export function renderAccounts() {
     table = el('table', null, 'accounts-table'),
     head = el('thead'),
     tr = el('tr');
+  table.setAttribute('role', 'table');
+  table.setAttribute('aria-label', 'Accounts');
+  head.setAttribute('role', 'rowgroup');
+  tr.setAttribute('role', 'row');
   for (const title of ['Account', 'Type', 'Groups', 'SIP status', 'Actions']) {
     const th = el('th', title);
     th.scope = 'col';
+    th.setAttribute('role', 'columnheader');
     tr.append(th);
   }
   head.append(tr);
   const body = el('tbody');
+  body.setAttribute('role', 'rowgroup');
   body.id = 'account-rows';
   table.append(head, body);
   scroll.append(table);

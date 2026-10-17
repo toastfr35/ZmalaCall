@@ -104,6 +104,12 @@ Styles are split under `web/styles/` into theme, tools, layout, pages, forms, re
 
 Linux adapters under `zmala_terminal/media/` own camera decode, crop/preview and codec integration, with build/test tooling under `build_tools/linux/`. The MJPEG worker keeps only the newest pending camera frame; JPEG decoding, framing and preview reduction run off the media ticker. The preview adapter forwards small frames without an extra reduction copy. The H.264 decoder retains its ordered compressed queue because dropping arbitrary interdependent packets would corrupt decoding; its worker count is capped to leave CPU time for UI/audio/encoding. Ownership and shutdown rules are documented next to the queue operations. Native tests and real two-way calls are required after changes to these paths; Python/Node tests cannot prove SDK ABI compatibility or hardware frame pacing.
 
+## Administration screen sizes
+
+The admin CSS bundle loads component styles before `styles/responsive.css`. Below 851 CSS pixels the sidebar becomes a labeled, three-column navigation grid with account controls on their own row. Below 701 pixels the existing account-table rows stack with column labels; explicit table roles retain their meaning for assistive technology. The same form controls and handlers serve both layouts. Narrow screens and coarse pointers use 44-pixel button targets and 16-pixel input text. Dialogs use the dynamic viewport height and vertical scrolling; long names and credentials can wrap rather than widening their containers.
+
+For layout changes, use `tests/http-fixture.js` with disposable accounts, long names/emails, pending callbacks and activity entries. In a browser, check all six pages at 320, 390, 768, 1024 and 1920 CSS pixels, including the 700/850-pixel breakpoints and a short landscape viewport. Verify that navigation, actions and form controls stay within their containers, dialogs scroll to their footer, and desktop tables retain their columns. Exercise account search/filtering, group saving and terminal-setting saving/reload. Open account, connection, group, password, callback-deadline, SMTP, Wi-Fi and console dialogs; do not send commands or change production credentials for a layout test. Browser viewport checks supplement the Node tests; they do not replace testing on physical iOS/Android devices.
+
 ## Verification
 
 From the project root:

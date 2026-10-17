@@ -449,6 +449,7 @@ function authControls() {
   };
   change.onclick = () => {
     const dialog = el('dialog', null, 'modal');
+    dialog.setAttribute('aria-label', 'Change admin password');
     const form = el('form');
     const current = passwordField('Current admin password');
     const password = passwordField('New admin password', true);
@@ -460,14 +461,15 @@ function authControls() {
     const cancel = el('button', 'Cancel', 'secondary');
     cancel.type = 'button';
     cancel.onclick = () => dialog.close();
+    const footer = el('div', null, 'modal-footer');
+    footer.append(cancel, save);
     form.append(
       el('h2', 'Change admin password'),
       current.label,
       password.label,
       confirmation.label,
       error,
-      save,
-      cancel,
+      footer,
     );
     form.onsubmit = async (event) => {
       event.preventDefault();
@@ -607,6 +609,13 @@ function accountRows() {
       iconButton(`Delete account ${id}`, 'trash', () => deleteAccount(id)),
     );
     row.append(actions);
+    // Keep table semantics and expose column labels when rows stack on phones.
+    row.setAttribute('role', 'row');
+    for (const [index, title] of ['Account', 'Type', 'Groups', 'SIP status', 'Actions'].entries()) {
+      const cell = row.children[index];
+      cell.setAttribute('role', 'cell');
+      cell.setAttribute('data-label', title);
+    }
     tbody.append(row);
   }
   if (!entries.length) {
@@ -659,13 +668,19 @@ function renderAccounts() {
     table = el('table', null, 'accounts-table'),
     head = el('thead'),
     tr = el('tr');
+  table.setAttribute('role', 'table');
+  table.setAttribute('aria-label', 'Accounts');
+  head.setAttribute('role', 'rowgroup');
+  tr.setAttribute('role', 'row');
   for (const title of ['Account', 'Type', 'Groups', 'SIP status', 'Actions']) {
     const th = el('th', title);
     th.scope = 'col';
+    th.setAttribute('role', 'columnheader');
     tr.append(th);
   }
   head.append(tr);
   const body = el('tbody');
+  body.setAttribute('role', 'rowgroup');
   body.id = 'account-rows';
   table.append(head, body);
   scroll.append(table);
@@ -1282,6 +1297,8 @@ function buildMediaFields(devices, media, id) {
       'Experimental · Pi C20 camera. Keeps people in view, up to 2× zoom. Applies during calls.',
     ),
   );
+  // Keep help beneath the switch caption rather than as a third flex column.
+  framing.classList.add('checkbox-help');
   const audio = terminalSelect(
     devices,
     'Audio processing',

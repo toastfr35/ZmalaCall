@@ -109,6 +109,7 @@ code {
   top: 12px;
 }
 .sidebar {
+  overflow-y: auto;
   width: 232px;
   height: 100vh;
   position: fixed;
@@ -287,6 +288,7 @@ main {
   height: 16px;
 }
 .icon-button {
+  flex-shrink: 0;
   width: 34px;
   height: 34px;
   display: inline-flex;

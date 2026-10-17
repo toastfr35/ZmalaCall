@@ -83,6 +83,7 @@ export function authControls() {
   };
   change.onclick = () => {
     const dialog = el('dialog', null, 'modal');
+    dialog.setAttribute('aria-label', 'Change admin password');
     const form = el('form');
     const current = passwordField('Current admin password');
     const password = passwordField('New admin password', true);
@@ -94,14 +95,15 @@ export function authControls() {
     const cancel = el('button', 'Cancel', 'secondary');
     cancel.type = 'button';
     cancel.onclick = () => dialog.close();
+    const footer = el('div', null, 'modal-footer');
+    footer.append(cancel, save);
     form.append(
       el('h2', 'Change admin password'),
       current.label,
       password.label,
       confirmation.label,
       error,
-      save,
-      cancel,
+      footer,
     );
     form.onsubmit = async (event) => {
       event.preventDefault();

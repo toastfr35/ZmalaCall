@@ -1,5 +1,23 @@
 # ZmalaCall implementation and specification review
 
+## Responsive administration review — 17 October 2026
+
+Tested all six server pages with disposable accounts in Chromium viewports from
+320 to 1920 CSS pixels. Fixed hidden phone navigation, tablet authentication
+buttons overlapping content, off-screen account actions, and a clipped terminal
+association row at small laptop widths. Phone accounts now stack with column
+labels; desktop accounts retain their table. Dialogs fit dynamic viewport height,
+long names and credentials wrap, and phone/touch controls have larger targets.
+Responsive CSS now loads after component styles.
+
+The final 48 page/viewport checks found no horizontal page overflow, clipped
+panels or out-of-bounds controls. Additional checks covered breakpoint edges,
+short landscape dialogs, all eight editing/setup/console dialog types, account
+search/filtering, group saving and terminal settings surviving reload. There
+were no browser console warnings/errors. All 82 server tests and `make lint`
+passed. These are browser viewport tests, not physical iOS/Android certification.
+The repeatable manual checklist is in `docs/implementation.md`.
+
 ## Maintainability and consistency review — 17 October 2026
 
 This pass starts from `01c2ce8`. It covers first-party terminal controllers,

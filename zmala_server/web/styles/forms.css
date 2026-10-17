@@ -6,6 +6,7 @@ dialog {
   padding: 28px;
   width: min(540px, calc(100vw - 32px));
   max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   overflow: auto;
   box-shadow: 0 28px 90px #0009;
 }
@@ -34,6 +35,7 @@ dialog.compact {
   margin: -4px -7px 0 0;
 }
 .modal-footer {
+  flex-wrap: wrap;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -99,7 +101,7 @@ input[type='file']::file-selector-button {
 }
 .field-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
 .setting-box {

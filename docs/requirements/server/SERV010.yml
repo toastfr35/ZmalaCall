@@ -13,3 +13,5 @@ references:
 reviewed: null
 text: |
   Administration shall remain in English with separate dark pages for overview, accounts, groups, terminals, callbacks and activity, using modal dialogs for relevant edits and confirmation. It shall omit the removed tiny header bars, marketing text, server-online badge and footer; recent events shall appear only on Activity.
+
+  All administration pages, sign-in and editing dialogs shall be usable on phones and PC monitors, including viewport widths from 320 to 1920 CSS pixels. Navigation and account actions shall remain accessible without horizontal page scrolling. Phone account rows shall stack with column labels; wider screens shall retain the table. Dialogs shall fit the available viewport and scroll vertically. Narrow-screen and touch layouts shall provide at least 44-pixel button targets and readable form inputs, including long account names, device names and connection details.
