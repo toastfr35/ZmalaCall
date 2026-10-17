@@ -9,6 +9,7 @@
 #include <mediastreamer2/msfactory.h>
 #include <mediastreamer2/msinterfaces.h>
 #include <mediastreamer2/msvideo.h>
+#include <mediastreamer2/msticker.h>
 
 static MSFilterDesc *original;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -67,7 +68,17 @@ void zmala_framing_target(uint64_t token, float x, float y, float size) {
 
 typedef struct {
     MSFilter *decoder;
-    MSQueue decoded;
+    MSQueue encoded, decoded; /* worker-only SDK queues */
+    pthread_t thread;
+    pthread_mutex_t queue_mutex, decoder_mutex;
+    pthread_cond_t ready;
+    int started, stopping;
+    mblk_t *pending, *completed; /* one waiting frame in each direction */
+    MSTicker clock; /* worker-owned clock; never borrow the live ticker */
+    uint64_t pending_time;
+    MSVideoSize output_size;
+    MSAverageFPS output_fps;
+    unsigned input_dropped, output_dropped;
     MSYuvBufAllocator *allocator;
     MSScalerContext *thumbnail, *scaler;
     int width, height, crop_w, crop_h;
@@ -166,62 +177,165 @@ static mblk_t *frame(Framing *s, mblk_t *input) {
     return out;
 }
 
-static void notify(void *context, MSFilter *child, unsigned event, void *arg) {
-    (void)child;
-    ms_filter_notify(context, event, arg);
+/* JPEGs are independent pictures. Replace stale waiting work before decoding;
+ * H.264 packets farther downstream must never be dropped this way. */
+static void *decode_worker(void *context) {
+    Framing *s = context;
+    for (;;) {
+        pthread_mutex_lock(&s->queue_mutex);
+        while (!s->stopping && !s->pending) pthread_cond_wait(&s->ready, &s->queue_mutex);
+        if (s->stopping) { pthread_mutex_unlock(&s->queue_mutex); break; }
+        mblk_t *input = s->pending;
+        s->pending = NULL;
+        s->clock.time = s->pending_time;
+        pthread_mutex_unlock(&s->queue_mutex);
+        /* Keep metadata alive: the child consumes its input and rewrites RTP time. */
+        mblk_t *metadata = dupmsg(input);
+        pthread_mutex_lock(&s->decoder_mutex);
+        ms_queue_put(&s->encoded, input);
+        s->decoder->desc->process(s->decoder);
+        pthread_mutex_unlock(&s->decoder_mutex);
+        mblk_t *output;
+        while ((output = ms_queue_get(&s->decoded))) {
+            mblk_meta_copy(metadata, output);
+            output = frame(s, output);
+            MSPicture picture;
+            int valid = !ms_yuv_buf_init_from_mblk(&picture, output);
+            pthread_mutex_lock(&s->queue_mutex);
+            if (s->completed) { freemsg(s->completed); ++s->output_dropped; }
+            s->completed = output;
+            if (valid) s->output_size = (MSVideoSize){picture.w, picture.h};
+            pthread_mutex_unlock(&s->queue_mutex);
+        }
+        freemsg(metadata);
+    }
+    return NULL;
 }
 static void initialize(MSFilter *f) {
     Framing *s = ms_new0(Framing, 1);
     f->data = s;
     s->x = s->y = .5f; s->size = 1.f;
+    pthread_mutex_init(&s->queue_mutex, NULL);
+    pthread_mutex_init(&s->decoder_mutex, NULL);
+    pthread_cond_init(&s->ready, NULL);
+    ms_queue_init(&s->encoded);
     ms_queue_init(&s->decoded);
     s->allocator = ms_yuv_buf_allocator_new();
     s->decoder = ms_factory_create_filter_from_desc(f->factory, original);
     if (s->decoder) {
+        s->decoder->inputs[0] = &s->encoded;
         s->decoder->outputs[0] = &s->decoded;
-        ms_filter_add_notify_callback(s->decoder, notify, f, TRUE);
     }
 }
 static void start(MSFilter *f) {
     Framing *s = f->data;
     reset();
     s->x = s->y = .5f; s->size = 1.f; s->last = 0;
+    s->stopping = 0;
+    s->input_dropped = s->output_dropped = 0;
+    ms_average_fps_init(&s->output_fps, "Zmala framing output fps=%f");
     if (s->decoder) {
-        s->decoder->inputs[0] = f->inputs[0];
-        ms_filter_preprocess(s->decoder, f->ticker);
+        s->clock.time = f->ticker->time;
+        ms_filter_preprocess(s->decoder, &s->clock);
+        if (!pthread_create(&s->thread, NULL, decode_worker, s)) s->started = 1;
+        else {
+            ms_filter_postprocess(s->decoder);
+            ms_error("Zmala JPEG worker could not start");
+        }
     }
 }
 static void process(MSFilter *f) {
     Framing *s = f->data;
-    if (!s->decoder) { ms_queue_flush(f->inputs[0]); return; }
-    s->decoder->desc->process(s->decoder);
-    mblk_t *input;
-    while ((input = ms_queue_get(&s->decoded))) ms_queue_put(f->outputs[0], frame(s, input));
+    mblk_t *input, *latest = NULL;
+    while ((input = ms_queue_get(f->inputs[0]))) {
+        if (latest) { freemsg(latest); ++s->input_dropped; }
+        latest = input;
+    }
+    pthread_mutex_lock(&s->queue_mutex);
+    if (latest) {
+        if (s->started && !s->stopping) {
+            if (s->pending) { freemsg(s->pending); ++s->input_dropped; }
+            s->pending = latest;
+            s->pending_time = f->ticker->time;
+            pthread_cond_signal(&s->ready);
+        } else freemsg(latest);
+    }
+    mblk_t *output = s->completed;
+    s->completed = NULL;
+    pthread_mutex_unlock(&s->queue_mutex);
+    if (output) {
+        ms_queue_put(f->outputs[0], output);
+        ms_average_fps_activity(&s->output_fps, f->ticker->time, TRUE);
+    }
 }
 static void stop(MSFilter *f) {
     Framing *s = f->data;
-    if (s->decoder) ms_filter_postprocess(s->decoder);
+    if (s->started) {
+        pthread_mutex_lock(&s->queue_mutex);
+        s->stopping = 1;
+        pthread_cond_signal(&s->ready);
+        pthread_mutex_unlock(&s->queue_mutex);
+        pthread_join(s->thread, NULL);
+        s->started = 0;
+        ms_filter_postprocess(s->decoder);
+        ms_message("Zmala JPEG worker stopped: input_dropped=%u output_dropped=%u",
+                   s->input_dropped, s->output_dropped);
+    }
+    if (s->pending) freemsg(s->pending);
+    if (s->completed) freemsg(s->completed);
+    s->pending = s->completed = NULL;
+    ms_queue_flush(&s->encoded);
+    ms_queue_flush(&s->decoded);
     reset();
 }
 static void destroy(MSFilter *f) {
     Framing *s = f->data;
+    stop(f); /* also safe after failed start or an earlier postprocess */
     if (s->decoder) {
         s->decoder->inputs[0] = s->decoder->outputs[0] = NULL;
         ms_filter_destroy(s->decoder);
     }
-    ms_queue_flush(&s->decoded);
     if (s->thumbnail) ms_scaler_context_free(s->thumbnail);
     if (s->scaler) ms_scaler_context_free(s->scaler);
     ms_yuv_buf_allocator_free(s->allocator);
+    pthread_cond_destroy(&s->ready);
+    pthread_mutex_destroy(&s->queue_mutex);
+    pthread_mutex_destroy(&s->decoder_mutex);
     ms_free(s);
 }
+/* Configuration methods may be used while constructing/reconfiguring the graph.
+ * Only these rare methods serialize with decoding; the process callback never does. */
 #define FORWARD(name, id) static int name(MSFilter *f, void *arg) { \
     Framing *s = f->data; \
-    return s->decoder ? ms_filter_call_method(s->decoder, id, arg) : -1; }
-FORWARD(get_size, MS_FILTER_GET_VIDEO_SIZE)
-FORWARD(set_size, MS_FILTER_SET_VIDEO_SIZE)
-FORWARD(get_fps, MS_FILTER_GET_FPS)
+    pthread_mutex_lock(&s->decoder_mutex); \
+    int result = s->decoder ? ms_filter_call_method(s->decoder, id, arg) : -1; \
+    pthread_mutex_unlock(&s->decoder_mutex); \
+    return result; }
+static int set_size(MSFilter *f, void *arg) {
+    Framing *s = f->data;
+    pthread_mutex_lock(&s->decoder_mutex);
+    int result = s->decoder ? ms_filter_call_method(s->decoder, MS_FILTER_SET_VIDEO_SIZE, arg) : -1;
+    pthread_mutex_unlock(&s->decoder_mutex);
+    if (!result) {
+        pthread_mutex_lock(&s->queue_mutex);
+        s->output_size = *(MSVideoSize *)arg;
+        pthread_mutex_unlock(&s->queue_mutex);
+    }
+    return result;
+}
 FORWARD(add_fmtp, MS_FILTER_ADD_FMTP)
+static int get_size(MSFilter *f, void *arg) {
+    Framing *s = f->data;
+    pthread_mutex_lock(&s->queue_mutex);
+    *(MSVideoSize *)arg = s->output_size;
+    pthread_mutex_unlock(&s->queue_mutex);
+    return 0;
+}
+static int get_fps(MSFilter *f, void *arg) {
+    Framing *s = f->data;
+    *(float *)arg = f->ticker ? ms_average_fps_get(&s->output_fps) : 60;
+    return 0;
+}
 static MSFilterMethod methods[] = {
     {MS_FILTER_GET_VIDEO_SIZE, get_size}, {MS_FILTER_SET_VIDEO_SIZE, set_size},
     {MS_FILTER_GET_FPS, get_fps}, {MS_FILTER_ADD_FMTP, add_fmtp}, {0, NULL}

@@ -1,16 +1,24 @@
 /* Anti-alias the small self-view before MSOGL's final bilinear resize.
  * Only display frames are copied: the encoder keeps the original camera image. */
+#include <stdatomic.h>
+#include <string.h>
 #include <mediastreamer2/msfactory.h>
 #include <mediastreamer2/msinterfaces.h>
 #include <mediastreamer2/msogl_functions.h>
 #include <mediastreamer2/msogl.h>
 #include <mediastreamer2/msvideo.h>
+#include <mediastreamer2/msticker.h>
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#endif
 
 typedef struct {
     MSFilter *display;
     MSQueue frame, unused;
     MSYuvBufAllocator *allocator;
-    unsigned width, height;
+    atomic_uint width, height;
+    atomic_int dirty;
+    uint64_t last_draw;
 } PreviewDisplay;
 
 /* Leave at least two samples per display pixel for the final GPU resize.
@@ -24,6 +32,44 @@ static int reduction(const MSPicture *src, unsigned width, unsigned height) {
     return factor;
 }
 
+/* Exact rounded box averages, including chroma. SIMD keeps the same result
+ * as the scalar path, without the original inner pixel/factor loops. */
+static void average_plane(uint8_t *out, int out_stride, const uint8_t *in,
+                          int in_stride, int width, int height, int factor) {
+    unsigned count = (unsigned)(factor * factor);
+    for (int y = 0; y < height; ++y) {
+        const uint8_t *row = in + y * factor * in_stride;
+        int x = 0;
+#if defined(__ARM_NEON)
+        if (factor == 2) {
+            for (; x + 8 <= width; x += 8) {
+                uint16x8_t sum = vpaddlq_u8(vld1q_u8(row + x * 2));
+                sum = vpadalq_u8(sum, vld1q_u8(row + in_stride + x * 2));
+                vst1_u8(out + x, vrshrn_n_u16(sum, 2));
+            }
+        } else if (factor == 4) {
+            for (; x + 4 <= width; x += 4) {
+                uint16x8_t sum = vpaddlq_u8(vld1q_u8(row + x * 4));
+                for (int dy = 1; dy < 4; ++dy)
+                    sum = vpadalq_u8(sum, vld1q_u8(row + dy * in_stride + x * 4));
+                uint16x4_t mean = vrshrn_n_u32(vpaddlq_u16(sum), 4);
+                uint8x8_t bytes = vmovn_u16(vcombine_u16(mean, vdup_n_u16(0)));
+                uint32_t packed = vget_lane_u32(vreinterpret_u32_u8(bytes), 0);
+                memcpy(out + x, &packed, sizeof(packed)); /* rows need not be word-aligned */
+            }
+        }
+#endif
+        for (; x < width; ++x) {
+            unsigned sum = 0;
+            for (int dy = 0; dy < factor; ++dy)
+                for (int dx = 0; dx < factor; ++dx)
+                    sum += row[dy * in_stride + x * factor + dx];
+            out[x] = (uint8_t)((sum + count / 2) / count);
+        }
+        out += out_stride;
+    }
+}
+
 static mblk_t *reduce_frame(PreviewDisplay *s, mblk_t *frame) {
     MSPicture src, dst;
     if (ms_yuv_buf_init_from_mblk(&src, frame)) return NULL;
@@ -31,19 +77,10 @@ static mblk_t *reduce_frame(PreviewDisplay *s, mblk_t *frame) {
     if (factor == 1) return NULL;
     mblk_t *small = ms_yuv_buf_allocator_get(s->allocator, &dst, src.w / factor, src.h / factor);
     if (!small) return NULL;
-    const unsigned count = (unsigned)(factor * factor);
     for (int p = 0; p < 3; ++p) {
         int width = p ? dst.w / 2 : dst.w, height = p ? dst.h / 2 : dst.h;
-        for (int y = 0; y < height; ++y) {
-            uint8_t *out = dst.planes[p] + y * dst.strides[p];
-            for (int x = 0; x < width; ++x) {
-                unsigned sum = 0;
-                const uint8_t *in = src.planes[p] + y * factor * src.strides[p] + x * factor;
-                for (int dy = 0; dy < factor; ++dy)
-                    for (int dx = 0; dx < factor; ++dx) sum += in[dy * src.strides[p] + dx];
-                out[x] = (uint8_t)((sum + count / 2) / count);
-            }
-        }
+        average_plane(dst.planes[p], dst.strides[p], src.planes[p], src.strides[p],
+                      width, height, factor);
     }
     mblk_meta_copy(frame, small);
     return small;
@@ -56,6 +93,9 @@ static void notify(void *context, MSFilter *child, unsigned event, void *arg) {
 static void initialize(MSFilter *f) {
     PreviewDisplay *s = ms_new0(PreviewDisplay, 1);
     f->data = s;
+    atomic_init(&s->width, 0);
+    atomic_init(&s->height, 0);
+    atomic_init(&s->dirty, 0);
     ms_queue_init(&s->frame);
     ms_queue_init(&s->unused);
     s->allocator = ms_yuv_buf_allocator_new();
@@ -68,6 +108,8 @@ static void initialize(MSFilter *f) {
 }
 static void start(MSFilter *f) {
     PreviewDisplay *s = f->data;
+    s->dirty = 1;
+    s->last_draw = 0;
     if (s->display) ms_filter_preprocess(s->display, f->ticker);
 }
 static void process(MSFilter *f) {
@@ -77,7 +119,14 @@ static void process(MSFilter *f) {
         mblk_t *small = reduce_frame(s, last);
         ms_queue_put(&s->frame, small ? small : dupmsg(last));
     }
-    if (s->display) s->display->desc->process(s->display);
+    /* The parent UI owns the window. New frames or changed geometry need a
+     * draw; empty 10 ms ticks do not. A slow retry permits context recovery. */
+    uint64_t now = f->ticker->time;
+    int dirty = atomic_exchange(&s->dirty, 0);
+    if (s->display && (last || dirty || now - s->last_draw >= 250)) {
+        s->display->desc->process(s->display);
+        s->last_draw = now;
+    }
     ms_queue_flush(f->inputs[0]);
     if (f->inputs[1]) ms_queue_flush(f->inputs[1]);
 }
@@ -98,6 +147,7 @@ static void destroy(MSFilter *f) {
 }
 static int forward(MSFilter *f, unsigned method, void *arg) {
     PreviewDisplay *s = f->data;
+    s->dirty = 1;
     return s->display ? ms_filter_call_method(s->display, method, arg) : -1;
 }
 static int set_window(MSFilter *f, void *arg) {

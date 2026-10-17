@@ -409,3 +409,48 @@ video ticker and reducing preview/display work; compare Ethernet with Wi-Fi
 before attributing all display gaps to processing. A faster server would not
 address the measured limits. The 20 fps setting remains a target, not a promise
 that every camera or display delivers every frame.
+
+## JPEG worker and preview optimization (2026-10-17)
+
+Camera JPEG decoding, detector thumbnail sampling and framing now run on a
+dedicated worker. The SDK child decoder has worker-owned queues and a clock
+snapshot; the ticker never waits for decoding. At most one JPEG awaits work
+and one completed picture awaits delivery. Replaced JPEG/raw frames are safe
+to discard; this policy does not apply to encoded H.264. Capture timestamps
+survive decoding. Stop joins the worker before clearing buffers and resetting
+detector session tokens. Configuration methods serialize with the child;
+normal frame delivery only takes a short queue lock.
+
+The preview keeps the existing rounded box average for both luma and chroma.
+ARM NEON accelerates the common 2× and 4× reductions, with a scalar fallback
+and tail. Output is identical, including padded/unaligned rows. Empty video
+ticks no longer trigger a draw: new frames and changed display state do,
+with a 250 ms recovery refresh for graphics-context recovery.
+
+Measured on the installed Pi at 1080p20, with muted audio:
+
+| Check | Result |
+| --- | --- |
+| Preview reduction microbenchmark | 1.43 ms/frame, previously about 8–9 ms |
+| Video ticker CPU, comparable real-camera calls | 67.2% → 26.9% of one core |
+| Total Pi CPU | 58.6% → 61.5%; parallel work, not a total-CPU reduction |
+| JPEG/framing work on ticker | About 225 ms/second → about 1 ms/second |
+| 70-second real-camera call | Continuous video; Windows exposure still limited sending to about 15 fps |
+| 50-second generated-source call | Windows sent 20 fps; settled Pi receive samples near 20 fps |
+| 65-second real-camera confirmation | With temporary 1/32-second Windows exposure, Windows sent 20 fps; settled Pi receive samples 19.19–20.68 fps, median 20; zero reported RTP loss in that interval |
+
+A Pi screenshot verified the main video and antialiased self-view. Buffering
+varied between calls: the comparable automatic-exposure call improved from
+about 65 to 21 ms median jitter buffering, but the final higher-throughput
+real-camera call still showed approximately 263 ms median. These changes do
+not establish consistently low end-to-end latency or sustained 30 fps.
+Automatic Windows camera exposure was restored after testing. Both terminal
+profiles remain at 1080p20 and speaker volume zero.
+
+`sh build_tools/linux/test-video-workers.sh` runs camera/display-free native
+tests: pixel equivalence and idle drawing, bounded/nonblocking queues,
+capture metadata, repeated start/stop, malformed JPEG recovery, framing
+limits and stale detector results. Worker and preview tests also run with
+UndefinedBehaviorSanitizer. GitHub verification runs these on Linux; the Pi
+run additionally covers the ARM NEON path. Temporary live-call profiling is
+removed from the installed application.

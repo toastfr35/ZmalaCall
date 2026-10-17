@@ -32,6 +32,10 @@ jobs:
           build_tools/tmp/keypad/firmware-test
       - name: Requirements
         run: .venv/bin/doorstop --no-reformat --error-all --no-review-check --project "$GITHUB_WORKSPACE"
+      - name: Native video worker and preview regressions
+        run: |
+          sudo apt-get install -y libmediastreamer-dev
+          sh build_tools/linux/test-video-workers.sh
   windows:
     runs-on: windows-latest
     steps:
