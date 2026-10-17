@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Factory reset access
+level: 17.0
+links:
+- ZMC005: gAnqFfRxhvQytUsND93nzYSP5RlLVsaxcGEDtP6Dg4s=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/provisioning_ui.py
+  type: file
+reviewed: null
+text: |
+  Reset confirmation shall be accessible only through the Reset entry in local Settings. GREEN shall open the confirmation page, a separate GREEN press shall reset, and RED shall keep configuration and return to Settings. A held GREEN shall not both open and confirm reset. Holding RED on the carousel shall open Settings, never reset directly.

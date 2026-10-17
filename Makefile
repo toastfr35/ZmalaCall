@@ -1,0 +1,53 @@
+# Override tools on the command line, e.g. make lint PYTHON=python3.
+ifeq ($(OS),Windows_NT)
+# Keep recipe quoting consistent when GNU Make is supplied by MSYS2.
+ifneq ($(wildcard C:/msys64/usr/bin/sh.exe),)
+SHELL := C:/msys64/usr/bin/sh.exe
+.SHELLFLAGS := -c
+endif
+endif
+PYTHON ?= $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,$(if $(wildcard .venv/bin/python),.venv/bin/python,python3))
+NODE ?= node
+CPPCHECK ?= $(if $(wildcard C:/msys64/ucrt64/bin/cppcheck.exe),C:/msys64/ucrt64/bin/cppcheck.exe,cppcheck)
+POWERSHELL ?= powershell.exe
+
+.PHONY: help lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test
+.DEFAULT_GOAL := help
+
+help:
+	@$(NODE) -e "console.log('make lint: JavaScript/Python/native lint, shell syntax, formatting and generated assets\nmake lint-powershell: parse Windows scripts without executing them\nmake test: server and platform-independent terminal tests\nSee README.md for tool installation and overrides.')"
+
+lint: lint-js lint-types lint-python lint-shell lint-native lint-format lint-generated
+ifeq ($(OS),Windows_NT)
+lint: lint-powershell
+endif
+
+lint-js:
+	$(NODE) node_modules/eslint/bin/eslint.js .
+
+lint-types:
+	$(NODE) node_modules/typescript/bin/tsc -p zmala_server/tsconfig.json
+	$(NODE) node_modules/typescript/bin/tsc -p zmala_server/tsconfig.admin.json
+
+lint-python:
+	$(PYTHON) -m ruff check .
+
+lint-shell:
+	$(NODE) build_tools/lint-sources.cjs shell
+
+lint-native:
+	$(NODE) build_tools/lint-sources.cjs native "$(CPPCHECK)"
+
+lint-powershell:
+	$(POWERSHELL) -NoProfile -File build_tools/lint-powershell.ps1
+
+lint-format:
+	$(NODE) node_modules/prettier/bin/prettier.cjs --check "zmala_server/**/*.{js,cjs,ts,css,html}" "build_tools/*.js" "build_tools/*.cjs" eslint.config.cjs "zmala_server/tsconfig*.json"
+
+lint-generated:
+	$(NODE) build_tools/build-admin.cjs --check
+
+test:
+	$(NODE) build_tools/build-admin.cjs
+	$(NODE) -e "process.chdir('zmala_server'); process.exit(require('node:child_process').spawnSync(process.execPath, ['--test', 'tests/*.test.js'], {stdio: 'inherit'}).status ?? 1)"
+	$(PYTHON) -m unittest discover -s zmala_terminal/tests -p "test_*.py"

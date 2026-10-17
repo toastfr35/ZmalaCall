@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Interrupted or changed confirmation
+level: 22.0
+links:
+- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/call_feedback_ui.py
+  type: file
+reviewed: null
+text: |
+  An allowed incoming call shall interrupt confirmation or request submission without a late response replacing ringing. If a selected contact becomes unavailable, GREEN shall switch call confirmation to callback confirmation and require another GREEN before submission. Cancelling a call preflight check shall prevent late dialing.

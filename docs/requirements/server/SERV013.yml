@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Printable QR downloads
+level: 13.0
+links:
+- ZMC005: gAnqFfRxhvQytUsND93nzYSP5RlLVsaxcGEDtP6Dg4s=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/setup.test.js
+  type: file
+reviewed: null
+text: |
+  Administration shall download single-page A4 Wi-Fi and terminal-server QR PDFs with a large readable QR and quiet border. Wi-Fi generation shall accept SSID/password without saving them on the server. Server QR shall contain the selected terminal versioned enrollment URL, device identity and token. Access shall require administrator authentication.

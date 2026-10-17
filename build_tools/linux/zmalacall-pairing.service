@@ -1,0 +1,24 @@
+[Unit]
+Description=ZmalaCall first-run Presenter pairing
+Requires=bluetooth.service
+After=bluetooth.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStartPre=/usr/sbin/rfkill unblock bluetooth
+ExecStart=/usr/bin/python3 /opt/zmalacall/current/build_tools/linux/pair-presenter.py
+Restart=always
+RestartSec=5
+RuntimeDirectory=zmalacall-pairing
+RuntimeDirectoryMode=0755
+StateDirectory=zmalacall-pairing
+StateDirectoryMode=0700
+UMask=0022
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

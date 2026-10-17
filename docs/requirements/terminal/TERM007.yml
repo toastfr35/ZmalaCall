@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Incoming calls and auto-answer
+level: 7.0
+links:
+- ZMC004: BbMxQdJgPXYShedM3jT-p6HeO4lTCVWqKbr5Ogqcw7w=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/test_terminal.py
+  type: file
+reviewed: null
+text: |
+  The terminal shall accept incoming calls only from permitted contacts in the configured domain with a valid server proof. Incoming ringing shall show the caller, animated halos, a pulsing portrait border and a phone symbol. GREEN shall answer and RED shall decline. Terminal auto-answer shall apply only when enabled and its countdown shall be cancellable.

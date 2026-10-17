@@ -1,0 +1,19 @@
+active: true
+derived: false
+header: |
+  Callback email reminders
+level: 17.0
+links:
+- ZMC007: okdnjnJUbYvxwazvker-EmVOJq6HIbT-jsk1pxbuvX4=
+normative: true
+ref: ''
+references:
+- path: zmala_server/callback-emails.js
+  type: file
+- path: zmala_server/callback-mailer.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+reviewed: null
+text: |
+  After the email deadline, a still-pending callback shall generate a separate email to every address on the contact's account, independently of SIP notification and online status. Each accepted recipient shall be persisted and skipped on retries or restart. A failed address shall not block other recipients. Failed delivery shall retry no more often than once a minute until completion, cancellation or removal. The Callbacks page shall configure SMTP host, port, security, optional credentials and sender, enable/disable reminders and check connection/authentication without sending mail. Stored SMTP passwords shall be omitted from admin responses, blank password input shall preserve them, and explicit clearing shall be supported. STARTTLS and TLS shall validate certificates. SMTP acceptance shall not imply inbox delivery or reading.

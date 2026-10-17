@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Text message notifications
+level: 16.0
+links:
+- ZMC010: 0Bu8wBAvQdLKlVc4IHPP0qtN5Mr2KHvjPNhFV_ibtFU=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-messages.js
+  type: file
+- path: zmala_server/tests/messages.test.js
+  type: file
+reviewed: null
+text: |
+  The server shall authenticate phone-originated SIP text messages and forward them only to an online terminal sharing a group with that phone. It shall route over the terminal's registered flow, replace client-supplied proof with terminal-specific authenticated sender/message proof, and reject unauthorized, unsupported, empty or oversized messages. An unavailable terminal shall return SIP 480 rather than queue the text. Text notification routing shall not create a call or expose message content in application event logs. Server-generated callback notifications to phones shall continue to operate independently.

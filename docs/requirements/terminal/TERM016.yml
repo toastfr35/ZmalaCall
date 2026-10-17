@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Language application
+level: 16.0
+links:
+- ZMC006: Shvt9QnsSvgjt_twxvs-cx_4hgTHE6ZYmAaKJ5VxxxU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/terminal_languages_ui.py
+  type: file
+reviewed: null
+text: |
+  The terminal shall translate its display prompts, availability, questions, Yes/No, callback acknowledgment, video feedback and reset/setup messages for all 95 included languages. Display names shall remain unchanged. Language updates shall apply during calls, with Unicode shaping and right-to-left support; device changes shall wait until idle.

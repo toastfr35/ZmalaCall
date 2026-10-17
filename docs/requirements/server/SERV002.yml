@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Account management
+level: 2.0
+links:
+- ZMC002: 6vo4QbTQ8CIM2t8yJUC_cDulM0-FluZ9XCFbDz3mvYE=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+reviewed: null
+text: |
+  Administration shall create, edit and delete phone and terminal accounts with editable username, display name, password, one-to-ten unique email addresses and an optional picture on a shared SIP domain/server. New accounts shall require an email address. Existing accounts without addresses shall be identified for administrator completion; migration shall not invent addresses or change credentials. Each terminal shall have a persistent serial number independent of its account username. Administration shall associate a terminal serial with a terminal account from the Terminals page. Reassignment shall preserve device credentials, hardware settings and console history with the serial, retain identity and groups with the account, and reject changes during active calls. Active calls shall prevent destructive account changes. Contact email addresses shall remain in administration and shall not appear in terminal configuration.

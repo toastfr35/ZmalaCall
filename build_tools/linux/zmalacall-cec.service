@@ -1,0 +1,27 @@
+[Unit]
+Description=ZmalaCall passive HDMI-CEC routing observer
+After=zmalacall-display.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=@USER@
+SupplementaryGroups=video
+AmbientCapabilities=CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_ADMIN
+PrivateNetwork=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+RuntimeDirectory=zmalacall-cec
+RuntimeDirectoryMode=0700
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 /opt/zmalacall/current/zmala_terminal/platforms/cec_observer.py
+Restart=always
+RestartSec=5
+TimeoutStopSec=5
+KillMode=control-group
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

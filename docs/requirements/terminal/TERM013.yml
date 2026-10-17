@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Missed-call acknowledgment
+level: 13.0
+links:
+- ZMC010: 0Bu8wBAvQdLKlVc4IHPP0qtN5Mr2KHvjPNhFV_ibtFU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/test_missed_calls.py
+  type: file
+reviewed: null
+text: |
+  A contact's entire unread notification count shall clear when GREEN opens their call or callback confirmation, even if confirmation is cancelled and no call is made. A successfully connected incoming call, answered manually or automatically, shall also clear and persist that caller's count immediately. The corner total shall decrease by that count, retaining other contacts' counts. Arrow navigation, configuration refresh, ringing, failed answers and declined incoming calls shall not acknowledge notifications. Repeated connection/media events shall preserve notifications received after connection. New notifications after acknowledgment shall start at one.

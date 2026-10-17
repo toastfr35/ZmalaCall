@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Authenticated SIP and media routing
+level: 5.0
+links:
+- ZMC004: BbMxQdJgPXYShedM3jT-p6HeO4lTCVWqKbr5Ogqcw7w=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/server.test.js
+  type: file
+- path: zmala_server/tests/sip-bounds.test.js
+  type: file
+reviewed: null
+text: |
+  The server shall authenticate registrations and call requests, enforce groups and add a per-terminal proof validated by the recipient. Signaling shall follow authenticated peer flows and media shall use relay addresses. Calls shall not be recorded by default. Stream framing shall reject malformed, duplicate or excessive Content-Length values and expire unfinished messages within 30 seconds. ACK requests shall retain no proxy contexts; other contexts shall have per-peer and global limits and a 90-second lifetime. Changes to established media shall remain staged until successful negotiation; rejected changes shall preserve the active targets. An accepted zero media port shall close the corresponding stream. In-dialog INVITE without an SDP offer shall receive 488; overlapping negotiations shall receive 491.

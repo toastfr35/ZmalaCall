@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Physical-button prompts
+level: 5.0
+links:
+- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/call_feedback_ui.py
+  type: file
+reviewed: null
+text: |
+  Call and callback confirmation shall show large green Yes/check and red No/cross prompts. The prompts shall match the physical buttons, fit at 900 by 620 pixels and remain non-clickable.

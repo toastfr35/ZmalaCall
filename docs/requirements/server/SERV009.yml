@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Callback delivery
+level: 9.0
+links:
+- ZMC007: okdnjnJUbYvxwazvker-EmVOJq6HIbT-jsk1pxbuvX4=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/callbacks.test.js
+  type: file
+reviewed: null
+text: |
+  The server shall deliver pending phone callback notifications as basic UTF-8 SIP MESSAGE over the authenticated registration flow after registration or reachability recovery, including the requester SIP address. Accepted delivery shall be recorded once; failures shall retry no more than once a minute while online. Periodic checking shall occur every five seconds. SIP acceptance shall not imply the user read the notification. Terminal recipients shall receive requests through configuration polling.

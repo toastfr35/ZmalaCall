@@ -1,0 +1,14 @@
+active: true
+derived: false
+header: |
+  Accounts and shared groups
+level: 2.0
+links: []
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+text: |
+  The system shall use one SIP server/domain for multiple phone and terminal accounts and permit calls only between accounts sharing a group.

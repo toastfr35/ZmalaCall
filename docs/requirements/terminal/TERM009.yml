@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Missing remote video
+level: 9.0
+links:
+- ZMC004: BbMxQdJgPXYShedM3jT-p6HeO4lTCVWqKbr5Ogqcw7w=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/accounts_live.py
+  type: file
+reviewed: null
+text: |
+  Connected calls without decoded incoming video shall show No video from the other person and You can still talk while audio and outgoing video continue. A decoded frame shall remove the overlay; four seconds without a frame or disabled negotiated reception shall restore it. New calls shall clear frame history.

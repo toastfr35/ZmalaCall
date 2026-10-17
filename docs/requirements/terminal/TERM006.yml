@@ -1,0 +1,18 @@
+active: true
+derived: false
+header: |
+  Callback confirmation
+level: 6.0
+links:
+- ZMC007: okdnjnJUbYvxwazvker-EmVOJq6HIbT-jsk1pxbuvX4=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/callbacks_live.py
+  type: file
+- path: zmala_terminal/tests/test_callbacks.py
+  type: file
+reviewed: null
+text: |
+  The first GREEN press for an unavailable contact shall show their picture, name, a red Currently unavailable message and the localized question Do you want to request a callback? A second GREEN shall immediately submit the request. Any other key shall cancel. Submission shall hide Yes/No; success acknowledgment shall appear only after server confirmation.
+  A pending outgoing request shall show a return-arrow tag on its contact, without persistent callback text beneath the contact name. RED on that contact shall open cancellation confirmation, with GREEN confirming and RED keeping the request. GREEN on an unavailable contact with a pending request shall also offer cancellation instead of another request; GREEN on an available contact shall retain normal calling. A successful cancellation shall remove the tag; failures shall retain it. Polling shall update tags independently of configuration version, without a poll started before a successful mutation undoing its result. Late responses shall not interrupt incoming calls.

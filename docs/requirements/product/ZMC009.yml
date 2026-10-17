@@ -1,0 +1,14 @@
+active: true
+derived: false
+header: |
+  Administration and persistent state
+level: 9.0
+links: []
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/admin.test.js
+  type: file
+reviewed: null
+text: |
+  The server shall provide dark administration pages for accounts, groups, terminals, callbacks and activity and persist configuration and relevant history across restarts.

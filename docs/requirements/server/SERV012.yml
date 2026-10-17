@@ -1,0 +1,16 @@
+active: true
+derived: false
+header: |
+  Terminal settings
+level: 12.0
+links:
+- ZMC006: Shvt9QnsSvgjt_twxvs-cx_4hgTHE6ZYmAaKJ5VxxxU=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/admin.test.js
+  type: file
+reviewed: null
+text: |
+  Administration shall configure each terminal language, camera, microphone, speaker, audio processing, video resolution and command shell. Video resolution shall be independently selectable as 480p (640×480), 720p (1280×720, default) or 1080p (1920×1080). Windows and Linux terminals shall apply server video settings automatically when idle, defer changes during calls, target 15 fps with matching bandwidth presets, and prefer server settings over legacy local experiment overrides. Actual frame rates shall depend on hardware and network capacity. Shell options shall be Windows PowerShell, PowerShell 7 and Command Prompt on Windows, and sh/bash on Linux. Selecting a shell incompatible with the terminal OS shall fail that command explicitly. The Terminals page shall configure auto-answer enable/disable and a five-to-six-hundred-second answer delay. Account names, pictures and credentials shall be managed on the Accounts page. Language configuration shall affect only the terminal display. Applying a native terminal configuration shall publish its applied revision only after engine setup succeeds. Failures shall release failed engines and retry the latest desired configuration while idle, with a five-second backoff. C20 mixer subprocesses shall run on one background worker that coalesces superseded volume values.
+  An authenticated device shall be able to update only its own language, auto-answer enable/delay, automatic framing, speaker volume and carousel portrait count. Writes shall compare the previous values of edited fields, reject conflicting edits, preserve all other settings, and acknowledge only after persistence. Ringing cleanup and the terminal outgoing/incoming timers shall allow the configured automatic-answer delay plus a grace period.

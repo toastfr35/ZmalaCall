@@ -1,0 +1,19 @@
+active: true
+derived: false
+header: |
+  Online presence
+level: 7.0
+links:
+- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/presence.test.js
+  type: file
+- path: zmala_terminal/tests/callbacks_live.py
+  type: file
+reviewed: null
+text: |
+  Terminal configuration and authenticated availability checks shall report account online state independently of configuration version. A registered phone becoming unresponsive shall be marked unavailable on the terminal within 15 seconds. The server shall probe each registration flow every five seconds with a five-second response timeout, exclude unreachable accounts from online status, dialing and callback notification delivery, and continue checking their unexpired registration flows for recovery. A successful fresh registration or reachability response shall restore online status. Expired or absent registrations shall remain unavailable.

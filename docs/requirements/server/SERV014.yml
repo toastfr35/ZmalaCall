@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Maintenance queue and isolation
+level: 14.0
+links:
+- ZMC008: RRgHHDdGfuQitYrzkrCvmwNVp5TpNyI_LeVra6Oa74Q=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/console.test.js
+  type: file
+- path: zmala_server/tests/reliability.test.js
+  type: file
+reviewed: null
+text: |
+  Administrator-authenticated console actions shall queue commands per terminal and show results. A terminal token shall claim/report only its own jobs with a unique lease. The selected shell shall be stored with each new job. There shall be at most ten pending jobs per terminal, five-to-120-second timeouts and at most 64 KiB combined output. Lost jobs shall not be automatically rerun. Job ownership shall use the immutable device serial rather than its account username. Retirement or conversion to a phone shall prevent replacement devices from claiming work or accessing old output. Legacy records without an established device owner shall never execute. Combined output shall mean at most 65,536 UTF-8 bytes after decoding, with an HTTP result-body cap of 400,000 bytes to accommodate JSON escaping. Result retries with the same lease shall commit already-completed in-memory results after a temporary storage failure without executing the command again.

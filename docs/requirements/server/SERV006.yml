@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Valid caller cancellation
+level: 6.0
+links:
+- ZMC010: 0Bu8wBAvQdLKlVc4IHPP0qtN5Mr2KHvjPNhFV_ibtFU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/callbacks_live.py
+  type: file
+reviewed: null
+text: |
+  The server shall relay cancellation of a ringing call to the called terminal so it stops ringing. Forwarded SIP CANCEL shall contain the required Max-Forwards header and preserve the INVITE transaction identity and authenticated registration flow.

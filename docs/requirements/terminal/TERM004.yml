@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Call confirmation
+level: 4.0
+links:
+- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/call_feedback_ui.py
+  type: file
+reviewed: null
+text: |
+  The first distinct GREEN press for an online contact shall open their picture and a localized question using their display name: Do you want to call XXX? A second distinct GREEN press shall immediately start the call only after a fresh permission and availability check. Any other key shall cancel and preserve carousel selection; holding GREEN shall not confirm.

@@ -1,0 +1,22 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b0f16;
+  --sidebar: #10141d;
+  --panel: #141a24;
+  --raised: #1a2230;
+  --line: #252d3c;
+  --text: #eaf0fa;
+  --muted: #93a1b8;
+  --accent: #b3a2ff;
+  --accent-bg: #28233e;
+  --green: #72d9b1;
+  --danger: #ff9ca6;
+  --radius: 16px;
+  font-family:
+    Segoe UI,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}

@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Text messages use missed-call badges
+level: 23.0
+links:
+- ZMC010: 0Bu8wBAvQdLKlVc4IHPP0qtN5Mr2KHvjPNhFV_ibtFU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/test_messages.py
+  type: file
+- path: zmala_terminal/tests/callbacks_live.py
+  type: file
+reviewed: null
+text: |
+  Each new text message from a permitted phone shall increase the same persistent contact notification count as a missed call after validating the server's message proof, sender domain and current receive permission. Duplicate delivery shall not increase counts. Message bodies shall not appear on screen or be saved in badge data. A message received during a call shall retain the call screen and show its badge and counter on return to the carousel. Opening that contact's call or callback confirmation shall clear their entire count even when no call is made.

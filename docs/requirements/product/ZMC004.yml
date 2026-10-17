@@ -1,0 +1,14 @@
+active: true
+derived: false
+header: |
+  Audio and video calls
+level: 4.0
+links: []
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/accounts_live.py
+  type: file
+reviewed: null
+text: |
+  The system shall support bidirectional audio/video calls between permitted phone and terminal accounts.

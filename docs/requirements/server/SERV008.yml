@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Callback lifecycle
+level: 8.0
+links:
+- ZMC007: okdnjnJUbYvxwazvker-EmVOJq6HIbT-jsk1pxbuvX4=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/callbacks.test.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+reviewed: null
+text: |
+  Only an authenticated terminal shall create a callback request as itself to a currently permitted contact. Requests shall persist atomically and deduplicate active requester/recipient pairs. The Callbacks page shall configure email-reminder and request-removal delays in hours, including fractional hours, measured from request creation. Defaults shall be one hour for email and four hours for removal. Removal shall be later than email. Changes shall apply to pending requests. After the removal deadline, pending requests shall be removed from persisted data and all views. Connected calls in either direction shall complete requests. Removing permission, deleting accounts or converting the requester to a phone shall cancel them; username edits shall preserve them. Completed and cancelled requests shall remain in bounded history.

@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Manual callback availability notice
+level: 15.0
+links:
+- ZMC007: okdnjnJUbYvxwazvker-EmVOJq6HIbT-jsk1pxbuvX4=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/call_feedback_ui.py
+  type: file
+reviewed: null
+text: |
+  Configuration polling shall receive pending callback requests independently of configuration version. When both accounts are available, the idle terminal shall select the other person after five seconds without input and show a ten-second availability notice once per request. It shall never automatically dial or interrupt ringing, calls or confirmation.

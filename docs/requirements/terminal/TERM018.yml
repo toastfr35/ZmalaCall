@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Factory reset scope
+level: 18.0
+links:
+- ZMC005: gAnqFfRxhvQytUsND93nzYSP5RlLVsaxcGEDtP6Dg4s=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/provisioning_ui.py
+  type: file
+- path: zmala_terminal/tests/test_reliability.py
+  type: file
+reviewed: null
+text: |
+  Reset shall stop call and maintenance workers and erase the current profile Wi-Fi/server enrollment, configuration cache and missed-call flags. Stale worker responses shall not restore state. Server accounts/groups and other terminal profiles shall remain intact; only application-created Wi-Fi profiles shall be forgotten. Reset shall persist a secret-free Wi-Fi cleanup record before removing the owned Windows or NetworkManager profile. Cleanup failure or restart shall retain and retry that record, and new Wi-Fi enrollment shall wait for successful cleanup. Repeated cleanup shall be idempotent.

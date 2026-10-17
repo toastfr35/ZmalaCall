@@ -1,0 +1,20 @@
+[Unit]
+Description=ZmalaCall physical HDMI display
+After=systemd-user-sessions.service plymouth-quit.service
+Conflicts=getty@tty7.service display-manager.service
+Wants=zmalacall-terminal.service zmalacall-compositor.service plymouth-quit.service
+Before=zmalacall-terminal.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/zmalacall/terminal.conf
+RuntimeDirectory=zmalacall-display
+RuntimeDirectoryMode=0755
+ExecStartPre=/usr/bin/python3 /opt/zmalacall/current/build_tools/linux/prepare-display.py
+ExecStart=/usr/lib/xorg/Xorg :0 vt7 -auth /run/zmalacall-display/Xauthority -nolisten tcp -noreset -nocursor
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

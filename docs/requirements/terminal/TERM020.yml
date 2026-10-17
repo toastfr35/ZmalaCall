@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Stable camera QR scanning
+level: 20.0
+links:
+- ZMC005: gAnqFfRxhvQytUsND93nzYSP5RlLVsaxcGEDtP6Dg4s=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/provisioning_ui.py
+  type: file
+reviewed: null
+text: |
+  QR preview shall be unmirrored and avoid frequent background repaint flicker. QR decoding shall run in an isolated camera worker released before call-engine startup. Worker failure shall show an error border and retry after five seconds; decoded credentials shall not be logged.

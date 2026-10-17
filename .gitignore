@@ -1,0 +1,39 @@
+node_modules/
+.venv/
+.ruff_cache/
+build_tools/.npm-cache/
+build_tools/runtime/
+data/
+__pycache__/
+*.so
+*.o
+*.log
+build_tools/tmp/
+build_tools/dist/
+
+# Local scratch work and generated test output.
+/tmp/
+/.codex-remote-attachments/
+*.pyc
+*.pyo
+*.dll
+*.exe
+*.bak
+*.tmp
+/zmala_terminal/media/framing-runtime/
+/zmala_terminal/media/models/*.tflite
+
+# Keep local configuration and credentials out of commits.
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+
+# Personal portrait drafts are local account assets, not application source.
+/zmala_server/assets/account-pictures/
+
+# OpenSCAD test export; retain the editable design.
+/CAD/test.stl

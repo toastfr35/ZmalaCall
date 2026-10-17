@@ -1,0 +1,24 @@
+{
+  "en": {
+    "remote_picture_pairing": "Hold\n3 seconds",
+    "remote_unpaired_title": "Connect your remote",
+    "remote_unpaired_detail": "Turn the remote on.\nHold the Bluetooth button on the back for 3 seconds, until the white light flashes.\nThe terminal will connect automatically.\nIf no light appears, charge the remote and try again.",
+    "remote_bluetooth_unavailable_title": "Bluetooth is unavailable",
+    "remote_bluetooth_unavailable_detail": "The terminal's Bluetooth adapter is off or unavailable.\nAsk for help to enable Bluetooth on the terminal.",
+    "remote_blocked_title": "The remote is blocked",
+    "remote_blocked_detail": "Ask for help to allow this remote in the terminal's Bluetooth settings.",
+    "remote_input_unavailable_title": "The remote is connecting",
+    "remote_input_unavailable_detail": "Some remote controls are not ready yet.\nWait a moment. If this continues, switch the remote off and on.\nIf it still does not work, ask for help."
+  },
+  "fr": {
+    "remote_picture_pairing": "Maintenir\n3 secondes",
+    "remote_unpaired_title": "Connectez votre télécommande",
+    "remote_unpaired_detail": "Allumez la télécommande.\nMaintenez le bouton Bluetooth au dos pendant 3 secondes, jusqu’au clignotement blanc.\nLe terminal se connectera automatiquement.\nSi aucun voyant ne s’allume, rechargez la télécommande puis réessayez.",
+    "remote_bluetooth_unavailable_title": "Le Bluetooth est indisponible",
+    "remote_bluetooth_unavailable_detail": "Le Bluetooth du terminal est désactivé ou indisponible.\nDemandez de l'aide pour l'activer sur le terminal.",
+    "remote_blocked_title": "La télécommande est bloquée",
+    "remote_blocked_detail": "Demandez de l'aide pour autoriser cette télécommande dans les réglages Bluetooth du terminal.",
+    "remote_input_unavailable_title": "Connexion de la télécommande",
+    "remote_input_unavailable_detail": "Certaines commandes ne sont pas encore prêtes.\nPatientez un instant. Si cela persiste, éteignez puis rallumez la télécommande.\nSi elle ne fonctionne toujours pas, demandez de l'aide."
+  }
+}

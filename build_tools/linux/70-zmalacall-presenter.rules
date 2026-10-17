@@ -1,0 +1,2 @@
+# Presenter+ vendor reports provide Teams/Mute; restrict access to this Bluetooth HID.
+SUBSYSTEM=="hidraw", KERNELS=="0005:045E:0851.*", GROUP="input", MODE="0660"

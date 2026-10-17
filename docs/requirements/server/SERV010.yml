@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Dark administration pages
+level: 10.0
+links:
+- ZMC009: VGl7VWydFVPZSn0UyeN6nupR4VdiXWG3azIjvu3fzWU=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.js
+  type: file
+reviewed: null
+text: |
+  Administration shall remain in English with separate dark pages for overview, accounts, groups, terminals, callbacks and activity, using modal dialogs for relevant edits and confirmation. It shall omit the removed tiny header bars, marketing text, server-online badge and footer; recent events shall appear only on Activity.

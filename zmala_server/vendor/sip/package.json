@@ -1,0 +1,25 @@
+{
+  "name": "sip",
+  "description": "Simple SIP implementation",
+  "version": "0.0.6-zmala.1",
+  "private": true,
+  "license": "MIT",
+  "homepage": "http://github.com/kirm/sip.js",
+  "author": "Kirill Mikhailov <kirill.mikhailov@gmail.com>",
+  "main": "sip",
+  "directories": {
+    "lib": "",
+    "example": "./examples",
+    "doc": "./doc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirm/sip.js.git"
+  },
+  "engines": {
+    "node": ">=0.2.2"
+  },
+  "dependencies": {
+    "ws": "^6.1.0"
+  }
+}

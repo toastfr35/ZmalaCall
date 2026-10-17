@@ -1,0 +1,248 @@
+@media (min-width: 1600px) {
+  main {
+    padding-top: 48px;
+  }
+  .welcome-panel {
+    padding: 38px;
+  }
+  .welcome-panel h2 {
+    font-size: 30px;
+  }
+}
+@media (max-width: 1150px) {
+  main {
+    padding: 30px 26px;
+  }
+  .sidebar {
+    width: 205px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .workspace {
+    margin-left: 205px;
+  }
+  .brand {
+    font-size: 17px;
+  }
+
+  .accounts-table th,
+  .accounts-table td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .panel-heading {
+    align-items: flex-start;
+  }
+
+  .page-heading #page-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .overview-grid {
+    gap: 16px;
+  }
+}
+@media (max-width: 850px) {
+  .sidebar {
+    width: 74px;
+    padding: 23px 10px;
+  }
+  .brand {
+    margin: 0 0 36px;
+    justify-content: center;
+  }
+  .brand > span:last-child,
+  .nav-label,
+  .sidebar-footer {
+    display: none;
+  }
+  nav a {
+    font-size: 0;
+    justify-content: center;
+    padding: 14px;
+  }
+  nav a .icon {
+    width: 21px;
+    height: 21px;
+  }
+  nav a.active:after {
+    display: none;
+  }
+  .workspace {
+    margin-left: 74px;
+  }
+  .stats-grid {
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 16px;
+  }
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+  .overview-grid .panel {
+    margin-bottom: 8px;
+  }
+  .page-heading {
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 27px;
+  }
+  .welcome-panel > .icon {
+    width: 70px;
+    height: 70px;
+    margin-right: 0;
+  }
+  .table-toolbar {
+    flex-wrap: wrap;
+  }
+  .table-toolbar > span {
+    margin-left: 0;
+  }
+  .table-toolbar select {
+    width: 160px;
+  }
+
+  .panel-heading .button-row {
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 580px) {
+  .sidebar {
+    width: auto;
+    height: auto;
+    position: static;
+    padding: 16px 14px 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    margin: 0 0 16px;
+    justify-content: flex-start;
+  }
+  .brand > span:last-child {
+    display: block;
+  }
+  .brand small {
+    font-size: 8px;
+  }
+
+  nav {
+    display: flex;
+    overflow: auto;
+    gap: 5px;
+  }
+  nav a {
+    font-size: 10px;
+    padding: 9px 10px;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  nav a .icon {
+    width: 14px;
+    height: 14px;
+  }
+  .workspace {
+    margin: 0;
+  }
+  main {
+    padding: 26px 18px 16px;
+  }
+  .page-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .page-heading #page-actions {
+    justify-content: flex-start;
+  }
+  .page-heading > div > p:last-child {
+    font-size: 12px;
+  }
+  h1 {
+    font-size: 28px;
+  }
+  .eyebrow {
+    font-size: 9px;
+  }
+  .welcome-panel {
+    padding: 23px;
+  }
+  .welcome-panel h2 {
+    font-size: 23px;
+  }
+  .welcome-panel > .icon {
+    display: none;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-card {
+    padding: 18px;
+  }
+  .panel-heading {
+    padding: 20px;
+    flex-wrap: wrap;
+  }
+  .panel-heading .button-row {
+    justify-content: flex-start;
+  }
+  .table-toolbar {
+    padding: 0 20px 20px;
+  }
+  .search-field {
+    max-width: none;
+    min-width: 100%;
+  }
+  .table-toolbar select {
+    width: auto;
+    flex: 1;
+  }
+  .table-toolbar > span {
+    margin-left: auto;
+  }
+  .panel-note {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .panel-note {
+    flex-wrap: wrap;
+  }
+  .panel-note a {
+    margin-left: 0;
+  }
+  .server-details,
+  .terminal-status-list,
+  .registration-list,
+  .callback-policy-body,
+  .event-list {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .terminal-summary {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+  .field-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  dialog {
+    padding: 23px;
+    border-radius: 14px;
+  }
+  .modal-heading h2 {
+    font-size: 21px;
+  }
+  .event-row time {
+    font-size: 9px;
+  }
+}

@@ -1,0 +1,11 @@
+**/node_modules/
+.venv/
+**/data/
+build_tools/runtime/
+build_tools/tmp/
+docs/product_requirements.md
+docs/terminal_requirements.md
+docs/server_requirements.md
+zmala_server/web/admin.js
+zmala_server/web/admin.css
+zmala_server/vendor/

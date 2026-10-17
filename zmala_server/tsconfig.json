@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "types": ["node"],
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "sip": ["./types/sip.d.ts"],
+      "sip/proxy": ["./types/sip-proxy.d.ts"]
+    }
+  },
+  "include": ["types/**/*.ts", "*.js", "http/*.js"],
+  "exclude": ["node_modules", "data", "tests", "web", "vendor"]
+}

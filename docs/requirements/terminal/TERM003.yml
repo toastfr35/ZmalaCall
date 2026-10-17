@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Contact availability
+level: 3.0
+links:
+- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/contact_presence_ui.py
+  type: file
+reviewed: null
+text: |
+  Carousel contacts shall show a large green check/Online or red cross/Offline band. Presence shall refresh every two seconds independently of configuration version and show a registered phone becoming unresponsive within 15 seconds, using the server's active reachability result. Contacts shall become unavailable after six seconds without a server update. Offline contacts shall not be dialled.

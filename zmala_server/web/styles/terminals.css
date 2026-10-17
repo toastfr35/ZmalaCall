@@ -1,0 +1,226 @@
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+}
+.welcome-logo {
+  width: 105px;
+  height: 105px;
+  flex-shrink: 0;
+  margin-right: 20px;
+}
+@media (max-width: 580px) {
+  .brand-logo {
+    width: 34px;
+    height: 34px;
+  }
+  .welcome-logo {
+    display: none;
+  }
+}
+/* Keep terminal layout in this source file; admin.css is generated. */
+.terminal-card .panel-heading {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+}
+.terminal-card .panel-heading > div {
+  min-width: 0;
+}
+.terminal-card .terminal-summary {
+  padding: 0;
+  border: 0;
+  margin-top: 12px;
+  gap: 6px;
+}
+.terminal-dropdown {
+  width: min(440px, 48%);
+  margin: 0;
+}
+.terminal-fields {
+  display: block;
+}
+.terminal-settings-form {
+  padding: 16px 22px;
+  min-width: 0;
+}
+.terminal-settings-form[data-kind='devices'] {
+  padding: 0;
+}
+.terminal-settings-form[data-kind='association'] {
+  border-bottom: 1px solid var(--line);
+}
+.terminal-settings-form h3 {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.terminal-settings-form label {
+  margin: 0;
+  min-width: 0;
+}
+.terminal-association-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.6fr) minmax(220px, 1fr) auto;
+  gap: 20px;
+  align-items: end;
+}
+.terminal-association-row > button {
+  margin-bottom: 1px;
+}
+.terminal-serial {
+  align-self: center;
+  min-width: 0;
+}
+.terminal-serial span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.terminal-serial code {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.terminal-setting-section {
+  padding: 16px 22px;
+}
+.terminal-setting-section + .terminal-setting-section {
+  border-top: 1px solid var(--line);
+}
+.terminal-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+.terminal-options select {
+  margin-top: 5px;
+}
+.terminal-calls .terminal-options {
+  align-items: center;
+}
+.terminal-answer-delay {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.terminal-answer-delay input {
+  margin: 0;
+}
+.terminal-answer-delay small {
+  margin: 0;
+}
+.terminal-settings-form input[type='number'] {
+  width: 100px;
+}
+.terminal-settings-form .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.terminal-settings-form .checkbox-row input {
+  appearance: none;
+  width: 34px;
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+  padding: 2px;
+  border-radius: 20px;
+  background: #354058;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.terminal-settings-form .checkbox-row input::after {
+  content: '';
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.15s;
+}
+.terminal-settings-form .checkbox-row input:checked {
+  background: #a996fa;
+}
+.terminal-settings-form .checkbox-row input:checked::after {
+  transform: translateX(14px);
+}
+.terminal-help {
+  font-size: 11px;
+  font-weight: normal;
+  margin-top: 6px;
+  color: var(--muted);
+}
+.terminal-help summary {
+  cursor: pointer;
+}
+.terminal-help p {
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.terminal-tools {
+  padding: 14px 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+.terminal-setup summary {
+  cursor: pointer;
+  padding: 11px 16px;
+  border-radius: 7px;
+  list-style: none;
+  font-size: 12px;
+}
+.terminal-setup summary::after {
+  content: ' ▾';
+}
+.terminal-setup-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.terminal-setup[open] {
+  flex-basis: 100%;
+}
+.terminal-tools > .button-row {
+  flex-wrap: wrap;
+}
+.console-shell-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin: 16px 0;
+}
+.console-shell-controls label {
+  flex: 1;
+  margin: 0;
+}
+.console-shell-controls .banner {
+  flex-basis: 100%;
+}
+@media (max-width: 700px) {
+  .terminal-card .panel-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .terminal-dropdown {
+    width: 100%;
+  }
+  .terminal-association-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .terminal-association-row > button {
+    justify-self: start;
+  }
+  .terminal-options {
+    grid-template-columns: 1fr;
+  }
+  .terminal-tools {
+    flex-wrap: wrap;
+  }
+}

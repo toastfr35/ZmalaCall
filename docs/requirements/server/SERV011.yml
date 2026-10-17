@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Selected terminal card
+level: 11.0
+links:
+- ZMC009: VGl7VWydFVPZSn0UyeN6nupR4VdiXWG3azIjvu3fzWU=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.js
+  type: file
+reviewed: null
+text: |
+  The Terminals page shall show one terminal card selected by dropdown. Its inline account and device/display settings shall have separate save actions and retain unsaved edits. Wi-Fi QR PDF, server QR PDF and console downloads/actions shall be in that card. Contacts shall be managed through Groups and Accounts.

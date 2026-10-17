@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZmalaCall SBC purchasing options</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fa;
+      --panel: #ffffff;
+      --text: #17202a;
+      --muted: #58636f;
+      --line: #d8dee6;
+      --accent: #175cd3;
+      --good: #177245;
+      --good-bg: #e9f7ef;
+      --warn: #8a4b08;
+      --warn-bg: #fff4df;
+      --best: #eef4ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 1500px; margin: 0 auto; padding: 2rem; }
+    h1 { margin: 0 0 .35rem; font-size: clamp(1.8rem, 3vw, 2.7rem); }
+    h2 { margin-top: 2rem; }
+    p { max-width: 88ch; }
+    a { color: var(--accent); }
+    .meta, .small { color: var(--muted); }
+    .callout {
+      margin: 1.4rem 0;
+      padding: 1rem 1.2rem;
+      border: 1px solid #a8c5ff;
+      border-left: 5px solid var(--accent);
+      border-radius: .55rem;
+      background: var(--best);
+    }
+    .callout strong { font-size: 1.08rem; }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: .6rem;
+      background: var(--panel);
+      box-shadow: 0 2px 8px rgb(0 0 0 / 5%);
+    }
+    table { width: 100%; min-width: 1200px; border-collapse: collapse; }
+    th, td { padding: .8rem; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+    th { background: #e9edf3; font-size: .9rem; position: sticky; top: 0; }
+    tr:last-child td { border-bottom: 0; }
+    tr.recommended td { background: var(--best); }
+    .score { white-space: nowrap; font-size: 1.05rem; font-weight: 750; }
+    .status, .tag { display: inline-block; padding: .13rem .45rem; border-radius: 999px; font-size: .82rem; font-weight: 650; }
+    .status { color: var(--good); background: var(--good-bg); }
+    .tag { color: var(--warn); background: var(--warn-bg); }
+    ul { padding-left: 1.25rem; }
+    li + li { margin-top: .3rem; }
+    .sources li { overflow-wrap: anywhere; }
+    code { font-size: .92em; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101418; --panel: #181e24; --text: #eef2f6; --muted: #aeb8c2;
+        --line: #35404b; --accent: #8db7ff; --good: #8de0b2; --good-bg: #173a29;
+        --warn: #ffd08a; --warn-bg: #49320f; --best: #172947;
+      }
+      th { background: #242d36; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>SBC options for the ZmalaCall terminal</h1>
+  <p class="meta">UK purchasing research checked 4 October 2026. Prices include VAT where the retailer explicitly says so; delivery and optional accessories are excluded unless stated. Stock and prices can change.</p>
+
+  <div class="callout">
+    <strong>Recommendation: Raspberry Pi Compute Module 5 Development Kit (UK), £177.28 including VAT.</strong>
+    It is the lowest-risk way to start the ARM/Linux port: 4 GB RAM, 32 GB soldered eMMC, dual-band Wi-Fi, strong CPU/GPU support, GPIO, two USB 3 ports, full-size HDMI, case, cooling, antenna, UK power supply, and cables are included. The seller showed it in stock. Its 32 GB eMMC meets the minimum in <a href="hw.md">hw.md</a>, although a later production carrier should use the 64 GB CM5 variant if update rollback space or logs make 32 GB tight.
+  </div>
+
+  <h2>Availability and lead-time check</h2>
+  <p>This is the purchasing snapshot to use before ordering. It was rechecked on 4 October 2026. “In stock” is recorded separately from delivery time because several marketplaces do not disclose dispatch origin or a delivery date until checkout.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Board/configuration</th>
+          <th>Seller</th>
+          <th>Availability found</th>
+          <th>Published lead time or delivery signal</th>
+          <th>Procurement confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="recommended">
+          <td><strong>CM5 Development Kit, 4 GB / 32 GB eMMC / wireless</strong></td>
+          <td><a href="https://cpc.farnell.com/raspberry-pi/sc1750/cm5-development-kit-uk/dp/SC21263">CPC</a></td>
+          <td><strong>9 in stock</strong>; 6 more incoming and reservable</td>
+          <td>No product-specific arrival date displayed. CPC offers free UK delivery above £24.99 excluding VAT; confirm the actual date at checkout.</td>
+          <td><span class="status">High</span> Established UK distributor, physical stock count, complete kit.</td>
+        </tr>
+        <tr>
+          <td><strong>CM5 Development Kit, 4 GB / 32 GB eMMC / wireless</strong></td>
+          <td><a href="https://www.bcdatlantik.shop/products/raspberry-pi-compute-module-5-development-kit-uk/28944000011199013">BCD Atlantik</a> (business customers)</td>
+          <td><strong>In stock</strong></td>
+          <td><strong>2–4 working days</strong> stated by the seller</td>
+          <td><span class="status">High</span> UK company and the clearest stated delivery window; web shop is business-to-business.</td>
+        </tr>
+        <tr>
+          <td><strong>CM5 module, 4 GB / 64 GB eMMC / wireless</strong></td>
+          <td><a href="https://cpc.farnell.com/raspberry-pi/cm5104064/cm5-4gb-64gb-wifibt-single/dp/SC21253">CPC</a></td>
+          <td><span class="tag">Back order</span></td>
+          <td><strong>Manufacturer standard lead time: 3 weeks</strong></td>
+          <td>High-quality supply channel, but unsuitable for immediate work. Carrier and accessories are separate.</td>
+        </tr>
+        <tr>
+          <td><strong>ROCK 5B, 8 GB</strong></td>
+          <td><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2493159">RS</a></td>
+          <td><strong>In stock</strong>; page also showed 878 + 348 units shipping from 5 October 2026</td>
+          <td>RS states next-working-day delivery for orders placed before 20:30 Monday–Friday; the exact date must be confirmed for the basket.</td>
+          <td><span class="status">High</span> Best-supported current UK supply among the non-Raspberry candidates. eMMC and Wi-Fi modules remain separate purchases.</td>
+        </tr>
+        <tr>
+          <td><strong>ODROID-C5, 4 GB</strong></td>
+          <td><a href="https://www.odroid.co.uk/Odroid-C5">ODROID UK</a></td>
+          <td><strong>In stock</strong></td>
+          <td>No dispatch or delivery interval shown on the product page</td>
+          <td>Medium. Specialist UK distributor, but verify dispatch timing and availability of the selected 64 GB eMMC option before ordering.</td>
+        </tr>
+        <tr>
+          <td><strong>ODROID-M1S kit, 4 GB / 64 GB eMMC</strong></td>
+          <td><a href="https://www.odroid.co.uk/M1S-4GB">ODROID UK</a></td>
+          <td><span class="tag">Built to order</span></td>
+          <td>No build or dispatch interval stated</td>
+          <td>Medium-low until the seller confirms a date. The page accepts orders but does not establish when the kit will ship.</td>
+        </tr>
+        <tr>
+          <td><strong>ROCK 5C, 8 GB</strong></td>
+          <td><a href="https://www.ebay.co.uk/itm/158163401422">eBay UK marketplace listing</a></td>
+          <td><strong>Available</strong> at the browser check</td>
+          <td><strong>Delivery in 2–3 days</strong> shown for the current UK destination</td>
+          <td>Medium-low. Fast stated delivery, but marketplace stock is not a repeatable production source and the price is poor.</td>
+        </tr>
+        <tr>
+          <td><strong>Orange Pi 3B, 4 GB</strong></td>
+          <td><a href="https://www.fruugo.co.uk/development-board-module-for-orange-pi-3b-development-board-orange-pi-3b-quad-core-rk3566-support-emmc-moduleram-4gb/p-532171545-1079236464">Fruugo marketplace</a></td>
+          <td><strong>In stock</strong>; six sellers indicated</td>
+          <td>No delivery estimate visible on the product page; dispatch origin was not disclosed</td>
+          <td>Low. Treat as an import-style marketplace offer until the basket displays seller location and a firm date.</td>
+        </tr>
+        <tr>
+          <td><strong>Orange Pi 4 Pro, 4 GB</strong></td>
+          <td><a href="https://www.ebay.co.uk/shop/orange-pi?_nkw=orange+pi">eBay UK marketplace listing</a></td>
+          <td>Opened but unused listing available</td>
+          <td>Free delivery in <strong>3 days</strong> was displayed</td>
+          <td>Low for deployment. Suitable only as an inexpensive experimental porting board because supply and software maturity are weak.</td>
+        </tr>
+        <tr>
+          <td><strong>KICKPI K2B, H618</strong></td>
+          <td><a href="https://www.aliexpress.com/item/1005011785280080.html">AliExpress listing supplied by the user</a></td>
+          <td>The URL records a <strong>£45.99</strong> promotional price, but does not identify which RAM/eMMC option it covers. The supplied PDF is a product specification rather than a stock statement.</td>
+          <td>No verifiable shipping cost, UK delivery date, or dispatch lead time was available in the PDF or URL metadata</td>
+          <td>Low. Confirm the 4 GB RAM / 32 GB eMMC option, Wi-Fi hardware, VAT, shipping and arrival date manually before treating the price as comparable.</td>
+        </tr>
+        <tr>
+          <td><strong>Geniatech XPI-3566-ZERO, 4 GB / 32 GB onboard eMMC</strong></td>
+          <td><a href="https://www.globalbuyco.com/product/geniatech-xpi-3566-zero-high-performance-ultra-compact-single-board-computer/?attribute_pa_variant=4gb-memory-32gb-storage">GlobalBuyCo</a>; <a href="https://shop.geniatech.us/product/xpi-3566-zero/">Geniatech official store</a></td>
+          <td>The UK-facing site accepted the exact variant into its basket at <strong>£21.98 + £10 delivery = £31.98</strong>. The manufacturer's store accepts orders at <strong>US$99–179 plus delivery</strong>, tax and import charges.</td>
+          <td>No dispatch date, delivery estimate, or stock count was shown by either seller</td>
+          <td><span class="tag">Low for GlobalBuyCo</span> The price is exceptionally low, the stated address is residential, and no matching UK company registration was found. Medium-low for the manufacturer's import route.</td>
+        </tr>
+        <tr>
+          <td><strong>Radxa ZERO 3W, 2 GB / 16 GB onboard eMMC</strong></td>
+          <td><a href="https://www.enrgtechglobal.com/product/rock-sbc-boards/ET100426506/rs107-d2e16h0w15">Enrgtech UK</a></td>
+          <td><span class="tag">Pre-order</span> at <strong>£26.82 excluding VAT</strong> (£32.18 including VAT), plus delivery</td>
+          <td><strong>7–13 weeks</strong> stated by the seller</td>
+          <td>Medium as a supplier lead, but this exact SKU is below the current 4 GB RAM / 32 GB storage floors in <a href="hw.md">hw.md</a>.</td>
+        </tr>
+        <tr>
+          <td><strong>Radxa ZERO 3W, 4 GB / 32 GB onboard eMMC</strong></td>
+          <td><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2564694">RS UK</a></td>
+          <td><span class="tag">Back order</span> at <strong>£44.29 excluding VAT / £53.15 including VAT</strong></td>
+          <td><strong>Shipping from 18 January 2027</strong></td>
+          <td><span class="status">High supplier confidence</span> Exact preferred capacity from an established UK distributor. The 1.6 GHz CPU is below the nominal 1.8 GHz-class floor and needs workload qualification.</td>
+        </tr>
+        <tr>
+          <td><strong>ROCK 4C+, 4 GB; eMMC socket</strong></td>
+          <td><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2493158">RS UK</a></td>
+          <td><strong>Last RS stock: 4,134 units shipping from 5 October 2026</strong>; £38.30 excluding VAT / <strong>£45.96 including VAT</strong></td>
+          <td>RS shows shipment from 5 October 2026; check the basket for the destination-specific delivery day</td>
+          <td>High supplier confidence, but the OS disk is a separate removable eMMC module and the published feature list confirms H.264 decode rather than encode.</td>
+        </tr>
+        <tr>
+          <td><strong>ROCK 3C, 2 GB; eMMC socket</strong></td>
+          <td><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2563902">RS UK</a></td>
+          <td><strong>80 units ready to ship</strong> plus 27 at another location; £37.85 excluding VAT / <strong>£45.42 including VAT</strong></td>
+          <td>Ready to ship; no destination-specific arrival date shown without checkout</td>
+          <td>High supplier confidence, but it fails the 4 GB RAM floor and needs a separate eMMC module.</td>
+        </tr>
+        <tr>
+          <td><strong>ROCK 5C, 2 GB; eMMC socket</strong></td>
+          <td><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/0292134">RS UK</a></td>
+          <td><span class="tag">Back order</span> at £44.72 excluding VAT / <strong>£53.66 including VAT</strong></td>
+          <td><strong>Shipping from 18 January 2027</strong></td>
+          <td>High supplier confidence, but this SKU fails the 4 GB RAM floor, lacks soldered storage, and offers no timing advantage over the exact ZERO 3W 4/32 SKU.</td>
+        </tr>
+        <tr>
+          <td><strong>Purple Pi OH Pro, 4 GB / 32 GB onboard eMMC</strong></td>
+          <td><a href="https://www.shop.youyeetoo.com/products/purple-pi-oh-sbc?VariantsId=12455">Youyeetoo product page</a></td>
+          <td>The exact configuration is selectable, but the current page exposes no defensible price, stock statement, or UK fulfilment evidence</td>
+          <td>No UK delivery estimate found</td>
+          <td>Low procurement confidence. Technically attractive, but do not plan a build around it without a written delivered quote.</td>
+        </tr>
+        <tr>
+          <td><strong>Radxa X4 8/64, Orange Pi 5B 8/64, Purple Pi OH2 4/64</strong></td>
+          <td>UK search</td>
+          <td><span class="tag">No suitable current UK-stock offer found</span></td>
+          <td>No defensible UK lead time</td>
+          <td>Do not plan around these configurations without a written distributor quote. AliExpress availability and delivery could not be independently verified.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Shortlist</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name and purchase link</th>
+          <th>Price and availability</th>
+          <th>Key specification</th>
+          <th>eMMC</th>
+          <th>GPIO and connections</th>
+          <th>Description and required extras</th>
+          <th>Suitability</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="recommended">
+          <td><strong><a href="https://cpc.farnell.com/raspberry-pi/sc1750/cm5-development-kit-uk/dp/SC21263">Raspberry Pi Compute Module 5 Development Kit (UK)</a></strong><br><span class="status">Recommended</span></td>
+          <td><strong>£177.28 including VAT</strong><br><span class="status">9 in stock; 6 more incoming</span><br><span class="small">Trade alternative: BCD Atlantik listed £146.25 excluding VAT (£175.50 including VAT), in stock with estimated 2–4 working-day delivery.</span></td>
+          <td>BCM2712, 4× Cortex-A76 at 2.4 GHz; 4 GB RAM; dual-band 802.11ac Wi-Fi; OpenGL ES 3.1; Gigabit Ethernet</td>
+          <td><strong>32 GB onboard</strong><br>Meets the 32 GB minimum</td>
+          <td>40-pin GPIO on carrier; 2× USB 3; 2× HDMI 2.0; M.2 NVMe; RTC socket; fan header</td>
+          <td>Complete development setup with CM5 IO board, metal case, passive cooler, external antenna, 27 W UK PSU, HDMI cables, and flashing cable. It needs only the application peripherals: camera, audio device, and four buttons. Best-supported software ecosystem and enough performance margin for the port.</td>
+          <td class="score">9.3 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://cpc.farnell.com/raspberry-pi/cm5104064/cm5-4gb-64gb-wifibt-single/dp/SC21253">Raspberry Pi CM5, 4 GB / 64 GB / wireless</a></strong><br>with <a href="https://thepihut.com/products/raspberry-pi-compute-module-5-io-board">CM5 IO Board</a></td>
+          <td><strong>About £185.37</strong> assembled from current listings:<br>module £127.27; IO board £19.20; case £14.40; cooler £4.80; UK PSU £11.50; antenna £4.80; one HDMI cable £3.40. A flashing cable may add a few pounds.<br><span class="tag">Module on back order; stated lead time 3 weeks</span></td>
+          <td>Same BCM2712 and wireless platform as the recommended kit; 4 GB RAM; 2.4 GHz; OpenGL ES 3.1</td>
+          <td><strong>64 GB onboard</strong><br>Meets the recommended target</td>
+          <td>40-pin GPIO; 2× USB 3; 2× HDMI 2.0; M.2 NVMe; Gigabit Ethernet; RTC and fan connections</td>
+          <td>The best match to the written production requirements and still reasonably priced. It costs more than the kit and requires separate assembly, antenna, and cables. Choose it when 64 GB eMMC matters more than immediate availability.</td>
+          <td class="score">9.6 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.odroid.co.uk/M1S-4GB">ODROID-M1S Kit, 4 GB</a></strong></td>
+          <td><strong>€106.20</strong> as displayed by the UK distributor; currency can be changed on the shop<br><span class="tag">Built to order</span></td>
+          <td>RK3566, 4× Cortex-A55 at 1.8 GHz; 4 GB RAM; Mali-G52 MP2; Gigabit Ethernet; Ubuntu images</td>
+          <td><strong>64 GB onboard</strong><br>Approximately 180 MiB/s; NVMe expansion available</td>
+          <td>40-pin and 14-pin GPIO headers are optional; 1× USB 3 host and 1× USB 2 host; HDMI 2.0; RTC socket</td>
+          <td>Good-value kit with case, PSU, heatsink, and soldered eMMC. It has <strong>no onboard Wi-Fi</strong>, so qualification requires a Linux-supported dual-band USB Wi-Fi adapter and probably a powered USB hub to leave ports for camera and audio. Order the GPIO headers fitted. The RK3566 media and graphics path creates more porting risk than Raspberry Pi.</td>
+          <td class="score">7.5 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.odroid.co.uk/Odroid-C5">ODROID-C5, 4 GB + 64 GB eMMC module</a></strong></td>
+          <td><strong>€151.51</strong> displayed total before PSU/case/Wi-Fi: board €92.04 + 64 GB eMMC €59.47<br><span class="status">Board listed in stock</span></td>
+          <td>S905X5M, 4× Cortex-A55 at 2.5 GHz; 4 GB RAM; Mali-G310; Gigabit Ethernet; low quoted power use</td>
+          <td><strong>64 GB removable module</strong><br>HS400 interface</td>
+          <td>40-pin GPIO; 4× USB 2 host; HDMI 2.0; analogue and HDMI audio</td>
+          <td>Meets compute, storage, display, and GPIO needs after adding the eMMC module. It lacks onboard Wi-Fi, USB 3, and a complete kit at the stated price; add a supported Wi-Fi adapter, 12 V UK PSU, case, and cooling if tests require it. Newer and less proven for this workload than CM5.</td>
+          <td class="score">7.1 / 10</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Expanded Radxa, Orange Pi, and Purple Pi search</h2>
+  <p>These boards were checked separately because their headline specifications are often better than their UK retail coverage. The price column distinguishes established UK distributors from marketplace stock and imports. Scores use the same project-specific method below and include software support, supply confidence, and the cost of a usable configuration.</p>
+  <div class="callout">
+    <strong>Compact-board result:</strong> RS lists the exact Radxa ZERO 3W 4 GB / 32 GB onboard-eMMC SKU for £53.15 including VAT, but it is on back order and is stated to ship from 18 January 2027. Its 1.6 GHz CPU is below the 1.8 GHz-class selection floor and its single USB host port likely needs a powered hub, so it remains subject to measurement. The XPI-3566-ZERO 4/32 reaches a UK-facing basket for £31.98 delivered, but the seller cannot yet be validated. Purple Pi OH Pro 4/32 meets the capacity floors but has no verified UK price or delivery date.
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name and purchase link</th>
+          <th>Price and UK availability</th>
+          <th>Key specification</th>
+          <th>eMMC</th>
+          <th>GPIO and connections</th>
+          <th>Assessment</th>
+          <th>Suitability</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong><a href="https://www.globalbuyco.com/product/geniatech-xpi-3566-zero-high-performance-ultra-compact-single-board-computer/?attribute_pa_variant=4gb-memory-32gb-storage">Geniatech XPI-3566-ZERO, 4 GB / 32 GB</a></strong><br><span class="tag">Unverified UK-facing seller</span></td>
+          <td><strong>£31.98 basket total</strong>: £21.98 board + £10 delivery. The exact 4 GB / 32 GB selection was added successfully on 4 October 2026, but no stock count or arrival date was disclosed. The <a href="https://shop.geniatech.us/product/xpi-3566-zero/">manufacturer's store</a> is the traceable alternative at US$99–179 plus shipping, tax and import charges.</td>
+          <td>RK3566, 4× Cortex-A55 at 1.8 GHz; 4 GB LPDDR4; Mali-G52; dual-band Wi-Fi and Bluetooth 5; hardware H.264/H.265 encode to 1080p60 and decode to 4K60; Debian 11 image</td>
+          <td><strong>32 GB soldered onboard</strong><br>Meets the written minimum; 64 GB is available only with the 8 GB official-store configuration</td>
+          <td>40-pin GPIO; mini-HDMI; one USB 2 host Type-C shared with 5 V input; one USB 2 OTG Type-C; MIPI-CSI; no Ethernet. A powered hub is likely for a USB camera and speakerphone.</td>
+          <td>This is the closest compact board to the requested shape and onboard-storage preference. Its single practical host connection, old Debian base, and uncertain UK seller make it a prototype candidate only. Before paying GlobalBuyCo, verify the company identity, physical stock, warranty, returns and delivery date directly; the unusually low price is not enough evidence of supply.</td>
+          <td class="score">6.4 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2564694">Radxa ZERO 3W, 4 GB / 32 GB</a></strong><br><span class="tag">Back order</span></td>
+          <td><strong>£53.15 including VAT</strong> (£44.29 excluding VAT), plus delivery<br><span class="tag">Shipping from 18 January 2027</span><br>The lower 2 GB / 16 GB SKU is also a <a href="https://www.enrgtechglobal.com/product/rock-sbc-boards/ET100426506/rs107-d2e16h0w15">£32.18 including-VAT Enrgtech pre-order</a> with a stated 7–13-week lead time.</td>
+          <td>RK3566, 4× Cortex-A55 up to 1.6 GHz; 4 GB LPDDR4; Mali-G52; Wi-Fi 6 and Bluetooth 5.4; hardware H.264/H.265 encode to 1080p60 and decode to 4K60</td>
+          <td><strong>32 GB soldered onboard</strong><br>Meets the current storage floor; 4 GB RAM also meets the memory floor</td>
+          <td>Optional 40-pin GPIO; one USB 3 host Type-C; one USB 2 OTG/power Type-C; micro-HDMI; MIPI-CSI. Separate camera and USB audio normally require a powered hub.</td>
+          <td>This is the strongest traceable compact candidate: the required capacity, eMMC, Wi-Fi, GPIO and codec blocks are integrated. Its 1.6 GHz CPU misses the nominal 1.8 GHz-class floor, the single host port adds a hub, and the current wait is over three months. Buy for qualification only if that schedule is acceptable and accept it only after the full workload test.</td>
+          <td class="score">7.2 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.shop.youyeetoo.com/products/purple-pi-oh-sbc?VariantsId=12455">Purple Pi OH Pro, 4 GB / 32 GB</a></strong><br><span class="tag">No verified UK supply</span></td>
+          <td>The seller page exposes a 4 GB / 32 GB selection, but no dependable price, stock count, dispatch origin or UK arrival date. No UK-stock distributor was found.</td>
+          <td>RK3566, 4× Cortex-A55 at 1.8 GHz; 4 GB LPDDR4; Mali-G52; dual-band 2.4/5.8 GHz Wi-Fi and Bluetooth; Gigabit Ethernet; hardware H.264/H.265 encode to 1080p100 and decode to 4K60</td>
+          <td><strong>32 GB soldered onboard</strong><br>Meets the written minimum; the family also offers 64 GB</td>
+          <td>GPIO functions include SPI, I²C and UART; 1× USB 3 host plus 3× USB 2 host; HDMI 2.0; MIPI-CSI; analogue microphone/headphone connections</td>
+          <td>The connectivity is substantially better than the Zero-size boards and suits separate camera/audio devices. Procurement and software maintenance are the blockers: available documentation points to Debian 10/Ubuntu 20-era images, and no credible UK lead time was found.</td>
+          <td class="score">6.6 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2493158">OKdo/Radxa ROCK 4C+, 4 GB</a></strong><br><span class="status">Large RS stock signal</span></td>
+          <td><strong>£45.96 including VAT</strong> (£38.30 excluding VAT). RS showed 4,134 units plus a final nine shipping from 5 October 2026. A <a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2306199">complete starter kit</a> with microSD rather than eMMC was £83.52 including VAT and also heavily stocked.</td>
+          <td>RK3399T; 2× Cortex-A72 at 1.5 GHz + 4× Cortex-A53 at 1.0 GHz; 4 GB LPDDR4; Mali-T860; Wi-Fi 5, Bluetooth 5 and Gigabit Ethernet; H.264 decode to 1080p60 and H.265/VP9 decode to 4K60</td>
+          <td><strong>Socket; module extra</strong><br>The board price includes no eMMC and therefore does not satisfy the preference for soldered onboard storage</td>
+          <td>40-pin header with six plain GPIO plus UART/SPI/I²C/PWM; 2× USB 3 and 2× USB 2 host; two micro-HDMI; CSI; audio jack</td>
+          <td>An unusually cheap, well-stocked porting board with enough RAM and USB ports. It misses the onboard-eMMC preference, its fast cores run below the nominal CPU clock floor, and RS documents H.264 decode but no hardware encoder. Software VGA encoding may still work, but only the acceptance test can establish it.</td>
+          <td class="score">6.3 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2563902">OKdo/Radxa ROCK 3C, 2 GB</a></strong><br><span class="tag">Below current floor</span></td>
+          <td><strong>£45.42 including VAT</strong> (£37.85 excluding VAT). RS showed 80 units ready to ship plus 27 at another location.</td>
+          <td>RK3566, 4× Cortex-A55 at 1.6 GHz; 2 GB LPDDR4; Mali-G52; Wi-Fi 5, Bluetooth 5 and Gigabit Ethernet</td>
+          <td><strong>Socket; module extra</strong><br>No eMMC is included</td>
+          <td>40-pin GPIO; USB 3, USB 2 and OTG; HDMI 2.0; CSI/DSI; M.2; analogue audio</td>
+          <td>The current availability is excellent, but this SKU fails the 4 GB memory floor and the soldered-eMMC preference. A module, power supply and cooling further reduce its price advantage. It is not a useful substitute for the ZERO 3W 4/32 unless the requirements are relaxed.</td>
+          <td class="score">5.0 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/0292134">Radxa ROCK 5C, 2 GB</a></strong><br><span class="tag">Below current floor / back order</span></td>
+          <td><strong>£53.66 including VAT</strong> (£44.72 excluding VAT). RS states shipping from 18 January 2027.</td>
+          <td>RK3588S2 family with strong CPU, GPU and media capability; this exact listing has 2 GB RAM; onboard Wi-Fi 6/Bluetooth 5.4 and Gigabit Ethernet</td>
+          <td><strong>Socket; module extra</strong><br>No onboard eMMC is included in this SKU</td>
+          <td>40-pin GPIO; 2× USB 3 plus 2× USB 2; HDMI; MIPI camera; audio; eMMC and NVMe expansion</td>
+          <td>The SoC is powerful, but this listing fails the RAM and onboard-storage requirements and ships no earlier than the exact ZERO 3W 4/32. It is therefore the wrong ROCK 5C SKU for this terminal.</td>
+          <td class="score">5.4 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.ebay.co.uk/sch/i.html?_nkw=Radxa+X4+D8E64R30W16">Radxa X4, 8 GB / 64 GB eMMC / wireless</a></strong><br><span class="tag">No current UK stock found</span></td>
+          <td>A UK private listing had been <strong>£192.37 delivered</strong>, but a live browser check found no exact current listings. Treat that price as historical only and request a distributor quote before selecting the board.</td>
+          <td>Intel N100, 4 cores up to 3.4 GHz; 8 GB LPDDR5; Intel UHD graphics with OpenGL 4.6; Wi-Fi 6 and Bluetooth 5.2</td>
+          <td><strong>64 GB onboard</strong><br>Meets the recommended target; M.2 NVMe is also available</td>
+          <td>40-pin header driven by an RP2040 coprocessor; 3× USB 3.2 plus 1× USB 2; 2× micro-HDMI; 2.5 GbE; audio jack</td>
+          <td>The most interesting non-Raspberry option if retaining x86 software is valuable. It has ample USB and soldered eMMC, but the GPIO adapter must communicate with the RP2040 rather than assuming normal SoC GPIO semantics. Add a case, suitable USB-C PD supply, HDMI adapter/cable, and cooling. Radxa promises X4 availability through at least September 2032, but no purchasable UK 8 GB / 64 GB offer was visible at the final check.</td>
+          <td class="score">7.6 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/0329066">Radxa/OKdo ROCK 5B, 8 GB</a></strong></td>
+          <td><strong>£128.54 including VAT</strong> (£107.12 excluding VAT)<br><span class="status">RS listed the board in stock</span><br>About <strong>£210.52</strong> after a £45.99 64 GB eMMC module and £35.99 wireless module, before power and cooling.</td>
+          <td>RK3588, 4× Cortex-A76 + 4× Cortex-A55; 8 GB RAM; Mali-G610; strong H.264/H.265 media blocks; 2.5 GbE</td>
+          <td><strong>Socket; module extra</strong><br>16–128 GB modules supported</td>
+          <td>40-pin GPIO; 2× USB 3 plus 2× USB 2; HDMI outputs; M.2 NVMe; camera interfaces</td>
+          <td>Powerful and stocked by an established UK distributor. The original 5B has no onboard Wi-Fi, and a complete configuration costs more than the CM5 kit before adding a PSU, case, cooling, and antenna. Linux support is usable but the Rockchip GPU/VPU and Liblinphone path needs more qualification work.</td>
+          <td class="score">7.8 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.ebay.co.uk/shop/radxa?_nkw=radxa">Radxa ROCK 5C, 8 GB</a></strong><br><span class="tag">Marketplace stock</span></td>
+          <td><strong>£246.60 delivered</strong>: £239.90 + £6.70 delivery for the live UK listing<br>RS lists only the unsuitable 2 GB version at £53.66 including VAT, on back order and shipping from 18 January 2027.</td>
+          <td>RK3588S2, 4× Cortex-A76 + 4× Cortex-A55; 8 GB RAM in the listing; Mali-G610; onboard Wi-Fi 6 and Bluetooth 5.4; Gigabit Ethernet</td>
+          <td><strong>Socket; module extra</strong><br>64 GB is available separately</td>
+          <td>40-pin header with up to 27 GPIO; 2× USB 3 plus 2× USB 2; HDMI 2.1; audio jack; camera interface</td>
+          <td>A cleaner terminal design than the ROCK 5B because wireless is onboard and it has enough USB ports. The currently visible UK 8 GB offer is far too expensive once eMMC, power, and cooling are added. Reconsider if an approved UK distributor stocks the 4 GB or 8 GB version near its international list price.</td>
+          <td class="score">7.0 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.ebay.co.uk/sch/i.html?_nkw=orange+pi+5b+8gb+64gb+emmc">Orange Pi 5B with eMMC</a></strong><br><span class="tag">No suitable current UK stock found</span></td>
+          <td>The UK 16 GB / 256 GB listing previously found has ended at <strong>£215.95</strong>. A live search for the preferable 8 GB / 64 GB configuration returned no genuine exact match; the visible new board result was an implausible £889.43 import from Italy.</td>
+          <td>RK3588S, 4× Cortex-A76 + 4× Cortex-A55; 4/8/16 GB RAM variants; Mali-G610; onboard Wi-Fi 6 and Bluetooth 5; Gigabit Ethernet</td>
+          <td><strong>32–256 GB onboard options</strong><br>64 GB is the preferred configuration</td>
+          <td>26-pin expansion header with GPIO; USB 3 and USB 2 host ports; HDMI 2.1; camera connectors; audio jack</td>
+          <td>Excellent raw hardware and no storage module is needed on eMMC-equipped SKUs. It still needs power, cooling, and an enclosure. Orange Pi’s Linux image and driver support present more integration risk than CM5, especially for accelerated media, and there was no suitable board available from UK stock at the final check.</td>
+          <td class="score">6.8 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.fruugo.co.uk/development-board-module-for-orange-pi-3b-development-board-orange-pi-3b-quad-core-rk3566-support-emmc-moduleram-4gb/p-532171545-1079236464">Orange Pi 3B, 4 GB</a></strong><br><span class="tag">UK-facing marketplace</span></td>
+          <td><strong>£132.99 delivered</strong>: £129 + £3.99 delivery<br>Listed in stock with 14-day returns, but sold by a marketplace merchant; origin and delivery time should be checked at checkout.</td>
+          <td>RK3566, 4× Cortex-A55 at 1.8 GHz; 4 GB RAM; Mali-G52; Wi-Fi 5 and Bluetooth 5; Gigabit Ethernet</td>
+          <td><strong>Socket; module extra</strong><br>16–256 GB modules supported; NVMe also available</td>
+          <td>40-pin GPIO; USB 3 and USB 2; HDMI 2.0; M.2 NVMe; camera/display connectors</td>
+          <td>Meets the written floor and may be adequate after testing, but it has much less CPU margin than RK3588 or CM5. At this UK price it is poor value once 64 GB eMMC, power, case, and cooling are added. The ODROID-M1S is a more coherent RK3566 package.</td>
+          <td class="score">6.8 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://docs.elephantronics.com/sbcs-mini-pcs/purple-pi-oh2/">Purple Pi OH2, 4 GB / 64 GB</a></strong><br><span class="tag">No UK seller found</span></td>
+          <td>Manufacturer documentation says “in stock”, but exposes no purchase price. Chinese marketplace offers found were roughly <strong>US$116.60–173.53</strong> before UK tax/import costs; no traceable UK-stock retailer was found.</td>
+          <td>RK3576, 4× Cortex-A72 at 2.2 GHz + 4× Cortex-A53; 4 GB version available; onboard AP6256 dual-band Wi-Fi/Bluetooth; dual Gigabit Ethernet</td>
+          <td><strong>64 GB onboard</strong> in the relevant configuration<br>eMMC 5.1; NVMe also available</td>
+          <td>40-pin header with 16 GPIO; 2× USB 3 plus two internal USB 2 headers; HDMI 2.1; analogue audio; RTC and fan headers; 9–24 V input</td>
+          <td>One of the best technical matches: eMMC, wireless, ample GPIO, RTC, flexible power, and enough USB. It is not presently a practical UK purchase because the seller, delivered price, warranty, returns, OS maintenance, and long-term supply cannot be established. Keep it as a watch-list candidate or obtain a formal UK-delivered quote before evaluation.</td>
+          <td class="score">6.9 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.ebay.co.uk/shop/orange-pi?_nkw=orange+pi">Orange Pi 4 Pro, 4 GB</a></strong><br><span class="tag">New platform / marketplace</span></td>
+          <td><strong>£87.25 with listing coupon</strong> (£89.95 without)<br>Opened but unused; UK seller, free delivery. Storage, power, and cooling are extra.</td>
+          <td>Allwinner A733, 2× Cortex-A76 + 6× Cortex-A55; 4 GB LPDDR5; Wi-Fi 6 and Bluetooth; Gigabit Ethernet</td>
+          <td><strong>Optional module</strong><br>The offer does not include eMMC; exact compatible capacity and flashing workflow must be verified before purchase</td>
+          <td>40-pin GPIO; USB 3 and USB 2; HDMI; M.2 storage; camera/display interfaces</td>
+          <td>The board price is attractive, but the newer A733 graphics/media stack and board support create the highest software-port risk in this group. It should not be the first porting target unless a low-cost experimental board is wanted and software engineering time is cheap.</td>
+          <td class="score">6.4 / 10</td>
+        </tr>
+        <tr>
+          <td><strong><a href="https://www.aliexpress.com/item/1005011785280080.html">KICKPI K2B</a></strong><br><span class="tag">Marginal specification</span></td>
+          <td><strong>£45.99 promotional price encoded in the supplied URL</strong>, reduced from £49.99. The selected RAM/eMMC variant, VAT, shipping, stock and delivery date could not be verified.</td>
+          <td>Allwinner H618, 4× Cortex-A53 up to 2.0 GHz; Mali-G31 MP2; 1/2/4 GB LPDDR4 variants; Gigabit Ethernet; Ubuntu 22.04 and Android 12 claimed</td>
+          <td><strong>8/16/32 GB onboard options</strong><br>Only the 32 GB version meets the storage minimum, with no capacity margin</td>
+          <td>20-pin expansion header exposing UART, SPI, PWM, I²C, I²S, S/PDIF and USB signals; 2× USB 2 host plus 1× USB 2 OTG; HDMI; microSD; headphone output</td>
+          <td>The 4 GB / 32 GB version could just meet the numerical floors, but it has little CPU or storage margin, no USB 3, only two host ports, and uncertain Wi-Fi/GPIO userspace support. The product specification advertises 4K decoding but does not establish H.264 encoding or integration with Liblinphone. It is too risky as the main porting target even at the low board price.</td>
+          <td class="score">4.8 / 10</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Scoring method</h2>
+  <p>The score is a project-specific assessment, not a general SBC benchmark. It weights Linux and driver maturity (30%), sustained CPU/GPU/media capability (20%), eMMC capacity and reliability (15%), Wi-Fi/USB/GPIO/display integration (15%), UK availability and product support (10%), and total value (10%). Every option still requires the acceptance tests in <a href="hw.md">hw.md</a>; a specification sheet cannot prove Liblinphone camera, codec, echo-control, and native-video behaviour.</p>
+
+  <h2>Why the CM5 kit wins</h2>
+  <ul>
+    <li>It is a complete, currently stocked UK kit. CPC showed nine units in stock. The apparently cheaper CM5 module prices do not include a carrier, cooling, case, antenna, PSU, or cables.</li>
+    <li>Raspberry Pi publishes the carrier design, Linux documentation, GPIO interfaces, and long production commitment. CM5 and its IO board are stated to remain in production until at least January 2036.</li>
+    <li>The two USB 3 host ports cover a USB camera and USB conference speakerphone without consuming GPIO or adding a hub.</li>
+    <li>The 40-pin header directly supports the four active-low button inputs described in <a href="hw.md">hw.md</a>.</li>
+    <li>The CPU and graphics stack provide more margin than the ODROID-M1S while avoiding an external Wi-Fi adapter.</li>
+  </ul>
+  <p><strong>Purchasing choice:</strong> use the £177.28 including-VAT CM5 development kit for porting and hardware qualification. Businesses may save £1.78 including VAT through BCD Atlantik, whose web shop is explicitly business-to-business. If the application image cannot retain at least 8 GB free after reserving update/rollback space, move the production design to CM5104064 (4 GB RAM, 64 GB eMMC, wireless). Do not buy the 16 GB eMMC variant.</p>
+
+  <h2>Other board checked</h2>
+  <ul>
+    <li><strong>Raspberry Pi CM4:</strong> a 4 GB / 32 GB eMMC / wireless module plus IO board is inexpensive, but its 1.5 GHz BCM2711 is below the selection floor in <a href="hw.md">hw.md</a> and has less performance margin for software video coding. It is a fallback only after measurement.</li>
+  </ul>
+
+  <h2>Sources</h2>
+  <ul class="sources small">
+    <li><a href="https://cpc.farnell.com/raspberry-pi/sc1750/cm5-development-kit-uk/dp/SC21263">CPC — CM5 Development Kit UK including-VAT price, stock, and contents</a></li>
+    <li><a href="https://www.bcdatlantik.shop/products/raspberry-pi-compute-module-5-development-kit-uk/28944000011199013">BCD Atlantik — trade-only CM5 Development Kit UK price, stock, and contents</a>; <a href="https://www.bcdatlantik.shop/terms">terms confirming prices exclude VAT and sales are business-to-business</a></li>
+    <li><a href="https://www.raspberrypi.com/products/compute-module-5/">Raspberry Pi — CM5 processor, RAM/eMMC options, wireless, graphics, GPIO, and longevity</a></li>
+    <li><a href="https://www.raspberrypi.com/products/compute-module-5-io-board/">Raspberry Pi — CM5 IO Board interfaces</a></li>
+    <li><a href="https://cpc.farnell.com/raspberry-pi/cm5104064/cm5-4gb-64gb-wifibt-single/dp/SC21253">CPC — CM5104064 UK price and lead time</a></li>
+    <li><a href="https://thepihut.com/products/raspberry-pi-compute-module-5-io-board">The Pi Hut — CM5 IO Board and accessory prices</a></li>
+    <li><a href="https://www.odroid.co.uk/M1S-4GB">ODROID UK — M1S 4 GB kit price, availability, eMMC, interfaces, and software support</a></li>
+    <li><a href="https://www.odroid.co.uk/Odroid-C5">ODROID UK — C5 price, specifications, eMMC options, and stock</a></li>
+    <li><a href="https://www.rapidonline.com/radxa-rs119-d4p1-rock-5-b-sbc-8-core-cpu-8k-dual-hdmi-emmc-socket-10-3968">Rapid Electronics — ROCK 5B UK price and back-order status</a></li>
+    <li><a href="https://uk.rs-online.com/web/c/raspberry-pi-arduino-development-tools/rock-sbc-shop/rock-sbc-boards/">RS — current UK ROCK 5B, 5B+, and 5C prices and stock</a></li>
+    <li><a href="https://radxa.com/products/x/x4/">Radxa — X4 processor, graphics, interfaces, GPIO coprocessor, and boot features</a>; <a href="https://dl.radxa.com/x/x4/radxa_x4_product_brief.pdf">X4 product brief — eMMC/wireless SKUs and product availability commitment</a></li>
+    <li><a href="https://radxa.com/products/rock5/5c/">Radxa — ROCK 5C specifications and approved-partner availability</a>; <a href="https://docs.rs-online.com/a919/A700000012839371.pdf">ROCK 5C product brief — eMMC, wireless, USB, media, and GPIO details</a></li>
+    <li><a href="https://dl.radxa.com/rock5/hw/datasheet/radxa_rock5b_product_brief_Revision_1.1_g171c751.pdf">Radxa — ROCK 5B product brief</a>; <a href="https://shop.sb-components.co.uk/collections/rock">SB Components — UK eMMC and wireless accessory prices</a></li>
+    <li><a href="https://orangepi.net/wp-content/uploads/2024/05/OrangePi_5B_RK3588S_User-Manual_v1.4.pdf">Orange Pi — Orange Pi 5B hardware manual</a></li>
+    <li><a href="https://www.ebay.co.uk/itm/147228431944">eBay UK — ended UK-located Orange Pi 5B 16 GB / 256 GB listing</a>; <a href="https://www.ebay.co.uk/sch/i.html?_nkw=orange+pi+5b+8gb+64gb+emmc">eBay UK — current Orange Pi 5B 8 GB / 64 GB search</a>; <a href="https://orangepi.net/product/orange-pi-5b-8gb-ram-64gb-emmc">OrangePi.net — 8 GB / 64 GB configuration and pricing reference</a></li>
+    <li><a href="https://orangepi.net/wp-content/uploads/2023/10/OrangePi_3B_RK3566_user-manual_v1.4.pdf">Orange Pi — Orange Pi 3B specifications</a>; <a href="https://www.fruugo.co.uk/development-board-module-for-orange-pi-3b-development-board-orange-pi-3b-quad-core-rk3566-support-emmc-moduleram-4gb/p-532171545-1079236464">Fruugo UK — Orange Pi 3B marketplace price and availability</a></li>
+    <li><a href="https://orangepi.net/wp-content/uploads/2026/01/OrangePi_4_Pro_A733_User-Manual_v1.4.pdf">Orange Pi — Orange Pi 4 Pro manual</a>; <a href="https://www.ebay.co.uk/shop/orange-pi?_nkw=orange+pi">eBay UK — Orange Pi 4 Pro marketplace listing</a></li>
+    <li><a href="https://docs.elephantronics.com/sbcs-mini-pcs/purple-pi-oh2/">Elephantronics — Purple Pi OH2 specifications and software documentation</a>; <a href="https://www.alibaba.com/countrysearch/CN/open-source-linux.html">Alibaba — indicative Purple Pi OH2 import pricing</a></li>
+    <li><a href="https://www.geniatech.com/product/xpi-3566-zero/">Geniatech — XPI-3566-ZERO specifications, codec blocks, GPIO, USB and software downloads</a>; <a href="https://shop.geniatech.us/product/xpi-3566-zero/">official-store configurations and prices</a>; <a href="https://www.globalbuyco.com/product/geniatech-xpi-3566-zero-high-performance-ultra-compact-single-board-computer/?attribute_pa_variant=4gb-memory-32gb-storage">GlobalBuyCo — unverified UK-facing 4 GB / 32 GB offer</a></li>
+    <li><a href="https://radxa.com/products/zeros/zero3w/">Radxa — ZERO 3W processor, codec, eMMC, wireless, USB and GPIO details</a>; <a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2564694">RS — exact 4 GB / 32 GB SKU price and January 2027 shipping date</a>; <a href="https://www.enrgtechglobal.com/product/rock-sbc-boards/ET100426506/rs107-d2e16h0w15">Enrgtech — exact 2 GB / 16 GB SKU price and 7–13-week lead time</a></li>
+    <li><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2493158">RS — ROCK 4C+ 4 GB price, stock, interfaces and media capabilities</a>; <a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2306199">RS — ROCK 4C+ starter-kit price, contents and stock</a></li>
+    <li><a href="https://uk.rs-online.com/web/p/rock-sbc-boards/2563902">RS — ROCK 3C 2 GB price, stock and specification</a>; <a href="https://uk.rs-online.com/web/p/rock-sbc-boards/0292134">RS — ROCK 5C 2 GB price and January 2027 shipping date</a></li>
+    <li><a href="https://img01.71360.com/w3/3xpdwd/20240814/70025f62266d78a44a5b2496be62a7a3.pdf">Purple Pi OH/Pro manufacturer specification</a>; <a href="https://www.shop.youyeetoo.com/products/purple-pi-oh-sbc?VariantsId=12455">Youyeetoo — selectable 4 GB / 32 GB product page</a></li>
+    <li><a href="https://www.aliexpress.com/item/1005011785280080.html">AliExpress — user-supplied KICKPI K2B listing</a>; KICKPI K2B H618 product specification supplied as a six-page PDF, covering CPU, RAM/eMMC variants, operating systems, USB, HDMI, Ethernet and the 20-pin interface</li>
+  </ul>
+</main>
+</body>
+</html>

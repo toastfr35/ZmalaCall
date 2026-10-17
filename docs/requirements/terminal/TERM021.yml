@@ -1,0 +1,17 @@
+active: true
+derived: false
+header: |
+  Command execution
+level: 21.0
+links:
+- ZMC008: RRgHHDdGfuQitYrzkrCvmwNVp5TpNyI_LeVra6Oa74Q=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/test_provisioning.py
+  type: file
+- path: zmala_terminal/tests/test_reliability.py
+  type: file
+reviewed: null
+text: |
+  The terminal shall poll maintenance commands every three seconds, execute one at a time as its desktop or service user in the configured shell from zmala_terminal, and return output, errors and exit status. Commands shall be noninteractive, have bounded output and timeout, and have children stopped on timeout, reset or shutdown. Variables and current directory shall not persist across commands. The retained text shall contain at most 65,536 combined UTF-8 bytes after decoding, including replacement characters. Transient result failures shall retry the same lease without rerunning commands. Permanent result rejection shall attempt a bounded failed-result diagnostic and then resume polling. Linux systemd deployments shall use control-group cleanup; standalone Linux mode only guarantees process-group termination and does not supervise descendants that detach into new sessions.

@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Independent terminal launch
+level: 1.0
+links:
+- ZMC001: Db1hjT23wwLy-O60eh7PgU2MJ6jKxp5SyN7yA0gSEAg=
+normative: true
+ref: ''
+references:
+- path: build_tools/start-terminal.ps1
+  type: file
+reviewed: null
+text: |
+  The terminal shall run on Windows and the documented Linux/Pi configuration with Tk and Liblinphone, support an optional fullscreen mode, and have separate start, stop and fresh unconfigured launchers. Starting it shall not implicitly start the server.

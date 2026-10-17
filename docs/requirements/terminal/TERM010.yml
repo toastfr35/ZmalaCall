@@ -1,0 +1,19 @@
+active: true
+derived: false
+header: |
+  Connectivity indicator
+level: 10.0
+links:
+- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/ui/display.py
+  type: file
+- path: zmala_terminal/icons.py
+  type: file
+reviewed: null
+text: |
+  The upper-right corner shall show a small terminal-to-Wi-Fi-to-server connectivity graphic using icons, arrows and status colors without text captions. The graphic shall use smooth anti-aliased strokes rendered at the actual display dimensions so the compact symbols remain clear.
+
+  The Presenter+ battery icon shall show a lightning bolt when the remote reports an attached charger, including at full charge. Status shall be read off the UI thread and refreshed every five seconds. Unknown, disconnected or stale status shall not imply charging.

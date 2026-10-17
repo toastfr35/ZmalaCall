@@ -1,0 +1,23 @@
+[Unit]
+Description=ZmalaCall synchronized display presentation
+BindsTo=zmalacall-display.service
+After=zmalacall-display.service
+PartOf=zmalacall-display.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=@USER@
+SupplementaryGroups=video render
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/run/zmalacall-display/Xauthority
+ExecStart=/usr/bin/picom --config /opt/zmalacall/current/build_tools/linux/picom.conf
+# Xorg may still be initializing when its service becomes active.
+Restart=always
+RestartSec=3
+TimeoutStopSec=5
+NoNewPrivileges=yes
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

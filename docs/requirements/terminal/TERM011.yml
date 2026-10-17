@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Caller hang-up while ringing
+level: 11.0
+links:
+- ZMC010: 0Bu8wBAvQdLKlVc4IHPP0qtN5Mr2KHvjPNhFV_ibtFU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/callbacks_live.py
+  type: file
+reviewed: null
+text: |
+  When the caller cancels before the terminal answers, the terminal shall promptly stop ringing, stop ringing animations, cancel any auto-answer countdown and return to the normal carousel.

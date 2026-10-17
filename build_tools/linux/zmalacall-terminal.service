@@ -1,0 +1,36 @@
+[Unit]
+Description=ZmalaCall terminal
+Requires=zmalacall-display.service
+Wants=zmalacall-cec.service zmalacall-pairing.service
+After=zmalacall-display.service zmalacall-cec.service NetworkManager.service
+PartOf=zmalacall-display.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=@USER@
+SupplementaryGroups=audio video render input
+EnvironmentFile=/etc/zmalacall/terminal.conf
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/run/zmalacall-display/Xauthority
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+Environment=ZMALA_LOG_STDERR=1
+Environment=ZMALA_RUNTIME_DIR=/run/zmalacall
+RuntimeDirectory=zmalacall
+RuntimeDirectoryMode=0700
+StandardOutput=journal
+StandardError=journal
+Environment=ZMALA_PAIRING_STATUS=/run/zmalacall-pairing/status.json
+Environment=ZMALA_C20_SETUP=1
+WorkingDirectory=/opt/zmalacall/current
+ExecStart=/usr/bin/python3 /opt/zmalacall/current/build_tools/linux/kiosk-session.py
+ExecStopPost=-/usr/bin/python3 /opt/zmalacall/current/zmala_terminal/platforms/argon_fan.py
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+KillMode=control-group
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

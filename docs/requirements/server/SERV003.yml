@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Group permissions
+level: 3.0
+links:
+- ZMC002: 6vo4QbTQ8CIM2t8yJUC_cDulM0-FluZ9XCFbDz3mvYE=
+normative: true
+ref: ''
+references:
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+text: |
+  Administration shall create, edit and delete groups and their memberships. Two distinct accounts shall be permitted to call exactly when they share at least one group. Accounts may join several groups; permission shall be symmetric, nontransitive and disabled for unknown or self accounts.

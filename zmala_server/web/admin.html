@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>ZmalaCall · Administration</title>
+    <link rel="icon" href="/zmala-icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/admin.css" />
+    <script src="/admin.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <aside class="sidebar">
+      <a class="brand" href="/"
+        ><img class="brand-logo" src="/zmala-icon.svg" alt="" /><span
+          >ZmalaCall<small>ADMINISTRATION</small></span
+        ></a
+      >
+      <nav aria-label="Main navigation">
+        <a href="/" data-icon="overview">Overview</a
+        ><a href="/accounts" data-icon="accounts">Accounts</a
+        ><a href="/groups" data-icon="accounts">Groups</a
+        ><a href="/terminals" data-icon="terminal">Terminals</a
+        ><a href="/callbacks" data-icon="phone">Callbacks</a
+        ><a href="/activity" data-icon="activity">Activity</a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="local-dot"></span>
+        <div><small>Windows · private network</small></div>
+        <span data-icon="moon"></span>
+      </div>
+    </aside>
+    <div class="workspace">
+      <main id="content" tabindex="-1">
+        <div class="page-heading" hidden>
+          <div>
+            <p class="eyebrow" id="eyebrow" hidden></p>
+            <h1 id="page-title"></h1>
+            <p id="page-description"></p>
+          </div>
+          <div id="page-actions"></div>
+        </div>
+        <div id="error" class="banner error" role="alert" hidden></div>
+        <div id="notice" class="banner notice" role="status" hidden></div>
+        <div id="view"><div class="empty-state">Connecting to your server…</div></div>
+      </main>
+    </div>
+    <dialog id="console-dialog" class="modal console-modal" aria-labelledby="console-title">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">REMOTE MAINTENANCE</p>
+          <h2 id="console-title">Terminal console</h2>
+        </div>
+        <button
+          type="button"
+          class="icon-button"
+          data-close="console-dialog"
+          aria-label="Close terminal console"
+          data-icon="close"
+        ></button>
+      </div>
+      <p id="console-state" class="muted"></p>
+      <form id="console-shell-form" class="console-shell-controls">
+        <label>Command shell<select id="console-shell"></select></label>
+        <button class="secondary" type="submit">Save shell</button>
+        <p id="console-shell-error" class="banner error" role="alert" hidden></p>
+      </form>
+      <div id="console-history" class="console-history" aria-live="polite"></div>
+      <form id="console-form">
+        <p id="console-error" class="banner error" role="alert" hidden></p>
+        <label
+          >Command<textarea
+            id="console-command"
+            rows="3"
+            maxlength="8000"
+            required
+            spellcheck="false"
+            placeholder="Enter a command for this terminal’s shell"
+          ></textarea>
+        </label>
+        <div class="console-controls">
+          <label
+            >Timeout (seconds)<input
+              id="console-timeout"
+              type="number"
+              min="5"
+              max="120"
+              value="60"
+              required /></label
+          ><button class="primary" type="submit">Run command</button>
+        </div>
+        <p class="muted">
+          Commands run as the terminal’s user in its configured shell. The terminal checks every 3
+          seconds. Output appears when the command finishes.
+        </p>
+      </form>
+    </dialog>
+    <dialog id="wifi-dialog" class="modal compact" aria-labelledby="wifi-title">
+      <form id="wifi-form">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">PRINTABLE SETUP</p>
+            <h2 id="wifi-title">Wi-Fi QR code</h2>
+          </div>
+          <button
+            type="button"
+            class="icon-button"
+            data-close="wifi-dialog"
+            aria-label="Close Wi-Fi QR dialog"
+            data-icon="close"
+          ></button>
+        </div>
+        <p id="wifi-error" class="banner error" role="alert" hidden></p>
+        <label
+          >Network name (SSID)<input id="wifi-ssid" required autocomplete="off" /><small
+            >Exactly as shown by your router; up to 32 UTF-8 bytes.</small
+          ></label
+        ><label
+          >Security<select id="wifi-security">
+            <option value="WPA">WPA / WPA2 / WPA3 Personal</option>
+            <option value="nopass">Open network</option>
+          </select></label
+        ><label id="wifi-password-field"
+          >Wi-Fi password<input
+            id="wifi-password"
+            type="password"
+            required
+            minlength="8"
+            maxlength="64"
+            autocomplete="new-password" /></label
+        ><label class="checkbox-row"
+          ><input id="wifi-hidden" type="checkbox" />Hidden network</label
+        >
+        <p class="info-box">
+          Print the downloaded PDF and show it to the terminal camera. The QR contains the Wi-Fi
+          password. These details are not saved on the server.
+        </p>
+        <div class="modal-footer">
+          <button type="button" class="secondary" data-close="wifi-dialog">Cancel</button
+          ><button type="submit" class="primary">Download Wi-Fi PDF</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="account-dialog" class="modal" aria-labelledby="account-title">
+      <form id="account-form">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">ACCOUNT</p>
+            <h2 id="account-title">New account</h2>
+          </div>
+          <button
+            type="button"
+            class="icon-button"
+            data-close="account-dialog"
+            aria-label="Close account dialog"
+            data-icon="close"
+          ></button>
+        </div>
+        <p id="account-error" class="banner error" role="alert" hidden></p>
+        <div class="field-grid">
+          <label
+            >Display name<input
+              id="edit-name"
+              required
+              maxlength="80"
+              placeholder="e.g. Alice"
+              autocomplete="off" /></label
+          ><label
+            >Username<input
+              id="edit-id"
+              required
+              pattern="[a-z][a-z0-9_-]{0,30}"
+              maxlength="31"
+              placeholder="e.g. alice"
+              autocomplete="off"
+            /><small>Lowercase letters, digits, dashes and underscores.</small></label
+          >
+        </div>
+        <label
+          >Email addresses<input
+            id="edit-emails"
+            type="email"
+            multiple
+            required
+            maxlength="2600"
+            autocomplete="off"
+            placeholder="alice@example.com, family@example.com"
+          />
+          <small
+            >One or more addresses, separated by commas. Callback reminders go to these
+            addresses.</small
+          ></label
+        >
+        <div class="account-picture-field">
+          <div id="account-picture-preview"></div>
+          <div>
+            <label
+              >Account picture (optional)<input
+                id="edit-photo"
+                type="file"
+                accept="image/png,image/jpeg"
+              /><small>PNG or JPEG, up to 2 MB. Shown in terminal contact selectors.</small></label
+            ><label class="checkbox-row"
+              ><input id="edit-remove-photo" type="checkbox" />Remove current picture</label
+            >
+          </div>
+        </div>
+        <label
+          >Account type<select id="edit-type">
+            <option value="linphone">Linphone · phone app</option>
+            <option value="terminal">Terminal · Windows device</option>
+          </select></label
+        ><label
+          >Password<input
+            id="edit-password"
+            type="password"
+            maxlength="128"
+            autocomplete="new-password"
+          /><small id="password-help">Leave blank to generate a password.</small></label
+        >
+        <div id="rename-help" class="info-box" hidden>
+          Changing the username changes the SIP address. Update this account in Linphone; a
+          connected terminal picks it up automatically.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="secondary" data-close="account-dialog">Cancel</button
+          ><button id="account-save" class="primary" type="submit">Create account</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="connection-dialog" class="modal" aria-labelledby="details-title">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">CONNECT AN ACCOUNT</p>
+          <h2 id="details-title">Connection details</h2>
+        </div>
+        <button
+          class="icon-button"
+          data-close="connection-dialog"
+          aria-label="Close connection details"
+          data-icon="close"
+        ></button>
+      </div>
+      <div id="details-content"></div>
+      <div class="modal-footer">
+        <button class="secondary" data-close="connection-dialog">Done</button>
+      </div>
+    </dialog>
+    <dialog id="confirm-dialog" class="modal compact" aria-labelledby="confirm-title">
+      <div class="modal-heading">
+        <span class="danger-icon" data-icon="trash"></span
+        ><button
+          class="icon-button"
+          data-close="confirm-dialog"
+          aria-label="Close confirmation"
+          data-icon="close"
+        ></button>
+      </div>
+      <h2 id="confirm-title">Delete account?</h2>
+      <p id="confirm-description" class="muted"></p>
+      <p id="confirm-error" class="banner error" role="alert" hidden></p>
+      <div class="modal-footer">
+        <button class="secondary" data-close="confirm-dialog">Cancel</button
+        ><button id="confirm-action" class="danger">Delete account</button>
+      </div>
+    </dialog>
+    <dialog id="group-dialog" class="modal" aria-labelledby="group-title">
+      <form id="group-form">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">CALL GROUP</p>
+            <h2 id="group-title">New group</h2>
+          </div>
+          <button
+            type="button"
+            class="icon-button"
+            data-close="group-dialog"
+            aria-label="Close group dialog"
+            data-icon="close"
+          ></button>
+        </div>
+        <p id="group-error" class="banner error" role="alert" hidden></p>
+        <label
+          >Group name<input
+            id="group-name"
+            required
+            maxlength="80"
+            placeholder="e.g. Family" /></label
+        ><label
+          >Description (optional)<input
+            id="group-description"
+            maxlength="240"
+            placeholder="What this group is for"
+        /></label>
+        <div class="group-member-heading">
+          <h3>Members</h3>
+          <span id="group-selected-count" class="muted"></span>
+        </div>
+        <p class="muted group-explanation">
+          Every member can call every other member. Accounts can belong to several groups.
+        </p>
+        <div id="group-members" class="group-members"></div>
+        <div class="modal-footer">
+          <button type="button" class="secondary" data-close="group-dialog">Cancel</button
+          ><button id="group-save" class="primary" type="submit">Create group</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

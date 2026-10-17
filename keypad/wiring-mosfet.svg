@@ -1,0 +1,221 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="1260" viewBox="0 0 1480 1260" role="img" aria-labelledby="title desc">
+<title id="title">ZmalaCall Nano keypad wiring</title>
+<desc id="desc">Four normally-open switches on D2 to D5, and four LEDs controlled by MOSFET drivers on D6 to D9. USB supplies serial data and power. All grounds connect to Nano GND.</desc>
+<rect width="1480" height="1260" fill="white"/>
+<g font-family="Arial, Helvetica, sans-serif">
+<text x="50" y="62" font-size="34" fill="#182431" text-anchor="start" font-weight="700">ZmalaCall · USB serial keypad</text>
+<text x="50" y="100" font-size="22" fill="#182431" text-anchor="start" font-weight="400">Classic 5 V Arduino Nano / ATmega328P · four arcade switches + four LEDs</text>
+<text x="50" y="135" font-size="18" fill="#435060" text-anchor="start" font-weight="400">Logical net labels: connect D2–D9 to the matching Nano pins. All GND symbols are the same connection.</text>
+<rect x="100" y="172" width="340" height="85" rx="8" fill="#f1f5fa" stroke="#b9c6d2" stroke-width="2"/>
+<text x="270" y="204" font-size="20" fill="#182431" text-anchor="middle" font-weight="700">Raspberry Pi / Windows PC</text>
+<text x="270" y="233" font-size="18" fill="#182431" text-anchor="middle" font-weight="400">USB data cable · power + serial</text>
+<polyline points="440,214 570,214" fill="none" stroke="#2463a0" stroke-width="5" stroke-linejoin="round"/>
+<text x="505" y="198" font-size="16" fill="#2463a0" text-anchor="middle" font-weight="400">USB</text>
+<rect x="570" y="165" width="560" height="100" rx="8" fill="#e9f2ee" stroke="#558b75" stroke-width="2"/>
+<text x="600" y="196" font-size="23" fill="#182431" text-anchor="start" font-weight="700">ARDUINO NANO</text>
+<text x="600" y="225" font-size="19" fill="#182431" text-anchor="start" font-weight="400">Inputs D2–D5 · outputs D6–D9</text>
+<text x="600" y="250" font-size="16" fill="#435060" text-anchor="start" font-weight="400">D0 / D1 reserved for USB serial</text>
+<text x="1020" y="239" font-size="17" fill="#bd3434" text-anchor="end" font-weight="700">5V</text>
+<polyline points="1030,246 1030,292" fill="none" stroke="#bd3434" stroke-width="3" stroke-linejoin="round"/>
+<text x="1110" y="239" font-size="17" fill="#435060" text-anchor="end" font-weight="700">GND</text>
+<polyline points="1120,246 1450,246 1450,1105 50,1105" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="50,292 1420,292" fill="none" stroke="#bd3434" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="1030" cy="292" r="4" fill="#bd3434"/>
+<text x="50" y="282" font-size="17" fill="#bd3434" text-anchor="start" font-weight="700">+5 V from Nano USB supply</text>
+<rect x="50" y="320" width="324" height="755" rx="8" fill="#eaf2fb" stroke="#b9c6d2" stroke-width="2"/>
+<text x="212" y="358" font-size="23" fill="#182431" text-anchor="middle" font-weight="700">LEFT</text>
+<text x="212" y="388" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Press: L  ·  LED: L / l</text>
+<text x="74" y="429" font-size="16" fill="#2463a0" text-anchor="start" font-weight="700">SWITCH</text>
+<text x="102" y="471" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D2</text>
+<circle cx="132" cy="465" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="132,465 200,465 200,480" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="200" cy="480" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<circle cx="200" cy="530" r="4" fill="white" stroke="#435060" stroke-width="2"/>
+<polyline points="200,530 226,491" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<text x="242" y="484" font-size="17" fill="#182431" text-anchor="start" font-weight="400">NO</text>
+<text x="242" y="535" font-size="17" fill="#182431" text-anchor="start" font-weight="400">COM</text>
+<polyline points="200,530 200,556" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="200,556 200,566" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="188.0,566 212.0,566" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="192.0,573 208.0,573" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="196.0,580 204.0,580" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<text x="242" y="580" font-size="16" fill="#435060" text-anchor="start" font-weight="400">GND</text>
+<text x="212" y="615" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Momentary · normally open</text>
+<text x="212" y="640" font-size="16" fill="#435060" text-anchor="middle" font-weight="400">INPUT_PULLUP · NC unused</text>
+<polyline points="353,292 353,681 283,681 283,715" fill="none" stroke="#bd3434" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="353" cy="292" r="4" fill="#bd3434"/>
+<text x="74" y="689" font-size="16" fill="#b45d10" text-anchor="start" font-weight="700">LED DRIVER</text>
+<rect x="218" y="715" width="130" height="73" rx="4" fill="white" stroke="#b45d10" stroke-width="2"/>
+<text x="283" y="740" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="700">+  5 V lamp</text>
+<text x="283" y="764" font-size="14" fill="#b45d10" text-anchor="middle" font-weight="400">current-limited</text>
+<text x="283" y="782" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="400">−</text>
+<polyline points="283,788 283,852" fill="none" stroke="#b45d10" stroke-width="3" stroke-linejoin="round"/>
+<rect x="230" y="852" width="118" height="90" rx="4" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="283" y="870" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">D</text>
+<text x="240" y="902" font-size="15" fill="#182431" text-anchor="start" font-weight="700">G</text>
+<text x="298" y="902" font-size="18" fill="#182431" text-anchor="middle" font-weight="700">Q1</text>
+<text x="289" y="919" font-size="11" fill="#182431" text-anchor="middle" font-weight="400">N-MOSFET</text>
+<text x="283" y="935" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">S</text>
+<text x="85" y="902" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D6</text>
+<circle cx="112" cy="896" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="112,896 132,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="132" y="887" width="43" height="18" rx="0" fill="white" stroke="#2463a0" stroke-width="2"/>
+<text x="153" y="878" font-size="15" fill="#2463a0" text-anchor="middle" font-weight="400">220 Ω</text>
+<polyline points="175,896 230,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="200" cy="896" r="4" fill="#2463a0"/>
+<polyline points="200,896 200,979" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="191" y="979" width="18" height="40" rx="0" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="179" y="1006" font-size="15" fill="#435060" text-anchor="end" font-weight="400">10 kΩ</text>
+<polyline points="200,1019 200,1040 283,1040" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="283,942 283,1105" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="283" cy="1040" r="4" fill="#435060"/>
+<circle cx="283" cy="1105" r="4" fill="#435060"/>
+<rect x="402" y="320" width="324" height="755" rx="8" fill="#eaf2fb" stroke="#b9c6d2" stroke-width="2"/>
+<text x="564" y="358" font-size="23" fill="#182431" text-anchor="middle" font-weight="700">RIGHT</text>
+<text x="564" y="388" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Press: R  ·  LED: R / r</text>
+<text x="426" y="429" font-size="16" fill="#2463a0" text-anchor="start" font-weight="700">SWITCH</text>
+<text x="454" y="471" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D3</text>
+<circle cx="484" cy="465" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="484,465 552,465 552,480" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="552" cy="480" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<circle cx="552" cy="530" r="4" fill="white" stroke="#435060" stroke-width="2"/>
+<polyline points="552,530 578,491" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<text x="594" y="484" font-size="17" fill="#182431" text-anchor="start" font-weight="400">NO</text>
+<text x="594" y="535" font-size="17" fill="#182431" text-anchor="start" font-weight="400">COM</text>
+<polyline points="552,530 552,556" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="552,556 552,566" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="540.0,566 564.0,566" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="544.0,573 560.0,573" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="548.0,580 556.0,580" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<text x="594" y="580" font-size="16" fill="#435060" text-anchor="start" font-weight="400">GND</text>
+<text x="564" y="615" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Momentary · normally open</text>
+<text x="564" y="640" font-size="16" fill="#435060" text-anchor="middle" font-weight="400">INPUT_PULLUP · NC unused</text>
+<polyline points="705,292 705,681 635,681 635,715" fill="none" stroke="#bd3434" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="705" cy="292" r="4" fill="#bd3434"/>
+<text x="426" y="689" font-size="16" fill="#b45d10" text-anchor="start" font-weight="700">LED DRIVER</text>
+<rect x="570" y="715" width="130" height="73" rx="4" fill="white" stroke="#b45d10" stroke-width="2"/>
+<text x="635" y="740" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="700">+  5 V lamp</text>
+<text x="635" y="764" font-size="14" fill="#b45d10" text-anchor="middle" font-weight="400">current-limited</text>
+<text x="635" y="782" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="400">−</text>
+<polyline points="635,788 635,852" fill="none" stroke="#b45d10" stroke-width="3" stroke-linejoin="round"/>
+<rect x="582" y="852" width="118" height="90" rx="4" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="635" y="870" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">D</text>
+<text x="592" y="902" font-size="15" fill="#182431" text-anchor="start" font-weight="700">G</text>
+<text x="650" y="902" font-size="18" fill="#182431" text-anchor="middle" font-weight="700">Q2</text>
+<text x="641" y="919" font-size="11" fill="#182431" text-anchor="middle" font-weight="400">N-MOSFET</text>
+<text x="635" y="935" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">S</text>
+<text x="437" y="902" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D7</text>
+<circle cx="464" cy="896" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="464,896 484,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="484" y="887" width="43" height="18" rx="0" fill="white" stroke="#2463a0" stroke-width="2"/>
+<text x="505" y="878" font-size="15" fill="#2463a0" text-anchor="middle" font-weight="400">220 Ω</text>
+<polyline points="527,896 582,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="552" cy="896" r="4" fill="#2463a0"/>
+<polyline points="552,896 552,979" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="543" y="979" width="18" height="40" rx="0" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="531" y="1006" font-size="15" fill="#435060" text-anchor="end" font-weight="400">10 kΩ</text>
+<polyline points="552,1019 552,1040 635,1040" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="635,942 635,1105" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="635" cy="1040" r="4" fill="#435060"/>
+<circle cx="635" cy="1105" r="4" fill="#435060"/>
+<rect x="754" y="320" width="324" height="755" rx="8" fill="#e9f5ee" stroke="#b9c6d2" stroke-width="2"/>
+<text x="916" y="358" font-size="23" fill="#182431" text-anchor="middle" font-weight="700">GREEN</text>
+<text x="916" y="388" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Press: G  ·  LED: G / g</text>
+<text x="778" y="429" font-size="16" fill="#2463a0" text-anchor="start" font-weight="700">SWITCH</text>
+<text x="806" y="471" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D4</text>
+<circle cx="836" cy="465" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="836,465 904,465 904,480" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="904" cy="480" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<circle cx="904" cy="530" r="4" fill="white" stroke="#435060" stroke-width="2"/>
+<polyline points="904,530 930,491" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<text x="946" y="484" font-size="17" fill="#182431" text-anchor="start" font-weight="400">NO</text>
+<text x="946" y="535" font-size="17" fill="#182431" text-anchor="start" font-weight="400">COM</text>
+<polyline points="904,530 904,556" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="904,556 904,566" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="892.0,566 916.0,566" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="896.0,573 912.0,573" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="900.0,580 908.0,580" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<text x="946" y="580" font-size="16" fill="#435060" text-anchor="start" font-weight="400">GND</text>
+<text x="916" y="615" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Momentary · normally open</text>
+<text x="916" y="640" font-size="16" fill="#435060" text-anchor="middle" font-weight="400">INPUT_PULLUP · NC unused</text>
+<polyline points="1057,292 1057,681 987,681 987,715" fill="none" stroke="#bd3434" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="1057" cy="292" r="4" fill="#bd3434"/>
+<text x="778" y="689" font-size="16" fill="#b45d10" text-anchor="start" font-weight="700">LED DRIVER</text>
+<rect x="922" y="715" width="130" height="73" rx="4" fill="white" stroke="#b45d10" stroke-width="2"/>
+<text x="987" y="740" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="700">+  5 V lamp</text>
+<text x="987" y="764" font-size="14" fill="#b45d10" text-anchor="middle" font-weight="400">current-limited</text>
+<text x="987" y="782" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="400">−</text>
+<polyline points="987,788 987,852" fill="none" stroke="#b45d10" stroke-width="3" stroke-linejoin="round"/>
+<rect x="934" y="852" width="118" height="90" rx="4" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="987" y="870" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">D</text>
+<text x="944" y="902" font-size="15" fill="#182431" text-anchor="start" font-weight="700">G</text>
+<text x="1002" y="902" font-size="18" fill="#182431" text-anchor="middle" font-weight="700">Q3</text>
+<text x="993" y="919" font-size="11" fill="#182431" text-anchor="middle" font-weight="400">N-MOSFET</text>
+<text x="987" y="935" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">S</text>
+<text x="789" y="902" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D8</text>
+<circle cx="816" cy="896" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="816,896 836,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="836" y="887" width="43" height="18" rx="0" fill="white" stroke="#2463a0" stroke-width="2"/>
+<text x="857" y="878" font-size="15" fill="#2463a0" text-anchor="middle" font-weight="400">220 Ω</text>
+<polyline points="879,896 934,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="904" cy="896" r="4" fill="#2463a0"/>
+<polyline points="904,896 904,979" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="895" y="979" width="18" height="40" rx="0" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="883" y="1006" font-size="15" fill="#435060" text-anchor="end" font-weight="400">10 kΩ</text>
+<polyline points="904,1019 904,1040 987,1040" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="987,942 987,1105" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="987" cy="1040" r="4" fill="#435060"/>
+<circle cx="987" cy="1105" r="4" fill="#435060"/>
+<rect x="1106" y="320" width="324" height="755" rx="8" fill="#fbeeed" stroke="#b9c6d2" stroke-width="2"/>
+<text x="1268" y="358" font-size="23" fill="#182431" text-anchor="middle" font-weight="700">RED</text>
+<text x="1268" y="388" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Press: X  ·  LED: X / x</text>
+<text x="1130" y="429" font-size="16" fill="#2463a0" text-anchor="start" font-weight="700">SWITCH</text>
+<text x="1158" y="471" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D5</text>
+<circle cx="1188" cy="465" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="1188,465 1256,465 1256,480" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="1256" cy="480" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<circle cx="1256" cy="530" r="4" fill="white" stroke="#435060" stroke-width="2"/>
+<polyline points="1256,530 1282,491" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<text x="1298" y="484" font-size="17" fill="#182431" text-anchor="start" font-weight="400">NO</text>
+<text x="1298" y="535" font-size="17" fill="#182431" text-anchor="start" font-weight="400">COM</text>
+<polyline points="1256,530 1256,556" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="1256,556 1256,566" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="1244.0,566 1268.0,566" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="1248.0,573 1264.0,573" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="1252.0,580 1260.0,580" fill="none" stroke="#435060" stroke-width="2" stroke-linejoin="round"/>
+<text x="1298" y="580" font-size="16" fill="#435060" text-anchor="start" font-weight="400">GND</text>
+<text x="1268" y="615" font-size="17" fill="#182431" text-anchor="middle" font-weight="400">Momentary · normally open</text>
+<text x="1268" y="640" font-size="16" fill="#435060" text-anchor="middle" font-weight="400">INPUT_PULLUP · NC unused</text>
+<polyline points="1409,292 1409,681 1339,681 1339,715" fill="none" stroke="#bd3434" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="1409" cy="292" r="4" fill="#bd3434"/>
+<text x="1130" y="689" font-size="16" fill="#b45d10" text-anchor="start" font-weight="700">LED DRIVER</text>
+<rect x="1274" y="715" width="130" height="73" rx="4" fill="white" stroke="#b45d10" stroke-width="2"/>
+<text x="1339" y="740" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="700">+  5 V lamp</text>
+<text x="1339" y="764" font-size="14" fill="#b45d10" text-anchor="middle" font-weight="400">current-limited</text>
+<text x="1339" y="782" font-size="17" fill="#b45d10" text-anchor="middle" font-weight="400">−</text>
+<polyline points="1339,788 1339,852" fill="none" stroke="#b45d10" stroke-width="3" stroke-linejoin="round"/>
+<rect x="1286" y="852" width="118" height="90" rx="4" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="1339" y="870" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">D</text>
+<text x="1296" y="902" font-size="15" fill="#182431" text-anchor="start" font-weight="700">G</text>
+<text x="1354" y="902" font-size="18" fill="#182431" text-anchor="middle" font-weight="700">Q4</text>
+<text x="1345" y="919" font-size="11" fill="#182431" text-anchor="middle" font-weight="400">N-MOSFET</text>
+<text x="1339" y="935" font-size="15" fill="#182431" text-anchor="middle" font-weight="700">S</text>
+<text x="1141" y="902" font-size="20" fill="#2463a0" text-anchor="middle" font-weight="700">D9</text>
+<circle cx="1168" cy="896" r="4" fill="white" stroke="#2463a0" stroke-width="2"/>
+<polyline points="1168,896 1188,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="1188" y="887" width="43" height="18" rx="0" fill="white" stroke="#2463a0" stroke-width="2"/>
+<text x="1209" y="878" font-size="15" fill="#2463a0" text-anchor="middle" font-weight="400">220 Ω</text>
+<polyline points="1231,896 1286,896" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="1256" cy="896" r="4" fill="#2463a0"/>
+<polyline points="1256,896 1256,979" fill="none" stroke="#2463a0" stroke-width="3" stroke-linejoin="round"/>
+<rect x="1247" y="979" width="18" height="40" rx="0" fill="white" stroke="#435060" stroke-width="2"/>
+<text x="1235" y="1006" font-size="15" fill="#435060" text-anchor="end" font-weight="400">10 kΩ</text>
+<polyline points="1256,1019 1256,1040 1339,1040" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="1339,942 1339,1105" fill="none" stroke="#435060" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="1339" cy="1040" r="4" fill="#435060"/>
+<circle cx="1339" cy="1105" r="4" fill="#435060"/>
+<text x="50" y="1133" font-size="17" fill="#435060" text-anchor="start" font-weight="700">COMMON GND · Nano GND, all switch COM terminals, all gate pull-downs and MOSFET sources</text>
+<text x="50" y="1178" font-size="18" fill="#182431" text-anchor="start" font-weight="400">Q1–Q4: logic-level N-channel MOSFETs, suitable at 5 V gate drive. Check the chosen part’s D / G / S pinout.</text>
+<text x="50" y="1210" font-size="18" fill="#182431" text-anchor="start" font-weight="400">Lamp modules must include 5 V current limiting. Keep LED and switch terminals separate. Total USB load ≤ 150 mA.</text>
+<text x="50" y="1241" font-size="18" fill="#182431" text-anchor="start" font-weight="700">No Pi GPIO connection or external supply. GPIO pins drive gates only, never the lamps directly.</text>
+</g></svg>

@@ -1,0 +1,151 @@
+# ZmalaCall terminal and server design
+
+The implemented prototype runs on this Windows PC. An elderly person selects a familiar contact and presses GREEN to call or RED to stop. Family members use Linphone on the same LAN. The eventual appliance uses a television, camera/microphone, Wi-Fi and four physical buttons.
+
+## Components and project layout
+
+| Directory | Responsibility |
+|---|---|
+| `zmala_terminal/` | Python/Tk terminal, Liblinphone adapter, provisioning, connectivity, translations and maintenance agent |
+| `zmala_terminal/tests/` | Terminal behavior, setup, command execution, native UI and media integration tests |
+| `zmala_server/` | Node SIP server, media relay, administration, accounts, groups, printable QR setup and console queue |
+| `zmala_server/tests/` | API, SIP, media-relay, console and PDF tests |
+| `docs/` | Design, Doorstop requirements and generated catalogues |
+| `build_tools/` | Windows process launchers, Python checks, runtime downloads, icon generation and ANGLE bridge build |
+
+Downloaded native libraries and PDF QA dependencies are under `build_tools/runtime/`. Managed process records are under `build_tools/data/`. The terminal and server each have their own `data/` directory. Root Start/Stop ZmalaCall launchers call the scripts in `build_tools/`.
+
+The [implementation guide](implementation.md) maps the terminal controllers/display, native bindings, server routes/services and admin source modules. It documents state ownership, worker cancellation, media/picture cleanup and the source-to-generated-asset build.
+
+## Windows deployment
+
+The terminal uses 64-bit Windows Python with Tkinter and ctypes. The tested interpreter is `C:\msys64\ucrt64\bin\python.exe`. Liblinphone 5.4.98 provides SIP, audio, video and QR decoding. Avalonia ANGLE binaries, OpenH264 and the locally built graphics bridges provide native video rendering.
+
+The Node server listens for administration and authenticated terminal configuration on `127.0.0.1:8080`. SIP uses UDP/TCP port 5060 on the PC's network interfaces; the audio/video relay uses UDP ports 20000–20199. Phone clients use the PC's LAN IP, currently 192.168.1.118. Administration remains local to this machine.
+
+Server state is saved in `zmala_server/data/server.json`, console history in `zmala_server/data/console-jobs.json`, and account pictures in `zmala_server/data/photos/`. The server creates a private admin shortcut in `zmala_server/data/open-admin.url` and writes the regular terminal bootstrap to `zmala_terminal/data/terminal.json`. These files contain credentials and must remain private.
+
+Terminal profiles, versioned configuration caches, downloaded pictures and logs are stored under `zmala_terminal/data/`. A separate profile is required for each simultaneous terminal instance. The unconfigured launcher uses its own profile.
+
+Five independent root Windows launchers replace the old combined scripts:
+
+- `Start ZmalaCall Terminal.cmd` opens the regular terminal; `-Fullscreen` is optional.
+- `Stop ZmalaCall Terminal.cmd` stops both managed regular and unconfigured terminal instances, leaving the server running.
+- `Start ZmalaCall Terminal Unconfigured.cmd` opens a separate fresh QR-setup profile; it supports `-Fullscreen` and `-ConnectWifi` and preserves regular terminal configuration.
+- `Start ZmalaCall Server.cmd` starts only the server and opens administration; `-NoBrowser` suppresses the browser.
+- `Stop ZmalaCall Server.cmd` stops only the server, leaving terminal windows open.
+
+Terminal starts do not implicitly start the server, and server startup requires neither Python nor the native terminal runtime. Start scripts reuse already-running managed instances. Stop scripts are idempotent and verify both executable path and process start time before stopping a recorded PID. Process-state changes are serialized between launchers and preserve the other component's records. Stopping either component does not erase configuration. Instances started directly with Python or Node are not managed by these launchers.
+
+## Accounts and groups
+
+All accounts use one shared SIP domain and server. Each account has an editable username, display name, type (Linphone or Terminal), password, one-to-ten email addresses and optional picture. New accounts require an email; migrated accounts show an email-needed hint until their real addresses are entered. Terminal accounts also have a stable device identity and token, auto-answer enabled/disabled, and a 5–30 second auto-answer countdown.
+
+Two different accounts may call one another if they share at least one group. Accounts can belong to several groups. Access is symmetric and does not propagate through intermediary members. An account with no shared group cannot call other accounts. Self-calls are disabled. Group creation, editing, deletion and membership are managed in administration.
+
+Contacts always use the account's display name and picture and are sorted alphabetically by display name. Individual terminals cannot override names, pictures or order. Only permitted outgoing contacts appear in the terminal carousel. Accounts without pictures show an initial.
+
+Renaming preserves account credentials, picture, group memberships, device identity and local assignment, while changing the SIP address. An active call prevents changing credentials/type/username or deleting its accounts. Permission changes apply to new calls; revoking an incoming permission also cancels pending auto-answer.
+
+## Administration
+
+Administration uses dark mode and separate Overview, Accounts, Groups, Terminals, Callbacks and Activity pages. It has no thin header bar, server-online badge or page footer. Overview shows counts, shared server connection details and terminal status. Recent events are shown on Activity.
+
+The Terminals page selects one physical terminal by its persistent serial (device ID). Account association can be changed independently of the serial. Selecting an account already associated with another terminal swaps associations, preserving each serial, device token, terminal settings, auto-answer settings and console history. Accounts retain SIP credentials, names, pictures and groups. Both accounts must be idle; clients keep their enrollment and fetch their new SIP identity automatically. New serials are generated independently of usernames; existing serials are retained.
+
+Account details are edited only on the Accounts page. Terminal settings include language, camera, microphone, speaker, audio processing, video resolution and auto-answer with a 5–30 second answer delay. Video resolution is per terminal: 480p (640×480), 720p (1280×720, default) or 1080p (1920×1080), targeting 15 fps with matching bandwidth presets. Windows and Linux rebuild their media engine when idle to apply changes; updates during calls remain pending. Server resolution settings override legacy local experiment files. The Console dialog configures the command shell, which can be Windows PowerShell (default), PowerShell 7 or Command Prompt. PowerShell 7 must be installed on the terminal to use it.
+
+Each terminal card groups Calls, Video & audio and General settings above a shared Save changes footer. **Setup** contains the **Download Wi-Fi QR PDF** and **Download server QR PDF** actions; **Console** also configures the command shell. These actions target the currently selected terminal. Contacts are not repeated on this page; Groups manages permission and Accounts manages names and pictures.
+
+Other account edits, connection details, group edits, Wi-Fi QR generation, console and deletion confirmations use modal dialogs. The administration interface always stays in English.
+
+## Terminal display and controls
+
+The terminal prefers dark mode. Its idle screen is a responsive carousel, with the selected person larger in the center, neighbors on each side, and arrows at the edges. Large wide canvases (at least 1400 pixels wide, 450 pixels tall, and aspect ratio 1.6) show five portraits when at least five permitted contacts exist; smaller displays or shorter lists keep three positions. The central portrait is twice the width and height of its neighbors. It grows up to 460 pixels on wide displays and 400 pixels on smaller displays, with size limits to keep cards and arrows clear. Card positions account for the larger centre picture to keep gaps between card edges even. Both layouts retain cyclic animated rotation and the same selection and notification behavior. There are no on-screen buttons, bottom instructions or terminal name at the top. Rotation has a sliding/scaling animation; GREEN can open confirmation immediately during the transition. Fewer than three contacts leave unused positions empty.
+
+For an online contact, the first GREEN press opens a full-window confirmation with the account picture and a large localized **Do you want to call XXX?** question using their display name. The second distinct GREEN press starts the call after an authenticated availability and permission check. For an offline contact, GREEN shows their picture, name and **Do you want to request a callback?** A second GREEN press saves the request on the server and shows **Callback requested** for four seconds after HTTP acknowledgment. Every other button or keyboard key cancels either confirmation and returns to the carousel with the same person selected. Holding GREEN cannot confirm through keyboard auto-repeat. Confirmation never auto-dials. A permitted incoming call can interrupt confirmation or request submission without a late HTTP response replacing the ringing screen. Accounts without pictures show a large initial instead. Call questions and callback acknowledgment are translated for all 95 languages in `zmala_terminal/shared/call-questions.json`.
+
+Both confirmation screens show large green **Yes** and red **No** labels with a check and cross, matching the physical buttons. These are visual prompts without clickable controls. The callback screen also shows a prominent red **Currently unavailable** message beneath the person's name. Portrait, name, status, question and prompts occupy separate areas with responsive text sizing; they fit at the minimum 900 × 620 window size. Yes/No disappear while a callback request is being submitted. All three new labels are translated for the 95 terminal languages in `zmala_terminal/shared/confirmation-prompts.json`.
+
+Callback requests persist atomically in `zmala_server/data/callbacks.json`, use configurable reminder and removal deadlines in hours, and deduplicate active requester/recipient pairs. Only terminal device tokens can create requests, and the accounts must currently share a group. Config polling supplies each terminal only its own pending incoming/outgoing requests, independent of configuration version. A dedicated **Callbacks** admin page lists requests and allows cancellation, deadline editing and SMTP configuration. Username edits retain requests under the new account ID; permission revocation, account deletion or requester conversion to a phone cancel pending requests. A successfully connected call in either direction completes the pair's requests.
+
+On an authenticated phone registration or reachability recovery, the server sends pending requests as basic SIP MESSAGE chat notifications over the exact registration flow, with the requester's SIP address. Unicode message bodies are encoded as UTF-8 bytes for the SIP library's binary transport. SIP success means accepted, not read. Failed delivery retries no more than once a minute while reachable; pending work is checked every five seconds and after registration or recovery. There is no disconnected-phone push service. Terminal recipients receive requests through config polling. When both people are online, an idle terminal selects the other person after five seconds without button input and shows **↩ name · Online** for ten seconds. It never interrupts a call or confirmation, and starting the call still requires the two GREEN presses.
+
+A small terminal → Wi-Fi → server connectivity graphic appears in the top-right corner, using icons and arrows without text captions. Incoming calls prominently show the caller with expanding halos, a pulsing portrait border and a phone symbol. These animations stop on answer, decline or caller cancellation. Caller hang-up before answer stops ringing, cancels the auto-answer countdown and returns to the carousel. Active calls show remote video. Normal idle mode does not show a live camera preview.
+
+A caller ending an unanswered incoming call increases that contact's unread notification count. The carousel picture shows a red circular badge with a solid white handset and a dark counter bubble with a white number. Repeated missed calls increase the count; each contact has an independent counter. Answered, locally declined and outgoing calls do not increase it. Browsing with arrows retains counts. The first GREEN press opening that person's call or callback confirmation clears their entire count immediately, including when confirmation is later cancelled. Successfully connecting an incoming call, whether answered manually or automatically, also clears and immediately saves the caller notification count. Failed or declined answers preserve older counts. Repeated connection/media events preserve notifications received after connection. Counts persist atomically in `zmala_terminal/data/<profile>/missed-calls.json`, scoped to the terminal's SIP account/domain. Legacy stored flags restore as one notification each. Configuration updates retain counts, removed contacts are pruned, and factory reset or fresh unconfigured launch clears them.
+
+A new phone text message received by a terminal increases the same contact counter after checking the server's message proof, sender domain and current receive permission. Duplicate message identifiers are ignored and do not increase counts. The body is not shown or saved in badge data. Messages received during a call do not interrupt it; the badge and counter appear on return to the carousel and follow the same acknowledgment and persistence rules as a missed call.
+
+The top-left corner shows the ZmalaCall logo by default. On the idle carousel, a red missed-call badge replaces it whenever any contact notification remains uncleared, including when that contact's picture is already visible. Its counter shows the sum of all unread missed calls and text messages. Acknowledging one contact subtracts their count while retaining others. Browsing and carousel animation leave the corner badge in place. The logo returns only when all counters are cleared. Counts above 99 display as **99+**, while the exact values remain stored. This does not add a button or text caption.
+
+Missed-call and connectivity icons use GDI+ vector drawing at four times their final size, anti-aliasing and smooth downsampling through `zmala_terminal/icons.py`. The resulting images are cached at their actual display dimensions. The missed-call badge depicts a broad white diagonal telephone receiver on red, with a dark counter bubble edged in white at the upper right. Counter numbers are also rendered through GDI+ at the supersampled size. Badges retain transparent edges over contact pictures; the compact network graphic retains its existing icon-only layout and green/red/gray status colors. The corner logo also uses smooth resizing instead of pixel subsampling.
+
+Connected calls without incoming video show a large camera symbol and localized **No video from the other person / You can still talk**. The panel covers the native video surface without stopping audio or outgoing video. Liblinphone decoded-frame callbacks are sampled once per second; the panel disappears after an actual decoded frame and returns after four seconds without one, or immediately when negotiated video reception is disabled. Brief frame gaps do not flash the message. Each new call clears frame history. All 95 terminal languages include these phrases in `zmala_terminal/shared/video-messages.json`.
+
+Every carousel contact has a prominent status band: a green check and localized **Online**, or a red cross and localized **Offline**. Status uses symbols and words as well as color. Offline people remain visible in their normal alphabetical position; GREEN offers a callback request rather than starting a SIP call. The server sends SIP OPTIONS over each exact registered flow every five seconds and waits up to five seconds for a response. An unresponsive flow is marked unreachable and excluded from online status, call routing and callback notifications. The terminal refreshes every two seconds independently of configuration version, keeping phone offline detection within 15 seconds. Unexpired unreachable flows continue to be checked for recovery; a fresh registration also restores reachability and cancels any old check. Late replies from an expired check cannot change a newer result. Expired registrations are removed. After six seconds without a server update, displayed presence becomes offline. An authenticated availability check immediately before SIP dialing prevents calls when a cached online status has become stale. If presence changes while call confirmation is open, GREEN switches to a callback confirmation and does not submit a request without another GREEN press. Cancelling a preflight check cannot cause a late call to start.
+
+| Button | Windows key | Idle | Incoming | Outgoing | Active call |
+|---|---|---|---|---|---|
+| LEFT | Left arrow | Previous contact | No action | No action | No action |
+| RIGHT | Right arrow | Next contact | No action | No action | No action |
+| GREEN | Enter | Show selected contact confirmation | Answer | No action | No action |
+| RED | Escape | Reset gesture | Decline | Cancel | Hang up |
+
+F11 toggles fullscreen outside call confirmation; during confirmation it returns to the carousel. Auto-answer applies to every permitted incoming caller when enabled in Terminal settings. Its visible countdown can be cancelled with RED; GREEN answers immediately.
+
+Terminal display text supports 95 European and Asian language options. Account/contact names remain as entered. Windows fonts and GDI+ rendering handle Unicode, complex scripts and right-to-left text. Language changes apply during a call; media-device changes wait until idle. Translations live in `zmala_terminal/shared/terminal-languages.json`, `setup-translations.json`, `wifi-confirmation.json`, `video-messages.json`, `call-questions.json` and `confirmation-prompts.json`.
+
+## Reset and QR provisioning
+
+Ten distinct RED presses within a rolling ten-second window open factory-reset confirmation from a configured idle screen only. Held keys are not counted repeatedly. Calls and incoming ringing do not contribute; an incoming call clears an incomplete gesture. GREEN confirms reset, RED keeps the configuration.
+
+Reset clears this terminal profile's Wi-Fi/server enrollment, configuration cache and missed-call flags, stops its call engine and maintenance agent, and prevents stale worker responses from restoring configuration. It does not delete server accounts, groups or other terminal profiles. Only Wi-Fi profiles created by the application are forgotten.
+
+After reset, the display asks exactly `wifi QR code ?` in every language and scans the camera. Once Wi-Fi setup succeeds, the camera stops and a full confirmation screen shows a large green check, localized “Wi-Fi connected” and “Next, show the server QR code” messages, and a 10-second countdown. QR codes and buttons cannot skip this pause. At the end, the display asks exactly `server QR code?` and camera scanning resumes automatically. Successful authentication and validation of the scanned terminal identity activate the normal call screen. Invalid QR codes, credentials or unreachable servers leave the terminal at its current setup step. Wi-Fi enrollment is saved before the pause, so reopening an interrupted setup proceeds to the server QR step.
+
+The QR scanner uses an accountless Liblinphone camera preview in an isolated background process. A native adapter routes camera format changes through the SDK's QR-aware preview graph updater. Decoded QR text travels to the UI over a private pipe; application logs do not contain QR payloads. A worker failure leaves the terminal at its current setup step, shows the red preview border and retries after five seconds. A Windows Job Object stops the worker when the terminal exits or is forcibly stopped. The scanner is released before starting the calling engine. Camera diagnostics are in `zmala_terminal/data/qr-camera-error.log`. Runtime setup and terminal launchers build the adapter under `build_tools/runtime/`.
+
+QR preview mirroring is disabled at startup and after camera format changes. The UI changes the preview border only when status changes, so its background is not repainted every 20 milliseconds while native video is rendering. The Wi-Fi confirmation messages are translated for all 95 terminal language options in `zmala_terminal/shared/wifi-confirmation.json`.
+
+Wi-Fi PDFs contain SSID/password; server PDFs contain a versioned enrollment payload, server URL, device identity and token. PDFs are single-page A4 files with a large black QR and white quiet border. Print at actual size and show the complete code to the camera. Wi-Fi credentials are used for PDF generation but are not saved on the server.
+
+The unconfigured launcher defaults to `existing-link` test mode: it scans/stores the supplied Wi-Fi details and verifies the PC's existing connection. `-ConnectWifi` instead uses Windows WLAN to join a Personal/open network. Actual joining supports WPA2-Personal/AES and open networks; only application-owned profiles are removed on reset. Testing actual WLAN joins on this shared PC remains separate from simulated enrollment checks.
+
+## Maintenance console
+
+The terminal polls every three seconds for queued commands, executes one command at a time in a background process, and posts stdout, stderr, exit code and status. Administrator authentication is required to queue/list commands. A terminal token only claims and reports its own jobs; a unique lease prevents mismatched results and duplicate execution.
+
+The selected terminal's configured command shell is saved with each queued command. Changing the setting affects newly queued commands; existing commands retain their shell. Legacy jobs default to Windows PowerShell. A missing PowerShell 7 installation returns a failure rather than silently switching shells.
+
+Each command runs as the terminal's Windows user from `zmala_terminal/`. Processes are noninteractive, receive no stdin and are not automatically elevated. Shell variables and current directory do not persist between commands. Default timeout is 60 seconds, with a 5–120 second range. Combined output is bounded to 64 KiB. Windows Job Objects stop children on timeout, reset or terminal shutdown.
+
+At most ten pending commands are allowed per terminal. Results retry after temporary connection failures. A job whose terminal stops reporting becomes lost with an unknown outcome; it is not automatically rerun. History survives server restarts. A console is not a persistent interactive shell session.
+
+## Call authentication and media
+
+The server authenticates SIP registrations and call requests, checks group permission and rewrites media addresses for its relay. Terminal recipients validate the caller against their current contacts and verify the server's call proof. A terminal allows one active call, handles late call events and supports cancel/decline/hang-up through RED. The SIP dependency generates caller CANCEL requests internally; the server completes their required Max-Forwards header while retaining the INVITE transaction and registration flow so Liblinphone accepts cancellation and stops ringing. Calls are not recorded by default.
+
+Phone-originated SIP MESSAGE requests require proxy digest authentication and shared group membership, and may target terminal accounts. The server accepts nonempty basic text/plain or message/cpim payloads up to 16 KiB, routes them over the online terminal's registration flow and replaces client-supplied proof with a terminal-specific HMAC over the message identity and sender. Typing indications and other payload types are rejected. The terminal checks the proof and treats a valid text as a missed-call badge without displaying its body. Routing does not create a call dialog and logs only sender/recipient account IDs. Offline terminals return SIP 480; these texts are not queued. Callback notifications remain server-generated messages sent to phones; terminal callback requests are delivered through authenticated configuration polling.
+
+For the current same-LAN Linphone test, use a third-party SIP account, UDP, enabled video, no media encryption and disabled ICE/STUN. Phone and terminal accounts must share a group.
+
+## Callback email deadlines
+
+The Callbacks page edits **Email reminder after (hours)** and **Remove request after (hours)**, defaulting to one and four hours. Fractional hours are allowed. Both delays run from request creation, removal must be later, and settings edits apply to pending requests. Requests past the removal deadline are deleted from callbacks.json and omitted from every view; completed and cancelled entries remain in bounded history.
+
+Each account supports one-to-ten unique email addresses. New accounts require at least one. Existing accounts migrate with empty lists until the administrator enters real addresses; no addresses are invented. Emails stay in admin views and are excluded from terminal configuration and callback responses to devices.
+
+The page's **Email server** dialog sets SMTP host, port, STARTTLS/TLS/local unencrypted transport, optional credentials, sender and enablement. Passwords are stored only in the private server configuration, omitted from API views, preserved by blank edits and explicitly clearable. **Check connection** verifies connectivity/authentication without sending a message; sender acceptance is checked during actual delivery.
+
+Pending requests are checked every five seconds independently of SIP online status or chat-message acceptance. After the reminder deadline, separate messages go to every current recipient address with the requester's name/SIP address and removal time. Accepted addresses are recorded atomically before the next send, skipped after restart and excluded from retries. One failed address does not block other addresses. Failures retry no more than once a minute; completion, cancellation, permission revocation and expiry prevent later sends/results from reviving a request. SMTP acceptance does not guarantee inbox delivery. Reminder SMTP starts disabled.
+
+## Verification and future work
+
+Doorstop 3.2 manages the product (`ZMC`), terminal (`TERM`) and server (`SERV`) requirements in `docs/requirements/`. Child records link to product requirements and reference code or tests. The editable YAML sources produce `product_requirements.md`, `terminal_requirements.md` and `server_requirements.md`; [docs/README.md](README.md) documents installation, validation, review and publication. The initial records remain unreviewed for maintainer review; structural validation uses `--no-review-check` until that review is complete.
+
+Run `npm test` from the project root for server tests, or run npm within `zmala_server/`. Terminal unit tests use `python -m unittest discover -s zmala_terminal/tests -p 'test_*.py'`. Native integration tests cover camera QR setup, maintenance polling, reset behavior, translated UI, authenticated SIP calls and actual video rendering using isolated QA accounts and profiles. `call_feedback_ui.py` checks both full-window questions, green/red Yes/No, unavailable status, distinct green presses, cancellation keys, idle-only availability notifications, missed-call badges and all 95 missing-video translations. `accounts_live.py --ui-only --video-cycle` verifies a confirmed outgoing call with remote video initially absent, then sending, stopped and resumed, while audio continues. `callbacks_live.py` starts an isolated server to exercise real terminal request submission, phone reconnection and SIP chat delivery with a Unicode name, followed by a manually confirmed call that completes the request. It also checks real caller cancellation, missed-call badge persistence across restart and acknowledgment without dialing, plus answered and deliberately declined calls. `test_missed_calls.py` covers independent flags, navigation, confirmation, persistence, account isolation, removed contacts and bad saved data. Provisioning integration checks reset erases saved missed-call flags. Server tests cover persistence, configurable deadline removal, SMTP delivery, partial failures, duplicates, failed-delivery retries, username changes, permission revocation and authenticated API isolation. The admin Callbacks page and cancellation were also checked through the browser.
+
+`callbacks_live.py` also sends a real phone text during an answered call, checks the persistent badge and acknowledgment, then stops processing the phone transport without unregistering. It verifies the contact appears offline within 15 seconds, offers callback confirmation instead of dialing, and returns online when SIP responses resume. The native test measured 9.49 seconds from the simulated disconnection to the terminal's offline indication. `presence.test.js` checks probe timeout, recovery, exact registration flow, late replies, registration replacement and callback availability; `messages.test.js` checks digest replay, group access, forwarding proof and payload rejection. `test_messages.py` checks terminal proof validation, sender/domain/permission checks and bounded duplicate suppression.
+
+The final appliance still needs Raspberry Pi/Linux deployment, physical GPIO buttons, real HDMI-CEC, managed service/watchdog installation and updates. Public Internet hosting, HTTPS management, SIP TLS/SRTP and cross-network NAT testing remain later work. The current Windows prototype uses localhost administration, same-LAN calling and simulated/logged CEC.

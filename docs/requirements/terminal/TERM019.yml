@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  QR enrollment sequence
+level: 19.0
+links:
+- ZMC005: gAnqFfRxhvQytUsND93nzYSP5RlLVsaxcGEDtP6Dg4s=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/provisioning_ui.py
+  type: file
+reviewed: null
+text: |
+  After reset the terminal shall ask exactly wifi QR code ? in every language and scan the camera. Successful Wi-Fi setup shall stop scanning and show localized success/next-step messages for an unskippable ten seconds, then ask exactly server QR code? and resume scanning. Valid server enrollment shall activate the carousel. Invalid data or connection failure shall leave the current setup step active and show a persistent explanation in the selected language while scanning remains available for retry. Reset shall retain the selected language through setup restarts. The Linux camera preview shall stay contained within its designated surface without obscuring prompts.

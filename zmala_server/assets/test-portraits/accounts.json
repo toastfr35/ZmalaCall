@@ -1,0 +1,26 @@
+{
+  "term1": {
+    "name": "Evelyn Brooks",
+    "portrait": "term1.png"
+  },
+  "phone1": {
+    "name": "Noah Bennett",
+    "portrait": "phone1.png"
+  },
+  "phone2": {
+    "name": "Clara Reed",
+    "portrait": "phone2.png"
+  },
+  "phone3": {
+    "name": "Gabriel Hayes",
+    "portrait": "phone3.png"
+  },
+  "phone4": {
+    "name": "Mina Collins",
+    "portrait": "phone4.png"
+  },
+  "phone5": {
+    "name": "Arthur Clarke",
+    "portrait": "phone5.png"
+  }
+}

@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: |
+  Serial keypad host integration acceptance
+level: 24.0
+links:
+- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+normative: true
+ref: ''
+references:
+- path: keypad/spec.md
+  type: file
+reviewed: null
+text: |
+  A future serial keypad adapter shall select a configured stable device port, read without blocking the UI, tolerate Nano startup delay, maintain the protocol heartbeat, reject stale events from a previous connection generation, publish complete lamp snapshots and accept distinct presses without window focus. Disconnect/reconnect, held keys, congestion, startup and reset shall have host integration tests. Firmware simulation alone shall not establish completion. This adapter and physical acceptance remain outstanding; existing terminal controls use keyboard or presenter input.

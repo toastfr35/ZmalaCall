@@ -1,0 +1,14 @@
+active: true
+derived: false
+header: |
+  Accessible physical controls
+level: 3.0
+links: []
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/tests/test_terminal.py
+  type: file
+reviewed: null
+text: |
+  The terminal shall let an elderly user choose a familiar person and control calls using LEFT, RIGHT, GREEN and RED, without clickable screen controls.
