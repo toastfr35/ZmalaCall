@@ -1,0 +1,19 @@
+active: true
+derived: false
+header: |
+  Remote onboarding and status
+level: 27.0
+links:
+- ZMC005: gAnqFfRxhvQytUsND93nzYSP5RlLVsaxcGEDtP6Dg4s=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/remote_test.py
+  type: file
+- path: zmala_terminal/tests/test_remote_test.py
+  type: file
+- path: zmala_terminal/platforms/remote_health.py
+  type: file
+reviewed: null
+text: |
+  Pi setup shall wait for the C20, then a paired remote with functioning input. An illustrated test shall require distinct press/release events for left, right, green, red and middle in order, highlighting only the expected button. Successful verification shall be persisted against the pairing identity; disconnection shall reset incomplete progress. Pairing without working input shall not advance setup. Normal UI shall show Bluetooth connection and battery/charging status when available. A missing remote page shall explain switching on and charging without claiming that a disconnection proves the remote is off. Setup illustrations shall identify the rear pairing/power controls and the green/red stickers.

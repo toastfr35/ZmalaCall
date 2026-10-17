@@ -1,11 +1,10 @@
-"""Application composition, configuration changes and physical-button input."""
+"""Application composition and resource lifetimes; controllers own individual workflows."""
 import argparse
 import logging
 from pathlib import Path
 import queue
 import re
 import threading
-import time
 import tkinter as tk
 import tkinter.font as tkfont
 
@@ -14,9 +13,8 @@ from engine import Engine, QRScanner
 from provisioning import Enrollment
 from maintenance import MaintenanceAgent
 from wifi import forget_wifi
-from model import State, TerminalModel
+from model import TerminalModel
 from localization import LANGUAGES, font_family
-from carousel import CarouselMotion
 from local_settings import SettingsHold, SettingsDraft
 from idle_return import IdleReturn, IdleCountdown
 from settings_control import SettingsControl
@@ -24,8 +22,6 @@ from text_renderer import TextRenderer
 from icons import IconRenderer
 from missed_calls import MissedCallsStore
 from platforms.tv_control import TVControl
-from platforms.presenter_input import PresenterInput
-from volume_control import VolumeControl
 from platforms.argon_fan import ArgonFan
 from usb_power import UsbPower
 
@@ -34,8 +30,11 @@ from ui.display import TerminalDisplay
 from setup_flow import ProvisioningFlow
 from call_control import CallControl
 from management import ManagementLoop
+from input_control import InputControl
+from configuration_control import ConfigurationControl
 
-class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, CallControl, ManagementLoop):
+class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
+               TerminalDisplay, ProvisioningFlow, CallControl, ManagementLoop):
     """Own terminal state/lifetimes; compose display, setup, calls and polling."""
     def __init__(self, fullscreen=False, bootstrap=ROOT / 'data/terminal.json', profile='terminal', unconfigured=False, wifi_mode='existing-link'):
         self.create_window(fullscreen)
@@ -139,50 +138,7 @@ class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, C
             else:
                 self.enrollment.reset()
                 self.setup_stage = 'wifi'
-    def bind_inputs(self):
-        self.root.bind('<Configure>', self.resize)
-        for key, button in [('Left', 'left'), ('Prior', 'left'), ('Right', 'right'), ('Next', 'right'), ('Return', 'green'), ('Escape', 'red')]:
-            self.root.bind_all('<' + key + '>', lambda event, b=button: self.keypress(b))
-            self.root.bind_all('<KeyRelease-' + key + '>', lambda event, b=button: self.queue_keyrelease(b))
-        self.root.bind('<FocusOut>', lambda e: self.input_focus_lost())
-        self.root.bind_all('<KeyPress>', self.other_key)
-        self.root.bind('<F11>', self.toggle_fullscreen)
-        self.volume_control = VolumeControl(self.root,
-                                            lambda: bool(self.engine) and not self.setup_stage and not self.settings_open,
-                                            self.volume_activity)
-        self.presenter_input = PresenterInput(self.root, self.keypress, self.keyrelease,
-                                               self.pointer_button, self.volume_control.motion,
-                                               self.remote_test_event)
 
-    def pointer_button(self, held):
-        """Pointer follows the same wake-only first press as the other buttons."""
-        if self.setup_stage == 'tv' or self.remote_setup_blocked():
-            return
-        if held and 'pointer' in self.keys_down:
-            return
-        self.pointer_serial += 1
-        if not held:
-            self.keys_down.discard('pointer')
-            self.volume_control.pointer(False)
-            return
-        self.keys_down.add('pointer')
-        self.cancel_settings_hold()
-        self.last_button = time.monotonic()
-        generation, state, serial = self.generation, self.model.state, self.pointer_serial
-        if not self.tv_control.handle_button(
-                lambda: self.messages.put(('tv-pointer', (generation, state, serial))),
-                preserve_restore=state in (State.RINGING, State.CONNECTING, State.IN_CALL)):
-            self.volume_control.pointer(True)
-
-    def pointer_visible(self, generation, state, serial):
-        # A released/repressed pointer or a newly arrived call invalidates a
-        # delayed visibility check; it must never start volume by itself.
-        if (not self.closed and generation == self.generation and state == self.model.state
-                and serial == self.pointer_serial and 'pointer' in self.keys_down):
-            self.volume_control.pointer(True)
-
-    def volume_activity(self):
-        self.last_button = time.monotonic()
     def start_services(self):
         cached = self.configuration.cached() if self.configuration else None
         if cached and not self.begin_tv_setup(cached):
@@ -199,184 +155,15 @@ class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, C
     def make_configuration(self, bootstrap):
         return Configuration(bootstrap=bootstrap, cache=self.cache_path)
 
+    def make_engine(self, config):
+        return Engine(config, self.call_event, self.registration_event, self.video_window,
+                      profile=self.profile, on_message=self.message_event, preview_window=self.preview_window)
+
     def make_scanner(self):
         return QRScanner(self.qr_found, self.video_window, self.profile)
 
     def make_maintenance(self, configuration):
         return MaintenanceAgent(configuration)
-
-    def other_key(self, event):
-        self.cancel_settings_hold()
-        if self.settings_open or self.settings_hold.capturing:
-            return
-        if self.model.state in (State.CONFIRMING, State.CONFIRM_CALLBACK, State.REQUESTING_CALLBACK):
-            self.press('cancel')
-            return 'break'
-
-    def toggle_fullscreen(self, event):
-        if self.model.state in (State.CONFIRMING, State.CONFIRM_CALLBACK, State.REQUESTING_CALLBACK):
-            self.press('cancel')
-        else:
-            self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
-        return 'break'
-
-    def keypress(self, button):
-        if self.remote_setup_blocked():
-            return 'break'  # Keyboard/X11 copies must not pass the physical test.
-        now = time.monotonic()
-        # Repeated key-downs cannot restart a hold or repeat an action.
-        release_job = self.key_release_jobs.pop(button, None)
-        if release_job is not None:
-            self.root.after_cancel(release_job)
-        if button in self.keys_down:
-            return 'break'
-        self.keys_down.add(button)
-        self.last_button = now  # Even a consumed/debounced press resets idle return.
-        if self.tv_setup_button(button):
-            return 'break'
-        if now - self.last_key.get(button, 0) > .08:
-            # Only physical input reveals the TV; timer-driven cancellation
-            # still reaches press() directly. Workers return through Tk's queue.
-            generation, state = self.generation, self.model.state
-            if not self.tv_control.handle_button(
-                    lambda: self.messages.put(('tv-button', (generation, state, button))),
-                    preserve_restore=state in (State.RINGING, State.CONNECTING, State.IN_CALL)):
-                self.press(button)
-        self.last_key[button] = now
-        return 'break'
-
-    def apply_config(self, config):
-        """Apply UI changes now; defer native graph/credential changes until the terminal is idle."""
-        if self.setup_stage:
-            return
-        if not getattr(self, 'tv_setup_checked', True) and self.begin_tv_setup(config):
-            self.render()
-            return
-        self.callback_requests = config.get('callbacks', [])
-        # Framing only changes crop coordinates, not the SIP/media graph.
-        if self.engine and getattr(self.engine, 'auto_framing', None):
-            self.engine.auto_framing.configure(config.get('auto_framing', False))
-        # Language changes apply even while a call is active; device changes wait.
-        self.language = config.get('language', 'en')
-        self.font_family = font_family(self.language, self.available_fonts)
-        self.root.title(f"ZmalaCall · ← → {self.text('select')} · Enter {self.text('call')}/{self.text('answer')} · Esc {self.text('end')}")
-        if self.model.state != State.HOME:
-            self.pending_config = config
-            # Permission revocation cancels a pending auto-answer immediately.
-            if self.model.state == State.RINGING:
-                c = next((c for c in config['contacts'] if c['id'] == self.model.contact['id']), None)
-                if not c or not c['can_receive']:
-                    self.press('red')
-                elif not config.get('auto_answer', c.get('auto_answer', False)):
-                    self.model.deadline = None
-            self.render()
-            return
-        self.carousel_motion = None
-        if time.monotonic() < getattr(self, 'engine_retry_at', 0):
-            self.pending_config = config
-            return
-        if not self.usb_media_ready():
-            self.pending_config = config
-            return
-        old_sip = self.model.config.get('sip') if self.model.config else None
-        from audio_processing import requested_profile
-        # Recreate the native audio graph only while idle. In-call updates stay
-        # pending above, and a new core restores the default canceller cleanly.
-        try:
-            self.configure_engine(config, old_sip, requested_profile(config))
-        except Exception:
-            logging.exception('Could not apply media configuration; retrying in five seconds')
-            old, self.engine = self.engine, None
-            if old:
-                try:
-                    old.close()
-                except Exception:
-                    logging.exception('Could not release failed media engine')
-            self.pending_config = config
-            self.engine_retry_at = time.monotonic() + 5
-            self.diagnostics = {'registered': False}
-            self.notice = 'unavailable'
-            self.render()
-            return
-        if self.engine_retry_at and self.notice == 'unavailable':
-            self.notice = ''
-        self.engine_retry_at = 0
-        self.pending_config = None
-        self.model.configure(config)
-        if old_sip is None or (old_sip['domain'].lower(), old_sip['username']) != tuple(self.missed_calls_store.account(config)):
-            self.model.restore_notifications(self.missed_calls_store.load_counts(config))
-        self.missed_calls_store.save(config, self.model.notifications)
-        self.diagnostics = self.engine.diagnostics()
-        self.render()
-
-    def configure_engine(self, config, old_sip, audio_profile):
-        if (not self.engine or old_sip != config['sip'] or
-                ('video_resolution' in config and self.engine.video_settings.resolution != config['video_resolution']) or
-                getattr(self.engine.video_settings, 'fps', 15) != config.get('video_fps', 15) or
-                getattr(self.engine, 'audio_profile', 'normal') != audio_profile):
-            if self.engine:
-                old, self.engine = self.engine, None
-                old.close()
-            self.engine = Engine(config, self.call_event, self.registration_event, self.video_window,
-                                 profile=self.profile, on_message=self.message_event, preview_window=self.preview_window)
-            if getattr(self, 'usb_power', None) and self.usb_power.enabled:
-                # Wake the speaker before playing the incoming-call melody.
-                self.engine.core_set_ring(self.engine.core, None)
-            self.current_settings = dict(config.get('terminal_settings', {}))
-        else:
-            self.engine.config = config
-            self.engine.core_refresh_registers(self.engine.core)
-            settings = config.get('terminal_settings', {})
-            if settings != self.current_settings:
-                self.engine.apply_settings(settings)
-                self.current_settings = dict(settings)
-            self.engine.apply_speaker_volume()
-            if hasattr(self.engine, 'apply_call_timeout'):
-                self.engine.apply_call_timeout()
-
-    def _press_action(self, button):
-        self.last_button = time.monotonic()
-        self.callback_alert = None
-        if self.setup_stage:
-            if self.setup_stage == 'reset' and button == 'red':
-                self.setup_stage = None
-                self.settings_open = True
-                self.settings_hold.clear()
-                self.render()
-            elif self.setup_stage == 'reset' and button == 'green' and not self.setup_busy:
-                self.factory_reset()
-            return
-        moving = self.model.state == State.HOME and button in ('left', 'right') and len(self.model.contacts) > 1
-        if moving and self.carousel_motion:
-            return
-        if moving:
-            self.carousel_motion = CarouselMotion(list(self.model.contacts), self.model.index % len(self.model.contacts),
-                                                  -1 if button == 'left' else 1, time.monotonic())
-        elif button in ('green', 'red'):
-            self.carousel_motion = None
-        confirming = self.model.state in (State.CONFIRMING, State.CONFIRM_CALLBACK)
-        target = next((c for c in self.model.contacts if c['id'] == self.model.contact['id']), None) if confirming else self.model.selected
-        unavailable = not self.contact_online(target) or confirming and not (self.engine and self.engine.registered)
-        if button == 'green' and self.model.state == State.HOME and target and not self.contact_online(target):
-            self.model.confirm_selected(False)
-            self.missed_calls_store.save(self.model.config, self.model.notifications)
-            self.render()
-            return
-        if button == 'green' and self.model.state == State.CONFIRMING and unavailable:
-            if target:
-                self.model.state = State.CONFIRM_CALLBACK
-            else:
-                self.model.ended()
-                self.notice = 'unavailable'
-            self.render()
-            return
-        action = self.model.button(button, bool(self.engine and self.engine.registered))
-        if self.model.config:
-            self.missed_calls_store.save(self.model.config, self.model.notifications)
-        if self.model.state == State.HOME and button in ('left', 'right'):
-            self.notice = ''
-        self.action(action)
-        self.render()
 
     def close(self):
         """Cancel workers and release native consumers before destroying their Tk surfaces."""

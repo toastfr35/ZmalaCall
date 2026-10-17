@@ -78,10 +78,12 @@ test('local settings are device-scoped, validated, durable and conflict-aware', 
     );
     assert.equal(store.config('term1').language, 'fr');
     // A lost acknowledgement can safely retry the same field/value.
+    const version = store.value.configuration_version;
     assert.equal(
       (await post({ settings: { language: 'fr' }, expected: { language: 'en' } })).status,
       200,
     );
+    assert.equal(store.value.configuration_version, version);
   } finally {
     await fixture.close();
   }

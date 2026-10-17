@@ -1,10 +1,6 @@
 # Administration authentication
 
-Open the server's LAN address and HTTP port in a browser, for example
-`http://192.168.1.118:8080/` on this installation. The server PC can also use
-`http://127.0.0.1:8080/` or its `data/open-admin.url` shortcut. The shortcut
-contains only the URL, not a credential. Use the configured server IP address;
-arbitrary hostnames are rejected by the request-origin checks.
+Open the server's LAN address and HTTP port in a browser, for example `http://zmalaserver.local:8080/` for the installed Pi server, or its LAN IP. On the server machine, `http://127.0.0.1:8080/` and the generated `data/open-admin.url` shortcut also work. The shortcut contains only a URL. Use a configured hostname/address; request-origin checks reject unrecognized hosts.
 
 The first visitor sets the shared admin password and confirms it. This one-time
 setup works from another computer, without access to the server's desktop.
@@ -24,13 +20,13 @@ responses. Terminal device tokens continue to authenticate terminal requests
 independently. Existing local maintenance tools can use the legacy admin token
 only before the first password is configured; afterwards they need a session.
 
-On Raspberry Pi hardware running Linux, the production server uses
-**`/boot/firmware/zmalacall/admin-password.json`** automatically. On Windows and
-other Linux machines it uses **`zmala_server/data/admin-password.json`**. Detection
-reads the device-tree model; ARM architecture alone does not select the Pi path.
-Isolated custom data stores used by tests/setup tools retain their local path.
-The Pi server process needs write access to `/boot/firmware/zmalacall`; a write
-failure is reported rather than silently using a different password location.
+Password-file location depends on how the server was started:
+
+- The dedicated Pi installer sets `ZMALA_ADMIN_PASSWORD_FILE` to **`/var/lib/zmalacall-server/admin-password.json`** in its service. This is on the Linux data partition, not the FAT boot partition.
+- Windows and non-Pi source launches default to **`zmala_server/data/admin-password.json`**.
+- A source launch on Pi hardware without that override uses the legacy **`/boot/firmware/zmalacall/admin-password.json`** path. Hardware detection reads the device-tree model; ARM architecture alone is insufficient. Isolated test stores retain their own data path.
+
+Check the service environment before recovery if the installation was customized. A write failure is reported rather than silently changing the password location.
 
 For non-browser clients, POST `/api/auth/login` with JSON
 `{"password":"your password","session_token":true}` and use the returned
@@ -55,7 +51,7 @@ $env:ZMALA_HTTPS_PORT = '8443'
 
 Restart an already running server to apply these environment variables. The HTTPS
 port defaults to 8443 and must differ from the HTTP port. Allow it through the
-private-network firewall and open `https://192.168.1.118:8443/`. Keep certificate
+private-network firewall and open `https://<server-address>:8443/`. Keep certificate
 keys outside the repository. When HTTPS is configured, remote administration
 over HTTP is rejected; local administration and authenticated terminal HTTP
 traffic remain available. This listener encrypts administration, not SIP media.
@@ -73,9 +69,6 @@ Older passwords stored in `server.json` are migrated automatically on startup:
 the separate file is written first, then the old property is removed. A damaged
 password file stops startup rather than silently allowing password setup.
 
-On a Pi, shut it down before removing the SD card. Windows exposes the FAT boot
-partition, where the file appears as **`<drive>:\zmalacall\admin-password.json`**.
-Delete it, safely eject the card and boot the Pi to set a new password. Accounts
-and settings remain on the Linux partition. Existing local password files are
-moved to the Pi boot location at startup and the old copy is removed, so deleting
-the boot file does not resurrect a previous password.
+For the dedicated Pi service, use its authenticated SSH/local console to stop `zmalacall-server`, remove `/var/lib/zmalacall-server/admin-password.json`, then restart the service and set the new password immediately. Do not remove `server.json` or the rest of the data directory.
+
+Only legacy source launches using the boot-partition path support recovery by deleting `<drive>:\zmalacall\admin-password.json` from a Windows-mounted SD card. Shut the Pi down before removing that card. This method does **not** reset the dedicated installer's password. Legacy local hashes are migrated before their old copy is removed, preventing accidental resurrection of an old password.

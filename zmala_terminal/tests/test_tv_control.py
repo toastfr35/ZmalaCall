@@ -260,9 +260,11 @@ class TVControlTests(unittest.TestCase):
         model.configure(config())
         engine = Mock(call='call')
         engine.hold_call.side_effect = lambda call: setattr(engine, 'call', call)
-        return SimpleNamespace(model=model, engine=engine, tv_control=Mock(),
-                               reset_gesture=Mock(), setup_stage=None, root=Mock(),
-                               render=Mock(), missed_calls_store=Mock(), dial_serial=0)
+        app = CallControl()
+        app.model, app.engine, app.tv_control = model, engine, Mock()
+        app.setup_stage, app.root, app.render = None, Mock(), Mock()
+        app.missed_calls_store, app.dial_serial = Mock(), 0
+        return app
 
     def test_rejection_restores_without_waiting_for_sip_end(self):
         app = self.call_app()

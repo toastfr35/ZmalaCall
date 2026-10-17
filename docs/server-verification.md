@@ -1,5 +1,10 @@
 # Server and admin verification
 
+This document includes dated hardware observations. Preserve their original
+settings when comparing results; they are not current global limits. Current
+video defaults and targets are in [the terminal guide](linux-terminal.md#video-defaults-and-historical-pi-3-validation)
+and `zmala_terminal/video_settings.py`.
+
 The server runtime and admin source use two strict `checkJs` configurations.
 `make lint` runs both along with ESLint, Ruff, shell/native checks, formatting,
 generated asset checks and (on Windows) PowerShell parsing. `make test` runs

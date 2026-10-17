@@ -2,7 +2,7 @@
 
 | Component | Windows | Linux |
 | --- | --- | --- |
-| Server core | Node.js; desktop start/stop scripts | Node.js; deployment must supervise the process |
+| Server core | Node.js; desktop start/stop scripts | Node.js; Pi installer supplies systemd supervision |
 | Portrait converter | PowerShell/System.Drawing | Python 3/Pillow (`python3-pil`) |
 | Terminal | Tk/Liblinphone desktop launcher | Documented Pi kiosk/service, Linux media adapters and C20 routing |
 | Maintenance shells | Windows PowerShell, PowerShell 7, cmd | sh, bash; selected shell must match the OS |
@@ -16,6 +16,10 @@ An available adapter or passing fixture does not establish hardware acceptance. 
 Configuration, callbacks and commands use ordered asynchronous snapshots. At most one snapshot is writing and one latest snapshot is queued per file; newer complete state replaces an unstarted revision, and all affected acknowledgements wait for that commit. This bounds queued serialized state, but JSON serialization still runs on the event loop. Splitting command output into separate records remains a possible measured optimization.
 
 Mutation responses wait for the stores they change. A failed latest snapshot remains retryable at the next commit barrier. The current in-memory mutation may already be visible when its save fails. Atomic rename prevents a partial JSON file; it is neither a transaction across files nor an fsync guarantee against power loss.
+
+An identical device-settings retry retains the revision but still waits for the persistence barrier. Terminal polling and settings responses share revision-rollback validation and stable-cache filtering. Authenticated terminal HTTP requests refuse redirects so bearer credentials cannot follow a changed destination; enroll the actual API URL rather than a redirecting alias.
+
+HTTP and optional HTTPS listeners share one shutdown promise. Either listener's startup failure closes both and stops SIP; signals use the same path. Active HTTP requests drain before the final persistence flush. This is graceful shutdown, not a bounded kill timer; process supervision remains responsible for a stuck native/dependency operation.
 
 `GET /health` is process liveness. `GET /ready` returns 503 while the latest attempted snapshot has a known unresolved write failure, and returns 200 after it commits. It does not actively probe disk space or assert SIP registration or call readiness. Read-only device polling remains available during unrelated console/callback persistence failures.
 
@@ -41,4 +45,4 @@ Stop the server before copying its private data directory and separately stored 
 
 Restore a mutually consistent server snapshot while stopped, start the service, check `/health` and `/ready`, and then verify registration and a real call. If the restored configuration version is older than a terminal's cached revision, the terminal deliberately rejects it. Use the existing factory-reset/re-enrollment workflow with the intended device credentials; do not disable rollback detection or edit credentials to force a match. A server restore epoch and transactional cross-file recovery remain future work.
 
-Linux releases already use separate directories and a current symlink. Automated post-start verification, release manifests and a tested one-command rollback remain outstanding. Hardware gates include network loss, camera/audio unplug/replug, repeated calls after idle, connected-peer loss, button usability at TV distance, RTL/long names, CPU/temperature and resource growth.
+Linux installers use separate release directories, a current symlink, package checksums and post-start/reboot verification. The server installer restores the previous application release after an upgrade startup failure; this does not roll back dependency, configuration or data changes. A general transactional rollback/restore workflow and managed remote updates remain outstanding. Hardware gates include network loss, camera/audio unplug/replug, repeated calls after idle, connected-peer loss, button usability at TV distance, RTL/long names, CPU/temperature and resource growth.

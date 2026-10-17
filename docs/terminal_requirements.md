@@ -28,12 +28,14 @@ Generated from [Doorstop TERM records](requirements/terminal/). Edit the YAML re
 - [24 Serial keypad host integration acceptance _(TERM024)_](#TERM024)
 - [25 Presenter motion volume control _(TERM025)_](#TERM025)
 - [26 Local settings with remote control _(TERM026)_](#TERM026)
+- [27 Remote onboarding and status _(TERM027)_](#TERM027)
+- [28 TV setup and idle restoration _(TERM028)_](#TERM028)
 
 <a id="TERM001"></a>
 
 ## 1.0 Independent terminal launch _(TERM001)_
 
-The terminal shall run on Windows and the documented Linux/Pi configuration with Tk and Liblinphone, support an optional fullscreen mode, and have separate start, stop and fresh unconfigured launchers. Starting it shall not implicitly start the server.
+The terminal shall run on Windows and the documented Linux/Pi configuration with Tk and Liblinphone, support an optional fullscreen mode, and have separate start, stop and fresh unconfigured launchers. Starting it shall not implicitly start the server. The Pi installer shall validate Raspberry Pi OS Lite 64-bit Trixie and wired SSH before deployment, install boot services and dependencies, limit SSH to Ethernet, configure Argon fan control and low-write storage settings, and leave account identity to QR enrollment.
 
 > `build_tools/start-terminal.ps1`
 
@@ -190,7 +192,7 @@ Configuration polling shall receive pending callback requests independently of c
 
 ## 16 Language application _(TERM016)_
 
-The terminal shall translate its display prompts, availability, questions, Yes/No, callback acknowledgment, video feedback and reset/setup messages for all 95 included languages. Display names shall remain unchanged. Language updates shall apply during calls, with Unicode shaping and right-to-left support; device changes shall wait until idle.
+The terminal shall translate its display prompts, availability, questions, Yes/No, callback acknowledgment, video feedback and post-enrollment reset/TV-check messages for all 95 included languages. USB connection, remote pairing/button verification and Wi-Fi/server QR setup shall use English until server enrollment supplies the selected language. Display names shall remain unchanged. Language updates shall apply during calls, with Unicode shaping and right-to-left support; device changes shall wait until idle.
 
 > `zmala_terminal/tests/terminal_languages_ui.py`
 
@@ -210,7 +212,7 @@ Reset confirmation shall be accessible only through the Reset entry in local Set
 
 ## 18 Factory reset scope _(TERM018)_
 
-Reset shall stop call and maintenance workers and erase the current profile Wi-Fi/server enrollment, configuration cache and missed-call flags. Stale worker responses shall not restore state. Server accounts/groups and other terminal profiles shall remain intact; only application-created Wi-Fi profiles shall be forgotten. Reset shall persist a secret-free Wi-Fi cleanup record before removing the owned Windows or NetworkManager profile. Cleanup failure or restart shall retain and retry that record, and new Wi-Fi enrollment shall wait for successful cleanup. Repeated cleanup shall be idempotent.
+Reset shall stop call and maintenance workers and erase the current profile Wi-Fi/server enrollment, configuration cache, button-test verification, TV-check results and missed-call flags. Existing Bluetooth pairing shall remain available, but button verification shall run again. Stale worker responses shall not restore state. Server accounts/groups and other terminal profiles shall remain intact; only application-created Wi-Fi profiles shall be forgotten. Reset shall persist a secret-free Wi-Fi cleanup record before removing the owned Windows or NetworkManager profile. Cleanup failure or restart shall retain and retry that record, and new Wi-Fi enrollment shall wait for successful cleanup. Repeated cleanup shall be idempotent.
 
 > `zmala_terminal/tests/provisioning_ui.py`
 > `zmala_terminal/tests/test_reliability.py`
@@ -221,7 +223,7 @@ Reset shall stop call and maintenance workers and erase the current profile Wi-F
 
 ## 19 QR enrollment sequence _(TERM019)_
 
-After reset the terminal shall ask exactly wifi QR code ? in every language and scan the camera. Successful Wi-Fi setup shall stop scanning and show localized success/next-step messages for an unskippable ten seconds, then ask exactly server QR code? and resume scanning. Valid server enrollment shall activate the carousel. Invalid data or connection failure shall leave the current setup step active and show a persistent explanation in the selected language while scanning remains available for retry. Reset shall retain the selected language through setup restarts. The Linux camera preview shall stay contained within its designated surface without obscuring prompts.
+Pi first startup shall require the camera and verified remote before QR enrollment. Wi-Fi setup shall join the scanned network; existing-link mode shall remain an explicit development alternative. Successful Wi-Fi enrollment shall stop scanning for an unskippable ten-second confirmation, then start server QR scanning. The server QR shall supply the server URL, terminal identity and token; the installer shall not hardcode terminal identity. Authentication and validated configuration shall precede commitment of enrollment. Invalid data, wrong credentials or connection failure shall leave the current step active with an explanation and retry scanning. Installation instructions shall be English until server enrollment sets the selected language. Localized TV-control checks shall follow enrollment before normal use. The Linux preview shall remain contained without obscuring prompts. Reset shall retain the prior language preference for later configured UI, but shall repeat installation checks.
 
 > `zmala_terminal/tests/provisioning_ui.py`
 
@@ -283,7 +285,7 @@ A future serial keypad adapter shall select a configured stable device port, rea
 
 ## 25 Presenter motion volume control _(TERM025)_
 
-On the Linux Presenter+ remote, holding Pointer and moving up/down shall raise/lower C20 playback volume within 0–100 percent. Horizontal and unheld motion shall have no action. Release or disconnection shall end the gesture. A vertical bar and percentage shall appear at the right while held and disappear two seconds after release; mixer failures shall show an error indication. Motion shall not navigate contacts, place/end calls, change microphone gain or change hardware mute. When the TV is not displaying the terminal UI, the first Pointer press shall only wake the TV and select the terminal input, just like the navigation, GREEN and RED buttons. Motion during that consumed hold shall not change volume; the user shall release and press Pointer again to adjust it. Mixer writes shall run off the UI thread and be limited to ten per second during motion. Local adjustments shall survive core recreation for the app session; an applied change to the server default or an app restart shall restore the configured default.
+On the Linux Presenter+ remote, holding the middle (Pointer) button and moving up/down shall raise/lower C20 playback volume relatively by two percentage points per 64 vertical motion units, within 0–100 percent. Horizontal and unheld motion shall have no action. Release, lost focus or disconnection shall end the gesture. A vertical bar and percentage shall appear at the right while held and disappear two seconds after release; mixer failures shall show an error indication. Motion shall not navigate contacts, place/end calls, change microphone gain or change hardware mute. When the TV is not displaying the terminal UI, the first Pointer press shall only wake the TV and select the terminal input, just like the navigation, GREEN and RED buttons. Motion during that consumed hold shall not change volume; the user shall release and press Pointer again to adjust it. Mixer writes shall run off the UI thread and be limited to ten per second during motion. Local adjustments shall survive core recreation for the app session; an applied change to the server default or an app restart shall restore the configured default.
 
 > `zmala_terminal/platforms/presenter_input.py`
 > `zmala_terminal/volume_control.py`
@@ -298,12 +300,36 @@ On the Linux Presenter+ remote, holding Pointer and moving up/down shall raise/l
 
 Holding RED continuously for ten seconds from the configured carousel shall open local Settings. A progress bar shall appear after two seconds and show elapsed progress toward ten seconds. Early release, another button, lost focus, remote disconnection or an incoming call shall cancel the hold. Repeated key-down events shall neither restart the timer nor repeat actions. Call/ringing RED actions shall remain immediate and shall not start settings access; the second GREEN press shall confirm calls without an added delay. Short idle RED presses shall keep their normal action on release.
 Settings shall present a list and an editor side by side. Arrows shall navigate the list, GREEN shall open its editor and RED shall leave settings. Inside an editor, arrows shall change the option or value, GREEN shall accept and RED shall discard the draft. Only the active panel shall show button hints. Connectivity icons shall be hidden; the terminal serial shall appear in small print at the bottom. All labels shall use the selected language.
-A sixth Reset entry shall open the separate localized reset confirmation page without erasing any data. RED on that page shall return to Settings.
-Editable settings shall be language, automatic answer (Never, 10 seconds, 30 seconds, 1 minute, 2 minutes, 5 minutes or 10 minutes), automatic framing, speaker volume and three/five portraits. Accepted changes shall be acknowledged by the server and persisted locally. Failed saves shall retain the editor and show a localized error; server conflicts shall not silently overwrite newer values. Incoming calls shall interrupt settings and discard unconfirmed drafts.
+A Reset entry after the six editable settings shall open the separate localized reset confirmation page without erasing any data. RED on that page shall return to Settings.
+Editable settings shall be language, automatic answer (Never, 10 seconds, 30 seconds, 1 minute, 2 minutes, 5 minutes or 10 minutes), automatic framing, speaker volume, three/five portraits and TV return timeout (30 seconds, 1, 2, 5, 10, 20 minutes or Never; default 30 seconds). Accepted changes shall be acknowledged by the server and persisted locally. Failed saves shall retain the editor and show a localized error; server conflicts shall not silently overwrite newer values. Incoming calls shall interrupt settings and discard unconfirmed drafts.
 
 > `zmala_terminal/tests/test_local_settings.py`
 > `zmala_terminal/tests/settings_ui.py`
 > `zmala_server/tests/device-settings.test.js`
+
+*Parent links:* [ZMC003 Accessible physical controls](product_requirements.md#ZMC003)
+
+<a id="TERM027"></a>
+
+## 27 Remote onboarding and status _(TERM027)_
+
+Pi setup shall wait for the C20, then a paired remote with functioning input. An illustrated test shall require distinct press/release events for left, right, green, red and middle in order, highlighting only the expected button. Successful verification shall be persisted against the pairing identity; disconnection shall reset incomplete progress. Pairing without working input shall not advance setup. Normal UI shall show Bluetooth connection and battery/charging status when available. A missing remote page shall explain switching on and charging without claiming that a disconnection proves the remote is off. Setup illustrations shall identify the rear pairing/power controls and the green/red stickers.
+
+> `zmala_terminal/remote_test.py`
+> `zmala_terminal/tests/test_remote_test.py`
+> `zmala_terminal/platforms/remote_health.py`
+
+*Parent links:* [ZMC005 Reset and QR setup](product_requirements.md#ZMC005)
+
+<a id="TERM028"></a>
+
+## 28 TV setup and idle restoration _(TERM028)_
+
+After server enrollment, localized TV checks shall ask consent for standby, wait three seconds, wake and request user confirmation. A second test shall wait for a different TV input, then attempt terminal/previous/terminal input selection with two-second intervals and request confirmation. Failures shall offer retry/help, including Samsung network-control guidance. Attempt and result data shall persist and reset shall clear it. When another input or standby is active, the first remote press shall restore the terminal view and consume that press. Browsing inactivity shall restore the captured prior TV state after the configured timeout, default 30 seconds. Every button activity shall reset the countdown; a thin blue bottom bar shall appear only after ten seconds of inactivity. Calls, held buttons, onboarding and pending settings saves shall prevent idle restoration. A stale asynchronous operation shall not restore over a newer TV session.
+
+> `zmala_terminal/tv_check.py`
+> `zmala_terminal/tests/test_tv_check.py`
+> `zmala_terminal/tests/test_idle_return.py`
 
 *Parent links:* [ZMC003 Accessible physical controls](product_requirements.md#ZMC003)
 

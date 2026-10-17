@@ -1,5 +1,12 @@
 # Single-board computer requirements for the ZmalaCall terminal
 
+This is a platform-selection and alternative GPIO design document. The supported
+installer currently targets Pi 4, Trixie ARM64, C20 and a Bluetooth Presenter+
+remote. Its measured capabilities and low-write SD configuration are documented
+in [Linux terminal](linux-terminal.md) and [Pi video](pi-hardware-video.md).
+The selection targets below are not installer-enforced minimums or evidence
+that a new board has passed acceptance. Direct GPIO buttons are not implemented.
+
 ## Scope
 
 This document specifies an SBC for the **terminal appliance**: the full-screen user interface, QR setup, camera, microphone, speaker, four physical controls, and one bidirectional video call. The requirements describe the workload and allow the software to be ported to the selected platform.
@@ -33,7 +40,7 @@ Windows ARM64 or Windows x86-64 is also acceptable if the board has maintained d
 | Storage | 32 GB persistent storage | 64 GB or larger eMMC or NVMe | Holds the OS, runtime, logs, call databases, configuration, and update rollback space. Avoid an SD card as the production system disk because the application writes logs, caches, and SQLite databases. |
 | Graphics | Hardware-accelerated OpenGL ES 3.0 or desktop OpenGL 3.3; one digital display output | Well-supported GPU, HDMI 2.0, 1920×1080 at 60 Hz | The interface animates scaled images and overlays native incoming video. Software-only rendering is unsuitable for production. |
 | Display | At least 900×620 usable pixels | Television or monitor at 1920×1080, 60 Hz | The current window has a 900×620 minimum and is intended to run full screen. Touch is unnecessary because the UI has no clickable controls. |
-| Camera | One camera supported by the OS and Liblinphone, capable of VGA video at 30 frames/s | UVC USB camera, 720p or better, with autofocus and good low-light performance | Calls request VGA video. The same camera must resolve printed QR codes reliably during enrollment. QR scanning stops before the call engine starts. |
+| Camera | One camera supported by the OS and Liblinphone, capable of VGA video at 30 frames/s | UVC USB camera, 720p or better, with autofocus and good low-light performance | Calls select 480p, 720p (default) or 1080p with a 10–30 fps target. The same camera must resolve printed QR codes reliably during enrollment. QR scanning stops before the call engine starts. |
 | Audio input | One full-duplex microphone supported by the OS and Liblinphone | USB conference microphone or combined speakerphone | Speech must remain intelligible at the intended seating distance. |
 | Audio output | One supported speaker output with adequate room volume | USB conference speakerphone, or HDMI audio qualified with the target television | Ringing and call audio must be audible without interacting with the OS. A combined device with acoustic echo control is preferred. |
 | Network | Wi-Fi supporting 2.4 GHz and WPA2-PSK/AES, with an API the application can configure | Dual-band 2.4/5 GHz 802.11ac or newer Wi-Fi plus Gigabit Ethernet | Camera-based setup provisions Wi-Fi. The present QR format supports open networks and WPA2-PSK/AES. Ethernet may carry calls but does not replace Wi-Fi for the specified onboarding flow. |
@@ -41,7 +48,7 @@ Windows ARM64 or Windows x86-64 is also acceptable if the board has maintained d
 | I/O | Connections for camera, audio, display, and service access | Two USB host connections plus a spare, HDMI, Ethernet, and an accessible GPIO header | Separate USB camera and audio connections are typical. The SBC or powered hub must supply their combined peak current. |
 | Power and cooling | Regulated supply sized for the SBC and all bus-powered peripherals; cooling that prevents throttling | Manufacturer-rated supply with at least 25% power headroom, heatsink, and temperature-controlled fan where necessary | Video encode/decode and display are continuous workloads. Undervoltage, throttling, or peripheral resets during a call are unacceptable. |
 
-The CPU, memory, and storage figures are selection floors. Driver quality and sustained media performance dominate this workload, so a candidate is accepted only after the production image and peripherals pass the tests below.
+The CPU, memory, and storage figures are targets for selecting a new platform, not minimums enforced on the supported Pi image. Driver quality and sustained media performance dominate this workload, so a candidate is accepted only after the production image and peripherals pass the tests below.
 
 ## GPIO button interface
 
@@ -52,7 +59,7 @@ The appliance shall have four normally-open, momentary physical buttons:
 | LEFT | Select the previous contact |
 | RIGHT | Select the next contact |
 | GREEN | Confirm, call, or answer |
-| RED | Cancel, decline, hang up, or contribute one press to the reset gesture |
+| RED | Cancel, decline, hang up, or hold ten seconds to open Settings |
 
 Each button shall connect one GPIO input to ground when pressed. Each input shall use a pull-up resistor, either an SoC pull-up qualified across reset and boot or an external **4.7–10 kΩ** resistor to the GPIO I/O rail. The buttons and pull-ups shall use the GPIO voltage specified by the SBC, normally 3.3 V; **5 V shall never be applied to a non-5-V-tolerant GPIO**.
 
@@ -70,17 +77,17 @@ The GPIO design and driver shall meet these requirements:
 
 Long external cables shall use twisted signal/ground pairs. If testing shows false edges, add suitable input filtering or a Schmitt-trigger buffer rather than increasing software debounce until controls feel slow. A USB HID button encoder remains an acceptable fallback on boards without a stable GPIO userspace interface; it must provide the same four press/release events.
 
-The existing Windows prototype consumes keyboard events. The SBC port shall add a GPIO adapter that converts input edges into the terminal's `left`, `right`, `green`, and `red` actions while preserving held-key suppression and the requirement for ten distinct RED presses during factory reset.
+Windows consumes keyboard events and the supported Pi uses Presenter+ input. An alternative GPIO adapter must emit the same `left`, `right`, `green`, and `red` press/release actions, suppress repeats and support the continuous ten-second RED hold for Settings. Reset is accessed inside Settings, not by counting presses.
 
 ## Network capacity
 
-The current application caps terminal video upload at 1,500 kbit/s and download at 2,000 kbit/s, in addition to audio, SIP, configuration polling, and protocol overhead. The installed connection shall provide at least **5 Mbit/s usable upload and 5 Mbit/s usable download per active terminal**, with margin for Wi-Fi variation and other users.
+Bandwidth presets are resolution/rate dependent (`zmala_terminal/video_settings.py`). At the default 720p/15 fps they allow 1,500 kbit/s upload and 4,000 kbit/s download; 1080p/30 fps allows 5,000/6,000 kbit/s. These are SDK budgets rather than guaranteed throughput, and protocol/audio overhead needs additional capacity. Qualify the installed network with headroom for Wi-Fi variation, both call directions and other users; a single fixed 5 Mbit/s recommendation is insufficient for the highest setting.
 
 The Wi-Fi signal at the installed television shall remain stable for the duration of a call. Qualification shall use the real enclosure and final positions of the SBC, antenna, television, camera, and USB devices.
 
-## Software port required for an ARM/Linux SBC
+## Porting checklist for another SBC
 
-The present prototype packages Windows x64 binaries. The port shall preserve the terminal requirements while replacing its platform-specific integration:
+Windows x64 and Pi 4 Linux ARM64 integrations already exist. A port to another board must preserve the terminal requirements while qualifying or replacing its platform-specific integration. Do not assume that Pi hardware codec/display support transfers unchanged:
 
 1. Build or package Liblinphone, VP8, H.264, QR decoding, and their dependencies for the target OS and CPU architecture.
 2. Replace the `MSOGL`/ANGLE Windows video path and native-window bridge with a supported OpenGL or OpenGL ES renderer for the target graphical session.
@@ -108,7 +115,7 @@ A board is suitable only when the production image, enclosure, and final periphe
 2. Leave the terminal idle for 24 hours while polling continues; it must not exit, sleep, lose controls, leak memory continuously, fill storage, or require intervention.
 3. Factory-reset it, scan both setup QR codes, join Wi-Fi, and reach the contact carousel using only the installed controls.
 4. Exercise each GPIO button for at least 100 presses, short presses, simultaneous presses, and holds of at least 30 seconds. Verify no missed, duplicate, or false events, including during boot and application restart.
-5. Verify two-press call confirmation, hang-up, and the ten-distinct-RED-press reset gesture. A held RED button must count only once.
+5. Verify two-press call confirmation, immediate in-call hang-up, the ten-second RED hold for Settings, early-release cancellation and the separate reset confirmation.
 6. Place and receive bidirectional audio/video calls using VP8 and H.264. Run a continuous 60-minute call while displaying incoming video and sending VGA camera video at 30 frames/s.
 7. Confirm intelligible two-way audio, acceptable echo, responsive input, correct video rendering, and no camera, audio, USB, Wi-Fi, GPIO, or display reset.
 8. Confirm temperatures remain within rated limits, clocks do not settle into thermal throttling, memory is not exhausted, and the system does not sustain storage swapping.

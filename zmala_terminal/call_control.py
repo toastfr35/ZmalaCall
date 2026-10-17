@@ -77,59 +77,71 @@ class CallControl:
                 self.render()
                 break
 
+    def begin_callback(self, cancel=False):
+        """Submit a request once; generation and serial checks guard its asynchronous result."""
+        self.callback_serial += 1
+        serial, generation = self.callback_serial, self.generation
+        configuration, target = self.configuration, self.model.contact['id']
+        request_id = self.model.callback_request['id'] if cancel else None
+        own = self.model.config['sip']['username']
+        def request_callback():
+            reply = None
+            try:
+                if request_id:
+                    reply = json.loads(configuration.request('/api/callbacks/' + request_id + '/cancel', {}))
+                    success = reply.get('ok') is True
+                else:
+                    from config_validation import validate_callbacks
+                    reply = json.loads(configuration.request('/api/callbacks', {'to': target}))
+                    validate_callbacks([reply], own)
+                    success = reply.get('to') == target and reply.get('from') == own
+            except Exception:
+                logging.warning('Callback request could not be confirmed')
+                success = False
+            self.messages.put(('callback-result', (generation, serial, target, success, reply, request_id)))
+        threading.Thread(target=request_callback, daemon=True).start()
+
+    def begin_dial(self):
+        """Check current permission and presence before opening a native call."""
+        self.notice = ''
+        self.outgoing_deadline = time.monotonic() + 60
+        self.dial_serial += 1
+        serial, generation, contact = self.dial_serial, self.generation, dict(self.model.contact)
+        configuration = self.configuration
+        def check():
+            try:
+                reply = json.loads(configuration.request('/api/contacts/' + contact['id'] + '/availability'))
+                available = reply.get('id') == contact['id'] and reply.get('online') is True and reply.get('can_call') is True
+            except Exception:
+                available = False
+            timeout = reply.get('ring_timeout', 60) if available else 60
+            timeout = timeout if type(timeout) is int and 60 <= timeout <= 660 else 60
+            self.messages.put(('dial-ready', (generation, serial, contact, available, timeout)))
+        threading.Thread(target=check, daemon=True).start()
+
+    def answer_when_ready(self):
+        """Wait for USB enumeration without blocking SIP iteration or answering an obsolete call."""
+        ready = getattr(self, 'usb_media_ready', None)
+        if ready and not ready():
+            generation, call = self.generation, self.engine.call
+            self.root.after(100, lambda: self.action('answer')
+                if not self.closed and self.generation == generation and self.engine
+                and self.engine.call == call and self.model.state == State.CONNECTING else None)
+            return
+        if getattr(self, 'usb_power', None):
+            self.usb_power.stop_ringing()
+        self.engine.answer()
+
     def action(self, action):
         if not action or (not self.engine and action not in ('request_callback', 'cancel_callback')):
             return
         try:
             if action in ('request_callback', 'cancel_callback'):
-                self.callback_serial += 1
-                serial, generation = self.callback_serial, self.generation
-                configuration, target = self.configuration, self.model.contact['id']
-                request_id = self.model.callback_request['id'] if action == 'cancel_callback' else None
-                own = self.model.config['sip']['username']
-                def request_callback():
-                    reply = None
-                    try:
-                        if request_id:
-                            reply = json.loads(configuration.request('/api/callbacks/' + request_id + '/cancel', {}))
-                            success = reply.get('ok') is True
-                        else:
-                            from config_validation import validate_callbacks
-                            reply = json.loads(configuration.request('/api/callbacks', {'to': target}))
-                            validate_callbacks([reply], own)
-                            success = reply.get('to') == target and reply.get('from') == own
-                    except Exception:
-                        logging.warning('Callback request could not be confirmed')
-                        success = False
-                    self.messages.put(('callback-result', (generation, serial, target, success, reply, request_id)))
-                threading.Thread(target=request_callback, daemon=True).start()
+                self.begin_callback(cancel=action == 'cancel_callback')
             elif action == 'dial':
-                self.notice = ''
-                self.outgoing_deadline = time.monotonic() + 60
-                self.dial_serial += 1
-                serial, generation, contact = self.dial_serial, self.generation, dict(self.model.contact)
-                configuration = self.configuration
-                def check():
-                    try:
-                        reply = json.loads(configuration.request('/api/contacts/' + contact['id'] + '/availability'))
-                        available = reply.get('id') == contact['id'] and reply.get('online') is True and reply.get('can_call') is True
-                    except Exception:
-                        available = False
-                    timeout = reply.get('ring_timeout', 60) if available else 60
-                    timeout = timeout if type(timeout) is int and 60 <= timeout <= 660 else 60
-                    self.messages.put(('dial-ready', (generation, serial, contact, available, timeout)))
-                threading.Thread(target=check, daemon=True).start()
+                self.begin_dial()
             elif action == 'answer':
-                ready = getattr(self, 'usb_media_ready', None)
-                if ready and not ready():
-                    generation, call = self.generation, self.engine.call
-                    self.root.after(100, lambda: self.action('answer')
-                        if not self.closed and self.generation == generation and self.engine
-                        and self.engine.call == call and self.model.state == State.CONNECTING else None)
-                    return
-                if getattr(self, 'usb_power', None):
-                    self.usb_power.stop_ringing()
-                self.engine.answer()
+                self.answer_when_ready()
             elif action in ('end', 'decline'):
                 self.dial_serial += 1
                 # Rejection ends the TV interruption immediately, even if the
@@ -144,7 +156,7 @@ class CallControl:
                         self.tv_control.cancel()
         except Exception:
             logging.exception('Call action failed')
-            if self.engine.call:
+            if self.engine and self.engine.call:
                 self.engine.end()
             self.model.ended()
             self.notice = 'unavailable'

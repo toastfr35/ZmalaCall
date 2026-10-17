@@ -12,4 +12,4 @@ references:
   type: file
 reviewed: null
 text: |
-  The terminal shall run on Windows and the documented Linux/Pi configuration with Tk and Liblinphone, support an optional fullscreen mode, and have separate start, stop and fresh unconfigured launchers. Starting it shall not implicitly start the server.
+  The terminal shall run on Windows and the documented Linux/Pi configuration with Tk and Liblinphone, support an optional fullscreen mode, and have separate start, stop and fresh unconfigured launchers. Starting it shall not implicitly start the server. The Pi installer shall validate Raspberry Pi OS Lite 64-bit Trixie and wired SSH before deployment, install boot services and dependencies, limit SSH to Ethernet, configure Argon fan control and low-write storage settings, and leave account identity to QR enrollment.

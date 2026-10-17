@@ -821,7 +821,7 @@ function renderConnection() {
     container.append(
       el(
         'p',
-        'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same Wi-Fi as this PC.',
+        'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
         'info-box',
       ),
     );
@@ -830,18 +830,18 @@ function renderConnection() {
       el(
         'p',
         id === state.model.local_terminal_id
-          ? 'This account is assigned to the Windows terminal on this PC.'
-          : 'Assign this account to the terminal on this PC, or download its setup for another Windows instance on this PC.',
+          ? 'This account is assigned to the terminal bootstrap on the server machine.'
+          : 'Assign this account to the terminal on the server machine, or download its setup for another terminal. Use the server QR code to enroll a Pi appliance.',
         'info-box',
       ),
     );
     const actions = el('div', null, 'button-row'),
       assign = actionButton(
-        'Use on this PC',
+        'Use on server machine',
         () => {
           confirm(
             'Assign this terminal?',
-            `Use “${id}” for the Windows terminal on this PC. Close and reopen the terminal window after assigning it.`,
+            `Use “${id}” for the terminal on the server machine. Restart that terminal after assigning it. This does not change enrollment on another device.`,
             async () => {
               await api('/api/local-terminal', 'PUT', { id });
               notice('Terminal assigned. Restart its window to use this account.');
@@ -1157,8 +1157,8 @@ function deleteGroup(id) {
   );
 }
 
-// admin-terminals.js
-// Device association and settings editor. Serial numbers identify hardware independently of SIP usernames.
+// admin-terminalfields.js
+// Device field construction only; card identity, saving and navigation live in admin-terminals.
 /** @param {import('../types/admin-dom').TerminalForm} form @param {string} label @param {string} key @param {string | number} value @param {object} [options] */
 function terminalField(form, label, key, value, options = {}) {
   const wrapper = el('label', label),
@@ -1185,104 +1185,22 @@ function terminalSelect(form, label, key, choices, value) {
   form.fields[key] = select;
   return wrapper;
 }
-/** @param {HTMLElement} card @param {string} title @param {string} kind @returns {import('../types/admin-dom').TerminalForm} */
-function terminalForm(card, title, kind) {
-  const form = Object.assign(el('form', null, 'terminal-settings-form'), {
-    fields: /** @type {Record<string, HTMLInputElement | HTMLSelectElement>} */ ({}),
-    errorId: '',
-  });
-  form.dataset.kind = kind;
-  form.setAttribute('aria-label', `${title} for ${terminalId(card)}`);
-  form.append(el('h3', title));
-  const error = el('p', null, 'banner error');
-  error.id = `terminal-${kind}-error-${terminalId(card)}`;
-  error.hidden = true;
-  error.setAttribute('role', 'alert');
-  form.errorId = error.id;
-  form.append(error);
-  form.addEventListener('input', () => {
-    form.dataset.dirty = 'true';
-    card.dataset.dirty = 'true';
-  });
-  form.addEventListener('change', () => {
-    form.dataset.dirty = 'true';
-    card.dataset.dirty = 'true';
-  });
-  return form;
+/** @param {string} id @returns {import('../types/contracts').TerminalAccount} */
+function terminalUser(id) {
+  const user = state.model.users[id];
+  if (!user || user.type !== 'terminal') throw Error('Choose a terminal account.');
+  return user;
 }
-/** @param {import('../types/admin-dom').TerminalForm} form @param {HTMLElement} card */
-function savedTerminalForm(form, card) {
-  form.dataset.dirty = 'false';
-  card.dataset.dirty = String(!!card.querySelector('form[data-dirty="true"]'));
+/** @param {import('../types/admin-dom').TerminalForm} form @param {string} key @returns {HTMLInputElement} */
+function terminalInput(form, key) {
+  const field = form.fields[key];
+  if (!(field instanceof HTMLInputElement)) throw Error('Missing terminal input: ' + key);
+  return field;
 }
-/** @param {HTMLElement} card @param {string} id */
-function terminalCardState(card, id) {
-  const u = state.model.users[id];
-  query(card, 'h2').textContent = u.name;
-  query(card, '.terminal-address').textContent = `sip:${id}@${state.model.host}`;
-  const summary = query(card, '.terminal-summary');
-  summary.replaceChildren(
-    badge(online(id) ? 'Terminal online' : 'Terminal offline', online(id) ? 'success' : 'neutral'),
-    badge(
-      registered(id) ? 'SIP registered' : 'SIP offline',
-      registered(id) ? 'success' : 'neutral',
-    ),
-  );
-  if (id === state.model.local_terminal_id) summary.append(badge('This PC', 'accent'));
-  const audioStatus = state.model.terminal_statuses[id];
-  if (state.model.profiles[id].auto_framing === true) {
-    const framingStatus = audioStatus?.auto_framing_status;
-    /** @type {Record<string, string>} */
-    const labels = {
-      active: 'Automatic framing active',
-      waiting: 'Automatic framing ready for a call',
-      unavailable: 'Automatic framing unavailable · full view',
-      unsupported: 'Automatic framing requires a Pi C20 terminal',
-    };
-    summary.append(
-      badge(
-        labels[framingStatus || ''] || 'Automatic framing pending',
-        framingStatus === 'active' ? 'accent' : 'neutral',
-      ),
-    );
-  }
-  if (
-    (state.model.profiles[id].audio_profile || 'normal') === 'speech' &&
-    audioStatus?.requested_audio_profile === 'speech'
-  )
-    summary.append(
-      badge(
-        audioStatus.audio_profile === 'speech'
-          ? 'Speech audio active'
-          : 'Speech unavailable · normal audio',
-        audioStatus.audio_profile === 'speech' ? 'accent' : 'neutral',
-      ),
-    );
-  card
-    .querySelectorAll('form')
-    .forEach((form) =>
-      form.setAttribute(
-        'aria-label',
-        `${form.dataset.kind === 'association' ? 'Account association' : 'Terminal settings'} for ${id}`,
-      ),
-    );
-}
-/** @param {HTMLElement} card @param {string} id */
-function buildDevicesForm(card, id) {
-  const profile = state.model.profiles[id];
-  const devices = terminalForm(card, 'Terminal settings', 'devices');
-  query(devices, 'h3').remove();
-  // Separate visual groups share one form and one save action.
-  /** @param {string} title @param {string} [className] */
-  const group = (title, className = '') => {
-    const section = el('section', null, 'terminal-setting-section ' + className);
-    const fields = el('div', null, 'terminal-options');
-    section.append(el('h3', title), fields);
-    devices.append(section);
-    return fields;
-  };
+
+/** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} calls @param {string} id */
+function buildCallFields(devices, calls, id) {
   const user = terminalUser(id);
-  const calls = group('Calls', 'terminal-calls');
   const auto = terminalField(devices, 'Auto-answer incoming calls', 'autoAnswer', '', {
     type: 'checkbox',
     checked: user.auto_answer === true,
@@ -1309,8 +1227,11 @@ function buildDevicesForm(card, id) {
   };
   terminalInput(devices, 'countdown').disabled = !terminalInput(devices, 'autoAnswer').checked;
   calls.append(auto, countdown);
+}
 
-  const media = group('Video & audio');
+/** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} media @param {string} id */
+function buildMediaFields(devices, media, id) {
+  const profile = state.model.profiles[id];
   /** @param {keyof import('../types/contracts').TerminalSettings} key @param {string} label */
   const mediaField = (key, label) => {
     const current = profile.terminal_settings[key] || '';
@@ -1393,13 +1314,18 @@ function buildDevicesForm(card, id) {
   media.append(
     mediaField('camera', 'Camera'),
     resolution,
+    frameRate,
     framing,
     mediaField('microphone', 'Microphone'),
     mediaField('speaker', 'Speaker'),
     audio,
     volume,
   );
-  const general = group('General');
+}
+
+/** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} general @param {string} id */
+function buildGeneralFields(devices, general, id) {
+  const profile = state.model.profiles[id];
   const languages = [...state.model.terminal_languages]
     .sort((a, b) => a.name.localeCompare(b.name, 'en'))
     .map((l) => [l.code, l.name === l.native ? l.name : `${l.name} · ${l.native}`]);
@@ -1431,6 +1357,109 @@ function buildDevicesForm(card, id) {
       String(profile.tv_idle_seconds ?? 30),
     ),
   );
+}
+
+// admin-terminals.js
+// Device association and settings editor. Serial numbers identify hardware independently of SIP usernames.
+/** @param {HTMLElement} card @param {string} title @param {string} kind @returns {import('../types/admin-dom').TerminalForm} */
+function terminalForm(card, title, kind) {
+  const form = Object.assign(el('form', null, 'terminal-settings-form'), {
+    fields: /** @type {Record<string, HTMLInputElement | HTMLSelectElement>} */ ({}),
+    errorId: '',
+  });
+  form.dataset.kind = kind;
+  form.setAttribute('aria-label', `${title} for ${terminalId(card)}`);
+  form.append(el('h3', title));
+  const error = el('p', null, 'banner error');
+  error.id = `terminal-${kind}-error-${terminalId(card)}`;
+  error.hidden = true;
+  error.setAttribute('role', 'alert');
+  form.errorId = error.id;
+  form.append(error);
+  form.addEventListener('input', () => {
+    form.dataset.dirty = 'true';
+    card.dataset.dirty = 'true';
+  });
+  form.addEventListener('change', () => {
+    form.dataset.dirty = 'true';
+    card.dataset.dirty = 'true';
+  });
+  return form;
+}
+/** @param {import('../types/admin-dom').TerminalForm} form @param {HTMLElement} card */
+function savedTerminalForm(form, card) {
+  form.dataset.dirty = 'false';
+  card.dataset.dirty = String(!!card.querySelector('form[data-dirty="true"]'));
+}
+/** @param {HTMLElement} card @param {string} id */
+function terminalCardState(card, id) {
+  const u = state.model.users[id];
+  query(card, 'h2').textContent = u.name;
+  query(card, '.terminal-address').textContent = `sip:${id}@${state.model.host}`;
+  const summary = query(card, '.terminal-summary');
+  summary.replaceChildren(
+    badge(online(id) ? 'Terminal online' : 'Terminal offline', online(id) ? 'success' : 'neutral'),
+    badge(
+      registered(id) ? 'SIP registered' : 'SIP offline',
+      registered(id) ? 'success' : 'neutral',
+    ),
+  );
+  if (id === state.model.local_terminal_id)
+    summary.append(badge('Server-local terminal', 'accent'));
+  const audioStatus = state.model.terminal_statuses[id];
+  if (state.model.profiles[id].auto_framing === true) {
+    const framingStatus = audioStatus?.auto_framing_status;
+    /** @type {Record<string, string>} */
+    const labels = {
+      active: 'Automatic framing active',
+      waiting: 'Automatic framing ready for a call',
+      unavailable: 'Automatic framing unavailable · full view',
+      unsupported: 'Automatic framing requires a Pi C20 terminal',
+    };
+    summary.append(
+      badge(
+        labels[framingStatus || ''] || 'Automatic framing pending',
+        framingStatus === 'active' ? 'accent' : 'neutral',
+      ),
+    );
+  }
+  if (
+    (state.model.profiles[id].audio_profile || 'normal') === 'speech' &&
+    audioStatus?.requested_audio_profile === 'speech'
+  )
+    summary.append(
+      badge(
+        audioStatus.audio_profile === 'speech'
+          ? 'Speech audio active'
+          : 'Speech unavailable · normal audio',
+        audioStatus.audio_profile === 'speech' ? 'accent' : 'neutral',
+      ),
+    );
+  card
+    .querySelectorAll('form')
+    .forEach((form) =>
+      form.setAttribute(
+        'aria-label',
+        `${form.dataset.kind === 'association' ? 'Account association' : 'Terminal settings'} for ${id}`,
+      ),
+    );
+}
+/** @param {HTMLElement} card @param {string} id */
+function buildDevicesForm(card, id) {
+  const devices = terminalForm(card, 'Terminal settings', 'devices');
+  query(devices, 'h3').remove();
+  // Separate visual groups share one form and one save action.
+  /** @param {string} title @param {string} [className] */
+  const group = (title, className = '') => {
+    const section = el('section', null, 'terminal-setting-section ' + className);
+    const fields = el('div', null, 'terminal-options');
+    section.append(el('h3', title), fields);
+    devices.append(section);
+    return fields;
+  };
+  buildCallFields(devices, group('Calls', 'terminal-calls'), id);
+  buildMediaFields(devices, group('Video & audio'), id);
+  buildGeneralFields(devices, group('General'), id);
   const footer = el('div', null, 'terminal-tools');
   const tools = el('div', null, 'button-row');
   const setup = el('details', null, 'terminal-setup');
@@ -1602,18 +1631,6 @@ function terminalId(card) {
   const id = card.dataset.terminalId;
   if (!id) throw Error('Terminal card has no account identity.');
   return id;
-}
-/** @param {string} id @returns {import('../types/contracts').TerminalAccount} */
-function terminalUser(id) {
-  const user = state.model.users[id];
-  if (!user || user.type !== 'terminal') throw Error('Choose a terminal account.');
-  return user;
-}
-/** @param {import('../types/admin-dom').TerminalForm} form @param {string} key @returns {HTMLInputElement} */
-function terminalInput(form, key) {
-  const field = form.fields[key];
-  if (!(field instanceof HTMLInputElement)) throw Error('Missing terminal input: ' + key);
-  return field;
 }
 
 // admin-callbacks.js

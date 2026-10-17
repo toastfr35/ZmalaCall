@@ -79,7 +79,9 @@ class UsbPowerTests(unittest.TestCase):
         self.assertEqual(set(actions), {'on'})
 
     def test_cancelled_answer_does_not_run_after_wake(self):
-        app = Mock()
+        app = CallControl()
+        app.engine, app.root, app.model = Mock(), Mock(), Mock()
+        app.usb_media_ready, app.action = Mock(return_value=False), Mock()
         app.engine.call = 123
         app.generation = 5
         app.closed = False

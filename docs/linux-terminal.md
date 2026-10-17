@@ -30,14 +30,7 @@ and [PDF](../output/pdf/ZmalaCall-Pi4-Installation-Guide.pdf).
 It includes the Imager settings, Argon case connections and remote/QR setup.
 
 Download the installer from the [Build terminal installer workflow](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-terminal-installer.yml).
-Sign in to GitHub, open the latest successful `main` run, and download the
-**zmala-terminal-setup** artifact. Extract the ZIP and open
-**`zmala_terminal_setup.exe`** on the Windows PC. The ZIP includes the Word and
-PDF instructions. It is a
-standalone executable: Python, SSH support and the terminal archive are bundled.
-No Python installation, SCP commands, extraction or Pi terminal commands are
-needed. The SD card must already have the OS and SSH configured as described
-above; this executable does not flash SD cards.
+Download the installer and guide from the [latest public release](https://github.com/toastfr35/ZmalaCall/releases/latest); no GitHub sign-in is required. For an unreleased build, sign in to GitHub and download the artifact from a successful **Build terminal installer** workflow run. Extract the archive and run **`zmala_terminal_setup.exe`** on Windows.
 
 1. The Pi hostname is `zmala`; its local network address is `zmala.local`.
    Leave that address in the installer, or enter its Ethernet IP if name
@@ -329,7 +322,7 @@ not automatically visible in a pip virtual environment. Installation adds the
 packaged Liblinphone 5.3 runtime and OpenH264. OpenGL development packages supply
 the unversioned library names dynamically loaded by that media runtime.
 
-The server remains on the Windows PC. Restart it after installing the LAN API
+The server may run on Windows or a separate Pi. Restart it after installing LAN API
 change. Its HTTP listener accepts authenticated terminal requests over the LAN;
 administration supports LAN browsers using the shared admin password, including
 first-time setup. See [administration authentication](admin-authentication.md).
@@ -576,11 +569,12 @@ selection from the server. QR preview is unmirrored and uses an
 isolated OpenCV/ZBar worker. Linux text uses Pango/Cairo with Noto fonts for
 complex scripts and automatic right-to-left shaping.
 
-## Pi 3 defaults and validation
+## Video defaults and historical Pi 3 validation
 
 Linux uses C20 MJPEG capture, Pi hardware H.264 encoding and FFmpeg software
-decoding. 720p at 15 fps is the default, with 1500/2000 kbit/s upload/download
-budgets. Resolution and audio processing remain server settings and apply when
+decoding. 720p at 15 fps is the default, with 1500/4000 kbit/s upload/download
+budgets. Each terminal can select 10, 15, 20, 25 or 30 fps. Sending budgets
+scale with the target rate; receive capacity stays independent of that target. Resolution and audio processing remain server settings and apply when
 idle; legacy local video JSON and codec/fps environment switches are retired.
 Enable H.264 on phone peers. The embedded `MSOGL` display uses EGL/GLES and the
 shared native-window structure. A custom Liblinphone prefix can
@@ -618,7 +612,11 @@ xvfb-run -a -s '-screen 0 1366x900x24' \
 Use private test accounts for the smoke tests. The test mutates its own contact
 view to check layouts and saves screenshots under `zmala_terminal/tests/`.
 
-## Current test deployment
+## Historical test deployment — 9 October 2026
+
+This section records the earlier Pi 3 setup and its measurements. It is not the
+current Pi 4 installer configuration. For current defaults use the sections above;
+for later performance evidence see [Pi hardware video](pi-hardware-video.md).
 
 The Pi at `192.168.1.44` has the kiosk package installed under
 `/opt/zmalacall/current`, with persistent state in `/var/lib/zmalacall`, and

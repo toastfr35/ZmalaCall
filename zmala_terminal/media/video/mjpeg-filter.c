@@ -1,5 +1,6 @@
-/* C20 camera entry using public SDK interfaces. The SDK keeps its MJPEG
- * decoding, scaling and H.264 encoding graph; only camera acquisition differs. */
+/* C20 camera entry using public SDK interfaces. This source acquires strict-size
+ * MJPEG frames; separate decoder/framing adapters and the SDK own downstream
+ * scaling, preview and H.264 encoding. */
 #include "mjpeg-stream.h"
 #include <fcntl.h>
 #include <glob.h>

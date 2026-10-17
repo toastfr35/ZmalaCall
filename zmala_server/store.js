@@ -5,6 +5,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { defaultState, lanAddress } = require('./defaults');
 const { own, accountId, validateGroup, autoAnswerFields } = require('./validation');
+const { terminalProfileFields } = require('./terminal-settings');
 const { AccountStore } = require('./accounts');
 const { migrate } = require('./migrations');
 const { readJson, writeJson } = require('./json-file');
@@ -220,88 +221,8 @@ class Store extends AccountStore {
     const p = this.requireTerminal(id),
       account = this.terminalAccount(id);
     if (!account) throw Error('Choose a terminal account.');
-    if (
-      typeof update.display_name !== 'string' ||
-      !update.display_name.trim() ||
-      update.display_name.length > 80
-    )
-      throw Error('Enter a display name.');
-    const language = update.language === undefined ? p.language || 'en' : update.language;
-    if (typeof language !== 'string' || !own(LANGUAGES, language))
-      throw Error('Choose a supported terminal language.');
-    const commandShell =
-      update.command_shell === undefined ? p.command_shell || 'powershell' : update.command_shell;
-    if (
-      commandShell !== 'powershell' &&
-      commandShell !== 'pwsh' &&
-      commandShell !== 'cmd' &&
-      commandShell !== 'sh' &&
-      commandShell !== 'bash'
-    )
-      throw Error('Choose a supported command shell.');
-    const audioProfile =
-      update.audio_profile === undefined ? p.audio_profile || 'normal' : update.audio_profile;
-    if (audioProfile !== 'normal' && audioProfile !== 'speech')
-      throw Error('Choose a supported audio profile.');
-    const videoResolution =
-      update.video_resolution === undefined
-        ? p.video_resolution || '720p'
-        : update.video_resolution;
-    if (videoResolution !== '480p' && videoResolution !== '720p' && videoResolution !== '1080p')
-      throw Error('Choose a supported video resolution.');
-    const videoFps = update.video_fps === undefined ? (p.video_fps ?? 15) : update.video_fps;
-    if (videoFps !== 10 && videoFps !== 15 && videoFps !== 20 && videoFps !== 25 && videoFps !== 30)
-      throw Error('Choose a video frame rate of 10, 15, 20, 25 or 30 fps.');
-    const carouselPortraits =
-      update.carousel_portraits === undefined
-        ? (p.carousel_portraits ?? 3)
-        : update.carousel_portraits;
-    if (carouselPortraits !== 3 && carouselPortraits !== 5)
-      throw Error('Choose 3 or 5 carousel portraits.');
-    const tvIdleSeconds =
-      update.tv_idle_seconds === undefined ? (p.tv_idle_seconds ?? 30) : update.tv_idle_seconds;
-    if (
-      typeof tvIdleSeconds !== 'number' ||
-      ![0, 30, 60, 120, 300, 600, 1200].includes(tvIdleSeconds)
-    )
-      throw Error('Choose a supported TV idle timeout.');
+    const fields = terminalProfileFields(p, update);
     const answer = autoAnswerFields(update);
-    const autoFraming =
-      update.auto_framing === undefined ? p.auto_framing === true : update.auto_framing;
-    if (typeof autoFraming !== 'boolean')
-      throw Error('Automatic framing must be enabled or disabled.');
-    const speakerVolume =
-      update.c20_speaker_volume === undefined
-        ? (p.c20_speaker_volume ?? 50)
-        : update.c20_speaker_volume;
-    if (
-      typeof speakerVolume !== 'number' ||
-      !Number.isInteger(speakerVolume) ||
-      speakerVolume < 0 ||
-      speakerVolume > 100
-    )
-      throw Error('C20 speaker volume must be 0–100 percent.');
-    /** @type {import('./types/contracts').TerminalSettings} */
-    const settings = { camera: '', microphone: '', speaker: '' };
-    for (const k of /** @type {const} */ (['camera', 'microphone', 'speaker'])) {
-      if (typeof update[k] !== 'string' || update[k].length > 256)
-        throw Error('Invalid media device.');
-      settings[k] = update[k];
-    }
-    /** @type {import('./types/contracts').TerminalProfile} */
-    const fields = {
-      display_name: update.display_name.trim(),
-      language,
-      command_shell: commandShell,
-      audio_profile: audioProfile,
-      video_resolution: videoResolution,
-      video_fps: videoFps,
-      auto_framing: autoFraming,
-      carousel_portraits: carouselPortraits,
-      tv_idle_seconds: tvIdleSeconds,
-      c20_speaker_volume: speakerVolume,
-      terminal_settings: settings,
-    };
     Object.assign(p, fields);
     // Auto-answer remains stored on the account for existing terminal clients.
     Object.assign(account, answer);
@@ -337,6 +258,9 @@ class Store extends AccountStore {
     const values = /** @type {Record<string, unknown>} */ (current);
     if (keys.some((key) => values[key] !== expected[key] && values[key] !== changes[key]))
       throw Object.assign(Error('This setting changed on the server. Try again.'), { status: 409 });
+    // A retry after a lost HTTP acknowledgement still reaches the route's
+    // persistence barrier, but must not create another revision or SD write.
+    if (keys.every((key) => values[key] === changes[key])) return;
     const p = this.requireTerminal(id);
     this.setSettings(id, { display_name: p.display_name, ...p.terminal_settings, ...changes });
   }

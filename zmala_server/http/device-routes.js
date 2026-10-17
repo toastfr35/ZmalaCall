@@ -3,18 +3,25 @@
 // Device API routes use the bearer token identity, not a terminal ID supplied by the request.
 const { terminalStatus } = require('../validation');
 const { registrationOnline } = require('../registrations');
-const { send: sendResponse, readJson, requireDevice } = require('./responses');
+const { send, readJson, requireDevice } = require('./responses');
+/** Full snapshots after reads and writes must expose the same live fields.
+ * @param {string} id @param {import('../types/http').DeviceContext} context */
+function liveConfiguration(id, { store, sipServer, callbacks }) {
+  const config = store.config(id);
+  config.contacts = config.contacts.map((contact) => ({
+    ...contact,
+    online: registrationOnline(sipServer.registrations.get(contact.id)),
+  }));
+  config.callbacks = callbacks.list(id);
+  return config;
+}
+
 /** Identity comes exclusively from the bearer token, never from a requested terminal ID.
  * @param {import('node:http').IncomingMessage} req
  * @param {import('node:http').ServerResponse} res @param {URL} url
  * @param {import('../types/http').DeviceContext} context */
 async function deviceRoutes(req, res, url, context) {
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses } = context;
-  /** Read-only routes must not depend on unrelated persistence failures. */
-  /** @param {Parameters<typeof sendResponse>} args */
-  async function send(...args) {
-    return sendResponse(...args);
-  }
   let { deviceId } = context;
   if (url.pathname === '/api/config' && req.method === 'GET') {
     deviceId = requireDevice(deviceId);
@@ -32,13 +39,7 @@ async function deviceRoutes(req, res, url, context) {
           callbacks: callbacks.list(deviceId),
         },
       });
-    const config = store.config(deviceId);
-    config.contacts = config.contacts.map((c) => ({
-      ...c,
-      online: registrationOnline(sipServer.registrations.get(c.id)),
-    }));
-    config.callbacks = callbacks.list(deviceId);
-    return send(res, 200, config);
+    return send(res, 200, liveConfiguration(deviceId, context));
   }
   if (url.pathname === '/api/device/settings' && req.method === 'POST') {
     deviceId = requireDevice(deviceId);
@@ -59,13 +60,7 @@ async function deviceRoutes(req, res, url, context) {
       /** @type {Record<string, unknown>} */ (update.expected),
     );
     await store.flush();
-    const config = store.config(deviceId);
-    config.contacts = config.contacts.map((c) => ({
-      ...c,
-      online: registrationOnline(sipServer.registrations.get(c.id)),
-    }));
-    config.callbacks = callbacks.list(deviceId);
-    return send(res, 200, config);
+    return send(res, 200, liveConfiguration(deviceId, context));
   }
   if (url.pathname === '/api/callbacks' && req.method === 'POST') {
     deviceId = requireDevice(deviceId);

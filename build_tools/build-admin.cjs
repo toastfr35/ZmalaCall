@@ -11,6 +11,7 @@ const scripts = [
   'accounts',
   'console',
   'groups',
+  'terminalfields',
   'terminals',
   'callbacks',
   'pages',

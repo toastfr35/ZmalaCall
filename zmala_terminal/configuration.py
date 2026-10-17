@@ -11,6 +11,21 @@ from photo_cache import PhotoCache, MAX_BYTES
 ROOT = Path(__file__).resolve().parent
 
 
+class NoCredentialRedirect(urllib.request.HTTPRedirectHandler):
+    """An enrolled origin owns the bearer token; redirects cannot transfer it."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def stable_configuration(config):
+    """Offline snapshots retain settings, never live presence or callback state."""
+    stable = copy.deepcopy(config)
+    stable.pop('callbacks', None)
+    for contact in stable['contacts']:
+        contact.pop('online', None)
+    return stable
+
+
 class Configuration:
     def __init__(self, bootstrap=ROOT / 'data/terminal.json', cache=ROOT / 'data/config-cache.json'):
         self.bootstrap = dict(bootstrap) if isinstance(bootstrap, dict) else json.loads(Path(bootstrap).read_text(encoding='utf-8'))
@@ -20,6 +35,7 @@ class Configuration:
         self.cancelled = False
         self.current = None
         self.saved = None
+        self.opener = urllib.request.build_opener(NoCredentialRedirect())
         self.photos = PhotoCache(ROOT / 'data', lambda route: self.request(route))
 
     def deactivate(self, erase=False):
@@ -50,7 +66,7 @@ class Configuration:
             data = json.dumps(data).encode()
             headers['Content-Type'] = 'application/json'
         request = urllib.request.Request(self.bootstrap['server_url'] + route, headers=headers, data=data)
-        with urllib.request.urlopen(request, timeout=4) as response:
+        with self.opener.open(request, timeout=4) as response:
             data = response.read(MAX_BYTES + 1)
             if len(data) > MAX_BYTES:
                 raise ValueError('Response is too large')
@@ -61,14 +77,7 @@ class Configuration:
             if self.cancelled:
                 raise RuntimeError('Enrollment was reset')
             reply = json.loads(self.request('/api/device/settings', {'settings': changes, 'expected': expected}))
-            reply = validate(reply, self.bootstrap['device_id'])
-            stable = copy.deepcopy(reply)
-            stable.pop('callbacks', None)
-            for contact in stable['contacts']:
-                contact.pop('online', None)
-            self.persist(stable)
-            self.current = stable
-            return reply
+            return self.accept(reply, self.current or self.cached())
 
     def fetch(self, persist=True):
         with self.fetch_lock:
@@ -76,6 +85,8 @@ class Configuration:
 
     def _fetch(self, persist=True):
         """Validate before caching; reject version rollback and treat missing contact photos as optional."""
+        if self.cancelled:
+            raise RuntimeError('Enrollment was reset')
         previous = self.current or self.cached()
         route = '/api/config'
         if previous:
@@ -92,14 +103,14 @@ class Configuration:
             config['callbacks'] = live['callbacks']
         else:
             config = reply
+        return self.accept(config, previous, persist)
+
+    def accept(self, config, previous, persist=True):
+        """Shared poll/write response boundary; callers hold fetch_lock."""
         config = validate(config, self.bootstrap['device_id'])
         if previous and previous['configuration_version'] > config['configuration_version']:
             raise ValueError('Refusing an older configuration')
-        # Presence is transient: keep it out of the durable offline cache.
-        stable = copy.deepcopy(config)
-        stable.pop('callbacks', None)
-        for contact in stable['contacts']:
-            contact.pop('online', None)
+        stable = stable_configuration(config)
         if persist:
             self.persist(stable)
         self.current = stable

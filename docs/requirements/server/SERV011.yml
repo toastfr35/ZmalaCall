@@ -8,8 +8,8 @@ links:
 normative: true
 ref: ''
 references:
-- path: zmala_server/web/admin.js
+- path: zmala_server/web/admin-terminals.js
   type: file
 reviewed: null
 text: |
-  The Terminals page shall show one terminal card selected by dropdown. Its inline account and device/display settings shall have separate save actions and retain unsaved edits. Wi-Fi QR PDF, server QR PDF and console downloads/actions shall be in that card. Contacts shall be managed through Groups and Accounts.
+  The Terminals page shall show one terminal card selected by dropdown. Its account-association and terminal settings forms shall have separate save actions and retain unsaved edits. Settings shall be grouped into Calls, Video & audio and General, with every registered control attached to the visible form, including frame rate. Account identity, credentials and portrait editing shall remain on Accounts. Wi-Fi QR PDF, server QR PDF and console downloads/actions shall be in that card. Contacts shall be managed through Groups and Accounts.

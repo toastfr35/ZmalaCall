@@ -1,6 +1,6 @@
 # ZmalaCall documentation
 
-[Design](design.md) describes the desktop design and its operating behavior. See the [platform and recovery notes](reliability.md) for Windows/Linux scope and remaining hardware acceptance. Requirements are maintained in Doorstop YAML records; the Markdown catalogues are generated views:
+[Design](design.md) describes terminal and server behavior and its operating behavior. See the [platform and recovery notes](reliability.md) for Windows/Linux scope and remaining hardware acceptance. Requirements are maintained in Doorstop YAML records; the Markdown catalogues are generated views:
 
 [Implementation guide](implementation.md) maps the source modules, explains their state and lifetime rules, and lists development checks.
 
@@ -11,7 +11,7 @@ installer, migration, wired SSH control and microSD wear reduction.
 - [Terminal requirements](terminal_requirements.md) (`TERM`): terminal behavior, controls, provisioning and maintenance.
 - [Server requirements](server_requirements.md) (`SERV`): accounts, groups, signaling, administration and persistence.
 
-The requirements tree is `ZMC → TERM / SERV`. Each terminal/server requirement links to a product requirement and references an implementation or verification file. The catalogue contains 10 product requirements, 24 terminal requirements and 17 server requirements. YAML records under `requirements/` are the editable source; regenerate the catalogues after changing them.
+The requirements tree is `ZMC → TERM / SERV`. Each terminal/server requirement links to a product requirement and references an implementation or verification file. YAML records under `requirements/` are the editable source; regenerate the catalogues after changing them.
 
 ## Install and run Doorstop
 

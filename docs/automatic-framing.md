@@ -25,9 +25,9 @@ At 2×, a 1080p camera supplies a 960×540 crop enlarged to 1080p. This improves
 framing, not optical detail. People shown on a television or photograph may also
 be detected; this version does not distinguish real people from pictures.
 
-## Install the optional detector
+## Detector installation
 
-On a 64-bit Pi with Python 3.13, from the installed project directory:
+The Pi terminal installer installs the detector runtime and model automatically; framing remains disabled until enabled in settings. For a manual installation or runtime repair on a 64-bit Pi with Python 3.13, from the installed project directory:
 
 ```sh
 sudo apt-get install python3-venv
@@ -41,11 +41,11 @@ download models. The detector uses the CPU version of Google's
 [SSD MobileNet V2 COCO quantized model](https://github.com/google-coral/test_data/blob/master/ssd_mobilenet_v2_coco_quant_postprocess.tflite)
 (Apache-2.0, 300×300 uint8 input, built-in SSD postprocessing) and LiteRT 2.3.0.
 No Coral accelerator is required. Source packages exclude installed runtimes and
-model weights; repeat this optional setup after installing a fresh release.
+model weights; the installer prepares them while deploying a release. Manual source installations must run this setup themselves.
 
 ## Processing and multicore use
 
-The MJPEG decoder adapter sits before the SDK's preview/encoder tee. It samples
+The MJPEG decoder adapter sits before the SDK's preview/encoder tee. JPEG decode, crop and preview reduction run on its worker, with only the newest camera frame waiting for processing. It samples
 an uncropped RGB thumbnail and crops decoded YUV420 frames once for both outputs.
 Encoded resolution, frame rate and SIP negotiation are unchanged. No additional
 camera handle is opened. With framing disabled and the view wide, the adapter

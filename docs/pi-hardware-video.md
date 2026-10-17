@@ -1,5 +1,10 @@
 # C20 Raspberry Pi media
 
+This document includes dated hardware observations. Preserve their original
+settings when comparing results; they are not current global limits. Current
+video defaults and targets are in [the terminal guide](linux-terminal.md#video-defaults-and-historical-pi-3-validation)
+and `zmala_terminal/video_settings.py`.
+
 ## Supported configuration
 
 Linux uses one media path: Nuroum C20 MJPEG capture, Pi `bcm2835-codec` H.264
@@ -8,7 +13,7 @@ The shared Python UI, SIP/RTP, provisioning, server communication and call
 control remain shared with Windows. Windows retains its SDK device selection
 and VP8/H.264 support for PC tests. Phone peers must enable H.264 for Pi calls.
 
-The current target is Pi 3 Model B with Debian 13 ARM64, Liblinphone 5.3.105,
+The original 9 October 2026 target was Pi 3 Model B with Debian 13 ARM64, Liblinphone 5.3.105,
 a C20 (`0525:a4ad`) and a Samsung TV on HDMI 2. This does not establish support
 for a Pi without that hardware encoder or a different camera. The C20's
 capture audio is stereo S16_LE at 16 kHz; playback is stereo S16_LE at 48 kHz.
@@ -26,11 +31,11 @@ display override restored a 720p TV picture, confirmed by the user; see the
 [Pi migration notes](linux-terminal.md#moving-a-pi-3-card-to-a-pi-4). The Pi 3
 performance figures below must not be interpreted as Pi 4 measurements.
 
-The default is **720p at 15 encoded fps**, with 1500/2000 kbit/s upload/download
-budgets. The server retains 480p, 720p and 1080p presets and normal/speech audio
-processing. Change these while idle; active calls finish before the native
-graph is recreated. 1080p is retained for explicit comparisons but has not met
-the user's 10 fps minimum in a reliable C20 call. Use 720p for this Pi.
+The original Pi 3 tests used **720p at 15 encoded fps**, with 1500/2000 kbit/s
+upload/download budgets. At that point, 1080p had not met the 10 fps minimum
+reliably on Pi 3. Later Pi 4 results below supersede that hardware limitation.
+Current presets retain 480p/720p/1080p with configurable 10–30 fps targets and
+independent receive capacity; settings that rebuild the graph wait until idle.
 
 ## Pi 4 call measurements — 11 October 2026
 

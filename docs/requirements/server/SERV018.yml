@@ -1,0 +1,19 @@
+active: true
+derived: false
+header: |
+  Pi server installation and service controls
+level: 18.0
+links:
+- ZMC001: Db1hjT23wwLy-O60eh7PgU2MJ6jKxp5SyN7yA0gSEAg=
+normative: true
+ref: ''
+references:
+- path: build_tools/server_installer/backend.py
+  type: file
+- path: build_tools/tests/test_server_installer.py
+  type: file
+- path: zmala_server/server-ssh.js
+  type: file
+reviewed: null
+text: |
+  A Windows GUI/headless installer shall validate SSH, Raspberry Pi OS Lite 64-bit Trixie, supported hardware, Ethernet access and storage before deployment. It shall install automatic startup, Ethernet-only SSH and low-write settings while keeping server HTTP/SIP/media available on all IPv4 interfaces. Optional migration shall preserve accounts, credentials, portraits and persisted server data without replaying in-flight console commands. Installed state shall live under /var/lib/zmalacall-server; updates shall preserve it. Authenticated administration shall enable/disable wired SSH persistently without stopping server services. SSH shall remain enabled during installation. Installation failure shall be reported, and verification shall distinguish dependency/configuration changes from application-release rollback.

@@ -280,7 +280,7 @@ export function renderConnection() {
     container.append(
       el(
         'p',
-        'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same Wi-Fi as this PC.',
+        'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
         'info-box',
       ),
     );
@@ -289,18 +289,18 @@ export function renderConnection() {
       el(
         'p',
         id === state.model.local_terminal_id
-          ? 'This account is assigned to the Windows terminal on this PC.'
-          : 'Assign this account to the terminal on this PC, or download its setup for another Windows instance on this PC.',
+          ? 'This account is assigned to the terminal bootstrap on the server machine.'
+          : 'Assign this account to the terminal on the server machine, or download its setup for another terminal. Use the server QR code to enroll a Pi appliance.',
         'info-box',
       ),
     );
     const actions = el('div', null, 'button-row'),
       assign = actionButton(
-        'Use on this PC',
+        'Use on server machine',
         () => {
           confirm(
             'Assign this terminal?',
-            `Use “${id}” for the Windows terminal on this PC. Close and reopen the terminal window after assigning it.`,
+            `Use “${id}” for the terminal on the server machine. Restart that terminal after assigning it. This does not change enrollment on another device.`,
             async () => {
               await api('/api/local-terminal', 'PUT', { id });
               notice('Terminal assigned. Restart its window to use this account.');

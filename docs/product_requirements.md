@@ -21,7 +21,7 @@ The system shall provide independently startable and stoppable server and termin
 
 > `README.md`
 
-*Child links:* [SERV001 Independent server and LAN administration](server_requirements.md#SERV001), [TERM001 Independent terminal launch](terminal_requirements.md#TERM001)
+*Child links:* [SERV001 Independent server and LAN administration](server_requirements.md#SERV001), [TERM001 Independent terminal launch](terminal_requirements.md#TERM001), [SERV018 Pi server installation and service controls](server_requirements.md#SERV018)
 
 <a id="ZMC002"></a>
 
@@ -41,7 +41,7 @@ The terminal shall let an elderly user choose a familiar person and control call
 
 > `zmala_terminal/tests/test_terminal.py`
 
-*Child links:* [TERM002 Contact identity and carousel](terminal_requirements.md#TERM002), [TERM003 Contact availability](terminal_requirements.md#TERM003), [TERM004 Call confirmation](terminal_requirements.md#TERM004), [TERM005 Physical-button prompts](terminal_requirements.md#TERM005), [SERV007 Online presence](server_requirements.md#SERV007), [TERM010 Connectivity indicator](terminal_requirements.md#TERM010), [TERM022 Interrupted or changed confirmation](terminal_requirements.md#TERM022), [TERM024 Serial keypad host integration acceptance](terminal_requirements.md#TERM024), [TERM025 Presenter motion volume control](terminal_requirements.md#TERM025), [TERM026 Local settings with remote control](terminal_requirements.md#TERM026)
+*Child links:* [TERM002 Contact identity and carousel](terminal_requirements.md#TERM002), [TERM003 Contact availability](terminal_requirements.md#TERM003), [TERM004 Call confirmation](terminal_requirements.md#TERM004), [TERM005 Physical-button prompts](terminal_requirements.md#TERM005), [SERV007 Online presence](server_requirements.md#SERV007), [TERM010 Connectivity indicator](terminal_requirements.md#TERM010), [TERM022 Interrupted or changed confirmation](terminal_requirements.md#TERM022), [TERM024 Serial keypad host integration acceptance](terminal_requirements.md#TERM024), [TERM025 Presenter motion volume control](terminal_requirements.md#TERM025), [TERM026 Local settings with remote control](terminal_requirements.md#TERM026), [TERM028 TV setup and idle restoration](terminal_requirements.md#TERM028)
 
 <a id="ZMC004"></a>
 
@@ -61,7 +61,7 @@ The terminal shall support a deliberate factory reset followed by camera-based W
 
 > `zmala_terminal/tests/provisioning_ui.py`
 
-*Child links:* [SERV013 Printable QR downloads](server_requirements.md#SERV013), [TERM017 Factory reset access](terminal_requirements.md#TERM017), [TERM018 Factory reset scope](terminal_requirements.md#TERM018), [TERM019 QR enrollment sequence](terminal_requirements.md#TERM019), [TERM020 Stable camera QR scanning](terminal_requirements.md#TERM020)
+*Child links:* [SERV013 Printable QR downloads](server_requirements.md#SERV013), [TERM017 Factory reset access](terminal_requirements.md#TERM017), [TERM018 Factory reset scope](terminal_requirements.md#TERM018), [TERM019 QR enrollment sequence](terminal_requirements.md#TERM019), [TERM020 Stable camera QR scanning](terminal_requirements.md#TERM020), [TERM027 Remote onboarding and status](terminal_requirements.md#TERM027)
 
 <a id="ZMC006"></a>
 

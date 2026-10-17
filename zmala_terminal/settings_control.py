@@ -51,6 +51,12 @@ class SettingsControl:
     def input_focus_lost(self):
         self.keys_down.clear()
         self.cancel_settings_hold()
+        # Focus changes can swallow a release. Stop motion and invalidate any
+        # delayed visibility result so it cannot resume volume on its own.
+        self.pointer_serial = getattr(self, 'pointer_serial', 0) + 1
+        volume = getattr(self, 'volume_control', None)
+        if volume:
+            volume.pointer(False)
 
     def press(self, button):
         if self.setup_stage == 'tv' and self.tv_setup_button(button):

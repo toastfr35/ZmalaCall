@@ -12,6 +12,7 @@ const { ConsoleJobs } = require('./console-jobs');
 const { Callbacks } = require('./callbacks');
 const { SnapshotFile } = require('./snapshot-file');
 const { AdminSessions } = require('./admin-sessions');
+const { createShutdown } = require('./shutdown');
 /** @param {{store?: import('./types/contracts').StoreInstance, sipServer?: import('./types/contracts').SipInstance, callbackMailer?: import('./types/contracts').Mailer}} [options] */
 function createApplication({
   store = new Store(),
@@ -106,6 +107,7 @@ function start() {
   const tlsKey = process.env.ZMALA_TLS_KEY;
   /** @type {import('node:https').Server | undefined} */
   let tlsServer;
+  let tlsPort = 8443;
   if (tlsCert || tlsKey) {
     if (!tlsCert || !tlsKey) throw Error('Set both ZMALA_TLS_CERT and ZMALA_TLS_KEY.');
     const port = Number(process.env.ZMALA_HTTPS_PORT || 8443);
@@ -115,40 +117,37 @@ function start() {
       { cert: fs.readFileSync(tlsCert), key: fs.readFileSync(tlsKey) },
       handler,
     );
-    tlsServer.listen(port, '0.0.0.0', () =>
-      console.log(`HTTPS administration: https://${v.host}:${port}/`),
-    );
-    tlsServer.on('error', (error) => {
-      console.error(error.message);
-      server.close();
-      sipServer.close();
-      process.exitCode = 1;
-    });
+    tlsPort = port;
   }
-  sipServer.start();
-  server.listen(v.http_port, '0.0.0.0', () => {
-    console.log(
-      `Administration: http://127.0.0.1:${v.http_port}/ (open zmala_server/data/open-admin.url)`,
-    );
-    console.log(`Phone SIP domain: ${v.host}:${v.sip_port}`);
-  });
-  server.on('error', (e) => {
-    console.error(e.message);
-    sipServer.close();
+  const shutdown = createShutdown([server, ...(tlsServer ? [tlsServer] : [])], sipServer, flush);
+  /** A failed listener must not leave its sibling serving a half-started app.
+   * @param {unknown} error */
+  function fail(error) {
+    console.error(error instanceof Error ? error.message : 'Server startup failed');
     process.exitCode = 1;
-  });
+    void shutdown().catch((failure) => console.error('Could not finish shutdown:', failure));
+  }
+  server.on('error', fail);
+  tlsServer?.on('error', fail);
+  try {
+    sipServer.start();
+    tlsServer?.listen(tlsPort, '0.0.0.0', () =>
+      console.log(`HTTPS administration: https://${v.host}:${tlsPort}/`),
+    );
+    server.listen(v.http_port, '0.0.0.0', () => {
+      console.log(
+        `Administration: http://127.0.0.1:${v.http_port}/ (open zmala_server/data/open-admin.url)`,
+      );
+      console.log(`Phone SIP domain: ${v.host}:${v.sip_port}`);
+    });
+  } catch (error) {
+    fail(error);
+  }
   for (const signal of ['SIGINT', 'SIGTERM'])
     process.once(signal, async () => {
-      const closed = Promise.all(
-        [server, ...(tlsServer ? [tlsServer] : [])].map(
-          (listener) => new Promise((resolve) => listener.close(resolve)),
-        ),
-      );
-      sipServer.close();
       try {
-        await closed;
-        await flush();
-        process.exit(0);
+        await shutdown();
+        process.exit(process.exitCode || 0);
       } catch (error) {
         console.error(
           'Could not finish saving configuration:',

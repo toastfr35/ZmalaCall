@@ -1,5 +1,101 @@
 # ZmalaCall implementation and specification review
 
+## Maintainability and consistency review — 17 October 2026
+
+This pass starts from `01c2ce8`. It covers first-party terminal controllers,
+configuration/provisioning, remote/TV/USB adapters, native media boundaries,
+server HTTP/SIP/media/persistence, administration modules, installer contracts
+and their documentation. It is a code and regression review, not a new
+hardware qualification or a formal security audit. Dated findings and measurements
+below remain historical evidence; this section records the current changes.
+
+### Refactoring applied
+
+- `main.py` now concentrates on terminal composition and lifetimes. Input
+  dispatch lives in `input_control.py`, and configuration/engine application
+  in `configuration_control.py`. These controllers share the existing owning
+  terminal, avoiding duplicate state or new cross-thread ownership.
+- Call actions have separate callback, dial-preflight and USB-ready answer
+  functions. Generation/serial guards remain at asynchronous completion points.
+- Configuration polls and local-setting responses use one validation/cache
+  boundary. Stable snapshots omit volatile presence and callback state.
+- Server profile validation moved from the store into pure
+  `terminal-settings.js`; the store validates complete candidates before mutation.
+  Device read/write responses share the same live-configuration builder.
+- Admin terminal fields are split into Calls, Video & audio and General builders
+  in `admin-terminalfields.js`. Card selection, association and saving stay in
+  `admin-terminals.js`; generated `admin.js` was rebuilt.
+- Server shutdown is centralized in `shutdown.js`. Listener failures and process
+  signals share one drain/flush operation.
+
+### Defects fixed
+
+| Defect | Correction and regression |
+| --- | --- |
+| Frame-rate selector existed in the field registry but was never attached to the page | Append it in Video & audio; a tree-fixture test requires every registered control to belong to the visible form |
+| Settings responses bypassed configuration rollback protection | Share acceptance policy with polling; reject an older response without replacing the cache |
+| Authenticated HTTP could follow redirects with enrollment credentials | Reject redirects; an isolated HTTP fixture verifies no second request is made |
+| Retrying an applied setting advanced the revision and wrote another snapshot | Keep the revision for no-op retries while retaining the route's persistence barrier |
+| Focus loss could swallow the middle-button release and leave volume motion active | Stop the gesture and invalidate delayed TV visibility results on focus loss |
+| HTTP bind failure could leave an optional HTTPS listener serving a partially stopped app | Close both listeners and SIP, drain pending requests and flush once; real socket tests exercise drain ordering and repeated shutdown |
+
+The callback error path also tolerates a missing media engine, allowing offline
+callback handling to fail cleanly instead of throwing a second exception.
+
+### Documentation and specification
+
+The README is now an installation/operation/development entry point rather than
+a description of one developer PC. Design and implementation docs describe the
+current module boundaries, three/five portraits, settings hold, TV idle return,
+remote pairing/button verification, battery/charging and configurable video rates.
+Pi admin-password recovery now distinguishes the installed service's data path
+from the legacy boot-partition path. Installer, automatic-framing and hardware
+guides distinguish current defaults from dated observations and future GPIO work.
+Admin account help no longer assumes the browser and server run on the same PC.
+
+Doorstop sources were corrected and regenerated, with new traceable records for
+remote onboarding/status, TV setup/idle restoration and Pi server deployment.
+Requirement review stamps remain a separate maintainer acceptance step; structural
+validation does not claim every hardware requirement is qualified.
+
+### Verification in this pass
+
+| Check | Result |
+| --- | --- |
+| Server suite | 82 passed |
+| Terminal suite | 270 run: 267 passed, 3 Linux-only skips on Windows |
+| Installer/package suite with installer dependencies | 47 run: 41 passed, 6 platform-dependent skips |
+| Real Tk Settings test | 95 languages, six editors, both focus sides at 900×620 and 1280×720; hold, reset navigation and cancellation passed |
+| `make lint` | JavaScript, strict type checking, Python, native static analysis, shell/PowerShell syntax, formatting and generated assets passed |
+| Doorstop and generated catalogues | Structural validation, publication and generated links/anchors passed |
+| Documentation | Edited Markdown file links, UTF-8 and whitespace checks passed |
+
+These checks use isolated fixtures. No Pi deployment, live call, TV wake or server
+restart was performed in this pass. The existing unrelated Word-guide edit was
+preserved. Native media behavior was not changed; its opening source comment was
+corrected to describe the current decoder ownership.
+
+### Remaining work and deliberate limits
+
+1. Keep controller mixins small and state ownership in `Terminal`. A future typed
+   host protocol would make their dependencies more explicit; a wholesale
+   controller-object rewrite would add churn without addressing a reproduced fault.
+2. Native queues and render caches still need byte/frame-age budgets and longer
+   soak evidence. Do not drop arbitrary compressed H.264 packets to imitate the
+   safe newest-frame policy for independent JPEG/raw frames.
+3. Native and QR shutdown can wait on SDK/process operations. Measure worst-case
+   recovery before introducing asynchronous teardown or bounded forced termination.
+4. Snapshot rename is not fsync durability or a transaction across files. Backup
+   restore epochs, data migrations/rollback and concurrent whole-form admin edits
+   deserve their own design and fault-injection tests.
+5. Retention for portrait/render caches and long-lived diagnostic files remains
+   separate from the installed volatile journal and bounded command histories.
+6. Real TV/USB/power-loss acceptance and the serial-keypad host adapter remain
+   distinct hardware work. Passing portable tests does not qualify another TV,
+   a different camera, sustained 30 fps or Internet-facing SIP.
+
+---
+
 Reviewed 10 October 2026 against checkout `e5ece28` and the working files present during review.
 
 Deeper implementation pass: 10 October 2026, checkout `bfd1274` plus the current working files. Findings 5–10 and the optimization analysis below were added in this pass. Tests and probes remained isolated from production state and hardware.

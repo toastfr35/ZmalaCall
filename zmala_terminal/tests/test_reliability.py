@@ -100,7 +100,7 @@ class ReliabilityTests(unittest.TestCase):
         desired = config(); desired['configuration_version'] = 2; desired['sip']['password'] = 'new'
         replacement = Mock()
         with patch('main.Engine', side_effect=[RuntimeError('native initialization failed'), replacement]) as build:
-            with patch('main.time.monotonic', return_value=100):
+            with patch('configuration_control.time.monotonic', return_value=100):
                 terminal.apply_config(desired)
                 self.assertIsNone(terminal.engine)
                 self.assertEqual(terminal.model.config['configuration_version'], 1)
@@ -108,7 +108,7 @@ class ReliabilityTests(unittest.TestCase):
                 old.close.assert_called_once()
                 terminal.apply_poll_config(desired)
                 self.assertEqual(build.call_count, 1, 'Backoff must prevent a poll retry storm')
-            with patch('main.time.monotonic', return_value=106):
+            with patch('configuration_control.time.monotonic', return_value=106):
                 terminal.apply_poll_config(desired)
             self.assertIs(terminal.engine, replacement)
             self.assertEqual(terminal.model.config['configuration_version'], 2)

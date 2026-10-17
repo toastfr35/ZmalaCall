@@ -19,12 +19,13 @@ Generated from [Doorstop SERV records](requirements/server/). Edit the YAML reco
 - [15 State persistence and device isolation _(SERV015)_](#SERV015)
 - [16 Text message notifications _(SERV016)_](#SERV016)
 - [17 Callback email reminders _(SERV017)_](#SERV017)
+- [18 Pi server installation and service controls _(SERV018)_](#SERV018)
 
 <a id="SERV001"></a>
 
 ## 1.0 Independent server and LAN administration _(SERV001)_
 
-The Node.js server shall run independently of Python and the terminal runtime, with Windows start/stop scripts, same-LAN SIP over UDP/TCP and an audio/video relay. LAN browsers may perform first-time shared-password setup and authenticate for administration. Password changes shall revoke existing sessions; sessions shall expire after eight hours and on restart. Mutations shall enforce same-origin checks. HTTP shall be limited to a trusted LAN; optional HTTPS shall reject remote plaintext administration when enabled. Local password-file removal while stopped shall deliberately reopen setup. Linux portrait conversion shall require Python with Pillow.
+The Node.js server shall run independently of the terminal runtime, with Windows start/stop scripts and a Raspberry Pi systemd deployment, same-LAN SIP over UDP/TCP and an audio/video relay. LAN browsers may perform first-time shared-password setup and authenticate for administration. Password changes shall revoke existing sessions; sessions shall expire after eight hours and on restart. Mutations shall enforce same-origin checks. HTTP shall be limited to a trusted LAN; optional HTTPS shall reject remote plaintext administration when enabled. Local password-file removal while stopped shall deliberately reopen setup. Linux portrait conversion shall require Python with Pillow.
 
 > `zmala_server/main.js`
 
@@ -129,9 +130,9 @@ Administration shall remain in English with separate dark pages for overview, ac
 
 ## 11 Selected terminal card _(SERV011)_
 
-The Terminals page shall show one terminal card selected by dropdown. Its inline account and device/display settings shall have separate save actions and retain unsaved edits. Wi-Fi QR PDF, server QR PDF and console downloads/actions shall be in that card. Contacts shall be managed through Groups and Accounts.
+The Terminals page shall show one terminal card selected by dropdown. Its account-association and terminal settings forms shall have separate save actions and retain unsaved edits. Settings shall be grouped into Calls, Video & audio and General, with every registered control attached to the visible form, including frame rate. Account identity, credentials and portrait editing shall remain on Accounts. Wi-Fi QR PDF, server QR PDF and console downloads/actions shall be in that card. Contacts shall be managed through Groups and Accounts.
 
-> `zmala_server/web/admin.js`
+> `zmala_server/web/admin-terminals.js`
 
 *Parent links:* [ZMC009 Administration and persistent state](product_requirements.md#ZMC009)
 
@@ -140,7 +141,7 @@ The Terminals page shall show one terminal card selected by dropdown. Its inline
 ## 12 Terminal settings _(SERV012)_
 
 Administration shall configure each terminal language, camera, microphone, speaker, audio processing, video resolution and command shell. Video resolution shall be independently selectable as 480p (640×480), 720p (1280×720, default) or 1080p (1920×1080). Windows and Linux terminals shall apply server video settings automatically when idle, defer changes during calls, offer independent outgoing frame-rate targets of 10, 15 (default), 20, 25 or 30 fps per terminal with matching sending bandwidth presets and receive capacity independent of the local sending target, and prefer server settings over legacy local experiment overrides. Actual frame rates shall depend on hardware and network capacity. Shell options shall be Windows PowerShell, PowerShell 7 and Command Prompt on Windows, and sh/bash on Linux. Selecting a shell incompatible with the terminal OS shall fail that command explicitly. The Terminals page shall configure auto-answer enable/disable and a five-to-six-hundred-second answer delay. Account names, pictures and credentials shall be managed on the Accounts page. Language configuration shall affect only the terminal display. Applying a native terminal configuration shall publish its applied revision only after engine setup succeeds. Failures shall release failed engines and retry the latest desired configuration while idle, with a five-second backoff. C20 mixer subprocesses shall run on one background worker that coalesces superseded volume values.
-An authenticated device shall be able to update only its own language, auto-answer enable/delay, automatic framing, speaker volume and carousel portrait count. Writes shall compare the previous values of edited fields, reject conflicting edits, preserve all other settings, and acknowledge only after persistence. Ringing cleanup and the terminal outgoing/incoming timers shall allow the configured automatic-answer delay plus a grace period.
+An authenticated device shall be able to update only its own language, auto-answer enable/delay, automatic framing, speaker volume, carousel portrait count and TV return timeout. Writes shall compare the previous values of edited fields, reject conflicting edits, preserve all other settings, and acknowledge only after persistence. Retrying an already-applied value shall not advance the configuration revision, but shall still await the persistence barrier. Ringing cleanup and the terminal outgoing/incoming timers shall allow the configured automatic-answer delay plus a grace period.
 
 > `zmala_server/tests/admin.test.js`
 
@@ -200,4 +201,16 @@ After the email deadline, a still-pending callback shall generate a separate ema
 > `zmala_server/tests/callback-emails.test.js`
 
 *Parent links:* [ZMC007 Callback requests](product_requirements.md#ZMC007)
+
+<a id="SERV018"></a>
+
+## 18 Pi server installation and service controls _(SERV018)_
+
+A Windows GUI/headless installer shall validate SSH, Raspberry Pi OS Lite 64-bit Trixie, supported hardware, Ethernet access and storage before deployment. It shall install automatic startup, Ethernet-only SSH and low-write settings while keeping server HTTP/SIP/media available on all IPv4 interfaces. Optional migration shall preserve accounts, credentials, portraits and persisted server data without replaying in-flight console commands. Installed state shall live under /var/lib/zmalacall-server; updates shall preserve it. Authenticated administration shall enable/disable wired SSH persistently without stopping server services. SSH shall remain enabled during installation. Installation failure shall be reported, and verification shall distinguish dependency/configuration changes from application-release rollback.
+
+> `build_tools/server_installer/backend.py`
+> `build_tools/tests/test_server_installer.py`
+> `zmala_server/server-ssh.js`
+
+*Parent links:* [ZMC001 Independent platform components](product_requirements.md#ZMC001)
 

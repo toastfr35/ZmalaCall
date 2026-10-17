@@ -63,7 +63,7 @@ class IdleTests(unittest.TestCase):
                               cancel_settings_hold=Mock(), volume_control=Mock())
         for button in ('left', 'right', 'green', 'red', 'pointer'):
             app.last_button = 0
-            with patch('main.time.monotonic', return_value=100):
+            with patch('input_control.time.monotonic', return_value=100):
                 if button == 'pointer':
                     Terminal.pointer_button(app, True)
                 else:
