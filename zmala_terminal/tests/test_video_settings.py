@@ -28,6 +28,19 @@ class VideoSettingsTests(unittest.TestCase):
         self.assertEqual(settings.dimensions, (640, 480))
         self.assertEqual(settings.upload_kbps, 700)
 
+    def test_frame_rate_scales_send_budget_but_not_receive_capacity(self):
+        for fps in (10, 15, 20, 25, 30):
+            settings = VideoSettings.for_config({'video_resolution': '1080p', 'video_fps': fps})
+            self.assertEqual(settings.fps, fps)
+            self.assertEqual(settings.dimensions, (1920, 1080))
+            self.assertEqual(settings.upload_kbps, (2500 * fps + 14) // 15)
+            self.assertEqual(settings.download_kbps, 6000)
+
+    def test_invalid_frame_rate_rejected(self):
+        for fps in (None, True, '30', 0, 14, 29.97, 60, []):
+            with self.subTest(fps=fps), self.assertRaises(ValueError):
+                VideoSettings.for_config({'video_fps': fps})
+
     def test_native_size_must_match_before_enabling_packet_repair(self):
         engine = Engine.__new__(Engine)
         engine.core = 1

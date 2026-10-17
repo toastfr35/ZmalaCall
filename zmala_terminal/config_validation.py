@@ -2,6 +2,7 @@
 import re
 from localization import LANGUAGES
 from local_settings import TV_IDLE_DELAYS
+from video_settings import FRAME_RATES
 
 
 def validate(config, device_id):
@@ -17,6 +18,8 @@ def validate(config, device_id):
         raise ValueError('Unsupported audio profile')
     if 'video_resolution' in config and config['video_resolution'] not in ('360p', '480p', '720p', '1080p'):
         raise ValueError('Unsupported video resolution')
+    if 'video_fps' in config and (type(config['video_fps']) is not int or config['video_fps'] not in FRAME_RATES):
+        raise ValueError('Unsupported video frame rate')
     if 'carousel_portraits' in config and (type(config['carousel_portraits']) is not int
                                           or config['carousel_portraits'] not in (3, 5)):
         raise ValueError('Choose 3 or 5 carousel portraits')

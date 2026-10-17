@@ -1,6 +1,7 @@
 /** Runtime JSON is still validated on receipt. These contracts catch mistakes
  * inside the server; they do not turn untrusted data into validated objects. */
 export type VideoResolution = '480p' | '720p' | '1080p';
+export type VideoFrameRate = 10 | 15 | 20 | 25 | 30;
 export type AudioProfile = 'normal' | 'speech';
 export type CommandShell = 'powershell' | 'pwsh' | 'cmd' | 'sh' | 'bash';
 export interface TerminalSettings {
@@ -43,6 +44,7 @@ export interface TerminalProfile {
   command_shell: CommandShell;
   audio_profile: AudioProfile;
   video_resolution: VideoResolution;
+  video_fps: VideoFrameRate;
   auto_framing: boolean;
   carousel_portraits: 3 | 5;
   tv_idle_seconds: number;
@@ -105,6 +107,7 @@ export interface TerminalConfiguration {
   command_shell: CommandShell;
   audio_profile: AudioProfile;
   video_resolution: VideoResolution;
+  video_fps: VideoFrameRate;
   auto_framing: boolean;
   carousel_portraits: 3 | 5;
   tv_idle_seconds: number;

@@ -17,3 +17,16 @@ test('legacy low video presets migrate once without changing other profiles', ()
   migrate(state);
   assert.equal(state.configuration_version, before + 1);
 });
+
+test('missing frame rate defaults to 15 once and preserves explicit rates', () => {
+  const state = defaultState();
+  delete state.profiles.term1.video_fps;
+  state.profiles.other = { ...state.profiles.term1, video_fps: 30 };
+  const before = state.configuration_version;
+  migrate(state);
+  assert.equal(state.profiles.term1.video_fps, 15);
+  assert.equal(state.profiles.other.video_fps, 30);
+  assert.equal(state.configuration_version, before + 1);
+  migrate(state);
+  assert.equal(state.configuration_version, before + 1);
+});

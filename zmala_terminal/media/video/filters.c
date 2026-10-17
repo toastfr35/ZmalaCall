@@ -6,7 +6,7 @@
 #include <mediastreamer2/msticker.h>
 #include <string.h>
 
-static const MSVideoConfiguration configurations[] = {
+static const MSVideoConfiguration base_configurations[] = {
     /* Liblinphone limits outgoing size to this advertised ladder. Include
      * every server preset; capture-device format limits can still reduce the
      * negotiated size independently of the hardware encoder's capability. */
@@ -18,6 +18,24 @@ static const MSVideoConfiguration configurations[] = {
     {100000, 250000, {320, 240}, 10, 1, NULL},
     {0, 100000, {320, 240}, 5, 1, NULL}
 };
+
+static MSVideoConfiguration configurations[sizeof(base_configurations) / sizeof(base_configurations[0])];
+static int configurations_ready;
+
+/* One engine per terminal process. Called before the core starts, after an
+ * idle-only graph rebuild; never change the ladder under a running encoder. */
+int zmala_video_set_framerate(int fps) {
+    if (fps != 10 && fps != 15 && fps != 20 && fps != 25 && fps != 30) return -1;
+    for (size_t i = 0; i < sizeof(configurations) / sizeof(configurations[0]); ++i) {
+        configurations[i] = base_configurations[i];
+        configurations[i].required_bitrate = base_configurations[i].required_bitrate * fps / 15;
+        configurations[i].bitrate_limit = base_configurations[i].bitrate_limit * fps / 15;
+        configurations[i].fps = base_configurations[i].fps == 15 ? fps
+            : (base_configurations[i].fps < fps ? base_configurations[i].fps : fps);
+    }
+    configurations_ready = 1;
+    return 0;
+}
 
 static void encoder_init(MSFilter *f) { zmala_codec_init(f, 1); }
 static void decoder_init(MSFilter *f) { zmala_codec_init(f, 0); }
@@ -268,6 +286,7 @@ static MSFilterDesc decoder_desc = {
 };
 /* Explicit registration keeps other applications' SDK plugin paths intact. */
 int zmala_video_register(MSFactory *factory) {
+    if (!configurations_ready) zmala_video_set_framerate(15);
     if (!factory || !avcodec_find_encoder_by_name("h264_v4l2m2m")) return -1;
     ms_factory_enable_filter_from_name(factory, "MSOpenH264Enc", FALSE);
     ms_factory_enable_filter_from_name(factory, "MSOpenH264Dec", FALSE);

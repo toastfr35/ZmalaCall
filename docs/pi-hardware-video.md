@@ -334,3 +334,31 @@ Measured on the Pi 4: approximately 8–9 ms per 1080p frame for averaging.
 - [Raspberry Pi camera software and V4L2 hardware codecs](https://www.raspberrypi.com/documentation/computers/camera_software.html)
 - [MediaStreamer V4L2 camera](https://github.com/BelledonneCommunications/mediastreamer2/blob/5.3.105/src/videofilters/msv4l2.c)
 - [FFmpeg V4L2 M2M encoder](https://github.com/FFmpeg/FFmpeg/blob/n7.1/libavcodec/v4l2_m2m_enc.c)
+
+
+## Configurable frame rate and 1080p30 trial (2026-10-17)
+
+The server now stores an independent outgoing `video_fps` target for each
+terminal: 10, 15 (default), 20, 25 or 30. Terminals apply changes only when idle.
+Sending bandwidth and the Pi encoder ladder scale from the existing 15 fps
+presets; receiving bandwidth allows a faster peer independently of the local
+sending rate. Resolution remains a separate setting. The server relays packets
+and does not impose a frame-rate conversion.
+
+A 100-second trial requested 1080p30 with a 5 Mbit/s sending allowance on both
+terminals. It did not establish stable 30 fps in both directions: the Windows
+webcam path generally sent around 19 fps, and the Pi decoder reported around
+15 fps on average. The C20-to-Windows path was faster, but receiver statistics
+had discontinuities and packet-reassembly warnings near the end of the trial.
+Do not treat its negotiated 30 fps as proof of 30 decoded/displayed frames.
+The terminal Pi averaged 67% total CPU (80% peak), while the server Pi averaged
+about 4%; neither reported throttling. Existing terminals remain at the stable
+15 fps default, with higher targets available for further tuning.
+
+A subsequent 45-second call verified independent settings (Windows 20 fps,
+Pi 25 fps), with 1920×1080 video continuously decoded in both directions.
+Windows sent about 16 fps; the receiver's sampled rate varied around the Pi's
+25 fps target. The strict frame-rate probe failed because some SDK receive
+measurements exceeded the camera's 30 fps maximum, so this is configuration
+and continuity verification, not a passed sustained-frame-rate benchmark.
+Both terminals were restored to 1080p15 and confirmed to apply that setting.

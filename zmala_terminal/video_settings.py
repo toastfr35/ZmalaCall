@@ -1,6 +1,8 @@
 """One set of server video presets shared by Windows and the C20 terminal."""
 from dataclasses import dataclass
 
+FRAME_RATES = (10, 15, 20, 25, 30)
+
 
 @dataclass(frozen=True)
 class VideoSettings:
@@ -24,5 +26,10 @@ class VideoSettings:
         presets = {'480p': (700, 1000), '720p': (1500, 2000), '1080p': (2500, 3000)}
         if not isinstance(resolution, str) or resolution not in presets:
             raise ValueError('Unsupported video resolution')
+        fps = config.get('video_fps', 15)
+        if type(fps) is not int or fps not in FRAME_RATES:
+            raise ValueError('Unsupported video frame rate')
         upload, download = presets[resolution]
-        return cls(resolution, 15, upload, download)
+        # Preserve the 15 fps sending budgets, scaling with the selected rate.
+        # Receive capacity is independent: a 15 fps sender may receive a 30 fps peer.
+        return cls(resolution, fps, (upload * fps + 14) // 15, download * 2)

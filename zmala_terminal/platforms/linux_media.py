@@ -13,6 +13,10 @@ def configure(engine):
         raise RuntimeError('C20 media plugin is missing; run build_tools/linux/build-media.sh')
     # SDK callbacks retain pointers into this library until the core closes.
     engine.video_plugin = C.CDLL(str(path))
+    frame_rate = engine.video_plugin.zmala_video_set_framerate
+    frame_rate.argtypes, frame_rate.restype = [C.c_int], C.c_int
+    if frame_rate(engine.video_settings.fps):
+        raise RuntimeError('Could not set C20 video frame rate')
     factory = engine.dll.linphone_core_get_ms_factory
     factory.argtypes, factory.restype = [C.c_void_p], C.c_void_p
     for name in ('zmala_video_register', 'zmala_mjpeg_register', 'zmala_preview_register', 'zmala_framing_register'):

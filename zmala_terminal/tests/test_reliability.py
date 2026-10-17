@@ -17,7 +17,7 @@ from configuration import Configuration
 from maintenance import MaintenanceAgent, bounded_output
 from main import Terminal
 from missed_calls import MissedCallsStore
-from model import TerminalModel
+from model import TerminalModel, State
 from photo_cache import PhotoCache, valid_photo
 from provisioning import Enrollment
 from setup_flow import ProvisioningFlow
@@ -114,6 +114,30 @@ class ReliabilityTests(unittest.TestCase):
             self.assertEqual(terminal.model.config['configuration_version'], 2)
             self.assertIsNone(terminal.pending_config)
             self.assertEqual(terminal.notice, '')
+
+    def test_frame_rate_change_waits_for_call_end_and_rebuilds_only_once(self):
+        from video_settings import VideoSettings
+        terminal = Terminal.__new__(Terminal)
+        terminal.model = TerminalModel(); terminal.model.configure(config())
+        terminal.model.state = State.IN_CALL
+        terminal.setup_stage = None; terminal.available_fonts = set()
+        terminal.root = Mock(); terminal.render = Mock(); terminal.text = lambda key: key
+        terminal.engine = old = Mock(auto_framing=None, audio_profile='normal')
+        old.video_settings = VideoSettings.for_config({})
+        terminal.current_settings = {}; terminal.profile = 'test'
+        terminal.video_window = terminal.preview_window = 0
+        desired = config(); desired.update(configuration_version=2, video_fps=25)
+        replacement = Mock(auto_framing=None, audio_profile='normal')
+        replacement.video_settings = VideoSettings.for_config(desired)
+        with patch('main.Engine', return_value=replacement) as build:
+            terminal.apply_config(desired)
+            build.assert_not_called(); old.close.assert_not_called()
+            self.assertEqual(terminal.pending_config, desired)
+            terminal.model.state = State.HOME
+            terminal.configure_engine(desired, desired['sip'], 'normal')
+            build.assert_called_once(); old.close.assert_called_once()
+            terminal.configure_engine(desired, desired['sip'], 'normal')
+            self.assertEqual(build.call_count, 1)
 
     def test_setup_failure_feedback_survives_retry_and_ignores_stale_results(self):
         flow = ProvisioningFlow()

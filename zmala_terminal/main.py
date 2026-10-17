@@ -312,6 +312,7 @@ class Terminal(IdleReturn, SettingsControl, TerminalDisplay, ProvisioningFlow, C
     def configure_engine(self, config, old_sip, audio_profile):
         if (not self.engine or old_sip != config['sip'] or
                 ('video_resolution' in config and self.engine.video_settings.resolution != config['video_resolution']) or
+                getattr(self.engine.video_settings, 'fps', 15) != config.get('video_fps', 15) or
                 getattr(self.engine, 'audio_profile', 'normal') != audio_profile):
             if self.engine:
                 old, self.engine = self.engine, None

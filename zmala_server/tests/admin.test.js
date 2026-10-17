@@ -318,6 +318,28 @@ test('admin account and group CRUD, membership validation, terminal provisioning
     assert.equal(JSON.stringify(store.value), beforeVideo);
     assert.equal((await request('/api/settings', 'PUT', languageSettings)).status, 200);
     assert.equal(store.config('lounge').video_resolution, '1080p');
+    assert.equal(store.config('lounge').video_fps, 15);
+    for (const video_fps of [10, 15, 20, 25, 30]) {
+      assert.equal(
+        (await request('/api/settings', 'PUT', { ...languageSettings, video_fps })).status,
+        200,
+      );
+      assert.equal(
+        (await request('/api/config', 'GET', undefined, token)).body.video_fps,
+        video_fps,
+      );
+      assert.equal(new Store(dir).config('lounge').video_fps, video_fps);
+      assert.equal(store.config('term1').video_fps, 15);
+    }
+    const beforeFps = JSON.stringify(store.value);
+    for (const video_fps of [0, 14, 60, 29.97, '30', true, null, {}])
+      assert.equal(
+        (await request('/api/settings', 'PUT', { ...languageSettings, video_fps })).status,
+        400,
+      );
+    assert.equal(JSON.stringify(store.value), beforeFps);
+    assert.equal((await request('/api/settings', 'PUT', languageSettings)).status, 200);
+    assert.equal(store.config('lounge').video_fps, 30, 'Unrelated saves preserve the frame rate');
     assert.equal(store.config('lounge').c20_speaker_volume, 50);
     for (const c20_speaker_volume of [0, 75, 100]) {
       assert.equal(

@@ -985,6 +985,7 @@ $('console-shell-form').onsubmit = (event) => {
         language: profile.language,
         audio_profile: profile.audio_profile,
         video_resolution: profile.video_resolution,
+        video_fps: profile.video_fps,
         ...profile.terminal_settings,
         command_shell: $('console-shell').value,
       });
@@ -1334,6 +1335,19 @@ function buildDevicesForm(card, id) {
   resolution.append(
     el('small', 'Applies when idle. Higher resolutions need more processing power.'),
   );
+  const frameRate = terminalSelect(
+    devices,
+    'Video frame rate',
+    'videoFps',
+    [10, 15, 20, 25, 30].map((fps) => [String(fps), `${fps} fps`]),
+    String(profile.video_fps ?? 15),
+  );
+  frameRate.append(
+    el(
+      'small',
+      'Outgoing video target. Applies when idle; actual fps depends on camera and processing capacity. Higher rates use more bandwidth.',
+    ),
+  );
   const framing = terminalField(devices, 'Automatic framing', 'autoFraming', '', {
     type: 'checkbox',
     checked: profile.auto_framing === true,
@@ -1461,6 +1475,7 @@ function buildDevicesForm(card, id) {
           command_shell: state.model.profiles[currentId].command_shell || 'powershell',
           audio_profile: fields.audioProfile.value,
           video_resolution: fields.videoResolution.value,
+          video_fps: Number(fields.videoFps.value),
           carousel_portraits: Number(fields.carouselPortraits.value),
           tv_idle_seconds: Number(fields.tvIdleSeconds.value),
           auto_framing: terminalInput(devices, 'autoFraming').checked,

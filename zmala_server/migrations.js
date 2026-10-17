@@ -103,6 +103,10 @@ function migrate(state) {
   migrateLegacy(v);
   let resolutionChanged = false;
   for (const profile of Object.values(v.profiles)) {
+    if (profile.video_fps === undefined) {
+      profile.video_fps = 15;
+      resolutionChanged = true;
+    }
     if (profile.video_resolution === '360p') {
       profile.video_resolution = '480p';
       resolutionChanged = true;

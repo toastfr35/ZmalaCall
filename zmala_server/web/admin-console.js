@@ -97,6 +97,7 @@ $('console-shell-form').onsubmit = (event) => {
         language: profile.language,
         audio_profile: profile.audio_profile,
         video_resolution: profile.video_resolution,
+        video_fps: profile.video_fps,
         ...profile.terminal_settings,
         command_shell: $('console-shell').value,
       });

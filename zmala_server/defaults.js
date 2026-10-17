@@ -29,6 +29,7 @@ function profile(name = 'Family') {
     command_shell: 'powershell',
     audio_profile: 'normal',
     video_resolution: '720p',
+    video_fps: 15,
     auto_framing: false,
     carousel_portraits: 3,
     tv_idle_seconds: 30,

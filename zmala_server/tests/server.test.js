@@ -93,8 +93,9 @@ test('legacy migrations retain credentials and metadata, and convert only mutual
     assert.equal(s.config().auto_answer, true);
     assert.equal(s.config().auto_answer_seconds, 8);
     assert.equal(s.permitted('test', 'terminal'), true);
-    assert.equal(s.value.configuration_version, 10);
-    assert.equal(new Store(dir).value.configuration_version, 10);
+    assert.equal(s.config().video_fps, 15);
+    assert.equal(s.value.configuration_version, 11);
+    assert.equal(new Store(dir).value.configuration_version, 11);
     s.createAccount({ emails: ['fixture@example.test'], id: 'bob', name: 'Bob', type: 'linphone' });
     s.createAccount({
       emails: ['fixture@example.test'],

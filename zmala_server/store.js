@@ -184,6 +184,7 @@ class Store extends AccountStore {
       command_shell: p.command_shell || 'powershell',
       audio_profile: p.audio_profile || 'normal',
       video_resolution: p.video_resolution || '720p',
+      video_fps: p.video_fps ?? 15,
       auto_framing: p.auto_framing === true,
       carousel_portraits: p.carousel_portraits ?? 3,
       tv_idle_seconds: p.tv_idle_seconds ?? 30,
@@ -248,6 +249,9 @@ class Store extends AccountStore {
         : update.video_resolution;
     if (videoResolution !== '480p' && videoResolution !== '720p' && videoResolution !== '1080p')
       throw Error('Choose a supported video resolution.');
+    const videoFps = update.video_fps === undefined ? (p.video_fps ?? 15) : update.video_fps;
+    if (videoFps !== 10 && videoFps !== 15 && videoFps !== 20 && videoFps !== 25 && videoFps !== 30)
+      throw Error('Choose a video frame rate of 10, 15, 20, 25 or 30 fps.');
     const carouselPortraits =
       update.carousel_portraits === undefined
         ? (p.carousel_portraits ?? 3)
@@ -291,6 +295,7 @@ class Store extends AccountStore {
       command_shell: commandShell,
       audio_profile: audioProfile,
       video_resolution: videoResolution,
+      video_fps: videoFps,
       auto_framing: autoFraming,
       carousel_portraits: carouselPortraits,
       tv_idle_seconds: tvIdleSeconds,
