@@ -1,0 +1,48 @@
+name: Build server installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'build_tools/server_installer/**'
+      - 'build_tools/windows_installer/backend.py'
+      - 'build_tools/windows_installer/remote_probe.py'
+      - 'build_tools/linux/**'
+      - 'build_tools/tests/test_server_installer.py'
+      - 'zmala_server/**'
+      - '.github/workflows/build-server-installer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r build_tools/windows_installer/requirements.txt
+      - run: python -m unittest discover -s build_tools/tests -p test_server_installer.py
+      - run: python build_tools/server_installer/build.py
+      - name: Check executable modes
+        shell: pwsh
+        run: |
+          foreach ($mode in @('gui', 'headless')) {
+            $report = Join-Path $env:RUNNER_TEMP "server-$mode.txt"
+            $arguments = @('--smoke-test', $report)
+            if ($mode -eq 'headless') { $arguments = @('--headless') + $arguments }
+            $process = Start-Process build_tools/dist/zmala_server_setup.exe -ArgumentList $arguments -WindowStyle Hidden -PassThru
+            if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Smoke test timed out' }
+            if ($process.ExitCode -ne 0 -or -not (Test-Path $report)) { throw 'Smoke test failed' }
+            Get-Content $report
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zmala-server-setup
+          path: build_tools/dist/zmala_server_setup.exe
+          if-no-files-found: error
+          retention-days: 90

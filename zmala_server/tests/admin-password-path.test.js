@@ -45,3 +45,22 @@ test('moving credentials to boot removes the old copy so deletion stays a reset'
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('release data symlink preserves credentials across repeated startups', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'zmala-password-link-'));
+  try {
+    const persistent = path.join(directory, 'persistent');
+    fs.mkdirSync(persistent);
+    const linked = path.join(directory, 'release-data');
+    fs.symlinkSync(persistent, linked, process.platform === 'win32' ? 'junction' : 'dir');
+    const credentials = new AdminPassword(persistent);
+    const hash = await hashPassword('symlink migration test');
+    credentials.setHash(hash);
+    for (let startup = 0; startup < 3; startup++) {
+      assert.equal(new AdminPassword(linked, undefined, credentials.file).hash, hash);
+      assert.equal(fs.existsSync(credentials.file), true);
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

@@ -1,0 +1,28 @@
+[Unit]
+Description=ZmalaCall server
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+User=zmalaserver
+Group=zmalaserver
+WorkingDirectory=/opt/zmalacall-server/current
+ExecStart=/usr/bin/python3 /opt/zmalacall-server/current/build_tools/linux/server-launch.py
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+RuntimeDirectory=zmalacall-server
+Environment=TMPDIR=/run/zmalacall-server
+Environment=NODE_ENV=production
+Environment=ZMALA_SERVER_NAME=zmalaserver.local
+Environment=ZMALA_ADMIN_PASSWORD_FILE=/var/lib/zmalacall-server/admin-password.json
+StandardOutput=journal
+StandardError=journal
+# A narrow root-owned sudo helper permits only wired SSH on/off actions.
+PrivateTmp=yes
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

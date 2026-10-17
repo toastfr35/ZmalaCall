@@ -3,6 +3,7 @@
 // Administrator-only operations; handler.js authenticates the caller before dispatching here.
 const { wifiPayload, serverPayload, setupPdf } = require('../setup-pdf');
 const { send: sendResponse, readJson, httpError } = require('./responses');
+const { sshStatus, setSsh } = require('../server-ssh');
 /** Called only after the central handler has verified administration credentials.
  * @param {import('node:http').IncomingMessage} req
  * @param {import('node:http').ServerResponse} res @param {URL} url
@@ -10,6 +11,13 @@ const { send: sendResponse, readJson, httpError } = require('./responses');
 async function adminRoutes(req, res, url, context) {
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses, writeBootstrap } = context;
   const v = store.value;
+  if (url.pathname === '/api/server/ssh') {
+    if (req.method === 'GET') return sendResponse(res, 200, await sshStatus());
+    if (req.method === 'PUT') {
+      const update = await readJson(req, 1024);
+      return sendResponse(res, 200, await setSsh(update.enabled));
+    }
+  }
   /** @param {Parameters<typeof sendResponse>} args */
   async function send(...args) {
     // A success response promises that every queued configuration revision is

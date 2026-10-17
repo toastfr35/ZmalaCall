@@ -69,6 +69,9 @@ def verify_payload(archive):
 
 
 class Deployment:
+    user = USER
+    password = PASSWORD
+
     def __init__(self, host, emit=lambda message: None):
         self.host = host.strip()
         if not self.host or any(c.isspace() for c in self.host):
@@ -89,7 +92,7 @@ class Deployment:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(TargetKeyPolicy(self.key))
         try:
-            client.connect(self.wired_address or self.host, username=USER, password=PASSWORD, timeout=10,
+            client.connect(self.wired_address or self.host, username=self.user, password=self.password, timeout=10,
                            auth_timeout=10, banner_timeout=10, look_for_keys=False, allow_agent=False)
         except Exception:
             client.close()
@@ -101,7 +104,7 @@ class Deployment:
     def command(self, command, data='', sudo=False, timeout=30):
         if sudo:
             command = 'sudo -S -k -p "" ' + command
-            data = PASSWORD + '\n' + data
+            data = self.password + '\n' + data
         channel = self.client.get_transport().open_session(timeout=10)
         channel.set_combine_stderr(True)
         chunks = []

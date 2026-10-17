@@ -40,7 +40,13 @@ class AdminPassword {
     /** @type {string | undefined} */
     this.hash = undefined;
     const localFile = path.join(directory, 'admin-password.json');
-    const oldFile = file !== localFile && fs.existsSync(localFile) ? localFile : undefined;
+    // Installed releases reach persistent data through a directory symlink.
+    // Compare resolved files before removing a supposedly obsolete copy.
+    const localExists = fs.existsSync(localFile);
+    const sameFile =
+      file === localFile ||
+      (localExists && fs.existsSync(file) && fs.realpathSync(file) === fs.realpathSync(localFile));
+    const oldFile = !sameFile && localExists ? localFile : undefined;
     const saved = readJson(this.file, /** @type {{password_hash: string} | null} */ (null));
     if (saved !== null) {
       this.validate(saved.password_hash);

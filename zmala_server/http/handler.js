@@ -33,7 +33,12 @@ function createHandler(context) {
       const secure = 'encrypted' in req.socket && req.socket.encrypted === true;
       const port = req.socket.localPort || v.http_port;
       const protocol = secure ? 'https' : 'http';
-      if (![`127.0.0.1:${port}`, `localhost:${port}`, `${v.host}:${port}`].includes(host || ''))
+      const interfaceAddress = req.socket.localAddress?.replace(/^::ffff:/, '');
+      const allowedHosts = [`127.0.0.1:${port}`, `localhost:${port}`, `${v.host}:${port}`];
+      if (interfaceAddress) allowedHosts.push(`${interfaceAddress}:${port}`);
+      if (process.env.ZMALA_SERVER_NAME)
+        allowedHosts.push(`${process.env.ZMALA_SERVER_NAME}:${port}`);
+      if (!allowedHosts.includes(host || ''))
         return send(res, 403, { error: 'Use the configured server address.' });
       if (req.headers.origin && req.headers.origin !== `${protocol}://${host}`)
         return send(res, 403, { error: 'Invalid origin.' });

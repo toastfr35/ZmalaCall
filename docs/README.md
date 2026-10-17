@@ -4,6 +4,9 @@
 
 [Implementation guide](implementation.md) maps the source modules, explains their state and lifetime rules, and lists development checks.
 
+[Pi server installation](pi-server-installation.md) covers the Windows server
+installer, migration, wired SSH control and microSD wear reduction.
+
 - [Product requirements](product_requirements.md) (`ZMC`): shared product expectations.
 - [Terminal requirements](terminal_requirements.md) (`TERM`): terminal behavior, controls, provisioning and maintenance.
 - [Server requirements](server_requirements.md) (`SERV`): accounts, groups, signaling, administration and persistence.

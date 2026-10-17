@@ -8,6 +8,14 @@ No GitHub account is required. Release assets include SHA-256 checksums.
 The installer targets a Raspberry Pi 4 with Raspberry Pi OS Lite (64-bit),
 Debian 13 Trixie; see the included guide for flashing and connections.
 
+## Raspberry Pi server
+
+`zmala_server_setup.exe` installs the server on a Pi 3 or 4 running Raspberry Pi
+OS Lite 64-bit Trixie. It supports GUI confirmation, headless deployment, optional
+data migration, automatic startup, Ethernet-only SSH and RAM-based logs/swap.
+See the [server installation guide](docs/pi-server-installation.md) for setup,
+build commands and the admin control for switching wired SSH on or off.
+
 ## Repository
 
 Source is maintained in the public [toastfr35/ZmalaCall repository](https://github.com/toastfr35/ZmalaCall).
@@ -485,7 +493,7 @@ npm.cmd test
 
 ## Scope and dependencies
 
-This is a local-network prototype with a Windows server and Windows/Linux terminals, using unencrypted SIP/RTP and a local HTTP management API. It supports one active call and one current registration per account. Media is relayed without recording or transcoding; Windows supports VP8/H.264 and the C20 Raspberry Pi terminal uses H.264. Enable H.264 in Linphone for Pi calls. No WebRTC is used. Room audio, echo and phone behaviour need testing with the actual equipment.
+This is a local-network prototype with a Windows or Raspberry Pi server and Windows/Linux terminals, using unencrypted SIP/RTP and a local HTTP management API. It supports one active call and one current registration per account. Media is relayed without recording or transcoding; Windows supports VP8/H.264 and the C20 Raspberry Pi terminal uses H.264. Enable H.264 in Linphone for Pi calls. No WebRTC is used. Room audio, echo and phone behaviour need testing with the actual equipment.
 
 Linux HDMI-CEC wake, input selection and restoration are implemented and tested
 on the Pi/Samsung TV. Camera QR provisioning, Windows/Linux maintenance consoles

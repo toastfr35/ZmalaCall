@@ -1943,6 +1943,41 @@ function renderOverview() {
     details.append(row);
   }
   server.append(details);
+  const sshBox = el('div', null, 'server-ssh');
+  server.append(sshBox);
+  async function refreshServerSsh() {
+    try {
+      const ssh = await api('/api/server/ssh');
+      if (!ssh.supported || !sshBox.isConnected) return;
+      const button = actionButton(
+        ssh.enabled ? 'Turn SSH off' : 'Turn SSH on',
+        async () => {
+          button.disabled = true;
+          try {
+            await api('/api/server/ssh', 'PUT', { enabled: !ssh.enabled });
+            await refreshServerSsh();
+          } catch (error) {
+            message('error', error instanceof Error ? error.message : 'Could not change SSH.');
+            button.disabled = false;
+          }
+        },
+        'secondary',
+      );
+      sshBox.replaceChildren(
+        el('h3', 'Wired SSH'),
+        el('p', ssh.active ? 'On · Ethernet only' : 'Off', 'muted'),
+        el(
+          'p',
+          'Remote maintenance access. Web administration and calls remain available.',
+          'muted',
+        ),
+        button,
+      );
+    } catch (error) {
+      if (sshBox.isConnected) sshBox.replaceChildren(el('p', 'SSH status unavailable', 'muted'));
+    }
+  }
+  void refreshServerSsh();
   const terminals = panel('Your terminals', 'Live state from connected devices.');
   query(terminals, '.panel-heading').append(link('Manage →', '/terminals'));
   const list = el('div', null, 'terminal-status-list');

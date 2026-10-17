@@ -31,7 +31,8 @@ class Store extends AccountStore {
     this.dir = dataDir;
     this.file = file;
     // Custom stores (tests/setup tools) stay isolated from the real Pi boot partition.
-    const credentialFile = dataDir === DATA ? passwordFile(dataDir) : undefined;
+    const credentialFile =
+      dataDir === DATA ? process.env.ZMALA_ADMIN_PASSWORD_FILE || passwordFile(dataDir) : undefined;
     this.adminPassword = new AdminPassword(dataDir, this.value.admin_password_hash, credentialFile);
     delete this.value.admin_password_hash;
     migrate(this.value);
