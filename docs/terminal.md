@@ -482,7 +482,8 @@ volume. Operations run off-thread and fail toward power-on. A stop hook restores
 power after app exit. Status is `/run/zmalacall/usb-power.json`. Wake adds device
 startup latency before auto-answer; no electrical energy-saving claim is made.
 
-The USB icon immediately left of the battery uses the existing compact status
+The webcam icon immediately left of the battery represents shared USB power. Its
+gap before the battery matches the gap after Bluetooth. It uses the compact status
 style: mint means powered, grey with a slash means off, and a grey question mark
 means transitioning or unconfirmed. The helper checks all ports of both shared
 hubs after switching; `powered` in the runtime JSON and the icon reflect that

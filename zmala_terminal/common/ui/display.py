@@ -14,13 +14,16 @@ from zmala_terminal.common.ui.usb_setup import UsbSetupView
 from zmala_terminal.common.ui.tv_setup import TVSetupView
 from zmala_terminal.common.configuration import ROOT
 
+# Match the visible webcam-to-battery gap to Bluetooth-to-terminal (~34 px).
+USB_STATUS_WIDTH = 60
+
 
 class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsView, UsbSetupView, TVSetupView):
     def build_ui(self):
         self.top = tk.Frame(self.root, bg=BG)
         self.top.pack(fill='x', padx=18, pady=(12, 0))
         # Equal side columns keep the call name centered between the status icons.
-        self.status_width = 282 if getattr(getattr(self, 'usb_power', None), 'enabled', False) else 246
+        self.status_width = 246 + (USB_STATUS_WIDTH if getattr(getattr(self, 'usb_power', None), 'enabled', False) else 0)
         self.top.grid_columnconfigure(0, minsize=self.status_width)
         self.top.grid_columnconfigure(1, weight=1)
         self.top.grid_columnconfigure(2, minsize=self.status_width)
@@ -210,7 +213,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         power = getattr(self, 'usb_power', None)
         show_usb = bool(power and power.enabled)
         powered = power.power_state if show_usb else None
-        offset = 36 if show_usb else 0
+        offset = USB_STATUS_WIDTH if show_usb else 0
         signature = (network, server, remote, battery, charger, show_usb, powered, self.language)
         if self.connection_drawn == signature:
             return
