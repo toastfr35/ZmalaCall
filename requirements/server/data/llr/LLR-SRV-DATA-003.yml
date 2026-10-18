@@ -1,0 +1,30 @@
+active: true
+area: Snapshots and migration
+derived: false
+header: |
+  Ordered atomic snapshots
+level: 79.0
+links:
+- HLR-SRV-DATA-001: cIwU-GnHeClneCC_5aKaCeFP_j8csSSXd20jGO7PQ7I=
+normative: true
+ref: ''
+references:
+- path: zmala_server/snapshot-file.js
+  type: file
+- path: zmala_server/json-file.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: tests/server/LLT/snapshot-file.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Configuration, callback and console writers shall atomically replace individual JSON
+  files with ordered asynchronous writes, retaining at most one active write and one
+  latest pending serialized snapshot per writer.
+verification: |
+  Delay writes and issue multiple updates; verify ordering, bounded pending work and
+  complete JSON after replacement.

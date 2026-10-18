@@ -1,0 +1,31 @@
+active: true
+area: Snapshots and migration
+derived: false
+header: |
+  Readiness versus liveness
+level: 81.0
+links:
+- HLR-SRV-DATA-001: cIwU-GnHeClneCC_5aKaCeFP_j8csSSXd20jGO7PQ7I=
+normative: true
+ref: ''
+references:
+- path: zmala_server/snapshot-file.js
+  type: file
+- path: zmala_server/json-file.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  /health shall report process liveness; /ready shall return 503 while a latest snapshot
+  has an unresolved write failure and 200 after recovery. Readiness shall not imply usable
+  SIP registration/media or a general disk-health test.
+verification: |
+  Inject and recover a storage failure while probing both endpoints.

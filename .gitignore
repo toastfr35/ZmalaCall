@@ -4,6 +4,8 @@ node_modules/
 build_tools/.npm-cache/
 build_tools/runtime/
 data/
+# Requirement theme, not private application state.
+!/requirements/server/data/
 __pycache__/
 *.so
 *.o

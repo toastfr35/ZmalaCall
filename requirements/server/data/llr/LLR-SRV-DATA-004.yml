@@ -1,0 +1,29 @@
+active: true
+area: Snapshots and migration
+derived: false
+header: |
+  Commit barriers and read isolation
+level: 80.0
+links:
+- HLR-SRV-DATA-001: cIwU-GnHeClneCC_5aKaCeFP_j8csSSXd20jGO7PQ7I=
+normative: true
+ref: ''
+references:
+- path: zmala_server/snapshot-file.js
+  type: file
+- path: zmala_server/json-file.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: tests/server/LLT/snapshot-file.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A mutation shall await the writers it changes before returning success; unrelated reads
+  shall remain available during another writer's failure, and later commit barriers shall
+  retry failed latest snapshots.
+verification: |
+  Fail one writer while reading and mutating another component, then recover it.

@@ -1,0 +1,26 @@
+active: true
+area: Configuration and history persistence
+derived: false
+header: |
+  Configuration and history persistence
+level: 14.0
+links:
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/performance.test.js
+  type: file
+- path: tests/server/HLT/persistence.test.js
+  type: file
+- path: tests/server/HLT/reliability.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall persist accepted configuration and histories through ordered per-file
+  snapshots and report unresolved persistence failures separately from process liveness.
+verification: |
+  Delay and fail writes during concurrent reads and mutations, restart with saved data and
+  check readiness recovery.
