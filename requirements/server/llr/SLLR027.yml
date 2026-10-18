@@ -1,0 +1,30 @@
+active: true
+area: SIP authentication and dialogs
+derived: false
+header: |
+  Registration lifetime and flow
+level: 27.0
+links:
+- SHLR005: kjEkBhWIi0A-Z7V0s8Wh8m74dyjluRPUQ869fOZLhOY=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+- path: zmala_server/tests/sip-guards.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An authenticated registration shall require matching From/To account identity, record
+  the actual UDP/TCP flow and at most one current Contact per account, clamp numeric
+  expiry to 0–600 seconds and reject a nonnumeric expiry. A missing Contact shall query
+  the registration; zero expiry or wildcard Contact shall deregister it.
+verification: |
+  Register, replace, query, expire and deregister contacts over both transports.

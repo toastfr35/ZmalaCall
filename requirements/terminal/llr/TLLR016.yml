@@ -1,0 +1,31 @@
+active: true
+area: Presenter input
+derived: false
+header: |
+  Playback volume lifetime
+level: 16.0
+links:
+- THLR003: PtrhXQqmHAjcPqFx88dftl8oGgIHPgNhh25vvDlZJf0=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/presenter_input.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/tests/test_presenter_input.py
+  type: file
+- path: zmala_terminal/common/tests/test_terminal.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/volume_control.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The current playback level shall survive native-core recreation during the application
+  session; a changed configured default or application restart shall apply the configured
+  speaker level.
+verification: |
+  Adjust runtime volume, recreate the core, then change the server default and restart.

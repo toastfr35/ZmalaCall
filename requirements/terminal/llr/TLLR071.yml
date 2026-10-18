@@ -1,0 +1,29 @@
+active: true
+area: Callback requests
+derived: false
+header: |
+  Acknowledged cancellation and stale polling
+level: 71.0
+links:
+- THLR012: eepbUhntkWOe5aqlxD1pNEBygPUtwSbVl-B7mpmdkRw=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/tests/test_callbacks.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A cancellation tag shall be removed only after server acknowledgement; older poll
+  responses shall not undo a newer mutation, and late mutation results shall not replace
+  active ringing/call UI.
+verification: |
+  Reorder poll/mutation responses and interrupt with an incoming call.

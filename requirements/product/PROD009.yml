@@ -1,0 +1,19 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Consistent terminal configuration
+level: 9.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The product shall let administrators configure terminals and let terminal users edit the
+  supported local subset, with changes synchronized through the server and conflicts
+  reported.
+verification: |
+  Edit settings from both locations, introduce a concurrent change and check
+  acknowledgement, persistence and conflict feedback.

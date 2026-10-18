@@ -1,0 +1,30 @@
+active: true
+area: Callback state and notifications
+derived: false
+header: |
+  Cancellation and completion
+level: 44.0
+links:
+- SHLR008: q2nTMNf9X8KWjIFNTDddzS9rUi2Jo-D5B7vlrd_t7sQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+- path: zmala_server/tests/callbacks.test.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A requester may cancel its own pending request; a connected call in either direction
+  shall complete requests for that pair. Permission removal, account deletion or requester
+  conversion to phone shall cancel invalid requests, while rename shall preserve valid
+  requests.
+verification: |
+  Exercise each lifecycle transition and compare client and administrator views.

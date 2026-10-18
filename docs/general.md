@@ -73,7 +73,7 @@ code or models.
 | `zmala_terminal/windows/` | Windows native loading, rendering, WLAN and process adapters |
 | `zmala_terminal/linux/` | Pi adapters, native media, Bluetooth, CEC and peripheral control |
 | `build_tools/` | Packaging, installers, launchers, source checks and hardware probes |
-| `requirements/` | Doorstop product (`ZMC`), terminal (`TERM`) and server (`SERV`) records |
+| `requirements/` | Doorstop product (`PROD`), server (`SHLR`/`SLLR`) and Pi terminal (`THLR`/`TLLR`) records |
 | `docs/` | Three implementation guides and four Word user guides |
 
 Source launches keep state in component `data/` directories. Pi installations
@@ -141,58 +141,98 @@ and dependencies outside those disposable directories are retained.
 
 ## Doorstop requirements
 
-The authoritative tree is `ZMC → TERM / SERV` under top-level `requirements/`.
-Edit YAML records there; do not copy requirement text into these guides or commit
-generated requirement catalogues. Operational examples here describe the
-implementation and do not replace the records. `references` paths are relative
-to the repository root and point to implementation or verification files.
+The implementation baseline has five documents:
 
-On Windows, install the pinned runtime with `uv` available, then use the wrapper
-which supplies an absolute native project path (relative/forward-slash paths can
-break Doorstop's external-reference lookup on Windows):
-
-```powershell
-& .\build_tools\install-doorstop.ps1
-& .\build_tools\doorstop.cmd --no-reformat --error-all --no-review-check
-& .\build_tools\doorstop.cmd add TERM
-& .\build_tools\doorstop.cmd edit TERM028
-& .\build_tools\doorstop.cmd link TERM028 ZMC005
+```text
+PROD  Product specification
+├── SHLR  Server high-level requirements
+│   └── SLLR  Server low-level requirements
+└── THLR  Pi terminal high-level requirements
+    └── TLLR  Pi terminal low-level requirements
 ```
 
-On Linux, in the development environment:
+The YAML records under `requirements/` are authoritative. HLRs link to product
+items; LLRs link to their component HLRs and reference implementation and test
+files relative to the repository root. `area` groups related behavior, `scope`
+distinguishes Core/Optional/Experimental, and `verification` describes a proposed
+check, not its result. Review stamps cover these fields as well as requirement
+text. The scope includes the Linux server, shared/Pi terminal implementation and
+Pi installation tooling, including the Windows installer front ends. Windows
+terminal runtime and retired keypad/CAD work are outside this baseline.
+
+### Validate and publish
+
+Install the pinned tooling into the development environment:
 
 ```sh
 python -m pip install -r build_tools/doorstop-requirements.txt
-doorstop --no-reformat --error-all --no-review-check --project "$PWD"
-doorstop add TERM --project "$PWD"
-doorstop edit TERM028 --project "$PWD"
-doorstop link TERM028 ZMC005 --project "$PWD"
+make requirements-check
+make requirements
 ```
 
-Use the ID printed by `add` for a new item; `TERM028` above illustrates editing
-an existing item. Structural validation checks levels, references, parent links
-and stale parent stamps; `--no-review-check` allows unreviewed items. It does not
-claim maintainer acceptance or physical test success. After an actual impact
-review, use `doorstop clear <ID>` to accept parent changes and `doorstop review
-<ID>` to stamp reviewed text; omit `--no-review-check` for review validation.
-Running `doorstop` alone validates the records; it does not render a report.
-`publish` writes to the destination supplied on the command line. Optional HTML
-reports go in the ignored `requirements/output/` directory:
-
-```sh
-doorstop publish all requirements/output --html --project "$PWD"
-```
-
-On Windows, the repository wrapper supplies the native absolute project path:
+Alternatively, Windows can use the dedicated managed runtime (`uv` required):
 
 ```powershell
-& .\build_tools\doorstop.cmd publish all requirements/output --html
+& .\build_tools\install-doorstop.ps1
+& .\build_tools\runtime\doorstop\Scripts\python.exe build_tools/requirements.py
 ```
 
-Open `requirements/output/index.html`. The report includes individual
-HTML documents under `documents/` and `traceability.html`/`traceability.csv` at its
-root. Generated reports are ignored by Git and removed by `make clean`; the YAML
-records under `requirements/` remain the authoritative source.
+`make requirements` automatically prefers that dedicated Windows runtime when
+present; otherwise it uses the Makefile's `PYTHON`. Override with
+`REQUIREMENTS_PYTHON=...` when needed. Both routes supply an absolute native project
+path because forward-slash project paths can break Doorstop reference lookup on
+Windows.
+
+The build checks the five-document hierarchy, required fields, component-specific
+parent links, leaf implementation references and mapping of every in-scope source
+module. Its inventory also lists excluded generated bundles, test/probe code and
+third-party internals with reasons. Mapping a file is a maintenance aid, not proof
+that every behavior or hardware scenario has been verified. When changing a module,
+review its mapped LLRs and parents; when adding one, add or extend the corresponding
+LLR. Do not satisfy coverage with an unrelated reference.
+
+Open `requirements/output/index.html`. The offline report includes searchable
+requirement cards, document navigation, parent/child links, verification guidance,
+a traceability table/CSV and source coverage HTML/JSON. It works without a web
+server or external CDN. JavaScript only adds search. The native Doorstop template
+lives in `requirements/product/template/`; `build_tools/requirements.py` adds the
+inventory and validates the generated links. GitHub Verify uploads the complete
+folder as `zmala-requirements`. Extract the artifact before opening `index.html`.
+Generated output is ignored by Git and removed by `make clean`.
+
+### Edit and review
+
+Use Doorstop or edit YAML directly. Examples on Linux (activate the tooling
+environment first):
+
+```sh
+doorstop add TLLR --project "$PWD"
+doorstop edit TLLR094 --project "$PWD"
+doorstop link TLLR094 THLR016 --project "$PWD"
+```
+
+On Windows use `build_tools\doorstop.cmd` with the same subcommands; the wrapper
+supplies the native project path. Use the ID printed by `add` for new items; the
+other commands above illustrate an existing runtime TV requirement. Supply its
+header, normative text, area, scope, verification guidance and source references.
+Keep IDs stable once issued; do not renumber them to reorder a document.
+
+The old ZMC/SERV/TERM baseline was replaced because it mixed abstraction levels
+and included Windows terminal/retired keypad scope. Historical records remain in
+Git; new links use PROD/SHLR/SLLR/THLR/TLLR.
+
+Structural checks use `--no-review-check` to permit a baseline awaiting human
+review. They still check references and suspect parent links. After an actual
+impact review, `doorstop clear <ID>` accepts a changed parent stamp; after reviewing
+the requirement, `doorstop review <ID>` stamps it. Neither operation records a
+passed test. Omit `--no-review-check` when validating review completion. Initial
+records are intentionally not marked human-reviewed.
+
+Running `doorstop` alone validates; it does not render. For just the native HTML
+(without the source inventory), use `doorstop publish all requirements/output
+--html --template zmala --project "$PWD"`. Prefer `make requirements` for the complete
+report and all checks. Technical guides explain implementation and workflows;
+normative requirements belong only in the Doorstop records.
 
 
 ## Distribution and third-party components

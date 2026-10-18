@@ -1,0 +1,37 @@
+active: true
+area: Administration pages and editing
+derived: false
+header: |
+  Revision-bound drafts
+level: 60.0
+links:
+- SHLR010: 9k50pA5MkTBMlVjVLw-6MuHpMmW7w9qy8CzbkiuQTuM=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.html
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/admin-interactions.test.js
+  type: file
+- path: zmala_server/web/admin-state.js
+  type: file
+- path: zmala_server/tests/admin-settings-conflicts.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Account, terminal setting and console-shell editors shall submit the revision observed
+  when opened; polling shall not silently advance a draft, and stale writes shall receive
+  HTTP 409 without mutation and display reload guidance.
+verification: |
+  Open a draft, save elsewhere, allow polling and then submit the stale draft.

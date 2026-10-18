@@ -20,7 +20,10 @@ Word user guides:
 - [Prepare a server](docs/server_prep.docx)
 
 Requirements are maintained only in [Doorstop records](requirements/), with
-product (`ZMC`), server (`SERV`) and terminal (`TERM`) documents. The guides describe
+product (`PROD`), server HLR/LLR (`SHLR`/`SLLR`) and Pi-terminal HLR/LLR
+(`THLR`/`TLLR`) documents. Run `make requirements` for the searchable offline report
+at `requirements/output/index.html`; GitHub Verify also publishes it as the
+`zmala-requirements` artifact. The guides describe
 current operation and implementation; they do not duplicate requirement catalogues.
 [astra.md](astra.md) tracks remaining engineering work.
 

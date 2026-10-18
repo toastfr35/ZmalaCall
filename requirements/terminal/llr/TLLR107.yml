@@ -1,0 +1,32 @@
+active: true
+area: Operational diagnostics
+derived: false
+header: |
+  Diagnostic privacy and volatility
+level: 107.0
+links:
+- THLR018: r9MAtWf206uQYVmZzSkb2Uf2e4H3m1wffALJJHWbumU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/connectivity.py
+  type: file
+- path: zmala_terminal/linux/connectivity.py
+  type: file
+- path: zmala_terminal/common/runtime_logging.py
+  type: file
+- path: build_tools/linux/diagnostics.py
+  type: file
+- path: zmala_terminal/common/tests/test_wifi_status.py
+  type: file
+- path: zmala_terminal/common/tests/test_runtime_logging.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Diagnostic collection shall avoid enrollment/password secrets and explain that volatile
+  logs must be exported before reboot when needed.
+verification: |
+  Inspect collected diagnostics for secrets and compare logs before/after reboot.

@@ -1,0 +1,30 @@
+active: true
+area: SIP authentication and dialogs
+derived: false
+header: |
+  Digest replay checks
+level: 26.0
+links:
+- SHLR005: kjEkBhWIi0A-Z7V0s8Wh8m74dyjluRPUQ869fOZLhOY=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+- path: zmala_server/tests/sip-guards.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  SIP Digest authentication shall validate account, realm, method/URI, qop=auth and
+  response with a signed nonce no older than five minutes, and reject reused or decreasing
+  nonce counts for the same user/client nonce.
+verification: |
+  Exercise good authentication, wrong fields, expired/future nonces and replayed nonce
+  counts.

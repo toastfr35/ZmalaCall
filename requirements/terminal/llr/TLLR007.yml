@@ -1,0 +1,29 @@
+active: true
+area: Contact display
+derived: false
+header: |
+  Stable in-frame names
+level: 7.0
+links:
+- THLR002: RDTpfur30Cspbj7ptzHd4tiQxP-HWrYGQu1-Mc2YKYA=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/carousel.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/tests/test_terminal.py
+  type: file
+- path: zmala_terminal/common/tests/contact_presence_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  All portrait cards, including the selected card, shall place the contact name directly
+  below its picture inside the frame, above availability; the idle screen shall omit a
+  separate selected-name footer and mouse-style action controls.
+verification: |
+  Inspect idle and animated frames with long names and missing pictures.

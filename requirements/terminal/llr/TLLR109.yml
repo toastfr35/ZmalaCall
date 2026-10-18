@@ -1,0 +1,31 @@
+active: true
+area: Argon case and experimental USB
+derived: false
+header: |
+  Explicit USB experiment
+level: 109.0
+links:
+- THLR019: J1cU3Vp1IgahebcN-9h6FO-p_tainGWw6MOe7QgORqQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/argon_fan.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: build_tools/linux/install-usb-power.sh
+  type: file
+- path: zmala_terminal/common/tests/test_argon_fan.py
+  type: file
+- path: zmala_terminal/common/tests/test_usb_power.py
+  type: file
+reviewed: null
+scope: Experimental
+text: |
+  Shared USB power switching shall be opt-in and disabled by the regular installer; the
+  supported topology shall treat external camera and charger ports as one power domain,
+  unsuitable for USB storage or detecting new equipment while unpowered.
+verification: |
+  Inspect installer defaults and reject unsupported/busy topologies.

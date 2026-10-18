@@ -1,0 +1,35 @@
+active: true
+area: Configuration and live state
+derived: false
+header: |
+  Configuration envelope validation
+level: 79.0
+links:
+- THLR014: qvGDvflLE5aJJBIw6Sb2xiQYHY1_uh6cp4-nDFj6Ox8=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/tests/test_configuration.py
+  type: file
+- path: zmala_terminal/common/tests/test_management.py
+  type: file
+- path: zmala_terminal/common/tests/test_reliability.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Accepted configuration shall require schema 1, the enrolled device ID, a positive
+  integer revision, supported settings and no more than 40 unique valid contact IDs; each
+  contact URI shall match its account and configured domain.
+verification: |
+  Test invalid IDs, duplicates, revisions, domains, settings and type boundaries.

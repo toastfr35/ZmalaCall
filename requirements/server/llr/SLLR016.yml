@@ -1,0 +1,30 @@
+active: true
+area: Directory derivation
+derived: false
+header: |
+  Cached derived views
+level: 16.0
+links:
+- SHLR003: xsPE64ruWuer4IsGGDJFGNKo1UV-1YkWY4U63GnXWxU=
+normative: true
+ref: ''
+references:
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+- path: zmala_server/tests/performance.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall reuse stable contact/permission derivations within a configuration
+  revision and invalidate them after configuration changes, while adding live presence
+  separately.
+verification: |
+  Read repeatedly, change groups and then presence; verify cache invalidation and fresh
+  live fields.

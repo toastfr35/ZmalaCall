@@ -1,0 +1,30 @@
+active: true
+area: Call state and controls
+derived: false
+header: |
+  Two distinct outgoing confirmations
+level: 39.0
+links:
+- THLR008: f_wKMa6RJdMeA56MVAjgm8cTZbFpA8vbxeC1ilP-F7w=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/tests/test_terminal.py
+  type: file
+- path: zmala_terminal/common/tests/terminal_ui_call.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Green on an available contact shall open its picture/name confirmation; a second
+  distinct green press shall revalidate availability/permission before dialing.
+  Cancellation shall retain carousel selection and a held key shall not confirm twice. Any
+  other key shall cancel the confirmation.
+verification: |
+  Hold green, cancel, change availability and then make a normal two-press call.

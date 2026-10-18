@@ -1,0 +1,33 @@
+active: true
+area: Localized rendering
+derived: false
+header: |
+  Consistent confirmation controls
+level: 37.0
+links:
+- THLR007: 4WGNSfNgDxkp4q9qWbk72ZGffxl7kQCJTFMoThGz_P8=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/localization.py
+  type: file
+- path: zmala_terminal/common/text_renderer.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
+  type: file
+- path: zmala_terminal/common/theme.py
+  type: file
+- path: zmala_terminal/common/tests/terminal_languages_ui.py
+  type: file
+- path: zmala_terminal/common/tests/call_feedback_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Call/callback/reset confirmation pages shall use rounded green affirmative and red
+  negative controls with localized labels and margins around portraits; the layout shall
+  fit the supported small-window regression size.
+verification: |
+  Render representative confirmations at 900×620 and full screen with long translations.

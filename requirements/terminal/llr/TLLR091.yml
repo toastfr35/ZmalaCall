@@ -1,0 +1,32 @@
+active: true
+area: TV capability checks
+derived: false
+header: |
+  Durable attempts and TV binding
+level: 91.0
+links:
+- THLR015: zbhAJg1oy_ugkKS2FRpMvoT7iCw-tO_DUYabylWSieg=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: zmala_terminal/common/tests/test_tv_check.py
+  type: file
+- path: zmala_terminal/common/tests/tv_setup_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Attempt counts, distinct outcomes and TV identity/physical-address binding shall
+  persist; failed saving shall leave setup pending, interrupted setup shall resume and
+  incompatible binding changes shall invalidate results. Standby EDID absence alone shall
+  not invent a new TV.
+verification: |
+  Fail writes, interrupt/restart, change TV/address and remove EDID temporarily.

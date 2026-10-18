@@ -1,0 +1,48 @@
+active: true
+area: Administration pages and editing
+derived: false
+header: |
+  Phone and desktop layout
+level: 57.0
+links:
+- SHLR010: 9k50pA5MkTBMlVjVLw-6MuHpMmW7w9qy8CzbkiuQTuM=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.html
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/admin-interactions.test.js
+  type: file
+- path: zmala_server/web/styles/forms.css
+  type: file
+- path: zmala_server/web/styles/layout.css
+  type: file
+- path: zmala_server/web/styles/pages.css
+  type: file
+- path: zmala_server/web/styles/responsive.css
+  type: file
+- path: zmala_server/web/styles/terminals.css
+  type: file
+- path: zmala_server/web/styles/theme.css
+  type: file
+- path: zmala_server/web/styles/tools.css
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administration and sign-in shall fit viewports from 320 to 1920 CSS pixels without
+  page-wide horizontal scrolling; narrow account rows shall stack with labels and dialogs
+  shall remain vertically scrollable.
+verification: |
+  Inspect 320, 390, 768 and 1920 pixel viewports with long names, connection details and
+  open dialogs.

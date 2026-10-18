@@ -1,0 +1,18 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Camera enrollment and deliberate reset
+level: 7.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The product shall support camera-readable Wi-Fi and server enrollment codes and a
+  deliberate reset that permits re-enrollment without deleting server accounts.
+verification: |
+  Use the administrator-generated codes on a fresh terminal, reject a wrong code, then
+  reset and enroll again.

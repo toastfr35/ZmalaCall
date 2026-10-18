@@ -1,0 +1,21 @@
+active: true
+area: Encoded media relay
+derived: false
+header: |
+  Encoded media relay
+level: 6.0
+links:
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The server shall relay negotiated RTP and RTCP between authenticated signaling peers
+  without transcoding or recording media.
+verification: |
+  Check SDP rewriting, packet sources, socket allocation, renegotiation rejection and
+  release of media resources.

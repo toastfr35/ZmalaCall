@@ -1,0 +1,18 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Independent home appliances
+level: 1.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The product shall provide a Raspberry Pi server and independently running Raspberry Pi
+  TV terminals that start automatically and communicate over a local network.
+verification: |
+  Start and stop each appliance independently; verify the other remains running and
+  reconnects when service returns.

@@ -1,0 +1,30 @@
+active: true
+area: Callback state and notifications
+derived: false
+header: |
+  Callback deadlines
+level: 45.0
+links:
+- SHLR008: q2nTMNf9X8KWjIFNTDddzS9rUi2Jo-D5B7vlrd_t7sQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+- path: zmala_server/tests/callbacks.test.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Email and removal delays shall be configured in hours, accept supported fractional
+  values, default to one and four hours respectively, and require removal after email;
+  changes shall apply to existing pending requests measured from creation.
+verification: |
+  Check default, invalid and fractional deadlines and change settings while requests are
+  pending.

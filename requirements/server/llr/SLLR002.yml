@@ -1,0 +1,28 @@
+active: true
+area: Runtime and listeners
+derived: false
+header: |
+  LAN listener defaults
+level: 2.0
+links:
+- SHLR001: W2F2c4zYXQtnKhwLNVbH6-EWqqwsBCuVXdpoadDcSbk=
+normative: true
+ref: ''
+references:
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/shutdown.js
+  type: file
+- path: build_tools/linux/zmalacall-server.service
+  type: file
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: zmala_server/tests/shutdown.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall listen for HTTP on TCP 8080 and SIP on UDP/TCP 5060 by default, on all
+  IPv4 interfaces; configured ports shall override these defaults.
+verification: |
+  Inspect listening sockets for defaults and configured port values.

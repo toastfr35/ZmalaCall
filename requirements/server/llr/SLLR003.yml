@@ -1,0 +1,33 @@
+active: true
+area: Runtime and listeners
+derived: false
+header: |
+  Optional HTTPS administration
+level: 3.0
+links:
+- SHLR001: W2F2c4zYXQtnKhwLNVbH6-EWqqwsBCuVXdpoadDcSbk=
+normative: true
+ref: ''
+references:
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/shutdown.js
+  type: file
+- path: build_tools/linux/zmalacall-server.service
+  type: file
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: zmala_server/tests/shutdown.test.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/tests/http-boundary.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  When a certificate and key configure HTTPS administration, the server shall expose that
+  listener and reject remote plaintext administration while retaining the device transport
+  policy.
+verification: |
+  Exercise HTTPS, remote HTTP administration, loopback and authenticated device requests.

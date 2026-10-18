@@ -1,0 +1,21 @@
+active: true
+area: Optional local people framing
+derived: false
+header: |
+  Optional local people framing
+level: 10.0
+links:
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  When enabled, the terminal shall frame detected people locally within a maximum
+  two-times digital zoom while preserving pipeline responsiveness and a wide-view
+  fallback.
+verification: |
+  Use single/multiple people, exits/re-entry, inference failure and setting changes;
+  verify crop limits and process isolation.

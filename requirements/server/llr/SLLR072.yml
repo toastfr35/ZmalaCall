@@ -1,0 +1,26 @@
+active: true
+area: Setup PDFs
+derived: false
+header: |
+  Wi-Fi QR validation and privacy
+level: 72.0
+links:
+- SHLR012: 9YXR2nPpsDRMQi8i0WVoDehi-vC0xzoygXp_HiySmag=
+normative: true
+ref: ''
+references:
+- path: zmala_server/setup-pdf.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/tests/setup.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Wi-Fi QR generation shall validate SSID, WPA/open security, password and hidden-network
+  flag, escape reserved characters and use the compact UTF-8 encoding when the standard
+  payload is unsuitable; submitted Wi-Fi secrets shall not be saved on the server.
+verification: |
+  Round-trip escaped/Unicode/long SSIDs and inspect persistent state for absent Wi-Fi
+  secrets.

@@ -1,0 +1,34 @@
+active: true
+area: Configuration and live state
+derived: false
+header: |
+  Live supported configuration paths
+level: 84.0
+links:
+- THLR014: qvGDvflLE5aJJBIw6Sb2xiQYHY1_uh6cp4-nDFj6Ox8=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/tests/test_configuration.py
+  type: file
+- path: zmala_terminal/common/tests/test_management.py
+  type: file
+- path: zmala_terminal/common/tests/test_reliability.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Language, framing and playback-volume changes shall use their supported live paths
+  without rebuilding an active call solely for those settings.
+verification: |
+  Apply each setting during a connected call and compare native core/call identity.

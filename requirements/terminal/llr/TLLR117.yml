@@ -1,0 +1,43 @@
+active: true
+area: Terminal installation and delivery
+derived: false
+header: |
+  Private state outside releases
+level: 117.0
+links:
+- THLR020: fyfLb5h8xTRYpz2RbQQzqmC0pQieb86gSh_TghdxTno=
+normative: true
+ref: ''
+references:
+- path: build_tools/windows_installer/backend.py
+  type: file
+- path: build_tools/windows_installer/remote_probe.py
+  type: file
+- path: build_tools/windows_installer/cli.py
+  type: file
+- path: build_tools/windows_installer/app.py
+  type: file
+- path: build_tools/windows_installer/build.py
+  type: file
+- path: build_tools/linux/install-terminal.sh
+  type: file
+- path: build_tools/linux/install-kiosk.sh
+  type: file
+- path: build_tools/linux/package-terminal.py
+  type: file
+- path: build_tools/tests/test_pi_install.py
+  type: file
+- path: build_tools/tests/test_headless_installer.py
+  type: file
+- path: build_tools/tests/test_install_runner.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Code shall be installed as root-owned releases under /opt/zmalacall with private
+  persistent state under /var/lib/zmalacall; upgrades shall preserve enrollment and
+  service ownership. Release rollback shall not claim to undo OS/package/configuration
+  changes.
+verification: |
+  Upgrade with populated state, fail switched startup and compare release selection and
+  persistent files.

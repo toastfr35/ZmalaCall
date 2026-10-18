@@ -1,0 +1,28 @@
+active: true
+area: Callback state and notifications
+derived: false
+header: |
+  Terminal callback delivery
+level: 48.0
+links:
+- SHLR008: q2nTMNf9X8KWjIFNTDddzS9rUi2Jo-D5B7vlrd_t7sQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+- path: zmala_server/tests/callbacks.test.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Terminal recipients shall obtain pending callback requests through authenticated
+  configuration polling without a server-initiated automatic call.
+verification: |
+  Poll both terminals through a pending request and verify no INVITE is generated.

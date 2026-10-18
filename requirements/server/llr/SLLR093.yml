@@ -1,0 +1,40 @@
+active: true
+area: Server delivery and upgrade
+derived: false
+header: |
+  Server release and private state
+level: 93.0
+links:
+- SHLR017: Z-pJSZfB3xnafUXgY2MSgFT5oRULHNH5svTja0WW5JU=
+normative: true
+ref: ''
+references:
+- path: build_tools/server_installer/backend.py
+  type: file
+- path: build_tools/server_installer/cli.py
+  type: file
+- path: build_tools/server_installer/app.py
+  type: file
+- path: build_tools/server_installer/build.py
+  type: file
+- path: build_tools/linux/package-server.py
+  type: file
+- path: build_tools/linux/install-server.sh
+  type: file
+- path: build_tools/tests/test_server_installer.py
+  type: file
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: build_tools/linux/zmalacall-server.service
+  type: file
+- path: build_tools/server_installer/entrypoint.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Installation shall place root-owned application releases under /opt/zmalacall-server and
+  retain state under /var/lib/zmalacall-server, install dependencies and startup units,
+  and preserve existing private state on upgrades.
+verification: |
+  Compare state before/after upgrade and inspect ownership, symlinks and automatic service
+  startup.

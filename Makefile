@@ -10,13 +10,22 @@ PYTHON ?= $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,$(i
 NODE ?= node
 CPPCHECK ?= $(if $(wildcard C:/msys64/ucrt64/bin/cppcheck.exe),C:/msys64/ucrt64/bin/cppcheck.exe,cppcheck)
 POWERSHELL ?= powershell.exe
+REQUIREMENTS_PYTHON ?= $(if $(wildcard build_tools/runtime/doorstop/Scripts/python.exe),build_tools/runtime/doorstop/Scripts/python.exe,$(PYTHON))
 
-.PHONY: help clean lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test
+.PHONY: help clean lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test requirements requirements-check
 .DEFAULT_GOAL := help
 
 help:
 	@$(NODE) -e "console.log('make lint: JavaScript/Python/native lint, shell syntax, formatting and generated assets\nmake lint-powershell: parse Windows scripts without executing them\nmake test: server and platform-independent terminal tests\nSee README.md for tool installation and overrides.')"
 	@echo "make clean: remove caches, scratch files and build outputs (preview: make clean CLEAN_FLAGS=--dry-run)"
+	@echo "make requirements: validate coverage and publish requirements/output/index.html"
+	@echo "make requirements-check: validate requirements without publishing"
+
+requirements:
+	$(REQUIREMENTS_PYTHON) build_tools/requirements.py
+
+requirements-check:
+	$(REQUIREMENTS_PYTHON) build_tools/requirements.py --check
 
 clean:
 	$(PYTHON) build_tools/clean.py $(CLEAN_FLAGS)
@@ -46,7 +55,7 @@ lint-powershell:
 	$(POWERSHELL) -NoProfile -File build_tools/lint-powershell.ps1
 
 lint-format:
-	$(NODE) node_modules/prettier/bin/prettier.cjs --check "zmala_server/**/*.{js,cjs,ts,css,html}" "build_tools/*.js" "build_tools/*.cjs" eslint.config.cjs "zmala_server/tsconfig*.json"
+	$(NODE) node_modules/prettier/bin/prettier.cjs --check "zmala_server/**/*.{js,cjs,ts,css,html}" "build_tools/*.js" "build_tools/*.cjs" "requirements/product/template/*.{js,css}" eslint.config.cjs "zmala_server/tsconfig*.json"
 
 lint-generated:
 	$(NODE) build_tools/build-admin.cjs --check

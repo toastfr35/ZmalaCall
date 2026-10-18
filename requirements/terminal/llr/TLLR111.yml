@@ -1,0 +1,32 @@
+active: true
+area: Argon case and experimental USB
+derived: false
+header: |
+  Safe logical detach and wake
+level: 111.0
+links:
+- THLR019: J1cU3Vp1IgahebcN-9h6FO-p_tainGWw6MOe7QgORqQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/argon_fan.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: build_tools/linux/install-usb-power.sh
+  type: file
+- path: zmala_terminal/common/tests/test_argon_fan.py
+  type: file
+- path: zmala_terminal/common/tests/test_usb_power.py
+  type: file
+reviewed: null
+scope: Experimental
+text: |
+  The helper shall refuse power-off with another peripheral or open media handle,
+  deauthorize C20 interfaces before switching, then wait for video/audio enumeration on
+  wake, refresh SDK devices on the owning thread and restore volume before media
+  readiness.
+verification: |
+  Simulate open handles, extra devices and partial wake enumeration.

@@ -1,0 +1,36 @@
+active: true
+area: Administration pages and editing
+derived: false
+header: |
+  Touch and keyboard access
+level: 58.0
+links:
+- SHLR010: 9k50pA5MkTBMlVjVLw-6MuHpMmW7w9qy8CzbkiuQTuM=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.html
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/admin-interactions.test.js
+  type: file
+- path: zmala_server/types/admin-dom.ts
+  type: file
+- path: zmala_server/types/admin.ts
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Phone/touch controls shall provide at least 44-pixel targets, readable form inputs and
+  accessible navigation; background refresh shall not detach the focused input.
+verification: |
+  Exercise touch-sized controls and keep keyboard focus while polling refreshes the page.

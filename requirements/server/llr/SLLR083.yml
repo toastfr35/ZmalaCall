@@ -1,0 +1,34 @@
+active: true
+area: Snapshots and migration
+derived: false
+header: |
+  Persistence boundary disclosure
+level: 83.0
+links:
+- SHLR014: aD_PVDrUEzhgrScSa9DCydE-3fISTaFd6TW7Y8edKHU=
+normative: true
+ref: ''
+references:
+- path: zmala_server/snapshot-file.js
+  type: file
+- path: zmala_server/json-file.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/tests/persistence.test.js
+  type: file
+- path: zmala_server/tests/reliability.test.js
+  type: file
+- path: zmala_server/tests/performance.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Persistence shall operate per file; the server shall not treat the
+  configuration/callback/console/bootstrap group as one transaction or claim fsync
+  power-loss durability. Recovery shall retain terminal revision rollback protection.
+verification: |
+  Inspect write/flush paths and rehearse a backup restore with an older configuration
+  revision.

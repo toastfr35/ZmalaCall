@@ -1,0 +1,27 @@
+active: true
+area: Live reachability
+derived: false
+header: |
+  Registration probes
+level: 40.0
+links:
+- SHLR007: 04PJGOiap9Kpd8dURMgL3_DX2xcnGxiP_x4Va6r_bm4=
+normative: true
+ref: ''
+references:
+- path: zmala_server/registrations.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/tests/presence.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall probe each unexpired registration flow every five seconds with a
+  five-second response timeout, mark failed peers unreachable and continue probing them
+  for recovery.
+verification: |
+  Use an isolated peer that stops and resumes OPTIONS replies.

@@ -1,0 +1,18 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  TV integration
+level: 8.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The Pi terminal shall support verified TV power and source control, recover the terminal
+  view when needed, and restore the observed previous TV state after calls or inactivity.
+verification: |
+  Complete user-confirmed TV checks and exercise wake, input selection, call restoration
+  and idle return on supported hardware.

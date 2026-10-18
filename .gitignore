@@ -21,6 +21,7 @@ build_tools/dist/
 *.exe
 *.bak
 *.tmp
+~$*.docx
 /zmala_terminal/linux/media/framing-runtime/
 /zmala_terminal/linux/media/models/*.tflite
 

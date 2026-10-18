@@ -1,0 +1,32 @@
+active: true
+area: Configuration contract
+derived: false
+header: |
+  Automatic-answer and ring budget
+level: 67.0
+links:
+- SHLR011: sy6ARF7udlkej2Y_Wfd_PCEN2glcf-sun7ghdh_UtlI=
+normative: true
+ref: ''
+references:
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: zmala_server/tests/terminal-fields.test.js
+  type: file
+- path: zmala_server/tests/device-settings.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Auto-answer shall store explicit enablement and an integer delay from 5 to 600 seconds;
+  call ring budgets shall allow the selected delay plus the implemented grace instead of a
+  fixed shorter timeout.
+verification: |
+  Set minimum/maximum delays and verify computed ring budgets and late permitted
+  answering.

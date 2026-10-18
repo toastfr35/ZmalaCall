@@ -1,5 +1,18 @@
 settings:
   digits: 3
   itemformat: yaml
-  prefix: ZMC
+  prefix: PROD
   sep: ''
+attributes:
+  defaults:
+    doc:
+      name: PROD
+      title: Product specification
+  publish:
+  - area
+  - scope
+  - verification
+  reviewed:
+  - area
+  - scope
+  - verification

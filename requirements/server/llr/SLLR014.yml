@@ -1,0 +1,26 @@
+active: true
+area: Directory derivation
+derived: false
+header: |
+  Symmetric shared-group permission
+level: 14.0
+links:
+- SHLR003: xsPE64ruWuer4IsGGDJFGNKo1UV-1YkWY4U63GnXWxU=
+normative: true
+ref: ''
+references:
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Two distinct existing accounts shall be permitted to communicate exactly when they share
+  a group; membership through a third account shall not confer permission.
+verification: |
+  Test self, missing, shared, disjoint and nontransitive group relationships.

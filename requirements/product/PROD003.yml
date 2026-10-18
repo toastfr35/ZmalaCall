@@ -1,0 +1,19 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Accessible multilingual interaction
+level: 3.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The Pi terminal shall let a user select familiar portraits and operate calls and
+  settings with the Presenter remote, using the selected language and visible feedback for
+  each action.
+verification: |
+  Exercise the remote-driven UI with missing pictures, different languages and a
+  five-contact directory.

@@ -1,0 +1,35 @@
+active: true
+area: Pi resource and storage boundaries
+derived: false
+header: |
+  Portrait retry and cancellation
+level: 121.0
+links:
+- THLR021: VykhIjh0-RuDwV9veCo4DQEd5cXAdvTExi0S8P89-9o=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/render_cache.py
+  type: file
+- path: zmala_terminal/common/photo_cache.py
+  type: file
+- path: zmala_terminal/common/image_bounds.py
+  type: file
+- path: zmala_terminal/common/json_storage.py
+  type: file
+- path: zmala_terminal/common/paths.py
+  type: file
+- path: zmala_terminal/common/tests/test_render_cache.py
+  type: file
+- path: zmala_terminal/common/tests/test_image_bounds.py
+  type: file
+- path: zmala_terminal/common/tests/test_performance.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Failed portrait work shall respect a sixty-second retry delay; cancelled/obsolete
+  workers shall not publish files into superseded profile state, and invalid existing
+  cache files shall be replaceable.
+verification: |
+  Fail downloads, advance time, reset during a fetch and retry a corrupt cached file.

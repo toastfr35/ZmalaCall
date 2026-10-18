@@ -1,0 +1,21 @@
+active: true
+area: Persistent unread contact indicators
+derived: false
+header: |
+  Persistent unread contact indicators
+level: 11.0
+links:
+- PROD010: CH0z8p296_lCSujO-jWk_j36hz5ah55zBlfEYDgM1eU=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The terminal shall combine missed incoming calls and permitted phone text notifications
+  into per-contact unread counts without exposing text bodies or interrupting calls.
+verification: |
+  Exercise count creation, acknowledgement, persistence, pruning, invalid proofs and
+  duplicate messages.

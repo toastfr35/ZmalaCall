@@ -1,0 +1,28 @@
+active: true
+area: SMTP reminders
+derived: false
+header: |
+  Per-recipient reminder progress
+level: 49.0
+links:
+- SHLR008: q2nTMNf9X8KWjIFNTDddzS9rUi2Jo-D5B7vlrd_t7sQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/callback-emails.js
+  type: file
+- path: zmala_server/callback-mailer.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  After the email deadline, a pending callback shall send separately to each current
+  recipient email address regardless of SIP delivery or online status; accepted recipients
+  shall persist and be skipped on retry/restart.
+verification: |
+  Accept one address and fail another, restart and verify only incomplete recipients are
+  retried.

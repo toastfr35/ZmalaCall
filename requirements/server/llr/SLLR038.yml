@@ -1,0 +1,25 @@
+active: true
+area: RTP and RTCP relay
+derived: false
+header: |
+  Transactional media updates
+level: 38.0
+links:
+- SHLR006: aSq0UEmoNIdT_qlPgvQmMZQBJVuebP7eQCs3fuzx2kI=
+normative: true
+ref: ''
+references:
+- path: zmala_server/media.js
+  type: file
+- path: zmala_server/tests/media-lifetime.test.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Media endpoint updates shall be staged until accepted negotiation; rejection shall
+  discard staged changes, and an accepted zero media port shall close the corresponding
+  stream.
+verification: |
+  Reject and accept successive updates and compare active targets and socket ownership.

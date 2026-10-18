@@ -1,0 +1,38 @@
+active: true
+area: Camera QR enrollment
+derived: false
+header: |
+  Private owned NetworkManager profile
+level: 29.0
+links:
+- THLR005: ESPy1mOsT-cClcWlceg5hKh630kEzjWU7pgnbK5CdvE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/qr_scanner.py
+  type: file
+- path: zmala_terminal/common/qr_worker.py
+  type: file
+- path: zmala_terminal/common/native_qr.py
+  type: file
+- path: zmala_terminal/linux/qr.py
+  type: file
+- path: zmala_terminal/common/tests/test_provisioning.py
+  type: file
+- path: zmala_terminal/common/tests/qr_camera_process.py
+  type: file
+- path: zmala_terminal/linux/wifi.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Linux join path shall pass credentials through NetworkManager D-Bus, create an
+  app-owned UUID/autoconnect profile with Wi-Fi power saving disabled, and remove
+  cancelled owned joins without deleting unrelated profiles or exposing passwords in
+  arguments/logs.
+verification: |
+  Inspect D-Bus calls/profile settings and cancel before/after creation.

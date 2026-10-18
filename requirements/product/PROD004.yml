@@ -1,0 +1,18 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Controlled calling
+level: 4.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The product shall establish, answer, decline and end calls only between permitted
+  accounts, including optional delayed automatic answering and cancellation before answer.
+verification: |
+  Exercise permitted, forbidden, unanswered, auto-answered and cancelled calls in both
+  directions.

@@ -1,0 +1,24 @@
+active: true
+area: RTP and RTCP relay
+derived: false
+header: |
+  Closed-session allocation protection
+level: 39.0
+links:
+- SHLR006: aSq0UEmoNIdT_qlPgvQmMZQBJVuebP7eQCs3fuzx2kI=
+normative: true
+ref: ''
+references:
+- path: zmala_server/media.js
+  type: file
+- path: zmala_server/tests/media-lifetime.test.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Late asynchronous allocations or updates shall not recreate a closed relay session; call
+  teardown and server shutdown shall release every owned port.
+verification: |
+  Close a session during delayed allocation and verify no socket or port survives.

@@ -1,0 +1,28 @@
+active: true
+area: Runtime and listeners
+derived: false
+header: |
+  Independent Linux service
+level: 1.0
+links:
+- SHLR001: W2F2c4zYXQtnKhwLNVbH6-EWqqwsBCuVXdpoadDcSbk=
+normative: true
+ref: ''
+references:
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/shutdown.js
+  type: file
+- path: build_tools/linux/zmalacall-server.service
+  type: file
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: zmala_server/tests/shutdown.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The installed server shall run under the unprivileged zmalaserver account through
+  systemd and start without a terminal process.
+verification: |
+  Inspect the service user and start the server with no terminal connected.

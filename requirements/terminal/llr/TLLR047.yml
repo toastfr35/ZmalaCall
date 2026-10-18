@@ -1,0 +1,37 @@
+active: true
+area: Media targets and audio
+derived: false
+header: |
+  Frame-rate-aware bandwidth budget
+level: 47.0
+links:
+- THLR009: czBRDwDSos_gz1THoEpGOOGRtDVHVA68CXapCpQrNxE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/video_settings.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+- path: zmala_terminal/linux/native_runtime.py
+  type: file
+- path: zmala_terminal/common/native_runtime.py
+  type: file
+- path: zmala_terminal/common/audio_processing.py
+  type: file
+- path: zmala_terminal/linux/audio_processing.py
+  type: file
+- path: zmala_terminal/common/tests/test_linux_media.py
+  type: file
+- path: zmala_terminal/common/tests/test_video_settings.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Upload allowance shall scale the 700/1500/2500 kbit/s resolution bases by configured
+  fps/15 and round upward; receive allowances shall remain 2000/4000/6000 kbit/s by
+  resolution.
+verification: |
+  Check each supported resolution/fps pair and receive independence.

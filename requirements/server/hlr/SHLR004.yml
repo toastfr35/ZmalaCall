@@ -1,0 +1,20 @@
+active: true
+area: Administration and request authentication
+derived: false
+header: |
+  Administration and request authentication
+level: 4.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The server shall authenticate administration and device requests and enforce
+  browser-origin and credential handling boundaries.
+verification: |
+  Exercise first setup, sign-in, logout, expiry, password change, malformed credentials,
+  origin checks and device impersonation attempts.

@@ -1,0 +1,32 @@
+active: true
+area: Callback state and notifications
+derived: false
+header: |
+  Phone SIP notification delivery
+level: 47.0
+links:
+- SHLR008: q2nTMNf9X8KWjIFNTDddzS9rUi2Jo-D5B7vlrd_t7sQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+- path: zmala_server/tests/callbacks.test.js
+  type: file
+- path: zmala_server/tests/callback-emails.test.js
+  type: file
+- path: zmala_server/sip-messages.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Reachable phone recipients shall receive basic UTF-8 SIP MESSAGE callback notices with
+  the requester SIP address; acceptance shall be recorded once, failures retried no more
+  often than once a minute and pending delivery checked every five seconds.
+verification: |
+  Reject then accept delivery, restart and recover reachability; distinguish SIP
+  acceptance from human acknowledgement.

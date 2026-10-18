@@ -1,0 +1,26 @@
+active: true
+area: RTP and RTCP relay
+derived: false
+header: |
+  Relay port allocation
+level: 35.0
+links:
+- SHLR006: aSq0UEmoNIdT_qlPgvQmMZQBJVuebP7eQCs3fuzx2kI=
+normative: true
+ref: ''
+references:
+- path: zmala_server/media.js
+  type: file
+- path: zmala_server/tests/media-lifetime.test.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The relay shall allocate distinct RTP and RTCP sockets for both participants of each
+  stream from UDP ports 20000 through 20199 by default, reserve ports before asynchronous
+  bind and release partial allocations on failure.
+verification: |
+  Allocate concurrently to capacity, force bind failure and verify unique reservations and
+  complete cleanup.

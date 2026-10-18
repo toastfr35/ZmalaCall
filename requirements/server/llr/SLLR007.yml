@@ -1,0 +1,28 @@
+active: true
+area: Accounts and device ownership
+derived: false
+header: |
+  Editable account fields
+level: 7.0
+links:
+- SHLR002: c8cK3Oc41TrO-nRN9xmkzGEVU2KXqgPIT_MtDLb7bjs=
+normative: true
+ref: ''
+references:
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Account edits shall validate display name, SIP password, portrait and email fields
+  before mutation; invalid edits shall leave the account unchanged.
+verification: |
+  Submit invalid combined edits and compare the complete state before and after rejection.

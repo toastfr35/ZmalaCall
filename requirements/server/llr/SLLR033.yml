@@ -1,0 +1,30 @@
+active: true
+area: SIP authentication and dialogs
+derived: false
+header: |
+  Dialog timers and release
+level: 33.0
+links:
+- SHLR005: kjEkBhWIi0A-Z7V0s8Wh8m74dyjluRPUQ869fOZLhOY=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+- path: zmala_server/tests/sip-guards.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall expire unconnected calls using the destination ring timeout plus 30
+  seconds of grace and connected dialogs after four hours without signaling activity,
+  releasing their relay resources.
+verification: |
+  Advance timers for manual and long auto-answer delays and check cleanup without
+  retaining media sockets.

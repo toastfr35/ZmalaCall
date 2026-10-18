@@ -1,0 +1,20 @@
+active: true
+area: Pi appliance startup
+derived: false
+header: |
+  Pi appliance startup
+level: 1.0
+links:
+- PROD001: 4fW6PPWrP16gAqSCbhixs6pGUTY3fOkFmKN-9QSRxFM=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The Pi terminal shall start a fullscreen display and application automatically, run
+  independently of the server and recover supervised application failures.
+verification: |
+  Boot with and without the server, restart the application and check the selected display
+  mode and service ownership.

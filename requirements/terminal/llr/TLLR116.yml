@@ -1,0 +1,49 @@
+active: true
+area: Terminal installation and delivery
+derived: false
+header: |
+  Complete automatic appliance preparation
+level: 116.0
+links:
+- THLR020: fyfLb5h8xTRYpz2RbQQzqmC0pQieb86gSh_TghdxTno=
+normative: true
+ref: ''
+references:
+- path: build_tools/windows_installer/backend.py
+  type: file
+- path: build_tools/windows_installer/remote_probe.py
+  type: file
+- path: build_tools/windows_installer/cli.py
+  type: file
+- path: build_tools/windows_installer/app.py
+  type: file
+- path: build_tools/windows_installer/build.py
+  type: file
+- path: build_tools/linux/install-terminal.sh
+  type: file
+- path: build_tools/linux/install-kiosk.sh
+  type: file
+- path: build_tools/linux/package-terminal.py
+  type: file
+- path: build_tools/tests/test_pi_install.py
+  type: file
+- path: build_tools/tests/test_headless_installer.py
+  type: file
+- path: build_tools/tests/test_install_runner.py
+  type: file
+- path: build_tools/linux/build-media.sh
+  type: file
+- path: build_tools/linux/dependencies.txt
+  type: file
+- path: build_tools/linux/zmalacall-pairing.service
+  type: file
+- path: build_tools/linux/70-zmalacall-presenter.rules
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Installation shall prepare native media dependencies, display, terminal/pairing
+  services, SSH guard, storage policy and default-enabled Argon fan without manual shell
+  setup; it shall leave experimental USB switching off.
+verification: |
+  Inspect a fresh installation and reboot with no existing runtime state.

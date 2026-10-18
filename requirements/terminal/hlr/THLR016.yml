@@ -1,0 +1,20 @@
+active: true
+area: TV wake and restoration
+derived: false
+header: |
+  TV wake and restoration
+level: 16.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD008: ruef0Jq8r9sLWfpYz4_I7M-ICnYI7g0mnfgj_jZzLMU=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The terminal shall consume the first remote action needed to reveal its UI and restore
+  observed TV state after a call or configured browsing inactivity.
+verification: |
+  Exercise standby, broadcast, unknown routing, interrupted operations, input settling and
+  idle countdown reset.

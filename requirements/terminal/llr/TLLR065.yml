@@ -1,0 +1,32 @@
+active: true
+area: Unread contact history
+derived: false
+header: |
+  Acknowledgement boundaries
+level: 65.0
+links:
+- THLR011: J8dPCgOPUyK3kYdnucjh9Og-4PfcFDmxVRbX7dZISkI=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/missed_calls.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/tests/test_missed_calls.py
+  type: file
+- path: zmala_terminal/common/tests/test_messages.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Opening that contact's call/callback confirmation or first connecting its incoming call
+  shall acknowledge existing counts; navigation, ringing, failed answer and decline shall
+  not. Repeated streams events shall not clear notifications arriving after connection.
+verification: |
+  Exercise every acknowledgement boundary and deliver messages between repeated call
+  events.

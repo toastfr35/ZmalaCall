@@ -1,0 +1,28 @@
+active: true
+area: Status and activity
+derived: false
+header: |
+  Bounded activity view
+level: 86.0
+links:
+- SHLR015: gQ92LYRTrzadvz6OKzyyouPvsuD-t0kwP9gKXy7A_VQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/tests/terminal-status.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall retain a bounded recent SIP/activity event list and expose live calls,
+  registrations, terminal status and callbacks only through authenticated administration.
+verification: |
+  Generate activity beyond the configured retention and test anonymous access.

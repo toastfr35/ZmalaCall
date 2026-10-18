@@ -1,0 +1,19 @@
+active: true
+area: Manual callback interaction
+derived: false
+header: |
+  Manual callback interaction
+level: 12.0
+links:
+- PROD010: CH0z8p296_lCSujO-jWk_j36hz5ah55zBlfEYDgM1eU=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The terminal shall create and cancel callback requests with confirmation and show
+  request/availability feedback without automatically dialing.
+verification: |
+  Request and cancel with failures and late replies; verify tags and availability notices
+  across polling and calls.

@@ -1,0 +1,34 @@
+active: true
+area: Server delivery and upgrade
+derived: false
+header: |
+  Explicit migration allowlist
+level: 94.0
+links:
+- SHLR017: Z-pJSZfB3xnafUXgY2MSgFT5oRULHNH5svTja0WW5JU=
+normative: true
+ref: ''
+references:
+- path: build_tools/server_installer/backend.py
+  type: file
+- path: build_tools/server_installer/cli.py
+  type: file
+- path: build_tools/server_installer/app.py
+  type: file
+- path: build_tools/server_installer/build.py
+  type: file
+- path: build_tools/linux/package-server.py
+  type: file
+- path: build_tools/linux/install-server.sh
+  type: file
+- path: build_tools/tests/test_server_installer.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Optional migration shall import supported accounts, credentials, admin-password state,
+  portraits, callbacks and console history, refuse existing destination state and mark
+  imported in-flight jobs failed rather than replaying them.
+verification: |
+  Import an allowlisted snapshot, reject unsafe/existing-state imports and inspect job
+  outcomes.

@@ -1,0 +1,34 @@
+active: true
+area: Camera QR enrollment
+derived: false
+header: |
+  Reject unrelated QR codes
+level: 26.0
+links:
+- THLR005: ESPy1mOsT-cClcWlceg5hKh630kEzjWU7pgnbK5CdvE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/qr_scanner.py
+  type: file
+- path: zmala_terminal/common/qr_worker.py
+  type: file
+- path: zmala_terminal/common/native_qr.py
+  type: file
+- path: zmala_terminal/linux/qr.py
+  type: file
+- path: zmala_terminal/common/tests/test_provisioning.py
+  type: file
+- path: zmala_terminal/common/tests/qr_camera_process.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Each setup stage shall accept only its supported QR schema and report malformed,
+  wrong-stage or failed codes without advancing or partially committing enrollment.
+verification: |
+  Scan unrelated text, the wrong server code and invalid Wi-Fi fields at each stage.

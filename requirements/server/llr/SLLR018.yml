@@ -1,0 +1,32 @@
+active: true
+area: HTTP and administrator security
+derived: false
+header: |
+  Corrupt password state fails closed
+level: 18.0
+links:
+- SHLR004: VNVEjzWb79hEutsv7PkV-vLouMcskk7gjNUifStO2fA=
+normative: true
+ref: ''
+references:
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/tests/admin-auth.test.js
+  type: file
+- path: zmala_server/tests/http-boundary.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An existing malformed password file shall not reopen first-time setup; deliberate
+  password-file removal while the stopped server is under local control shall permit
+  recovery.
+verification: |
+  Start with malformed credentials and verify setup is blocked; remove the file while
+  stopped and restart.

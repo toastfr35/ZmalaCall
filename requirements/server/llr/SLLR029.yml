@@ -1,0 +1,29 @@
+active: true
+area: SIP authentication and dialogs
+derived: false
+header: |
+  Terminal caller proof
+level: 29.0
+links:
+- SHLR005: kjEkBhWIi0A-Z7V0s8Wh8m74dyjluRPUQ869fOZLhOY=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+- path: zmala_server/tests/sip-guards.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Forwarded calls to terminals shall replace client-supplied proof with an HMAC tied to
+  the destination terminal token and caller/call identity.
+verification: |
+  Forge inbound proof and verify the forwarded proof and terminal rejection of tampered
+  identity.

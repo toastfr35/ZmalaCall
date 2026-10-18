@@ -1,0 +1,29 @@
+active: true
+area: Accounts and device ownership
+derived: false
+header: |
+  Account validation and capacity
+level: 6.0
+links:
+- SHLR002: c8cK3Oc41TrO-nRN9xmkzGEVU2KXqgPIT_MtDLb7bjs=
+normative: true
+ref: ''
+references:
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall support terminal and phone accounts, reject duplicate or invalid
+  usernames, and refuse creation beyond 40 accounts.
+verification: |
+  Exercise valid identifiers, duplicates, reserved/invalid values and the 40-account
+  boundary.

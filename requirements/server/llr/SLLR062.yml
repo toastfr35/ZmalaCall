@@ -1,0 +1,37 @@
+active: true
+area: Administration pages and editing
+derived: false
+header: |
+  Dialog asynchronous ownership
+level: 62.0
+links:
+- SHLR010: 9k50pA5MkTBMlVjVLw-6MuHpMmW7w9qy8CzbkiuQTuM=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.html
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/admin-interactions.test.js
+  type: file
+- path: zmala_server/web/admin-accounts.js
+  type: file
+- path: zmala_server/web/admin-console.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Closing/changing an account editor shall prevent a pending photo upload from later
+  saving that editor; closing/changing a console shall invalidate replies from its
+  previous opening.
+verification: |
+  Delay uploads/console requests, close or switch the editor and deliver old responses.

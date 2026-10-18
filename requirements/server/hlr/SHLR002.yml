@@ -1,0 +1,20 @@
+active: true
+area: Accounts and physical terminal identity
+derived: false
+header: |
+  Accounts and physical terminal identity
+level: 2.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The server shall manage phone and terminal accounts while keeping terminal device
+  identity and credentials distinct from editable account usernames.
+verification: |
+  Create, edit, rename, convert, associate and delete accounts; verify credential and
+  device ownership boundaries.

@@ -1,0 +1,40 @@
+active: true
+area: TV state ownership
+derived: false
+header: |
+  First press reveals UI only
+level: 93.0
+links:
+- THLR016: bG8X9uul6S2vMXO82LFVKV2bsbrZFPdeOiazBLtc0Lc=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+- path: zmala_terminal/linux/cec_device.py
+  type: file
+- path: zmala_terminal/linux/cec_observer.py
+  type: file
+- path: zmala_terminal/linux/samsung_tv.py
+  type: file
+- path: zmala_terminal/common/idle_return.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/tests/test_tv_control.py
+  type: file
+- path: zmala_terminal/common/tests/test_cec_device.py
+  type: file
+- path: zmala_terminal/common/tests/test_samsung_tv.py
+  type: file
+- path: zmala_terminal/common/tests/test_idle_return.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  When observed TV power/source hides the UI, the first mapped remote press shall request
+  wake/selection and be consumed, including middle. Input-settling presses shall also be
+  consumed, and a consumed middle hold shall not enable motion until release and a fresh
+  press.
+verification: |
+  Start on broadcast/standby and send every button and held-middle motion.

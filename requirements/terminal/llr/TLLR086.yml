@@ -1,0 +1,30 @@
+active: true
+area: TV capability checks
+derived: false
+header: |
+  Post-enrollment localized checks
+level: 86.0
+links:
+- THLR015: zbhAJg1oy_ugkKS2FRpMvoT7iCw-tO_DUYabylWSieg=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: zmala_terminal/common/tests/test_tv_check.py
+  type: file
+- path: zmala_terminal/common/tests/tv_setup_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  TV checks shall run after server enrollment in the selected language before ordinary
+  use, pausing native media startup and idle restoration while checks are pending.
+verification: |
+  Complete enrollment and inspect stage ordering and blocked background actions.

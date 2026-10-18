@@ -1,0 +1,31 @@
+active: true
+area: Unread contact history
+derived: false
+header: |
+  Authenticated notification-only messages
+level: 67.0
+links:
+- THLR011: J8dPCgOPUyK3kYdnucjh9Og-4PfcFDmxVRbX7dZISkI=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/missed_calls.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/tests/test_missed_calls.py
+  type: file
+- path: zmala_terminal/common/tests/test_messages.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Incoming phone text shall require configured-domain identity, current permission and a
+  valid server proof; text bodies shall neither be displayed nor saved, and receipt during
+  a call shall not interrupt it.
+verification: |
+  Send valid, forged and wrong-domain messages during idle and connected calls.

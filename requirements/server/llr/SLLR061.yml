@@ -1,0 +1,38 @@
+active: true
+area: Administration pages and editing
+derived: false
+header: |
+  One selected terminal card
+level: 61.0
+links:
+- SHLR010: 9k50pA5MkTBMlVjVLw-6MuHpMmW7w9qy8CzbkiuQTuM=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.html
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/tests/admin.test.js
+  type: file
+- path: zmala_server/tests/admin-interactions.test.js
+  type: file
+- path: zmala_server/web/admin-terminals.js
+  type: file
+- path: zmala_server/web/admin-terminalfields.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Terminals page shall select one device card, separate association and setting save
+  actions, group settings into Calls, Video & audio and General, and keep all registered
+  controls attached to the visible form.
+verification: |
+  Switch devices while editing and verify association/settings are independently saved and
+  all fields, including FPS, are visible.

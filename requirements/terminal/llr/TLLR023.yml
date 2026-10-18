@@ -1,0 +1,36 @@
+active: true
+area: First-run peripherals
+derived: false
+header: |
+  Ordered distinct button test
+level: 23.0
+links:
+- THLR004: x__vSeyZF05_eoG1hq4uT9OldRarKWvUDpAF-SvbNuk=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/usb_setup.py
+  type: file
+- path: zmala_terminal/linux/c20_status.py
+  type: file
+- path: zmala_terminal/common/tests/test_usb_setup.py
+  type: file
+- path: zmala_terminal/common/tests/test_pairing_setup.py
+  type: file
+- path: zmala_terminal/common/remote_test.py
+  type: file
+- path: zmala_terminal/common/ui/remote_test.py
+  type: file
+- path: zmala_terminal/common/tests/test_remote_test.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The physical test shall require left, right, green, red and middle in that order, with
+  distinct press/release cycles; only the next requested button shall be highlighted, and
+  keyboard input shall not satisfy the test.
+verification: |
+  Hold, repeat, press wrong buttons and use a keyboard before completing all physical
+  steps.

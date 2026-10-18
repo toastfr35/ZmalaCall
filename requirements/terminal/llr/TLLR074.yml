@@ -1,0 +1,32 @@
+active: true
+area: Local settings
+derived: false
+header: |
+  Split settings navigation
+level: 74.0
+links:
+- THLR013: faJqVnpecmX1pv0iYDXQOMJ6q5RLHSzGfQWIfxYhvIo=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/local_settings.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/ui/settings.py
+  type: file
+- path: zmala_terminal/common/tests/test_local_settings.py
+  type: file
+- path: zmala_terminal/common/tests/settings_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Arrows shall navigate the settings list; green shall open its editor and red shall
+  leave. Within the editor arrows shall select options/change values, green shall accept
+  and red shall cancel without changing the saved setting. Only the active side shall show
+  button hints.
+verification: |
+  Exercise every editor and compare draft/saved values after accept and cancel.

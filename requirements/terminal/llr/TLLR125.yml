@@ -1,0 +1,44 @@
+active: true
+area: Pi resource and storage boundaries
+derived: false
+header: |
+  Effective low-write configuration
+level: 125.0
+links:
+- THLR021: VykhIjh0-RuDwV9veCo4DQEd5cXAdvTExi0S8P89-9o=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/render_cache.py
+  type: file
+- path: zmala_terminal/common/photo_cache.py
+  type: file
+- path: zmala_terminal/common/image_bounds.py
+  type: file
+- path: zmala_terminal/common/json_storage.py
+  type: file
+- path: zmala_terminal/common/paths.py
+  type: file
+- path: zmala_terminal/common/tests/test_render_cache.py
+  type: file
+- path: zmala_terminal/common/tests/test_image_bounds.py
+  type: file
+- path: zmala_terminal/common/tests/test_performance.py
+  type: file
+- path: build_tools/linux/install-low-wear.sh
+  type: file
+- path: build_tools/linux/check-low-wear.py
+  type: file
+- path: build_tools/linux/low-wear-journal.conf
+  type: file
+- path: build_tools/linux/low-wear-swap.conf
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Installation shall verify volatile journals capped at 64 MiB, RAM-backed /tmp, zram
+  rather than SD swap and noatime root after reboot; this shall remain a writable
+  persistent filesystem, not a read-only overlay.
+verification: |
+  Run the effective-state checker after reboot and verify retained enrollment and absent
+  old volatile logs.

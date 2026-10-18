@@ -1,0 +1,33 @@
+active: true
+area: First-run peripherals
+derived: false
+header: |
+  Pairing is not operation proof
+level: 22.0
+links:
+- THLR004: x__vSeyZF05_eoG1hq4uT9OldRarKWvUDpAF-SvbNuk=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/usb_setup.py
+  type: file
+- path: zmala_terminal/linux/c20_status.py
+  type: file
+- path: zmala_terminal/common/tests/test_usb_setup.py
+  type: file
+- path: zmala_terminal/common/tests/test_pairing_setup.py
+  type: file
+- path: build_tools/linux/pair-presenter.py
+  type: file
+- path: zmala_terminal/linux/pairing_status.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A BlueZ bond alone shall not complete remote setup; the input device must become
+  available and the user must pass the physical button test. Recoverable stale-bond
+  failures shall remain in setup with retry guidance.
+verification: |
+  Provide bonded-but-unusable fixtures and interrupt pairing before input creation.

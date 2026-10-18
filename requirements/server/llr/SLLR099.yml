@@ -1,0 +1,37 @@
+active: true
+area: Server host policies
+derived: false
+header: |
+  Persistent wired SSH control
+level: 99.0
+links:
+- SHLR018: XumfM3gleBo_ZU8mj3HbPW2IYTE-Klip065PMsDYchI=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/install-ssh-guard.sh
+  type: file
+- path: build_tools/linux/ssh-guard.py
+  type: file
+- path: build_tools/linux/server-ssh.py
+  type: file
+- path: zmala_server/server-ssh.js
+  type: file
+- path: build_tools/linux/install-low-wear.sh
+  type: file
+- path: build_tools/linux/check-low-wear.py
+  type: file
+- path: zmala_server/tests/server-ssh.test.js
+  type: file
+- path: build_tools/tests/test_ssh_guard_linux.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Authenticated administration shall report and persistently enable/disable wired SSH
+  through a fixed-action privileged helper without stopping HTTP, SIP or media;
+  unavailable helper/status shall report failure. Installation shall keep wired SSH
+  enabled until deployment/reboot checks finish.
+verification: |
+  Toggle SSH, reboot, inspect helper permissions and verify application listeners remain
+  active.

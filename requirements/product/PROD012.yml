@@ -1,0 +1,19 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Access control and privacy
+level: 12.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The product shall separate administrator, device and SIP identities, protect private
+  enrollment and stored credentials, and limit installed SSH access to the wired network
+  by default.
+verification: |
+  Attempt unauthorized browser, device, SIP and wireless SSH access; inspect
+  distributables and public responses for private data.

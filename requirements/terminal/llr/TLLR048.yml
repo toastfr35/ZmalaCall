@@ -1,0 +1,43 @@
+active: true
+area: Media targets and audio
+derived: false
+header: |
+  Explicit C20 device selection
+level: 48.0
+links:
+- THLR009: czBRDwDSos_gz1THoEpGOOGRtDVHVA68CXapCpQrNxE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/video_settings.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+- path: zmala_terminal/linux/native_runtime.py
+  type: file
+- path: zmala_terminal/common/native_runtime.py
+  type: file
+- path: zmala_terminal/common/audio_processing.py
+  type: file
+- path: zmala_terminal/linux/audio_processing.py
+  type: file
+- path: zmala_terminal/common/tests/test_linux_media.py
+  type: file
+- path: zmala_terminal/common/tests/test_video_settings.py
+  type: file
+- path: zmala_terminal/linux/c20_status.py
+  type: file
+- path: zmala_terminal/common/tests/test_missing_microphone.py
+  type: file
+- path: zmala_terminal/common/tests/test_audio_routing.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Pi shall rediscover C20 capture/playback by device identity after re-enumeration and
+  use an explicit configured device when supported; a missing requested device shall
+  produce diagnostics rather than silently choosing unrelated hardware.
+verification: |
+  Change device indices, remove the C20 and configure missing audio/video selectors.

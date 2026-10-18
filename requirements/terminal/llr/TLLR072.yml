@@ -1,0 +1,30 @@
+active: true
+area: Callback requests
+derived: false
+header: |
+  Availability notice without automatic dialing
+level: 72.0
+links:
+- THLR012: eepbUhntkWOe5aqlxD1pNEBygPUtwSbVl-B7mpmdkRw=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/tests/test_callbacks.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  When a requested contact becomes available and both sides can call, the idle terminal
+  shall select it and display a ten-second notice once per request, without automatic
+  dialing or interruption of ringing/call/confirmation. The notice shall wait for five
+  seconds without input before selecting the contact.
+verification: |
+  Vary presence and UI state through repeated callback polls.

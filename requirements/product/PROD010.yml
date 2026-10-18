@@ -1,0 +1,19 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Callbacks and unread contact notifications
+level: 10.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The product shall support cancellable callback requests, callback notifications and
+  reminders, and per-contact unread indicators for missed calls and phone text
+  notifications.
+verification: |
+  Request and cancel callbacks; exercise delayed reminders, caller cancellation and
+  incoming phone text without automatic dialing.

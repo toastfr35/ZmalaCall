@@ -1,0 +1,29 @@
+active: true
+area: Call state and controls
+derived: false
+header: |
+  Availability change to callback
+level: 40.0
+links:
+- THLR008: f_wKMa6RJdMeA56MVAjgm8cTZbFpA8vbxeC1ilP-F7w=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/tests/test_terminal.py
+  type: file
+- path: zmala_terminal/common/tests/terminal_ui_call.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An unavailable target, including one becoming unavailable during confirmation, shall
+  offer callback confirmation requiring a fresh affirmative press rather than silently
+  dialing or creating a request.
+verification: |
+  Change presence between first and second green and inspect the resulting action.

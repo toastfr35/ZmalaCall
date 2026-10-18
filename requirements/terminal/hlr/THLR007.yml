@@ -1,0 +1,19 @@
+active: true
+area: Localized Pi rendering
+derived: false
+header: |
+  Localized Pi rendering
+level: 7.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The terminal shall render supported languages, scripts and physical-button prompts with
+  explicit fallback for untranslated help.
+verification: |
+  Review representative Latin, Asian and right-to-left layouts, language changes during
+  calls and pre-enrollment English prompts.

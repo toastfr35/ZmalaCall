@@ -1,0 +1,42 @@
+active: true
+area: Media targets and audio
+derived: false
+header: |
+  Audio profile processing
+level: 50.0
+links:
+- THLR009: czBRDwDSos_gz1THoEpGOOGRtDVHVA68CXapCpQrNxE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/video_settings.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+- path: zmala_terminal/linux/native_runtime.py
+  type: file
+- path: zmala_terminal/common/native_runtime.py
+  type: file
+- path: zmala_terminal/common/audio_processing.py
+  type: file
+- path: zmala_terminal/linux/audio_processing.py
+  type: file
+- path: zmala_terminal/common/tests/test_linux_media.py
+  type: file
+- path: zmala_terminal/common/tests/test_video_settings.py
+  type: file
+- path: zmala_terminal/linux/media/audio/echo-rate.c
+  type: file
+- path: zmala_terminal/common/tests/test_audio_profile.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Normal and speech profiles shall select the implemented native audio processing; speech
+  mode shall use a 16 kHz capture processing path while retaining 48 kHz Opus/playback and
+  the configured echo-cancellation window/delay policy. Echo cancellation shall use the
+  configured 500 ms window and automatic delay.
+verification: |
+  Inspect filter formats and run speech/echo regression calls.

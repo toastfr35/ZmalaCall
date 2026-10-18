@@ -1,0 +1,29 @@
+active: true
+area: Call state and controls
+derived: false
+header: |
+  Ringing answer and decline
+level: 43.0
+links:
+- THLR008: f_wKMa6RJdMeA56MVAjgm8cTZbFpA8vbxeC1ilP-F7w=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/tests/test_terminal.py
+  type: file
+- path: zmala_terminal/common/tests/terminal_ui_call.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Incoming ringing shall show caller portrait and animated call feedback, accept green and
+  decline immediately with red. Configured auto-answer shall show a countdown and remain
+  cancellable.
+verification: |
+  Test manual answer/decline and every configured delay with cancellation near expiry.

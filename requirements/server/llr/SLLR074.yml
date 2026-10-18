@@ -1,0 +1,29 @@
+active: true
+area: Maintenance queue
+derived: false
+header: |
+  Bounded command admission
+level: 74.0
+links:
+- SHLR013: vLgGSvI3BzkbsIZxCne5Gt5tQJQ3Xb3jAv2rfqqLhCQ=
+normative: true
+ref: ''
+references:
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/tests/console.test.js
+  type: file
+- path: zmala_server/tests/reliability.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Only administrators shall enqueue nonempty bounded commands; each terminal shall retain
+  at most ten pending jobs, with timeout choices restricted to 5–120 seconds and the
+  configured shell captured at creation.
+verification: |
+  Try unauthorized, excessive, invalid-timeout and full-queue submissions.

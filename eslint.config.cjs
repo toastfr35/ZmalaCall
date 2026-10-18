@@ -13,6 +13,7 @@ module.exports = [
       'build_tools/tmp/**',
       'build_tools/dist/**',
       'tmp/**',
+      'requirements/output/**',
       'zmala_server/web/admin.js', // Generated from the separately linted modules.
       'zmala_server/vendor/**', // Upstream source: retain its formatting and provenance.
     ],
@@ -26,11 +27,11 @@ module.exports = [
   },
   {
     files: ['**/*.js', '**/*.cjs'],
-    ignores: ['zmala_server/web/admin-*.js'],
+    ignores: ['zmala_server/web/admin-*.js', 'requirements/product/template/*.js'],
     languageOptions: { sourceType: 'commonjs', globals: globals.node },
   },
   {
-    files: ['zmala_server/web/admin-*.js'],
+    files: ['zmala_server/web/admin-*.js', 'requirements/product/template/*.js'],
     languageOptions: { sourceType: 'module', globals: globals.browser },
   },
   {

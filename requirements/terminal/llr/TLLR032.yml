@@ -1,0 +1,28 @@
+active: true
+area: Reset and resumable cleanup
+derived: false
+header: |
+  Deliberate reset confirmation
+level: 32.0
+links:
+- THLR006: XGCAxBoIKOSoiG24qmLWFRYm9dr0GT0rRKFDCuV8Q8w=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/linux/wifi.py
+  type: file
+- path: zmala_terminal/common/tests/test_provisioning.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Reset shall be accessible through Settings and require a separate green confirmation;
+  red shall cancel without deleting enrollment.
+verification: |
+  Enter reset, cancel and confirm using distinct presses.

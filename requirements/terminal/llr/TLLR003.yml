@@ -1,0 +1,40 @@
+active: true
+area: Appliance startup
+derived: false
+header: |
+  Synchronized Pi presentation
+level: 3.0
+links:
+- THLR001: t-mTJChg7dYE-9m7QhGDcE76Kh7alTgSFxzo3KLYP2c=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/main.py
+  type: file
+- path: build_tools/linux/kiosk-session.py
+  type: file
+- path: build_tools/linux/prepare-display.py
+  type: file
+- path: build_tools/linux/zmalacall-terminal.service
+  type: file
+- path: build_tools/linux/zmalacall-display.service
+  type: file
+- path: build_tools/linux/picom.conf
+  type: file
+- path: build_tools/linux/21-zmalacall-pi4.conf
+  type: file
+- path: zmala_terminal/common/tests/test_linux_platform.py
+  type: file
+- path: zmala_terminal/common/carousel.py
+  type: file
+- path: zmala_terminal/common/tests/test_performance.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Pi compositor shall synchronize presentation; the Pi 4 driver workaround shall apply
+  only to the matching driver path. Carousel animation shall use elapsed time and absolute
+  approximately 60 Hz deadlines, skipping missed deadlines rather than accumulating delay.
+verification: |
+  Inspect effective compositor/driver configuration and measure animation frame spacing
+  without asserting guaranteed 60 fps.

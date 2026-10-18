@@ -1,0 +1,32 @@
+active: true
+area: Argon case and experimental USB
+derived: false
+header: |
+  Call-only Argon fan
+level: 108.0
+links:
+- THLR019: J1cU3Vp1IgahebcN-9h6FO-p_tainGWw6MOe7QgORqQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/argon_fan.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: build_tools/linux/install-usb-power.sh
+  type: file
+- path: zmala_terminal/common/tests/test_argon_fan.py
+  type: file
+- path: zmala_terminal/common/tests/test_usb_power.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  With standard Argon support enabled, fan control shall run off the UI thread, use I2C
+  bus 1 address 0x1a, run at 55% during connected calls and 100% at 65°C, and stop outside
+  calls/shutdown. It shall not write case power-mode registers.
+verification: |
+  Simulate connected/idle states and temperatures, inspect I2C writes and shutdown
+  cleanup.

@@ -1,0 +1,21 @@
+active: true
+area: Device-owned maintenance jobs
+derived: false
+header: |
+  Device-owned maintenance jobs
+level: 13.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The server shall queue bounded maintenance jobs for a specific device, lease execution
+  and retain results without automatically replaying uncertain executions.
+verification: |
+  Exercise job claiming, ownership changes, result retries, cancellation, expiration and
+  history limits.

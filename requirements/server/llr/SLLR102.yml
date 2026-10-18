@@ -1,0 +1,27 @@
+active: true
+area: Runtime and listeners
+derived: false
+header: |
+  Advertised server address override
+level: 102.0
+links:
+- SHLR001: W2F2c4zYXQtnKhwLNVbH6-EWqqwsBCuVXdpoadDcSbk=
+normative: true
+ref: ''
+references:
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/defaults.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  VIDEOCALL_HOST shall accept an IPv4 address and reject other values; an accepted changed
+  advertised address shall advance and persist the configuration revision. Initial
+  automatic selection shall prefer a private nonvirtual LAN address, then another
+  noninternal IPv4 address, falling back to loopback.
+verification: |
+  Test interface fixtures and valid/invalid overrides; distinguish advertised addresses
+  from all-interface listener binding.

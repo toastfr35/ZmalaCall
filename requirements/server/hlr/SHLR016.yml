@@ -1,0 +1,21 @@
+active: true
+area: Bounded contact portrait processing
+derived: false
+header: |
+  Bounded contact portrait processing
+level: 16.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The server shall validate and convert uploaded contact pictures with bounded admission
+  and publish complete derivatives without blocking unrelated requests.
+verification: |
+  Upload supported, malformed, excessive and concurrent images; inspect derivative
+  dimensions and failure isolation.

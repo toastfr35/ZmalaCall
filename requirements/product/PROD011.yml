@@ -1,0 +1,18 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Remote administration and maintenance
+level: 11.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The product shall provide authenticated administration, per-terminal diagnostics and
+  bounded remote command execution without requiring direct terminal interaction.
+verification: |
+  Inspect live terminal status and execute, cancel and time out maintenance commands
+  through administration.

@@ -1,0 +1,33 @@
+active: true
+area: Unread contact history
+derived: false
+header: |
+  Scoped persistent history
+level: 66.0
+links:
+- THLR011: J8dPCgOPUyK3kYdnucjh9Og-4PfcFDmxVRbX7dZISkI=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/missed_calls.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/tests/test_missed_calls.py
+  type: file
+- path: zmala_terminal/common/tests/test_messages.py
+  type: file
+- path: zmala_terminal/common/json_storage.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Unread state shall be atomically stored per profile/account/domain, survive ordinary
+  restart, migrate legacy flags to one count, and prune removed permissions without
+  resurrecting old counts. Reset shall clear it.
+verification: |
+  Load legacy/corrupt state, change permissions/domain, restart and reset.

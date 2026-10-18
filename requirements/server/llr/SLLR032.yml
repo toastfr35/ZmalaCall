@@ -1,0 +1,28 @@
+active: true
+area: SIP authentication and dialogs
+derived: false
+header: |
+  Renegotiation serialization
+level: 32.0
+links:
+- SHLR005: kjEkBhWIi0A-Z7V0s8Wh8m74dyjluRPUQ869fOZLhOY=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/tests/server.test.js
+  type: file
+- path: zmala_server/tests/sip-guards.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  In-dialog INVITE without an SDP offer shall receive 488; overlapping pending
+  renegotiation shall receive 491. A rejected update shall leave established media active.
+verification: |
+  Exercise no-offer, overlapping and rejected renegotiations.

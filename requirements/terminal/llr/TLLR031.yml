@@ -1,0 +1,39 @@
+active: true
+area: Camera QR enrollment
+derived: false
+header: |
+  Canonical persistent enrollment
+level: 31.0
+links:
+- THLR005: ESPy1mOsT-cClcWlceg5hKh630kEzjWU7pgnbK5CdvE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/qr_scanner.py
+  type: file
+- path: zmala_terminal/common/qr_worker.py
+  type: file
+- path: zmala_terminal/common/native_qr.py
+  type: file
+- path: zmala_terminal/linux/qr.py
+  type: file
+- path: zmala_terminal/common/tests/test_provisioning.py
+  type: file
+- path: zmala_terminal/common/tests/qr_camera_process.py
+  type: file
+- path: zmala_terminal/common/paths.py
+  type: file
+- path: zmala_terminal/common/tests/test_source_layout.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Private enrollment shall reside in the stable per-profile provisioning.json path beneath
+  persistent data, independent of common/linux source layout, and supported legacy
+  bootstrap state shall not override an explicit reset marker.
+verification: |
+  Upgrade source layout with existing enrollment and reset legacy-configured profiles.

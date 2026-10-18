@@ -1,0 +1,27 @@
+active: true
+area: Media targets and audio
+derived: false
+header: |
+  Absent microphone call behavior
+level: 126.0
+links:
+- THLR009: czBRDwDSos_gz1THoEpGOOGRtDVHVA68CXapCpQrNxE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/tests/test_missing_microphone.py
+  type: file
+- path: zmala_terminal/common/tests/test_audio_routing.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  When no usable capture microphone exists, call parameters shall disable outgoing audio
+  capture while preserving available receive playback/video. Capture availability shall be
+  reevaluated for the next call after reconnection rather than remaining permanently
+  disabled.
+verification: |
+  Make a call without capture, reconnect the microphone and verify the next call restores
+  sending; inspect playback availability independently.

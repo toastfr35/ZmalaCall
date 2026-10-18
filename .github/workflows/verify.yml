@@ -30,7 +30,13 @@ jobs:
         run: |
           .venv/bin/python -m unittest discover -s build_tools/tests -p 'test_*.py'
       - name: Requirements
-        run: .venv/bin/doorstop --no-reformat --error-all --no-review-check --project "$GITHUB_WORKSPACE"
+        run: make requirements
+      - name: Requirements report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zmala-requirements
+          path: requirements/output/
+          if-no-files-found: error
       - name: Native video worker and preview regressions
         run: |
           # Match the supported Pi OS SDK; Ubuntu 24.04 ships an older API.

@@ -1,0 +1,31 @@
+active: true
+area: Call state and controls
+derived: false
+header: |
+  Incoming caller authorization
+level: 41.0
+links:
+- THLR008: f_wKMa6RJdMeA56MVAjgm8cTZbFpA8vbxeC1ilP-F7w=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/tests/test_terminal.py
+  type: file
+- path: zmala_terminal/common/tests/terminal_ui_call.py
+  type: file
+- path: zmala_terminal/common/tests/accounts_live.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An incoming call shall require a permitted contact in the configured SIP domain and a
+  valid server proof tied to call/caller identity; unauthorized calls shall not open
+  normal ringing UI.
+verification: |
+  Inject unknown callers, wrong domains and tampered or missing proofs.

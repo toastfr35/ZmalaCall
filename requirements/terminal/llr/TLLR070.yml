@@ -1,0 +1,29 @@
+active: true
+area: Callback requests
+derived: false
+header: |
+  Pending request tag and cancellation
+level: 70.0
+links:
+- THLR012: eepbUhntkWOe5aqlxD1pNEBygPUtwSbVl-B7mpmdkRw=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/tests/test_callbacks.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A pending outgoing callback shall place a return-arrow tag on its contact without an
+  extra explanatory footer. Red on that contact, or green while unavailable, shall open
+  cancellation confirmation; green on an online contact shall still permit calling.
+verification: |
+  Exercise each action for pending online/offline contacts.

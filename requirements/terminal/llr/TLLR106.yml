@@ -1,0 +1,33 @@
+active: true
+area: Operational diagnostics
+derived: false
+header: |
+  Temporary verbose logging
+level: 106.0
+links:
+- THLR018: r9MAtWf206uQYVmZzSkb2Uf2e4H3m1wffALJJHWbumU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/connectivity.py
+  type: file
+- path: zmala_terminal/linux/connectivity.py
+  type: file
+- path: zmala_terminal/common/runtime_logging.py
+  type: file
+- path: build_tools/linux/diagnostics.py
+  type: file
+- path: zmala_terminal/common/tests/test_wifi_status.py
+  type: file
+- path: zmala_terminal/common/tests/test_runtime_logging.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Installed routine logging shall use the volatile journal; debug logging shall be opt-in
+  for a bounded period up to sixty minutes and expire on time or restart, with runtime
+  status/locks in RAM-backed locations.
+verification: |
+  Enable logging, advance expiry, restart and inspect paths and effective verbosity.

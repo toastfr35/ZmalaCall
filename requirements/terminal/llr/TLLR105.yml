@@ -1,0 +1,38 @@
+active: true
+area: Operational diagnostics
+derived: false
+header: |
+  Runtime status report
+level: 105.0
+links:
+- THLR018: r9MAtWf206uQYVmZzSkb2Uf2e4H3m1wffALJJHWbumU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/connectivity.py
+  type: file
+- path: zmala_terminal/linux/connectivity.py
+  type: file
+- path: zmala_terminal/common/runtime_logging.py
+  type: file
+- path: build_tools/linux/diagnostics.py
+  type: file
+- path: zmala_terminal/common/tests/test_wifi_status.py
+  type: file
+- path: zmala_terminal/common/tests/test_runtime_logging.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall report application/registration state, applied configuration
+  revision, detected media devices and available native audio/video statistics, including
+  implemented frame/queue/drop diagnostics. Counters alone shall not claim audible speech
+  or perceived image quality.
+verification: |
+  Compare reports with native state during calls, device loss and recovery.

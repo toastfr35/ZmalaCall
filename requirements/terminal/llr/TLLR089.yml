@@ -1,0 +1,32 @@
+active: true
+area: TV capability checks
+derived: false
+header: |
+  Observed alternate input sequence
+level: 89.0
+links:
+- THLR015: zbhAJg1oy_ugkKS2FRpMvoT7iCw-tO_DUYabylWSieg=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: zmala_terminal/common/tests/test_tv_check.py
+  type: file
+- path: zmala_terminal/common/tests/tv_setup_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The source test shall wait up to thirty seconds for an observed different input, select
+  Zmala, wait three seconds, restore that observed input for three seconds and select
+  Zmala again; it shall explain manual recovery and ask whether switching occurred.
+verification: |
+  Simulate unknown/different routes, time each transition and confirm no fabricated
+  source.

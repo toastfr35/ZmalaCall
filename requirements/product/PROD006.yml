@@ -1,0 +1,18 @@
+active: true
+area: Product specification
+derived: false
+header: |
+  Guided peripheral readiness
+level: 6.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  A new Pi terminal shall guide the user through connecting its C20 and pairing and
+  proving operation of its Presenter remote before normal use.
+verification: |
+  Start without a C20 or paired remote and complete the connection, pairing and physical
+  button checks.

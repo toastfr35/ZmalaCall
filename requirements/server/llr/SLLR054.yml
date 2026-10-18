@@ -1,0 +1,23 @@
+active: true
+area: Phone message notifications
+derived: false
+header: |
+  Message content and identity bounds
+level: 54.0
+links:
+- SHLR009: uAiGUF_ZUoQeBg1Hw8zUBhHUeCI4JZSyTImYYYkbHMk=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-messages.js
+  type: file
+- path: zmala_server/tests/messages.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall accept nonempty text/plain or message/cpim content within its
+  16,384 JavaScript UTF-16-code-unit content limit and validate message identity and hop count; unsupported,
+  empty and oversized messages shall be rejected.
+verification: |
+  Test boundary content lengths, invalid Call-ID/CSeq and unsupported media types.

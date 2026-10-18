@@ -1,0 +1,20 @@
+active: true
+area: C20 audio, video and self-view
+derived: false
+header: |
+  C20 audio, video and self-view
+level: 9.0
+links:
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The terminal shall use the supported C20 capture/playback and Pi media paths, apply
+  configured media targets and display separate remote video and local self-view.
+verification: |
+  Make Pi calls at supported targets; test missing devices, absent remote frames, tones,
+  audio profiles and USB re-enumeration.

@@ -1,0 +1,20 @@
+active: true
+area: Remote-controlled calling
+derived: false
+header: |
+  Remote-controlled calling
+level: 8.0
+links:
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The terminal shall manage confirmed outgoing calls and permitted incoming calls,
+  including delayed auto-answer, immediate decline/hangup and stale-event protection.
+verification: |
+  Exercise button holds, incoming interruption, caller cancellation, availability changes
+  and delayed events across different calls.

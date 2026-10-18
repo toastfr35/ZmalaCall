@@ -1,0 +1,20 @@
+active: true
+area: Permission-derived directory
+derived: false
+header: |
+  Permission-derived directory
+level: 3.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Core
+text: |
+  The server shall derive contact lists and communication permission from shared group
+  membership.
+verification: |
+  Compare directory and permission results for self, unknown, separate-group and
+  multi-group accounts.
