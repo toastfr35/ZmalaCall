@@ -1,0 +1,40 @@
+active: true
+derived: false
+header: |
+  Wired SSH control and low-write server storage
+level: 23.0
+links:
+- ZMC001: cO7jf7y_M-co2gergFW4QFNwItDcao3TPcIs5FfZfZo=
+normative: true
+ref: ''
+references:
+- path: zmala_server/server-ssh.js
+  type: file
+- path: build_tools/linux/server-ssh.py
+  type: file
+- path: build_tools/linux/ssh-guard.py
+  type: file
+- path: build_tools/linux/install-low-wear.sh
+  type: file
+- path: build_tools/linux/check-low-wear.py
+  type: file
+- path: zmala_server/tests/server-ssh.test.js
+  type: file
+- path: build_tools/tests/test_ssh_guard_linux.py
+  type: file
+reviewed: null
+text: |
+  Installation shall enable SSH over the wired interface and block Wi-Fi ingress to all
+  configured SSH ports for IPv4 and IPv6, including traffic addressed to a wired IP. The
+  guard shall precede SSH service exposure. Authenticated server administration shall
+  expose current SSH state and allow wired SSH to be enabled or disabled persistently
+  without stopping the HTTP, SIP or media services. Fixed-action privileged helpers shall
+  apply the host policy; unavailable helper/status information shall not be reported as
+  successful control.
+
+  The Pi server shall use volatile journals capped at 64 MiB, zram rather than SD-backed
+  swap, RAM-backed /tmp and noatime on root, with effective settings checked after reboot.
+  Server state, portraits and private administrator credentials shall remain durable under
+  the installed state layout. Operators shall export logs before reboot and back up
+  persistent state separately. These settings reduce routine writes without making the
+  filesystem read-only or guaranteeing SD-card lifetime.

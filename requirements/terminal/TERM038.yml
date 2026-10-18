@@ -1,0 +1,46 @@
+active: true
+derived: false
+header: |
+  TV wake, call restoration and idle return
+level: 38.0
+links:
+- ZMC003: DfMXaDndFGdXrJLPl14hBxmswS-nKB73iL9Kiml03V8=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+- path: zmala_terminal/common/tests/test_tv_control.py
+  type: file
+- path: zmala_terminal/common/tests/test_idle_return.py
+  type: file
+- path: zmala_terminal/common/tests/test_samsung_tv.py
+  type: file
+- path: zmala_terminal/common/tests/test_cec_device.py
+  type: file
+reviewed: null
+text: |
+  When observed TV power/input hides the UI, the first mapped remote press shall request
+  wake/terminal input and be consumed, including a middle/Pointer press. Presses during
+  input settling shall also be consumed. A consumed middle-button hold shall not adjust
+  volume through subsequent motion; release and a new press shall be required. Without
+  usable CEC information normal controls shall remain available, without claiming unknown
+  routing is visible.
+
+  Incoming calls shall capture observed prior TV power/source and restore it after
+  decline, cancellation or hangup. Browsing shall maintain its own captured prior state.
+  Its configurable return timeout shall default to 30 seconds; all button activity shall
+  reset it. A thin blue bar at the bottom shall appear only after ten seconds of
+  inactivity. Calls, held buttons, onboarding and pending settings saves shall prevent
+  idle restoration. Stale asynchronous work shall not restore over a newer TV session. CEC
+  shall not change TV volume/mute or guess an unknown prior input.
+
+  CEC adapter selection shall prefer a connected EDID-bearing output, retaining the
+  adapter for standby wake and honoring an explicit fixed adapter. A saved restoration
+  shall not move to another adapter mid-call. Samsung network fallback shall use privately
+  stored credentials, a pinned TLS certificate and user-verified HDMI key/address
+  bindings; cable/address changes shall invalidate incompatible bindings. Power-toggle
+  fallback shall require a freshly confirmed settled on-state. Sony support shall use
+  standard CEC and be described as unqualified on physical hardware until tested.

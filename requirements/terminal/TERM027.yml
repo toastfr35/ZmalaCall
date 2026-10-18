@@ -12,8 +12,31 @@ references:
   type: file
 - path: zmala_terminal/common/tests/test_remote_test.py
   type: file
+- path: zmala_terminal/common/tests/test_pairing_setup.py
+  type: file
+- path: zmala_terminal/common/tests/test_usb_setup.py
+  type: file
 - path: zmala_terminal/linux/remote_health.py
+  type: file
+- path: zmala_terminal/common/tests/test_remote_health.py
   type: file
 reviewed: null
 text: |
-  Pi setup shall wait for the C20, then a paired remote with functioning input. An illustrated test shall require distinct press/release events for left, right, green, red and middle in order, highlighting only the expected button. Successful verification shall be persisted against the pairing identity; disconnection shall reset incomplete progress. Pairing without working input shall not advance setup. Normal UI shall show Bluetooth connection and battery/charging status when available. A missing remote page shall explain switching on and charging without claiming that a disconnection proves the remote is off. Setup illustrations shall identify the rear pairing/power controls and the green/red stickers.
+  Pi setup shall wait for the C20, then a paired remote with functioning input. When the
+  camera is absent, an English illustration shall show the C20 connection to a blue USB 3
+  port and the charger connection beside it. The pairing illustration shall identify the
+  rear Bluetooth button. Setup shall not advance merely because BlueZ reports a pairing.
+
+  An illustrated test shall require distinct physical remote press/release events for
+  left, right, green, red and middle in order, highlighting only the expected button.
+  Successful verification shall be persisted against the pairing identity; disconnection
+  shall reset incomplete progress. Keyboard events shall not satisfy remote verification.
+  Illustrations shall show the green and red stickers rather than microphone and Teams
+  logos.
+
+  Runtime diagnostics shall distinguish unavailable Bluetooth, missing pairing,
+  blocked/disconnected devices and connected devices lacking input where observable. A
+  missing remote page shall explain switching on and charging without claiming that
+  disconnection proves power-off, a flat battery or broken hardware. The rear-switch
+  illustration and text shall follow the selected language with explicit fallback. Battery
+  and charger indicators shall use the freshness rules in TERM010.

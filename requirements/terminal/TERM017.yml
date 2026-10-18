@@ -10,6 +10,11 @@ ref: ''
 references:
 - path: zmala_terminal/common/tests/provisioning_ui.py
   type: file
+- path: zmala_terminal/common/tests/test_local_settings.py
+  type: file
 reviewed: null
 text: |
-  Reset confirmation shall be accessible only through the Reset entry in local Settings. GREEN shall open the confirmation page, a separate GREEN press shall reset, and RED shall keep configuration and return to Settings. A held GREEN shall not both open and confirm reset. Holding RED on the carousel shall open Settings, never reset directly.
+  Reset confirmation shall be accessible only through the Reset entry in local Settings.
+  GREEN shall open the confirmation page, a separate GREEN press shall reset, and RED
+  shall keep configuration and return to Settings. A held GREEN shall not both open and
+  confirm reset. Holding RED on the carousel shall open Settings, never reset directly.

@@ -147,7 +147,7 @@ break Doorstop's external-reference lookup on Windows):
 & .\build_tools\doorstop.cmd --no-reformat --error-all --no-review-check
 & .\build_tools\doorstop.cmd add TERM
 & .\build_tools\doorstop.cmd edit TERM028
-& .\build_tools\doorstop.cmd link TERM028 ZMC003
+& .\build_tools\doorstop.cmd link TERM028 ZMC005
 ```
 
 On Linux, in the development environment:
@@ -157,7 +157,7 @@ python -m pip install -r build_tools/doorstop-requirements.txt
 doorstop --no-reformat --error-all --no-review-check --project "$PWD"
 doorstop add TERM --project "$PWD"
 doorstop edit TERM028 --project "$PWD"
-doorstop link TERM028 ZMC003 --project "$PWD"
+doorstop link TERM028 ZMC005 --project "$PWD"
 ```
 
 Use the ID printed by `add` for a new item; `TERM028` above illustrates editing
@@ -166,11 +166,25 @@ and stale parent stamps; `--no-review-check` allows unreviewed items. It does no
 claim maintainer acceptance or physical test success. After an actual impact
 review, use `doorstop clear <ID>` to accept parent changes and `doorstop review
 <ID>` to stamp reviewed text; omit `--no-review-check` for review validation.
-Optional reports belong in ignored scratch space:
+Running `doorstop` alone validates the records; it does not render a report.
+`publish` writes to the destination supplied on the command line. Optional HTML
+reports belong in ignored scratch space:
 
 ```sh
 doorstop publish all build_tools/tmp/requirements-html --html --project "$PWD"
 ```
+
+On Windows, the repository wrapper supplies the native absolute project path:
+
+```powershell
+& .\build_tools\doorstop.cmd publish all build_tools/tmp/requirements-html --html
+```
+
+Open `build_tools/tmp/requirements-html/index.html`. The report includes individual
+HTML documents under `documents/` and `traceability.html`/`traceability.csv` at its
+root. Generated reports are ignored by Git and removed by `make clean`; the YAML
+records under `requirements/` remain the authoritative source.
+
 
 ## Distribution and third-party components
 

@@ -1,0 +1,34 @@
+active: true
+derived: false
+header: |
+  Experimental shared USB power management
+level: 35.0
+links:
+- ZMC001: cO7jf7y_M-co2gergFW4QFNwItDcao3TPcIs5FfZfZo=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: build_tools/linux/install-usb-power.sh
+  type: file
+- path: zmala_terminal/common/tests/test_usb_power.py
+  type: file
+reviewed: null
+text: |
+  USB power switching shall remain opt-in and disabled by the regular installer. On the
+  supported Pi 4 topology, external ports including camera and charger shall be treated as
+  a shared power domain. Power may be removed only after five minutes without camera use
+  and a fresh remote battery reading strictly above 25 percent. Active
+  calls/ringing/setup/settings, low or unknown battery and stale application status shall
+  retain or restore power.
+
+  The helper shall refuse shutdown when another peripheral or open media handle is
+  detected. It shall deauthorize C20 interfaces before switching off. Wake shall wait for
+  video/audio enumeration, refresh SDK device lists on the owning thread and reapply
+  volume before media is treated as ready. Blocking hub operations shall run on one
+  worker; failure and application stop shall favor power-on. The feature shall not be
+  presented as suitable for USB storage or safe detection of equipment attached while
+  ports are unpowered.

@@ -1,7 +1,7 @@
 active: true
 derived: false
 header: |
-  Language application
+  Language application and fallback
 level: 16.0
 links:
 - ZMC006: xcASoKZyck3KFffgKp5BNRd39TnYdodYI0gH9AQRQwk=
@@ -10,6 +10,23 @@ ref: ''
 references:
 - path: zmala_terminal/common/tests/terminal_languages_ui.py
   type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/shared/terminal-languages.json
+  type: file
+- path: zmala_terminal/common/tests/test_local_settings.py
+  type: file
 reviewed: null
 text: |
-  The terminal shall translate its display prompts, availability, questions, Yes/No, callback acknowledgment, video feedback and post-enrollment reset/TV-check messages for all 95 included languages. USB connection, remote pairing/button verification and Wi-Fi/server QR setup shall use English until server enrollment supplies the selected language. Display names shall remain unchanged. Language updates shall apply during calls, with Unicode shaping and right-to-left support; device changes shall wait until idle.
+  The terminal shall translate its core prompts, availability, questions, Yes/No, callback
+  acknowledgment, video feedback and settings using the 95 included language catalogs.
+  Display names shall remain unchanged. Rendering shall support Unicode shaping and
+  right-to-left text. Language updates shall apply during calls; media-device changes
+  shall wait until idle.
+
+  USB connection, remote pairing/button verification and Wi-Fi/server QR setup shall use
+  English until server enrollment supplies the selected language. Post-enrollment screens
+  shall use that language where translations exist and fall back to English for missing
+  diagnostic/help text. Detailed TV-check instructions currently provide English and
+  French; catalog coverage shall not be presented as complete translation of every
+  diagnostic screen.

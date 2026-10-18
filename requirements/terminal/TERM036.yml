@@ -1,0 +1,42 @@
+active: true
+derived: false
+header: |
+  Pi SSH isolation and low-write storage
+level: 36.0
+links:
+- ZMC001: cO7jf7y_M-co2gergFW4QFNwItDcao3TPcIs5FfZfZo=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/install-ssh-guard.sh
+  type: file
+- path: build_tools/linux/ssh-guard.py
+  type: file
+- path: build_tools/linux/install-low-wear.sh
+  type: file
+- path: build_tools/linux/check-low-wear.py
+  type: file
+- path: zmala_terminal/common/runtime_logging.py
+  type: file
+- path: zmala_terminal/common/tests/test_runtime_logging.py
+  type: file
+- path: build_tools/tests/test_ssh_guard_linux.py
+  type: file
+reviewed: null
+text: |
+  Installed SSH access shall be limited to the wired interface for configured SSH ports,
+  covering IPv4, IPv6 and Wi-Fi ingress addressed to a wired IP. The guard shall be
+  established before ordinary SSH service exposure after boot. Terminal Wi-Fi enrollment
+  and normal server communication shall remain available independently of this
+  restriction.
+
+  Installation shall configure volatile journals capped at 64 MiB, RAM-backed /tmp, zram
+  instead of SD-backed swap and noatime for the root filesystem, then verify the effective
+  settings after reboot. Enrollment, Bluetooth/Wi-Fi pairing, settings, photos and SDK
+  security databases shall remain persistent. This is a writable filesystem with reduced
+  writes, not a read-only overlay.
+
+  Runtime locks/status and temporary verbose diagnostics shall use RAM-backed locations.
+  Installed logging shall use the journal and permit time-limited debug logging, expiring
+  after the chosen period or restart. Operators shall be told to export relevant logs
+  before reboot because volatile history will be lost.

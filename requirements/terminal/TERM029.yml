@@ -1,0 +1,44 @@
+active: true
+derived: false
+header: |
+  Repeatable Pi installation
+level: 29.0
+links:
+- ZMC001: cO7jf7y_M-co2gergFW4QFNwItDcao3TPcIs5FfZfZo=
+normative: true
+ref: ''
+references:
+- path: build_tools/windows_installer/backend.py
+  type: file
+- path: build_tools/windows_installer/cli.py
+  type: file
+- path: build_tools/linux/install-kiosk.sh
+  type: file
+- path: build_tools/tests/test_pi_install.py
+  type: file
+- path: build_tools/tests/test_headless_installer.py
+  type: file
+- path: build_tools/tests/test_install_runner.py
+  type: file
+reviewed: null
+text: |
+  The Windows installer shall support GUI confirmation and an explicit headless install
+  action, defaulting to host zmala.local and user zmala. Before deployment it shall
+  validate SSH connectivity, host identity, Raspberry Pi 4 Model B hardware, Raspberry Pi
+  OS Lite 64-bit Debian Trixie, wired access and sufficient storage. Private enrollment
+  and account credentials shall not be included in release archives; installation logs
+  shall not print passwords.
+
+  Installation shall prepare dependencies, native media, the terminal service and display,
+  pairing, SSH guard and storage configuration without requiring manual shell steps.
+  Transferred packages shall be checksum-verified. The remote install job shall survive an
+  installer connection loss and expose failure rather than overlap an active job.
+  Completion shall require post-install/reboot health checks, not merely successful
+  upload. Logs shall distinguish failure from verified completion.
+
+  Application code shall be installed as root-owned releases under /opt/zmalacall,
+  preserving private state under /var/lib/zmalacall across updates. Release rollback shall
+  not be represented as rollback of OS packages or configuration. Fresh installation shall
+  leave terminal identity, account credentials, language and Wi-Fi enrollment to the setup
+  flow and server QR. The standard installer shall enable Argon fan support and shall
+  leave experimental USB power switching disabled.

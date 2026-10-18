@@ -263,8 +263,10 @@ different Pi does not transfer the Bluetooth controller identity.
 
 The first mapped button when TV power/input hides the UI wakes/selects the
 terminal and is consumed, as are presses while HDMI settles. It cannot also dial
-or change contacts. Pointer-volume motion does not wake/switch the TV. With no
-CEC, normal button behavior remains available; unknown routing limits detection.
+or change contacts. This includes the first middle/Pointer press: motion during
+that consumed hold does not adjust volume. Release and press again to adjust it.
+With no CEC, normal button behavior remains available; unknown routing limits
+detection.
 
 Incoming calls remember observed power/source before revealing the UI. Decline,
 caller cancellation or hangup restores that state. Browsing has its own return

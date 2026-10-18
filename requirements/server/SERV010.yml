@@ -10,12 +10,33 @@ ref: ''
 references:
 - path: zmala_server/web/admin.js
   type: file
+- path: zmala_server/tests/admin-interactions.test.js
+  type: file
+- path: zmala_server/tests/admin-settings-conflicts.test.js
+  type: file
 reviewed: null
 text: |
-  Administration shall remain in English with separate dark pages for overview, accounts, groups, terminals, callbacks and activity, using modal dialogs for relevant edits and confirmation. It shall omit the removed tiny header bars, marketing text, server-online badge and footer; recent events shall appear only on Activity.
+  Administration shall remain in English with separate dark pages for overview, accounts,
+  groups, terminals, callbacks and activity, using modal dialogs for relevant edits and
+  confirmation. It shall omit the removed tiny header bars, marketing text, server-online
+  badge and footer; recent events shall appear only on Activity.
 
-  All administration pages, sign-in and editing dialogs shall be usable on phones and PC monitors, including viewport widths from 320 to 1920 CSS pixels. Navigation and account actions shall remain accessible without horizontal page scrolling. Phone account rows shall stack with column labels; wider screens shall retain the table. Dialogs shall fit the available viewport and scroll vertically. Narrow-screen and touch layouts shall provide at least 44-pixel button targets and readable form inputs, including long account names, device names and connection details.
+  All administration pages, sign-in and editing dialogs shall be usable on phones and PC
+  monitors, including viewport widths from 320 to 1920 CSS pixels. Navigation and account
+  actions shall remain accessible without horizontal page scrolling. Phone account rows
+  shall stack with column labels; wider screens shall retain the table. Dialogs shall fit
+  the available viewport and scroll vertically. Narrow-screen and touch layouts shall
+  provide at least 44-pixel button targets and readable form inputs, including long
+  account names, device names and connection details.
 
-  Background refreshes shall not detach the focused control. Connection-detail copying shall support LAN HTTP where the browser permits it and report any failure inside the open dialog, with manual-copy guidance. Closing or changing a terminal console shall invalidate responses from its previous opening.
+  Background refreshes shall not detach the focused control. Connection-detail copying
+  shall support LAN HTTP where the browser permits it and report any failure inside the
+  open dialog, with manual-copy guidance. Closing or changing a terminal console shall
+  invalidate responses from its previous opening.
 
-  Account edits/deletion confirmations, terminal settings and console shell editors shall submit the configuration revision observed when opened. Conflicting saves shall return HTTP 409 without changing state and show reload/reopen guidance. Polling shall not silently advance a draft's revision. A pending account photo upload shall not continue saving after its editor closes or changes account. Setup-download errors shall remain observable by the administration action handler.
+  Account edits/deletion confirmations, terminal settings and console shell editors shall
+  submit the configuration revision observed when opened. Conflicting saves shall return
+  HTTP 409 without changing state and show reload/reopen guidance. Polling shall not
+  silently advance a draft's revision. A pending account photo upload shall not continue
+  saving after its editor closes or changes account. Setup-download errors shall remain
+  observable by the administration action handler.

@@ -14,4 +14,12 @@ references:
   type: file
 reviewed: null
 text: |
-  Each new text message from a permitted phone shall increase the same persistent contact notification count as a missed call after validating the server's message proof, sender domain and current receive permission. Duplicate delivery shall not increase counts. Message bodies shall not appear on screen or be saved in badge data. A message received during a call shall retain the call screen and show its badge and counter on return to the carousel. Opening that contact's call or callback confirmation shall clear their entire count even when no call is made.
+  Each new text message from a permitted phone shall increase the same persistent contact
+  notification count as a missed call after validating the server's message proof, sender
+  domain and current receive permission. Repeated message identifiers within the current
+  engine's bounded 256-entry duplicate set shall not increase counts. This set is not
+  persisted across engine recreation or terminal restart; it shall not be described as
+  durable exactly-once delivery. Message bodies shall not appear on screen or be saved in
+  badge data. A message received during a call shall retain the call screen and show its
+  badge and counter on return to the carousel. Opening that contact's call or callback
+  confirmation shall clear their entire count even when no call is made.

@@ -10,6 +10,16 @@ ref: ''
 references:
 - path: zmala_terminal/common/tests/test_terminal.py
   type: file
+- path: zmala_terminal/common/tests/test_audio_routing.py
+  type: file
 reviewed: null
 text: |
-  The terminal shall accept incoming calls only from permitted contacts in the configured domain with a valid server proof. Incoming ringing shall show the caller, animated halos, a pulsing portrait border and a phone symbol. GREEN shall answer and RED shall decline. Terminal auto-answer shall apply only when enabled and its countdown shall be cancellable.
+  The terminal shall accept incoming calls only from permitted contacts in the configured
+  domain with a valid server proof. Incoming ringing shall show the caller, animated
+  halos, a pulsing portrait border and a phone symbol. GREEN shall answer and RED shall
+  decline. Terminal auto-answer shall apply only when enabled and its countdown shall be
+  cancellable.
+
+  Outgoing calls shall play audible ringback on the selected playback path before
+  connection, and incoming calls shall use the configured ringtone. Call feedback shall
+  stop on answer, cancellation, rejection or hangup.

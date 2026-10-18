@@ -8,8 +8,15 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/ui/display.py
+  type: file
 - path: zmala_terminal/common/tests/call_feedback_ui.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
   type: file
 reviewed: null
 text: |
-  Call and callback confirmation shall show large green Yes/check and red No/cross prompts. The prompts shall match the physical buttons, fit at 900 by 620 pixels and remain non-clickable.
+  Call and callback confirmation shall show large, rounded green Yes and red No
+  button-shaped prompts, translated into the selected language. They shall match the
+  physical green/red buttons, remain non-clickable, fit at 900 by 620 pixels and leave
+  margins around the portrait and prompts.

@@ -1,16 +1,49 @@
 active: true
 derived: false
 header: |
-  Terminal settings
+  Terminal settings and device-owned edits
 level: 12.0
 links:
 - ZMC006: xcASoKZyck3KFffgKp5BNRd39TnYdodYI0gH9AQRQwk=
 normative: true
 ref: ''
 references:
-- path: zmala_server/tests/admin.test.js
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/tests/video-settings.test.js
+  type: file
+- path: zmala_server/tests/device-settings.test.js
+  type: file
+- path: zmala_server/tests/admin-settings-conflicts.test.js
+  type: file
+- path: zmala_server/tests/auto-framing.test.js
   type: file
 reviewed: null
 text: |
-  Administration shall configure each terminal language, camera, microphone, speaker, audio processing, video resolution and command shell. Video resolution shall be independently selectable as 480p (640×480), 720p (1280×720, default) or 1080p (1920×1080). Windows and Linux terminals shall apply server video settings automatically when idle, defer changes during calls, offer independent outgoing frame-rate targets of 10, 15 (default), 20, 25 or 30 fps per terminal with matching sending bandwidth presets and receive capacity independent of the local sending target, and prefer server settings over legacy local experiment overrides. Actual frame rates shall depend on hardware and network capacity. Shell options shall be Windows PowerShell, PowerShell 7 and Command Prompt on Windows, and sh/bash on Linux. Selecting a shell incompatible with the terminal OS shall fail that command explicitly. The Terminals page shall configure auto-answer enable/disable and a five-to-six-hundred-second answer delay. Account names, pictures and credentials shall be managed on the Accounts page. Language configuration shall affect only the terminal display. Applying a native terminal configuration shall publish its applied revision only after engine setup succeeds. Failures shall release failed engines and retry the latest desired configuration while idle, with a five-second backoff. C20 mixer subprocesses shall run on one background worker that coalesces superseded volume values.
-  An authenticated device shall be able to update only its own language, auto-answer enable/delay, automatic framing, speaker volume, carousel portrait count and TV return timeout. Writes shall compare the previous values of edited fields, reject conflicting edits, preserve all other settings, and acknowledge only after persistence. Retrying an already-applied value shall not advance the configuration revision, but shall still await the persistence barrier. Ringing cleanup and the terminal outgoing/incoming timers shall allow the configured automatic-answer delay plus a grace period.
+  Administration shall configure each terminal language, camera, microphone, speaker,
+  audio processing, video resolution/frame rate, automatic framing, speaker volume,
+  portrait count, TV return timeout and command shell. Account names, pictures and
+  credentials shall be managed on the Accounts page. Language shall affect the terminal
+  display, not the English admin interface.
+
+  Video choices shall be 480p (640 by 480), 720p (1280 by 720, default) and 1080p (1920 by
+  1080), independently combined with 10, 15 (default), 20, 25 or 30 fps. Targets shall not
+  imply guaranteed achieved frame rate. Audio profiles shall be normal or speech. Framing
+  shall be a boolean, default off; speaker volume an integer from 0 to 100, default 50;
+  portrait count 3 or 5, default 3; TV timeout 0 (Never), 30, 60, 120, 300, 600 or 1200
+  seconds, default 30. Invalid types and unsupported choices shall be rejected before
+  mutation.
+
+  The server shall configure auto-answer on/off and an integer delay from 5 to 600
+  seconds. Local Settings shall offer the discrete choices specified in TERM026. Ringing
+  cleanup and terminal timers shall allow the configured automatic-answer delay plus
+  grace. Command shell choices shall include Windows PowerShell, PowerShell 7 and Command
+  Prompt for Windows terminals, and sh/bash for Linux; terminals shall explicitly reject
+  an incompatible shell for execution.
+
+  An authenticated device shall update only its own language, auto-answer enable/delay,
+  framing, speaker volume, portrait count and TV timeout. Writes shall compare the
+  previous values of edited fields, reject conflicts, preserve other settings and
+  acknowledge only after persistence. An already-applied value shall not advance the
+  configuration revision, but its response shall still await persistence. Applying the
+  configuration on terminals is specified in TERM037.

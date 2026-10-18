@@ -1,0 +1,41 @@
+active: true
+derived: false
+header: |
+  Pi media workers and preview reduction
+level: 32.0
+links:
+- ZMC004: _HrFhKcvYc7NiisGP2ZlwZBWsD_CEeHKxxXhFgTPL0c=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/media/video/mjpeg-filter.c
+  type: file
+- path: zmala_terminal/linux/media/video/codec.c
+  type: file
+- path: zmala_terminal/linux/media/video/preview-display.c
+  type: file
+- path: build_tools/linux/test-video-workers.sh
+  type: file
+- path: build_tools/linux/test-preview-display.c
+  type: file
+- path: build_tools/linux/test-video-recovery.c
+  type: file
+reviewed: null
+text: |
+  MJPEG decoding, crop processing and preview reduction shall execute on a worker separate
+  from the media ticker, with at most one waiting JPEG and one completed picture.
+  Superseded independent camera frames may be replaced. H.264 receive processing shall
+  retain compressed-frame order and reference dependencies instead of arbitrarily dropping
+  compressed frames; it shall use two decoder threads.
+
+  The local preview shall reduce images by pixel averaging before display scaling, with
+  NEON acceleration for supported reductions and a scalar fallback producing equivalent
+  output. Small images shall avoid redundant reduction. Encoding shall reuse buffers and
+  avoid rescaling equal-sized frames. Encoder overflow recovery shall restore headers, and
+  repeated recovery requests shall be coalesced.
+
+  Rendering shall respond to new frames/state changes with a periodic recovery refresh
+  rather than drawing on every empty ticker pass. Native contexts and buffers shall remain
+  owned until their consumers stop. Queue count/age diagnostics and these worker limits
+  shall not be described as byte-budget enforcement or a guarantee of bounded shutdown if
+  a native decoder stalls.

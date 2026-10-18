@@ -1,7 +1,7 @@
 active: true
 derived: false
 header: |
-  Connectivity indicator
+  Connectivity and remote indicators
 level: 10.0
 links:
 - ZMC003: DfMXaDndFGdXrJLPl14hBxmswS-nKB73iL9Kiml03V8=
@@ -12,8 +12,24 @@ references:
   type: file
 - path: zmala_terminal/common/icons.py
   type: file
+- path: zmala_terminal/common/tests/test_wifi_status.py
+  type: file
+- path: zmala_terminal/common/tests/test_remote_health.py
+  type: file
 reviewed: null
 text: |
-  The upper-right corner shall show a small terminal-to-Wi-Fi-to-server connectivity graphic using icons, arrows and status colors without text captions. The graphic shall use smooth anti-aliased strokes rendered at the actual display dimensions so the compact symbols remain clear.
+  The normal terminal screen shall show compact terminal, Wi-Fi and server connectivity
+  indicators with arrows and status colors, plus Bluetooth and remote battery icons. Wi-Fi
+  status shall describe the wireless connection even when Ethernet provides server access.
+  Server reachability shall not imply Wi-Fi association. Local Settings shall hide these
+  indicators as specified in TERM026.
 
-  The Presenter+ battery icon shall show a lightning bolt when the remote reports an attached charger, including at full charge. Status shall be read off the UI thread and refreshed every five seconds. Unknown, disconnected or stale status shall not imply charging.
+  Icons shall use anti-aliased strokes at the display dimensions. The battery icon shall
+  sit to the left of the Bluetooth icon. The Presenter+ battery icon shall show a
+  lightning bolt when the remote reports an attached charger, including at full charge;
+  this indicates charger attachment, not measured charging current. Status shall be read
+  off the UI thread and refreshed every five seconds. Unknown, disconnected or stale
+  status shall not imply charging or a known battery level.
+
+  Battery levels shall use green above 20 percent, amber from 11 through 20 and red from 0
+  through 10. A status sample older than 20 seconds shall be treated as stale.
