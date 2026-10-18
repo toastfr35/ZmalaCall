@@ -2,6 +2,7 @@
 import ctypes as C
 from platforms.windows_text_renderer import P, I, U, F, ARGB, RectF
 from icon_shapes import IconShapes
+from render_cache import RenderCache, photo_bytes, ICON_BYTES
 
 
 class PointF(C.Structure):
@@ -10,7 +11,8 @@ class PointF(C.Structure):
 
 class IconRenderer(IconShapes):
     def __init__(self, renderer):
-        self.renderer, self.cache = renderer, {}
+        self.renderer = renderer
+        self.cache = RenderCache(40, max_bytes=ICON_BYTES, size_of=photo_bytes)
         self.dll = renderer.dll
         signatures = {
             'GdipSetSmoothingMode': ([P,I], I), 'GdipSetPixelOffsetMode': ([P,I], I),
@@ -94,8 +96,6 @@ class IconRenderer(IconShapes):
             check(d.GdipSetPixelOffsetMode(target_graphics, 4))
             check(d.GdipDrawImageRectI(target_graphics, source, 0, 0, width, height))
             photo = self.renderer.bitmap_photo(target, width, height, transparent=background is None)
-            if len(self.cache) >= 40:
-                self.cache.clear()
             self.cache[key] = photo
             return photo
         finally:

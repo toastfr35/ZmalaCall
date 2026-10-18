@@ -7,7 +7,8 @@ gi.require_version('Pango', '1.0')
 gi.require_version('PangoCairo', '1.0')
 from gi.repository import Pango, PangoCairo
 from PIL import Image, ImageTk
-from render_cache import RenderCache, portrait_size
+from render_cache import (RenderCache, portrait_size, photo_bytes, TEXT_BYTES,
+                          PORTRAIT_BYTES, SOURCE_BYTES, BACKGROUND_BYTES)
 
 
 def color_rgb(color):
@@ -32,7 +33,12 @@ def layout_for(context, text, family, size, width, bold=False):
 class TextRenderer:
     def __init__(self, root):
         self.root = root
-        self.cache, self.portraits, self.sources = RenderCache(200), RenderCache(120), {}
+        self.cache = RenderCache(200, max_bytes=TEXT_BYTES, size_of=photo_bytes)
+        self.portraits = RenderCache(120, max_bytes=PORTRAIT_BYTES, size_of=photo_bytes)
+        self.sources = RenderCache(40, max_bytes=SOURCE_BYTES,
+                                  size_of=lambda pair: sum(image.width * image.height * 4 for image in pair))
+        self.backgrounds = RenderCache(120, max_bytes=BACKGROUND_BYTES,
+                                      size_of=lambda image: image.width * image.height * 4)
 
     def surface_photo(self, surface):
         output = io.BytesIO()
@@ -54,7 +60,9 @@ class TextRenderer:
             context.set_source_rgb(*color_rgb(foreground)); context.move_to(2, 2)
             PangoCairo.update_layout(context, layout)
             PangoCairo.show_layout(context, layout)
-            self.cache[key] = self.surface_photo(surface)
+            photo = self.surface_photo(surface)
+            self.cache[key] = photo
+            return photo
         return self.cache[key]
 
     def portrait(self, path, size, background, fast=False):
@@ -67,20 +75,23 @@ class TextRenderer:
                     image = source.convert('RGBA')
                 # Large uploads should not multiply the Pi's memory consumption.
                 image.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
-                if len(self.sources) >= 40:
-                    self.sources.clear()
                 preview = image.copy()
                 # Moving cards never exceed 460 px. Flatten alpha once per
                 # background, avoiding Pillow's premultiply/resize round trip.
                 preview.thumbnail((460, 460), Image.Resampling.LANCZOS)
-                self.sources[path] = (image, preview, RenderCache(4))
-            source, preview, backgrounds = self.sources[path]
+                self.sources[path] = (image, preview)
+                source = image
+            else:
+                source, preview = self.sources[path]
             if fast:
-                if background not in backgrounds:
+                background_key = (path, background)
+                if background_key not in self.backgrounds:
                     flattened = Image.new('RGBA', preview.size, background)
                     flattened.alpha_composite(preview)
-                    backgrounds[background] = flattened.convert('RGB')
-                source = backgrounds[background]
+                    source = flattened.convert('RGB')
+                    self.backgrounds[background_key] = source
+                else:
+                    source = self.backgrounds[background_key]
             ratio = size / max(source.size)
             dimensions = tuple(max(1, round(value * ratio)) for value in source.size)
             image = source.resize(dimensions, Image.Resampling.BILINEAR if fast else Image.Resampling.LANCZOS)
@@ -88,8 +99,10 @@ class TextRenderer:
             if not fast:
                 canvas = Image.new('RGBA', dimensions, background)
                 canvas.alpha_composite(image)
-            self.portraits[key] = ImageTk.PhotoImage(canvas, master=self.root)
+            photo = ImageTk.PhotoImage(canvas, master=self.root)
+            self.portraits[key] = photo
+            return photo
         return self.portraits[key]
 
     def close(self):
-        self.cache.clear(); self.portraits.clear(); self.sources.clear()
+        self.cache.clear(); self.portraits.clear(); self.sources.clear(); self.backgrounds.clear()

@@ -3,12 +3,14 @@ import math
 import cairo
 from gi.repository import PangoCairo
 from icon_shapes import IconShapes
+from render_cache import RenderCache, photo_bytes, ICON_BYTES
 from platforms.linux_text_renderer import color_rgb, layout_for
 
 
 class IconRenderer(IconShapes):
     def __init__(self, renderer):
-        self.renderer, self.cache = renderer, {}
+        self.renderer = renderer
+        self.cache = RenderCache(40, max_bytes=ICON_BYTES, size_of=photo_bytes)
 
     def _photo(self, key, width, height, draw, background=None):
         if key in self.cache:
@@ -58,7 +60,6 @@ class IconRenderer(IconShapes):
             context.set_source_rgb(*color_rgb(color)); context.move_to(x, y + (h-height)/2)
             PangoCairo.show_layout(context, layout)
         draw(line, ellipse, rectangle, arc, polygon, curve, text)
-        if len(self.cache) >= 40:
-            self.cache.clear()
-        self.cache[key] = self.renderer.surface_photo(surface)
-        return self.cache[key]
+        photo = self.renderer.surface_photo(surface)
+        self.cache[key] = photo
+        return photo

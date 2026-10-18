@@ -8,7 +8,8 @@ import struct
 import tkinter as tk
 import unicodedata
 import zlib
-from render_cache import RenderCache, portrait_size
+from render_cache import (RenderCache, portrait_size, photo_bytes, TEXT_BYTES,
+                          PORTRAIT_BYTES, SOURCE_BYTES)
 
 P, I, U, F = C.c_void_p, C.c_int, C.c_uint, C.c_float
 ARGB = 0x26200A
@@ -37,8 +38,9 @@ def right_to_left(text):
 
 class TextRenderer:
     def __init__(self, root):
-        self.root, self.cache = root, RenderCache(200)
-        self.portraits, self.sources = RenderCache(120), {}
+        self.root = root
+        self.cache = RenderCache(200, max_bytes=TEXT_BYTES, size_of=photo_bytes)
+        self.portraits = RenderCache(120, max_bytes=PORTRAIT_BYTES, size_of=photo_bytes)
         self.dll = C.WinDLL('gdiplus')
         signatures = {
             'GdiplusStartup': ([P, P, P], I), 'GdiplusShutdown': ([C.c_size_t], None),
@@ -63,6 +65,9 @@ class TextRenderer:
             function.argtypes, function.restype = arguments, result
         self.token = C.c_size_t()
         self.check(self.dll.GdiplusStartup(C.byref(self.token), C.byref(Startup(1, None, 0, 0)), None))
+        self.sources = RenderCache(40, max_bytes=SOURCE_BYTES,
+                                  size_of=lambda entry: entry[1] * entry[2] * 4,
+                                  release=lambda entry: self.dll.GdipDisposeImage(entry[0]))
 
     @staticmethod
     def check(status):
@@ -139,14 +144,20 @@ class TextRenderer:
         if path not in self.sources:
             source, width, height = P(), U(), U()
             self.check(self.dll.GdipLoadImageFromFile(path, C.byref(source)))
-            self.check(self.dll.GdipGetImageWidth(source, C.byref(width)))
-            self.check(self.dll.GdipGetImageHeight(source, C.byref(height)))
-            if len(self.sources) >= 40:
-                for previous, _, _ in self.sources.values():
-                    self.dll.GdipDisposeImage(previous)
-                self.sources.clear()
-            self.sources[path] = (source, width.value, height.value)
-        source, width, height = self.sources[path]
+            try:
+                self.check(self.dll.GdipGetImageWidth(source, C.byref(width)))
+                self.check(self.dll.GdipGetImageHeight(source, C.byref(height)))
+                width, height = width.value, height.value
+                if width <= 0 or height <= 0:
+                    raise ValueError('Portrait has invalid dimensions')
+                self.sources[path] = (source, width, height)
+            except Exception:
+                self.dll.GdipDisposeImage(source)
+                raise
+        else:
+            source, width, height = self.sources[path]
+        # Oversized sources are used once, then disposed by this render call.
+        cached_source = path in self.sources
         ratio = size/max(width, height)
         width, height = max(1,round(width*ratio)), max(1,round(height*ratio))
         bitmap, graphics = P(), P()
@@ -164,12 +175,12 @@ class TextRenderer:
                 self.dll.GdipDeleteGraphics(graphics)
             if bitmap:
                 self.dll.GdipDisposeImage(bitmap)
+            if not cached_source:
+                self.dll.GdipDisposeImage(source)
 
     def close(self):
         self.cache.clear()
         self.portraits.clear()
-        for source, _, _ in self.sources.values():
-            self.dll.GdipDisposeImage(source)
         self.sources.clear()
         if self.token.value:
             self.dll.GdiplusShutdown(self.token)

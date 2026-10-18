@@ -36,6 +36,25 @@ Tk operations and Liblinphone core iteration run on the UI thread. Native media 
 
 `Configuration.accept()` applies one validation, revision-rollback and stable-cache policy to both polls and settings responses. Volatile presence and callback state are not written into the stable cache. Device HTTP requests reject redirects instead of forwarding bearer credentials to a redirected host. A deactivated client rejects new fetches and cannot publish cache updates. `Terminal.make_engine()` is the construction boundary used by native code and isolated controller tests.
 
+Image caches in both platform renderers use `RenderCache` with LRU eviction and
+estimated pixel budgets: shaped text 8 MiB/200 entries, rendered portraits
+32 MiB/120 entries, source portraits 24 MiB/40 entries and icons 2 MiB/40 entries.
+Linux also retains flattened animation backgrounds separately, bounded to
+8 MiB/120 entries. Replacing the source cache no longer clears every portrait
+at once. Windows source eviction disposes the GDI+ resource; failed dimension
+reads also dispose the partially loaded source. An image larger than its cache
+budget is rendered but not retained. Widget/current-frame references keep
+visible Tk images alive after cache eviction.
+
+These limits estimate pixel payload (four bytes per pixel, conservatively also
+for Pillow RGB), not total RSS. Decoder state, temporary resize/shaping buffers,
+Tk/native overhead and visible image references are outside them. Input image
+allocation limits and incremental carousel canvas reuse remain separate work.
+`tests/render_cache_ui.py` exercises real rendering and eviction with a hidden
+Tk root; `--benchmark` runs 400 synthetic portrait renders for memory/timing
+comparison. Linux CI runs the regression under Xvfb, and Windows CI uses GDI+.
+
+
 Outgoing actions are separated into callback submission/cancellation, availability preflight and answering after USB re-enumeration. Each asynchronous completion rechecks generation/serial/state before acting. Losing window focus also releases the pointer-volume gesture, since its physical release may no longer reach the window.
 
 Native callbacks and DLL-directory handles must remain referenced while their core is alive. Call pointers borrowed from callbacks become owned references only through `hold_call()`, and are released with their video callbacks. Engine shutdown and terminal shutdown are idempotent. The QR camera runs in a separate process so a native decoder failure can leave the setup screen open for retry.

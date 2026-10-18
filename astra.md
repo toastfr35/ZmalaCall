@@ -1,5 +1,38 @@
 # ZmalaCall implementation and specification review
 
+## Render-cache memory review — 18 October 2026
+
+Addressed the retained-image part of opportunity D. Both text renderers now
+bound estimated pixel bytes as well as entry counts, evict sources individually
+in least-recently-used order, and leave oversized images uncached. Linux's
+flattened animation backgrounds have their own budget. Icons use the same
+bounded cache instead of periodically clearing all entries. Windows native
+source handles are disposed on eviction/replacement/close and after failed
+dimension inspection. Active widget/frame references preserve displayed images.
+
+The combined cache payload budgets are 74 MiB on Linux and 66 MiB on Windows.
+These are not whole-process memory limits: transient decoding/resizing, native
+metadata and images still referenced by the UI remain outside the budgets.
+
+An isolated hidden-Tk process on the Pi 4 rendered 40 generated 480×480
+portraits at five sizes (200–600 px), in fast and quality modes: 400 renders.
+Separate before/after processes used the installed renderer and the new source.
+Retained portrait/source/background pixels fell from **182.13 to 62.04 MiB**;
+peak process RSS fell from **252.52 to 121.66 MiB**. p95 render duration was
+39.58 ms before and 36.72 ms after. This single synthetic pressure run supports
+the memory improvement; it does not establish carousel FPS or call performance.
+The new workload is reproducible with `tests/render_cache_ui.py --benchmark`.
+
+Verification: 277 terminal tests (three platform skips), 88 server tests and
+`make lint` passed. Real rendering checks passed on Windows and the Pi, covering
+45 source changes, resizes, fast/quality modes, shaped text, icon eviction,
+oversized uncached images, active references and repeated close. These rendering
+checks are now included in both CI platform jobs.
+
+Remaining: incremental carousel canvas updates, transient image allocation
+limits, disk-cache/log retention and native queue byte/frame-age limits still
+need separate work. Older dated findings below describe their original baseline.
+
 ## Administration interaction and cleanup review — 18 October 2026
 
 - Prevent periodic refreshes from removing a focused account action or view
@@ -119,15 +152,15 @@ corrected to describe the current decoder ownership.
 1. Keep controller mixins small and state ownership in `Terminal`. A future typed
    host protocol would make their dependencies more explicit; a wholesale
    controller-object rewrite would add churn without addressing a reproduced fault.
-2. Native queues and render caches still need byte/frame-age budgets and longer
-   soak evidence. Do not drop arbitrary compressed H.264 packets to imitate the
+2. Native queues still need byte/frame-age budgets and longer soak evidence.
+   Render-cache payload budgets are now implemented (18 October review above). Do not drop arbitrary compressed H.264 packets to imitate the
    safe newest-frame policy for independent JPEG/raw frames.
 3. Native and QR shutdown can wait on SDK/process operations. Measure worst-case
    recovery before introducing asynchronous teardown or bounded forced termination.
 4. Snapshot rename is not fsync durability or a transaction across files. Backup
    restore epochs, data migrations/rollback and concurrent whole-form admin edits
    deserve their own design and fault-injection tests.
-5. Retention for portrait/render caches and long-lived diagnostic files remains
+5. Retention for on-disk portrait caches and long-lived diagnostic files remains
    separate from the installed volatile journal and bounded command histories.
 6. Real TV/USB/power-loss acceptance and the serial-keypad host adapter remain
    distinct hardware work. Passing portable tests does not qualify another TV,

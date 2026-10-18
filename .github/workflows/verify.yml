@@ -17,13 +17,15 @@ jobs:
       - name: Install Linux test and lint dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-venv python3-tk python3-pil python3-pil.imagetk python3-gi python3-gi-cairo python3-cairo python3-websocket gir1.2-pango-1.0 cppcheck g++
+          sudo apt-get install -y python3-venv python3-tk python3-pil python3-pil.imagetk python3-gi python3-gi-cairo python3-cairo python3-websocket gir1.2-pango-1.0 xvfb xauth cppcheck g++
           python3 -m venv --system-site-packages .venv
           .venv/bin/pip install -r requirements-dev.txt -r build_tools/doorstop-requirements.txt
           npm ci --ignore-scripts
           npm --prefix zmala_server ci --ignore-scripts
       - run: make lint
       - run: make test
+      - name: Real Linux rendering under cache pressure
+        run: xvfb-run -a .venv/bin/python zmala_terminal/tests/render_cache_ui.py
       - name: Packaging and firmware simulation
         run: |
           .venv/bin/python -m unittest discover -s build_tools/tests -p 'test_*.py'
@@ -57,5 +59,6 @@ jobs:
       - run: npm test
       - run: npm run typecheck
       - run: python -m unittest discover -s zmala_terminal/tests -p 'test_*.py'
+      - run: python zmala_terminal/tests/render_cache_ui.py
       - run: python -m unittest discover -s build_tools/tests -p 'test_*.py'
       - run: powershell -NoProfile -File build_tools/lint-powershell.ps1

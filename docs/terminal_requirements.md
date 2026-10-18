@@ -47,7 +47,11 @@ The terminal shall run on Windows and the documented Linux/Pi configuration with
 
 The idle terminal shall show a dark carousel with a central selected portrait twice the width and height of neighboring portraits, side arrows and animated rotation. The server shall offer a per-terminal choice of three (default) or five portraits. The five-portrait layout shall fit 720p displays while reserving space for navigation arrows; contact lists shorter than five shall retain three positions. The setting shall persist and apply when idle. Layout changes shall preserve selection, alphabetical order, notification badges and rotation in both directions. Contacts shall use account display names and pictures, with initials for missing pictures. Every carousel contact, including the selected contact, shall keep its name inside the card below its picture and above the availability band throughout rotation. The idle layout shall omit the separate name below the carousel and collapse empty subtitle space. Idle mode shall omit clickable buttons, bottom instructions and the terminal name. Optional portrait downloads shall run independently of configuration and presence polling, on one worker with at most 40 queued paths. Partial or invalid cached portraits shall be replaced atomically after validation, with failed downloads retried no more frequently than once per minute. Cancelled enrollment workers shall not publish their downloaded portraits.
 
+Rendering caches shall enforce both entry counts and estimated pixel-byte budgets, evicting least recently used entries individually. Images larger than their cache budget shall remain renderable without being retained. Cache eviction shall not invalidate images still displayed. Native source resources shall be released on eviction, replacement and shutdown. These budgets constrain retained cache payload, not transient decoding allocations or total process memory.
+
 > `zmala_terminal/tests/contact_presence_ui.py`
+> `zmala_terminal/tests/test_render_cache.py`
+> `zmala_terminal/tests/render_cache_ui.py`
 
 *Parent links:* [ZMC003 Accessible physical controls](product_requirements.md#ZMC003)
 
