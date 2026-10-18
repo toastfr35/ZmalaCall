@@ -28,12 +28,12 @@ try {
     Assert-Check (-not (Get-TrackedProcess (Get-ProcessRecord 'server'))) 'Terminal implicitly started the server.'
     Run-Launcher 'Start ZmalaCall Terminal.cmd'
     Assert-Running 'terminal' $terminalId | Out-Null
-    Run-Launcher 'Start ZmalaCall Terminal Unconfigured.cmd'
+    Run-Launcher 'Start ZmalaCall Terminal.cmd' @('-Unconfigured')
     Start-Sleep -Seconds 2
     $unconfiguredId = Assert-Running 'unconfigured'
     Assert-Check (-not (Get-TrackedProcess (Get-ProcessRecord 'server'))) 'Unconfigured terminal implicitly started the server.'
     Assert-Running 'terminal' $terminalId | Out-Null
-    Run-Launcher 'Start ZmalaCall Terminal Unconfigured.cmd'
+    Run-Launcher 'Start ZmalaCall Terminal.cmd' @('-Unconfigured')
     Assert-Running 'unconfigured' $unconfiguredId | Out-Null
     Run-Launcher 'Stop ZmalaCall Terminal.cmd'
     Assert-Check (-not (Get-TrackedProcess (Get-ProcessRecord 'terminal'))) 'Regular terminal did not stop.'

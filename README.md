@@ -114,7 +114,7 @@ Set-Location ZmalaCall
 
 The server runs on Raspberry Pi OS/Linux. Use the root **Start ZmalaCall Terminal.cmd**
 launcher for a Windows terminal connected to that server. Runtime setup scripts prepare the required dependencies.
-**Start ZmalaCall Terminal Unconfigured.cmd** uses a separate enrollment profile;
+Pass `-Unconfigured` to **Start ZmalaCall Terminal.cmd** to use a separate enrollment profile;
 pass `-ConnectWifi` to join the scanned network instead of testing the existing
 link, and `-Fullscreen` for fullscreen. The regular terminal also accepts
 `-Fullscreen`.

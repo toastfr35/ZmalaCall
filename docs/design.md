@@ -31,7 +31,7 @@ Windows terminal launchers and Linux server service controls are independent:
 
 - `Start ZmalaCall Terminal.cmd` opens the regular terminal; `-Fullscreen` is optional.
 - `Stop ZmalaCall Terminal.cmd` stops both managed regular and unconfigured terminal instances, leaving the server running.
-- `Start ZmalaCall Terminal Unconfigured.cmd` opens a separate fresh QR-setup profile; it supports `-Fullscreen` and `-ConnectWifi` and preserves regular terminal configuration.
+- `Start ZmalaCall Terminal.cmd -Unconfigured` opens a separate fresh QR-setup profile; it supports `-Fullscreen` and `-ConnectWifi` and preserves regular terminal configuration.
 - The server runs as the Linux `zmalacall-server` service on Raspberry Pi OS.
 - `systemctl stop zmalacall-server` stops only the Linux server service.
 
