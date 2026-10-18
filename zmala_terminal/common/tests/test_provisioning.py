@@ -10,6 +10,19 @@ from zmala_terminal.common.configuration import Configuration
 
 
 class ProvisioningTests(unittest.TestCase):
+    def test_existing_provisioning_file_survives_source_reorganization(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'provisioning.json'
+            saved = {'version': 1, 'language': 'fr', 'wifi': {'linux_uuid': 'saved-profile'},
+                     'bootstrap': {'device_id': 'term2', 'device_token': 'saved-token'}}
+            path.write_text(json.dumps(saved), encoding='utf-8')
+            enrollment = Enrollment(directory)
+            self.assertEqual(enrollment.value, saved)
+            self.assertIsNone(enrollment.stage)
+            enrollment.reset()
+            self.assertNotIn('bootstrap', json.loads(path.read_text(encoding='utf-8')))
+            self.assertEqual(Enrollment(directory).stage, 'wifi')
+
     def test_enrollment_reset_survives_restart_without_affecting_legacy_bootstrap(self):
         with tempfile.TemporaryDirectory() as directory:
             legacy = Path(directory) / 'terminal.json'

@@ -78,7 +78,8 @@ def parse_server(text):
 class Enrollment:
     """A reset marker overrides the legacy bootstrap, including after restarts."""
     def __init__(self, directory, force=False):
-        self.path = Path(directory) / 'zmala_terminal.common.provisioning.json'
+        # Persistent filenames stay stable when Python packages move.
+        self.path = Path(directory) / 'provisioning.json'
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.value = None
         if self.path.exists():
