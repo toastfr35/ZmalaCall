@@ -1,5 +1,5 @@
 # @test T-LLT-041
-# @requirements TLLR014, TLLR015, TLLR016
+# @requirements TLLR014, TLLR015, TLLR016, TLLR084
 # @environment portable
 # @plan Feed signed motion around deadband and limits while holding/releasing middle; assert relative volume increments, throttled mixer writes, overlay lifetime, default changes and retry after failed writes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

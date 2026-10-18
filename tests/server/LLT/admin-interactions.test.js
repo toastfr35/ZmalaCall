@@ -1,7 +1,7 @@
 // @test S-LLT-001
-// @requirements SLLR060, SLLR062, SLLR063, SLLR106
+// @requirements SLLR058, SLLR060, SLLR062, SLLR063, SLLR106
 // @environment portable
-// @plan Execute admin handlers with a small DOM/API double; assert revision ownership, stale modal-result rejection, clipboard cleanup and explicit backup confirmation before restore.
+// @plan Execute admin handlers with a small DOM/API double; assert focused row-action preservation during polling, revision ownership, stale modal-result rejection, clipboard cleanup and explicit backup confirmation before restore.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';

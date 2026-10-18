@@ -33,6 +33,8 @@ references:
   type: file
 - path: build_tools/linux/70-zmalacall-presenter.rules
   type: file
+- path: tests/terminal/LLT/test_appliance_install.py
+  type: file
 reviewed: null
 scope: Core
 text: |

@@ -23,6 +23,8 @@ references:
   type: file
 - path: build_tools/linux/check-server.py
   type: file
+- path: tests/server/LLT/test_server_platform.py
+  type: file
 reviewed: null
 scope: Core
 text: |

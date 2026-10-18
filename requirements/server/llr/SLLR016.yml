@@ -5,7 +5,7 @@ header: |
   Cached derived views
 level: 16.0
 links:
-- SHLR003: m0uJqEE6sv_D4BiXj8hwaPmM1rUFycENgt2NXqsjsMk=
+- SHLR003: -gRYtbM6srXg-16toL5tTaC3-CIQ6L7qObAlXIPDKqI=
 normative: true
 ref: ''
 references:
@@ -14,6 +14,8 @@ references:
 - path: zmala_server/validation.js
   type: file
 - path: zmala_server/http/admin-routes.js
+  type: file
+- path: tests/server/LLT/store-views.test.js
   type: file
 reviewed: null
 scope: Core

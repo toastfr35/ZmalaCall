@@ -17,6 +17,10 @@ references:
   type: file
 - path: zmala_server/types/http.ts
   type: file
+- path: tests/server/LLT/console-state.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

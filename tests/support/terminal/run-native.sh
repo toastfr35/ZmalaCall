@@ -27,6 +27,12 @@ cc -std=c11 -D_GNU_SOURCE -O2 -Wall -Wextra -Werror -pthread \
     $(pkg-config --cflags --libs libavcodec libavutil) \
     -lmediastreamer2 -lortp -lbctoolbox -lm
 "$task_build/test-video-recovery"
+cc -std=c11 -D_GNU_SOURCE -O2 -Wall -Wextra -Werror -pthread \
+    "$task_root/tests/terminal/LLT/test-encoder-buffers.c" \
+    -o "$task_build/test-encoder-buffers" \
+    $(pkg-config --cflags --libs libavcodec libavutil) \
+    -lmediastreamer2 -lortp -lbctoolbox -lm
+"$task_build/test-encoder-buffers"
 for task_name in test-mjpeg-worker test-preview-display; do
     cc -std=c11 -D_GNU_SOURCE -O1 -g -fsanitize=undefined -pthread \
         "$task_root/tests/terminal/LLT/$task_name.c" -o "$task_build/sanitized" \

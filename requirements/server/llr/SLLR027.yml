@@ -5,7 +5,7 @@ header: |
   Registration lifetime and flow
 level: 27.0
 links:
-- SHLR005: 2f1Q0BmFzKgWqENZ-vvpcOEfdmRxp6SxNpMcfEfoHBs=
+- SHLR005: KDVQs9hP8jnbY-0qf6FKk_JevIqkx4CjdIFFDri13_U=
 normative: true
 ref: ''
 references:
@@ -14,6 +14,8 @@ references:
 - path: zmala_server/sip-guards.js
   type: file
 - path: zmala_server/auth.js
+  type: file
+- path: tests/server/LLT/sip-identity.test.js
   type: file
 reviewed: null
 scope: Core

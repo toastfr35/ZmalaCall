@@ -15,6 +15,12 @@ references:
   type: file
 - path: zmala_server/http/admin-routes.js
   type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: tests/server/LLT/store-views.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

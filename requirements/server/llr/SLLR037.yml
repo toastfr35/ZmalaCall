@@ -11,6 +11,8 @@ ref: ''
 references:
 - path: zmala_server/media.js
   type: file
+- path: tests/server/LLT/media-source.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

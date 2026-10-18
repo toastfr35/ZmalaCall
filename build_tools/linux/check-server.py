@@ -32,7 +32,7 @@ def inspect():
         'tmpfs': command('findmnt', '-no', 'FSTYPE', '/tmp') == 'tmpfs',
         'noatime': 'noatime' in command('findmnt', '-no', 'OPTIONS', '/').split(','),
         'http_all_interfaces': f"0.0.0.0:{state['http_port']} " in tcp,
-        'sip_all_interfaces': f"0.0.0.0:{state['sip_port']} " in udp,
+        'sip_all_interfaces': all(f"0.0.0.0:{state['sip_port']} " in listeners for listeners in (udp, tcp)),
     }
 
 

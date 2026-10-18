@@ -15,6 +15,8 @@ references:
   type: file
 - path: zmala_server/callback-settings.js
   type: file
+- path: tests/server/LLT/credential-transitions.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

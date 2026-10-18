@@ -23,6 +23,10 @@ references:
   type: file
 - path: zmala_server/types/admin.ts
   type: file
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/admin-view.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

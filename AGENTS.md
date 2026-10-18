@@ -30,6 +30,8 @@ based: `tests/server/LLT/` and `tests/terminal/LLT/` contain unit tests linked t
 SLLRs/TLLRs; `HLT/` contains system/integration scenarios linked to SHLRs/THLRs.
 Every LLT/HLT scenario starts with the stable `@test`, `@requirements`,
 `@environment`, `@plan` and `@pass` comments documented in `docs/general.md`.
+Every server and Pi terminal LLR must have one or more direct LLT verification
+plans and assertions; missing LLR coverage fails `make requirements`.
 Keep reciprocal Doorstop references synchronized. Plans explain the inputs,
 procedure and expected behavior actually checked; do not claim whole-requirement
 coverage from a partial assertion or count skipped/manual checks as passed.

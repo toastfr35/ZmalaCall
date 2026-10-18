@@ -13,6 +13,8 @@ references:
   type: file
 - path: zmala_server/photos.js
   type: file
+- path: tests/server/LLT/backup-components.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

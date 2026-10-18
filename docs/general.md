@@ -126,7 +126,9 @@ make requirements
 ```
 
 Install `build_tools/windows_installer/requirements.txt` for full installer
-coverage. Platform-dependent tests report skips. CI also exercises real renderers
+coverage. Install headless Chromium with `npx playwright install chromium`
+(on Linux CI use `npx playwright install --with-deps chromium`) for the isolated
+admin layout tests. Platform-dependent tests report skips. CI also exercises real renderers
 on Windows/Linux, Doorstop validation and Linux native video worker tests against
 the Trixie SDK. Live camera, audio, TV and user acceptance remain separate checks.
 Run destructive reset/enrollment scenarios with disposable profiles/accounts;
@@ -170,11 +172,14 @@ result and any skipped cases or manual observations with execution evidence.
 
 `build_tools/test_trace.py`, called by `make requirements`, rejects missing plans,
 malformed or duplicate IDs, unknown requirements, wrong levels/components,
-nonreciprocal links and tests that drift outside `tests/`. The report's **Tests**
+nonreciprocal links, any LLR without a direct LLT, and tests that drift outside
+`tests/`. Every server and Pi terminal LLR has one or more verification plans;
+adding an LLR requires adding its unit checks in the same change. The report's **Tests**
 page (`requirements/output/tests.html`, with `tests.json`) shows the requirement
 to test matrix, full plans and requirements with no mapped test. A linked test
-does not imply complete requirement coverage; a skip is not a pass. Existing gaps
-remain visible until a suitable test is implemented and executed.
+does not imply complete requirement coverage; a skip is not a pass. Unmapped
+HLRs remain visible until suitable system tests are implemented. Review the
+assertions against each requirement, including boundary and failure behavior.
 
 New product regressions belong in LLT/HLT. `tests/adhoc/` is for non-RBT work,
 including development-tool self-tests and Windows-only terminal compatibility

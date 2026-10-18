@@ -36,6 +36,19 @@ class BaselineAuditTests(unittest.TestCase):
                 if prefix in ('SLLR', 'TLLR') else [],
             })
 
+        for component, prefix in (('server', 'S'), ('terminal', 'T')):
+            test = self.root / f'tests/{component}/LLT/example.py'
+            test.parent.mkdir(parents=True)
+            test.write_text(
+                f'# @test {prefix}-LLT-001\n# @requirements {prefix}LLR001\n'
+                '# @environment portable\n'
+                '# @plan Supply a fixture input and compare its output against the specified value.\n'
+                '# @pass The fixture assertion must succeed without changing any external state or files.\n',
+                encoding='utf-8')
+            self.change(prefix + 'LLR001', references=[
+                {'path':'zmala_terminal/common/example.py','type':'file'},
+                {'path':test.relative_to(self.root).as_posix(),'type':'file'}])
+
     def write(self, path, data):
         path.write_text(self.yaml.safe_dump(data), encoding='utf-8')
 
@@ -84,7 +97,8 @@ class BaselineAuditTests(unittest.TestCase):
         patch.parent.mkdir(parents=True)
         patch.write_text('// @llr SLLR001\nfunction localPatch() {}\n')
         self.change('SLLR001', references=[{'path': p} for p in (
-            'zmala_terminal/common/example.py', 'zmala_server/vendor/sip/sip.js')])
+            'zmala_terminal/common/example.py', 'zmala_server/vendor/sip/sip.js',
+            'tests/server/LLT/example.py')])
         self.assertEqual(len(baseline.audit(self.root)['code_traces']['SLLR001']), 2)
 
     def test_new_module_requires_mapping(self):

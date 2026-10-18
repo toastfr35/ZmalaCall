@@ -117,11 +117,11 @@ do not establish those results for every supported setup.
 
 ### Close requirement-based verification gaps
 
-The tests now have separate LLT/HLT plans and direct requirement links. Use the
-generated `requirements/output/tests.html` matrix to prioritize missing tests;
-the broad historical file references were not evidence of full coverage.
-Add isolated LLR checks and end-to-end HLR scenarios where the matrix says
-"No mapped test", and review partially exercised requirements as well. In
+Every server and Pi terminal LLR now has direct LLT verification plans; the
+validator rejects unmapped LLRs. Use `requirements/output/tests.html` to
+prioritize the remaining unmapped HLR system scenarios and review partial
+assertions against the full requirements. Unit links and passing component
+checks do not replace physical qualification. In
 particular, qualify startup/deployment failure recovery and TV/USB behavior on
 physical devices. Record the test ID, revision, platform, outcome and skipped or
 manual observations; do not treat a plan, portable pass or skip as hardware

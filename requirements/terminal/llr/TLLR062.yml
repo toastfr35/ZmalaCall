@@ -17,6 +17,10 @@ references:
   type: file
 - path: build_tools/linux/download-framing-model.py
   type: file
+- path: tests/terminal/LLT/test-auto-framing.c
+  type: file
+- path: tests/terminal/LLT/test_framing_model.py
+  type: file
 reviewed: null
 scope: Optional
 text: |

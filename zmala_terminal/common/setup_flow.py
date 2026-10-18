@@ -67,7 +67,7 @@ class ProvisioningFlow:
         try:
             self.scanner = self.make_scanner()
         except Exception:
-            self.setup_error_until = time.monotonic() + 4
+            self.setup_error_until = time.monotonic() + 5
             logging.exception('Camera QR scanner could not start')
             self.setup_feedback = True
             self.render()

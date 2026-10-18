@@ -19,6 +19,8 @@ references:
   type: file
 - path: zmala_terminal/common/theme.py
   type: file
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
 reviewed: null
 scope: Core
 text: |

@@ -1,7 +1,7 @@
 // @test T-LLT-001
-// @requirements TLLR058, TLLR059, TLLR060, TLLR061
+// @requirements TLLR058, TLLR059, TLLR060, TLLR061, TLLR062
 // @environment native-sdk
-// @plan Feed synthetic 1080p YUV frames through the framing filter; assert crop bounds, 200 percent ceiling, unchanged source pixels/metadata and stale-detector fencing.
+// @plan Feed synthetic 1080p YUV frames through the framing filter; assert crop bounds, 200 percent ceiling, unchanged source pixels/metadata, full-frame copy bypass and stale-detector fencing.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 /* Crop safety/metadata, stale-result fencing and 1080p per-frame cost. */
@@ -32,6 +32,7 @@ int main(void) {
     freemsg(output);
     zmala_framing_enable(1);
     output = frame(s, dupmsg(input));
+    assert(output->b_datap == input->b_datap); /* enabled but wide: no crop copy */
     freemsg(output);
     uint8_t rgb[256 * 256 * 3]; int w, h;
     uint64_t token = zmala_framing_take(rgb, &w, &h);

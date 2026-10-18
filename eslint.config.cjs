@@ -36,6 +36,11 @@ module.exports = [
     languageOptions: { sourceType: 'module', globals: globals.browser },
   },
   {
+    // Playwright evaluate callbacks execute inside the isolated browser page.
+    files: ['tests/server/LLT/admin-view.test.js'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ['zmala_server/setup-pdf.js'],
     // Provisioning rejects control bytes and explicitly tests ASCII payloads.
     rules: { 'no-control-regex': 'off' },

@@ -358,7 +358,12 @@ Run `make test`, `make lint` and `make requirements` as described in
 `tests/server/LLT/` trace directly to SLLRs; HTTP/SIP/system scenarios under
 `tests/server/HLT/` trace to SHLRs. Each file starts with its stable test ID,
 requirement links, procedure and pass criteria. The generated Tests report shows
-coverage gaps separately from planned tests; it does not claim execution success.
+remaining HLR gaps separately from planned tests; missing SLLR unit coverage
+fails validation. Plans do not claim execution success. `S-LLT-027` runs the
+actual admin controllers and CSS in headless Chromium with deterministic API
+responses, checking phone/desktop layout and editor-local errors.
+Installer readiness checks verify HTTP and both UDP/TCP SIP listeners on all
+IPv4 interfaces after reboot, as well as service and low-write storage policy.
 For browser changes use
 `tests/support/server/http-fixture.js` with disposable data. Check all six pages
 at 320, 390, 768, 1024 and 1920 CSS pixels, 700/850 breakpoints and short landscape

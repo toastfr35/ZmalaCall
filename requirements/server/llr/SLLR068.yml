@@ -17,6 +17,10 @@ references:
   type: file
 - path: zmala_server/validation.js
   type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: tests/server/LLT/store-views.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

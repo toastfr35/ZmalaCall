@@ -13,6 +13,10 @@ references:
   type: file
 - path: zmala_server/defaults.js
   type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: tests/server/LLT/store-views.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

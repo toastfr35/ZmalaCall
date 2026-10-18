@@ -23,6 +23,8 @@ references:
   type: file
 - path: zmala_terminal/linux/wifi.py
   type: file
+- path: tests/terminal/LLT/test_setup_ownership.py
+  type: file
 reviewed: null
 scope: Core
 text: |

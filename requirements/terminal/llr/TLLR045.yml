@@ -15,6 +15,8 @@ references:
   type: file
 - path: zmala_terminal/common/linphone_api.py
   type: file
+- path: tests/terminal/LLT/test_runtime_contracts.py
+  type: file
 reviewed: null
 scope: Core
 text: |

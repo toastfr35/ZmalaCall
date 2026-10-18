@@ -1,8 +1,8 @@
 """Validate requirement-based test plans and build bidirectional trace data.
 
 Metadata describes a test scenario/suite, not a passed execution. Coverage is
-intentionally partial: an unmapped requirement is reported, never inferred from
-an implementation import or from another requirement's parent relationship.
+explicit: every LLR requires a direct unit-test plan. Unmapped HLRs are reported;
+coverage is never inferred from imports or parent relationships.
 """
 from __future__ import annotations
 
@@ -106,11 +106,14 @@ def audit_tests(root: Path, records: dict) -> dict:
                 if path == root / 'build_tools/test_trace.py':
                     continue
                 errors.append(f'Test/probe outside tests/: {path.relative_to(root).as_posix()}')
-    if errors:
-        raise ValueError('\n'.join(errors))
     missing = {prefix: sorted(uid for uid, record in records.items()
                              if record['prefix'] == prefix and uid not in by_requirement)
                for prefix in ('SHLR', 'SLLR', 'THLR', 'TLLR')}
+    for prefix in ('SLLR', 'TLLR'):
+        for uid in missing[prefix]:
+            errors.append(f'{uid}: no mapped LLT verifying this LLR')
+    if errors:
+        raise ValueError('\n'.join(errors))
     return {'tests': dict(sorted(tests.items())),
             'requirements': dict(sorted(by_requirement.items())), 'unmapped': missing,
             'qualification': 'Trace links identify planned checks, not full requirement coverage or passed executions. '

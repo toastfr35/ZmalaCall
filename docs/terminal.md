@@ -534,14 +534,16 @@ Requirement-based unit tests live in `tests/terminal/LLT/`; system and integrati
 scenarios live in `tests/terminal/HLT/`. Their leading comments identify the test,
 linked requirements, procedure and expected observations. Installer unit tests
 are included in `make test-llt`. See `docs/general.md` for trace validation and
-the generated coverage-gap report.
+the generated trace report. Every TLLR has direct unit-test links; validation
+rejects additions without a corresponding test.
 
 Portable tests do not operate the TV or prove native SDK compatibility. For real
 rendering use `tests/terminal/HLT/render_cache_ui.py` (Linux under Xvfb);
 `--benchmark` measures synthetic cache pressure. UI probes such as `settings_ui.py`,
 `tv_setup_ui.py` and `terminal_languages_ui.py` exercise layouts without CEC.
 `tests/support/terminal/run-native.sh` checks JPEG workers, preview pixels,
-framing, stale tokens, camera-failure size retention, coalesced recovery and UBSan
+framing, stale tokens, camera-failure size retention, coalesced recovery, encoder
+buffer reuse/exact-size scaler bypass and UBSan
 paths; a Pi run additionally covers ARM NEON. The opt-in hardware resize scenario
 is `tests/terminal/HLT/test-video-resize.c`; its header gives the build command
 and idle-device prerequisite. Native size readback and QR-worker lifecycle checks

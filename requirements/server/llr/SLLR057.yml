@@ -33,6 +33,8 @@ references:
   type: file
 - path: zmala_server/web/styles/tools.css
   type: file
+- path: tests/server/LLT/admin-view.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

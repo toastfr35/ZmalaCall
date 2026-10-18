@@ -38,6 +38,16 @@ class TestPlanAuditTests(unittest.TestCase):
         self.assertEqual(trace['unmapped']['THLR'], ['THLR001'])
         self.assertNotIn('passed', trace['tests']['T-LLT-001'])
 
+    def test_every_llr_needs_a_direct_unit_test(self):
+        for uid, prefix in (('SLLR999', 'SLLR'), ('TLLR002', 'TLLR')):
+            with self.subTest(uid=uid):
+                records = self.records | {uid: {'prefix': prefix, 'references': []}}
+                adhoc = self.root / 'tests/adhoc/experiment.py'
+                adhoc.parent.mkdir(exist_ok=True)
+                adhoc.write_text(self.header.replace('TLLR001', uid), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, f'{uid}: no mapped LLT'):
+                    audit_tests(self.root, records)
+
     def test_unknown_id_wrong_level_and_wrong_component_fail(self):
         for old, new, message in (
                 ('TLLR001', 'TLLR999', 'unknown requirement'),

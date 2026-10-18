@@ -17,6 +17,8 @@ references:
   type: file
 - path: zmala_server/migrations.js
   type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |
