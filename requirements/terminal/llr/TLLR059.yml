@@ -24,9 +24,9 @@ references:
 reviewed: null
 scope: Optional
 text: |
-  Detection shall run locally in a low-priority process with two inference threads, a
+  Detection shall run locally in a low-priority worker thread with two inference threads, a
   latest-thumbnail input and approximately two-second sampling; it shall not upload camera
   images or block the UI/media ticker.
 verification: |
-  Slow inference and inspect process priority, thread configuration, sample replacement
+  Slow inference and inspect worker priority, thread configuration, sample replacement
   and network use.

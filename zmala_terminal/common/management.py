@@ -55,6 +55,7 @@ class ManagementLoop:
             self.messages.put(('network-done', None))
         threading.Thread(target=worker, daemon=True).start()
 
+    # @llr TLLR082
     def poll(self):
         """Capture an enrollment generation before worker I/O; all results return through the UI queue."""
         self.poll_wifi()
@@ -72,6 +73,7 @@ class ManagementLoop:
             try:
                 self.messages.put(('poll-config', (generation, configuration.fetch(), callback_revision)))
                 if not configuration.cancelled:
+                    # @llr TLLR105
                     configuration.report(status)
             except Exception as error:
                 logging.warning('Management connection: %s', error)
@@ -87,6 +89,7 @@ class ManagementLoop:
                 return
             self.handle_worker_message(kind, value)
 
+    # @llr TLLR085
     def handle_worker_message(self, kind, value):
         if kind == 'local-settings':
             self.local_settings_result(*value)
@@ -124,6 +127,7 @@ class ManagementLoop:
                 self.network_connected = value
                 self.draw_connectivity(bool(self.engine and self.engine.registered))
 
+    # @llr TLLR071
     def callback_result(self, generation, serial, target, success, reply, request_id):
         if generation != self.generation or serial != self.callback_serial:
             return

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Swap reconfiguration is deliberately applied at reboot, never via swapoff.
+# @llr SLLR100, TLLR125
 set -eu
 task_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 test "$(id -u)" -eq 0

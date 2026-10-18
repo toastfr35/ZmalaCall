@@ -96,6 +96,7 @@ function migrateGroups(v) {
   delete v.permissions;
   v.schema_version = 4;
 }
+// @llr SLLR082
 /** Upgrade the writable legacy staging view before runtime callers use current contracts.
  * @param {import('./types/contracts').ServerState} state */
 function migrate(state) {

@@ -2,6 +2,7 @@
 from pathlib import Path
 
 
+# @llr TLLR004
 def quiet_command_line(text):
     tokens = [token for token in text.split() if token not in ('console=tty1', 'quiet', 'splash', 'plymouth.ignore-serial-consoles')
               and not token.startswith(('loglevel=', 'logo.nologo', 'vt.global_cursor_default='))]

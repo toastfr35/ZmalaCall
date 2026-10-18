@@ -7,6 +7,7 @@ import re
 from urllib.parse import urlsplit
 
 
+# @llr TLLR027
 def parse_wifi(text):
     """Decode standard escaped WIFI fields or the compact UTF-8 payload emitted by setup-pdf.js."""
     if isinstance(text, str) and text.startswith('FAMILY-WIFI:1:'):
@@ -53,6 +54,7 @@ def parse_wifi(text):
     return dict(ssid=ssid, password=password, security=security, hidden=fields.get('H', 'false').lower() == 'true')
 
 
+# @llr TLLR030
 def parse_server(text):
     """Accept a bounded enrollment document with a plain HTTP(S) base URL and device credentials."""
     if not isinstance(text, str) or len(text) > 4096:
@@ -116,6 +118,7 @@ class Enrollment:
             self.value['language'] = language
         self.save()
 
+    # @llr TLLR031
     def set_server(self, bootstrap):
         self.value['bootstrap'] = bootstrap
         self.save()

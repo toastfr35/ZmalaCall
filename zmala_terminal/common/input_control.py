@@ -67,6 +67,7 @@ class InputControl:
             self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
         return 'break'
 
+    # @llr TLLR093
     def keypress(self, button):
         if self.remote_setup_blocked():
             return 'break'  # Keyboard/X11 copies must not pass the physical test.

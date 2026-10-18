@@ -33,6 +33,7 @@ def configure(engine):
     engine.auto_framing.configure(engine.config.get('auto_framing', False))
 
 
+# @llr TLLR048
 def c20_devices(devices):
     """Exclude unrelated cameras and HDMI/default audio from Linux choices."""
     selected = {'camera': [name for name in devices['camera'] if name.startswith('ZmalaMJPEG:')]}

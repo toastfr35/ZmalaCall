@@ -45,6 +45,7 @@ def is_presenter(properties):
     return properties.get('Name') == NAME and HID in properties.get('UUIDs', [])
 
 
+# @llr TLLR021
 def candidate(devices):
     """Do not choose between multiple nearby remotes or pair stale cache entries."""
     matches = [path for path, props in devices.items() if is_presenter(props)

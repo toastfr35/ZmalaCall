@@ -28,4 +28,4 @@ text: |
   watchdog shall recover from missing control updates, and stale session/sample results
   shall not affect a later call.
 verification: |
-  Kill the detector, delay samples and change call/session identity.
+  Stall or fail the detector, delay samples and change call/session identity.

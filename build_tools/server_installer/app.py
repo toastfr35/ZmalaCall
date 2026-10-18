@@ -106,6 +106,7 @@ class Installer(tk.Tk):
             self.target.check()
         self.start(work, 'checked')
 
+    # @llr SLLR091
     def confirm(self):
         info = self.target.info
         migration = self.data.get().strip()

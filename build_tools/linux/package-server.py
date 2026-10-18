@@ -11,6 +11,7 @@ SCRIPTS = ('install-server.sh', 'server-launch.py', 'check-server.py',
            'zmalacall-server.service', 'server-ssh.py')
 
 
+# @llr SLLR097
 def package(destination=None):
     destination = Path(destination or ROOT / 'build_tools/dist/ZmalaCall-Server-rpi.tar.gz')
     destination.parent.mkdir(parents=True, exist_ok=True)

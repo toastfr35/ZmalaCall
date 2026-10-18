@@ -248,6 +248,7 @@ export function buildTerminalCard(id) {
   terminalCardState(card, id);
   return card;
 }
+// @llr SLLR061
 export function renderTerminals() {
   $('page-actions').replaceChildren();
   const ids = Object.keys(state.model.profiles);

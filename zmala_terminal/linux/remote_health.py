@@ -15,6 +15,7 @@ def battery_percentage(info):
     return value if 0 <= value <= 100 else None
 
 
+# @llr TLLR019
 def charger_connected(report):
     """Presenter+ 0x39/0x03 status: measured 0x20 on power, 0x00 off power.
 
@@ -116,6 +117,7 @@ class RemoteHealth:
             self.snapshot = (state, battery, charger, time.monotonic())
             self.stopped.wait(5)
 
+    # @llr TLLR018
     @property
     def state(self):
         return self.snapshot[0]

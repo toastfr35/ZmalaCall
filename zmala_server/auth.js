@@ -40,6 +40,7 @@ class DigestAuth {
     ];
     return response;
   }
+  // @llr SLLR026
   /** Return the authenticated username, or null. Consume the nonce count only after verification.
    * @param {import('sip').Message} request
    * @param {Record<string, { password: string }>} users

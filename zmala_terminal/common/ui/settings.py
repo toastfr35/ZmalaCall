@@ -69,6 +69,7 @@ class SettingsView:
         self.settings_images.append(image)
         self.settings_canvas.create_image(x, y, image=image, anchor='nw', tags=tags)
 
+    # @llr TLLR075
     def draw_settings(self):
         if not (self.settings_open or self.settings_hold.capturing):
             return

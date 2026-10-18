@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 
+# @llr TLLR123
 def write_json(path, value):
     """Replace a complete snapshot atomically; callers must serialize writes sharing the temporary path."""
     path = Path(path)

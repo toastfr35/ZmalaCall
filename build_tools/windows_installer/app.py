@@ -177,6 +177,7 @@ class Installer(tk.Tk):
             return self.target.check()
         self.start(work, 'checked')
 
+    # @llr TLLR114
     def confirm(self):
         info = self.target.info
         action = 'Update' if info['installed'] else 'Install'

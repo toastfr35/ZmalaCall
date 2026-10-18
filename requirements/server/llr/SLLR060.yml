@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_server/http/admin-routes.js
+  type: file
 - path: zmala_server/web/admin.html
   type: file
 - path: zmala_server/web/admin.css

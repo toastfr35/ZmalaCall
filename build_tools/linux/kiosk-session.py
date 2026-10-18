@@ -45,6 +45,7 @@ def display_outputs(query, mode):
     return supported
 
 
+# @llr TLLR002
 def configure_display():
     mode = os.environ.get('ZMALA_DISPLAY_MODE', '1280x720')
     if mode == 'auto':

@@ -12,6 +12,7 @@ import uuid
 from build_tools.windows_installer.backend import Deployment as SSHDeployment, InstallError, verify_payload
 
 
+# @llr SLLR090
 def validate_target(info, storage=True):
     if not info['model'].startswith(('Raspberry Pi 3 Model B', 'Raspberry Pi 4 Model B')):
         raise InstallError('Expected Raspberry Pi 3 or 4 Model B: ' + info['model'])
@@ -32,6 +33,7 @@ def validate_target(info, storage=True):
         raise InstallError('At least 1 GiB of free storage is required.')
 
 
+# @llr SLLR094
 def migration_archive(directory, destination):
     """Explicit state allowlist: never bundle logs, old backups or source credentials."""
     root = Path(directory).resolve()
@@ -128,6 +130,7 @@ with tarfile.open(p/'server.tar.gz') as archive: archive.extractall(p, filter='d
         self.verify_server_reboot(old_boot)
         self.emit('SUCCESS. Server is running. Administration: http://'+self.wired_address+':8080/\n')
 
+    # @llr SLLR096
     def verify_server_reboot(self, old_boot):
         import paramiko
         deadline = time.monotonic()+300

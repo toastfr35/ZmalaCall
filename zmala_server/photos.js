@@ -10,6 +10,7 @@ const convert = promisify(execFile);
 const digest = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
 const PNG_HEADER = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
+// @llr SLLR087
 /** Inspect dimensions before asking the native converter to decode pixels.
  * @param {Buffer} bytes @param {string} extension */
 function checkDimensions(bytes, extension) {
@@ -84,6 +85,7 @@ class PhotoStore {
       this.uploads--;
     }
   }
+  // @llr SLLR088
   /** @param {Buffer} bytes @param {string} extension */
   async convertPhoto(bytes, extension) {
     if (this.active >= 2)
@@ -121,6 +123,7 @@ class PhotoStore {
       else this.active--;
     }
   }
+  // @llr SLLR089
   /** @param {string} output @param {string} name */
   async publish(output, name) {
     let commit = this.publishing.get(name);

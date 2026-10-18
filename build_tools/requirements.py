@@ -16,6 +16,8 @@ import subprocess
 import sys
 from urllib.parse import unquote, urlsplit
 
+from requirements_trace import audit_traces
+
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = {
     'PROD': ('product', None),
@@ -133,11 +135,21 @@ def audit(root: Path) -> dict:
     included, excluded = source_inventory(root)
     uncovered = sorted(set(included) - set(referenced))
     errors += [f'Unmapped implementation: {name}' for name in uncovered]
+    # Also inspect explicitly referenced local patches/helpers outside the normal
+    # inventory. Test evidence and generated bundles cannot satisfy code tracing.
+    trace_files = set(included) | {name for name in referenced
+        if '/tests/' not in name and not Path(name).name.startswith(('test-', 'probe-'))
+        and not name.startswith('zmala_terminal/windows/') and name not in EXCLUSIONS}
+    try:
+        traces = audit_traces(root, records, sorted(trace_files), referenced)
+    except ValueError as error:
+        errors.append(str(error))
     if errors:
         raise ValueError('\n'.join(errors))
     return {
         'counts': dict(Counter(item['prefix'] for item in records.values())),
         'source_coverage': {name: sorted(referenced[name]) for name in included},
+        'code_traces': traces,
         'exclusions': excluded,
         'qualification': 'Source mapping and structural validation are not test results or human approval.',
     }
@@ -158,6 +170,11 @@ def write_coverage(output: Path, report: dict) -> None:
     exclusions = ''.join(f'<li><code>{escape(name)}</code> — {escape(reason)}</li>'
                          for name, reason in report['exclusions'].items())
     counts = ' · '.join(f'{escape(prefix)} {count}' for prefix, count in report['counts'].items())
+    traces = []
+    for uid, locations in report['code_traces'].items():
+        link = f'documents/{uid[:4]}.html#{uid}'
+        source = '<br>'.join(f'<code>{escape(entry["path"])}:{entry["line"]}</code>' for entry in locations)
+        traces.append(f'<tr id="trace-{uid}"><td><a href="{link}">{uid}</a></td><td>{source}</td></tr>')
     html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>Source coverage · ZmalaCall</title>
 <link rel="stylesheet" href="template/zmala.css"><script src="template/zmala.js" defer></script></head><body>
@@ -167,6 +184,9 @@ def write_coverage(output: Path, report: dict) -> None:
 <p class="notice">{escape(report['qualification'])} A mapped file can still contain behavior needing a more detailed requirement; review the code and verification instructions together.</p>
 <p>Scope: Linux server, shared/Pi terminal runtime and Pi deployment tools (including Windows installer front ends). Windows terminal runtime, repository development tooling and third-party internals are excluded.</p>
 <div class="filter"><label for="search">Find a file or requirement</label><input id="search" type="search" placeholder="Module path or LLR ID"><output id="match-count" aria-live="polite"></output><a href="coverage.json" download>Download inventory JSON</a></div>
+<h2>Code comment anchors</h2><p>{len(traces)} LLRs traced to standalone <code>@llr</code> comments. Line numbers refer to the source revision used for this build; shared behavior can have several anchors.</p>
+<div class="matrix" tabindex="0" aria-label="Scrollable code trace table"><table><thead><tr><th scope="col">LLR</th><th scope="col">Code location</th></tr></thead><tbody>{''.join(traces)}</tbody></table></div>
+<h2>File reference inventory</h2>
 <div class="matrix" tabindex="0" aria-label="Scrollable source coverage table"><table><thead><tr><th scope="col">Implementation file</th><th scope="col">Mapped LLRs</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>
 <details class="evidence"><summary>Excluded inventory files and reasons · {len(report['exclusions'])}</summary><ul>{exclusions}</ul></details>
 <footer>Generated from Doorstop references · <a href="#main">Back to top</a></footer></main></body></html>'''
@@ -225,7 +245,8 @@ def main() -> int:
     try:
         report = audit(ROOT)
         run_doorstop(ROOT, '--no-reformat', '--error-all', '--no-review-check')
-        print(f"Baseline: {report['counts']}; {len(report['source_coverage'])} source files mapped.")
+        print(f"Baseline: {report['counts']}; {len(report['source_coverage'])} source files mapped; "
+              f"{len(report['code_traces'])} LLRs anchored in code.")
         if not args.check:
             output = ROOT / 'requirements' / 'output'
             # Only obsolete generated document pages are removed. No recursive workspace deletion.

@@ -74,6 +74,7 @@ class SettingsControl:
         else:
             self._press_action(button)
 
+    # @llr TLLR032, TLLR074
     def settings_button(self, button):
         draft = self.settings_draft
         if draft.busy:
@@ -126,6 +127,7 @@ class SettingsControl:
             self.messages.put(('local-settings', (generation, draft, success, config)))
         threading.Thread(target=worker, daemon=True).start()
 
+    # @llr TLLR077
     def local_settings_result(self, generation, draft, success, config):
         if generation != self.generation or self.closed:
             return

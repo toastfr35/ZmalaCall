@@ -22,6 +22,7 @@ class AccountStore {
       this.value.users[id].type === 'terminal'
     );
   }
+  // @llr SLLR006
   /** @param {import('./types/contracts').JsonObject} update @returns {string} */
   createAccount(update) {
     const v = this.value,
@@ -43,6 +44,7 @@ class AccountStore {
     this.changed();
     return id;
   }
+  // @llr SLLR009
   /** Build a complete terminal before publishing it in the account map.
    * @param {string} id
    * @param {import('./types/contracts').AccountDetails & import('./types/contracts').AutoAnswerSettings} details
@@ -60,6 +62,7 @@ class AccountStore {
     if (!this.value.local_terminal_id) this.value.local_terminal_id = id;
     return account;
   }
+  // @llr SLLR007, SLLR010
   /** @param {string} id @param {import('./types/contracts').JsonObject} update @returns {string} */
   updateAccount(id, update) {
     const v = this.value;

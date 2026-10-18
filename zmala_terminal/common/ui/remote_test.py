@@ -5,6 +5,7 @@ from zmala_terminal.common.model import State
 from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, PANEL
 from zmala_terminal.common.remote_test import BUTTONS, RemoteTest
 
+# @llr TLLR011
 NAMES = {'left': 'Left', 'right': 'Right', 'green': 'Green',
          'red': 'Red', 'pointer': 'Middle'}
 

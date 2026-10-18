@@ -24,6 +24,7 @@ StandardError=journal
 Environment=ZMALA_PAIRING_STATUS=/run/zmalacall-pairing/status.json
 Environment=ZMALA_C20_SETUP=1
 WorkingDirectory=/opt/zmalacall/current
+# @llr TLLR001
 ExecStart=/usr/bin/python3 /opt/zmalacall/current/build_tools/linux/kiosk-session.py
 ExecStopPost=-/usr/bin/python3 /opt/zmalacall/current/zmala_terminal/linux/argon_fan.py
 Restart=always

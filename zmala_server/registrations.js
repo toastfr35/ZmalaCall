@@ -21,12 +21,14 @@ class RegistrationMonitor {
       this.probes.delete(user);
     }
   }
+  // @llr SLLR040
   check() {
     for (const [user, registration] of this.server.registrations) {
       if (this.probes.has(user) || registration.expires <= Date.now()) continue;
       /** @type {{registration: import('./types/contracts').SipRegistration; timer: NodeJS.Timeout | null}} */
       const probe = { registration, timer: null };
       this.probes.set(user, probe);
+      // @llr SLLR041
       /** @param {boolean} online */
       const finish = (online) => {
         if (this.probes.get(user) !== probe) return;

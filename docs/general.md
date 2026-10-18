@@ -185,7 +185,8 @@ Windows.
 
 The build checks the five-document hierarchy, required fields, component-specific
 parent links, leaf implementation references and mapping of every in-scope source
-module. Its inventory also lists excluded generated bundles, test/probe code and
+module, plus a code comment anchor for every LLR. Its inventory also lists excluded
+generated bundles, test/probe code and
 third-party internals with reasons. Mapping a file is a maintenance aid, not proof
 that every behavior or hardware scenario has been verified. When changing a module,
 review its mapped LLRs and parents; when adding one, add or extend the corresponding
@@ -193,7 +194,8 @@ LLR. Do not satisfy coverage with an unrelated reference.
 
 Open `requirements/output/index.html`. The offline report includes searchable
 requirement cards, document navigation, parent/child links, verification guidance,
-a traceability table/CSV and source coverage HTML/JSON. It works without a web
+a traceability table/CSV and source coverage HTML/JSON with code file/line anchors.
+It works without a web
 server or external CDN. JavaScript only adds search. The native Doorstop template
 lives in `requirements/product/template/`; `build_tools/requirements.py` adds the
 inventory and validates the generated links. GitHub Verify uploads the complete
@@ -216,6 +218,48 @@ supplies the native project path. Use the ID printed by `add` for new items; the
 other commands above illustrate an existing runtime TV requirement. Supply its
 header, normative text, area, scope, verification guidance and source references.
 Keep IDs stable once issued; do not renumber them to reorder a document.
+
+### Code trace comments
+
+Put a standalone `@llr` comment immediately before the function, declaration or
+cohesive block that implements the requirement. Use the language's comment syntax:
+
+```python
+# @llr TLLR014
+def move(self, dy):
+    ...
+```
+
+```javascript
+// @llr SLLR028
+```
+
+Use `# @llr SLLR098, TLLR124` for shared Python/shell/configuration policies,
+`// @llr TLLR055` for C, `/* @llr SLLR057 */` for CSS, and
+`<!-- @llr SLLR056 -->` for HTML. Multiple IDs use a comma and one space. Keep
+explanatory prose in a separate comment; the directive contains only IDs. Put it
+before Python decorators or JavaScript JSDoc so those stay attached to the declaration.
+
+Each LLR has at least one implementation anchor; behavior spread across modules
+can have several. The anchored file must also appear in that LLR's Doorstop
+`references`. Keep both directions in sync when moving code. Choose the code that
+enforces the behavior, rather than collecting IDs at the top of an unrelated
+module. Trace JSON data at the code that validates or consumes it. Add markers
+only to authored implementation or explicitly referenced local vendor patches,
+never generated bundles or tests. Regenerate admin bundles after source edits.
+
+`build_tools/requirements_trace.py` reads these directives during both requirements
+targets and CI. It rejects unknown IDs, malformed directives, unreferenced anchor
+files and LLRs without code anchors. Python markers are read from comment tokens;
+other formats use reserved full-line comment syntax, so do not copy directive
+lines into string/heredoc literals. These checks do not interpret conditional
+compilation or prove behavior. Review placement and verification evidence separately.
+
+Each rendered LLR links to its current file/line locations in the source coverage
+page. `coverage.json` exposes the same locations under `code_traces`, keyed by
+LLR ID. Lines are computed at build time, not maintained manually in YAML.
+
+### Review status
 
 The old ZMC/SERV/TERM baseline was replaced because it mixed abstraction levels
 and included Windows terminal/retired keypad scope. Historical records remain in

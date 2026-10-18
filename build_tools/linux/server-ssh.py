@@ -17,6 +17,7 @@ def status():
             'interface': 'eth0'}
 
 
+# @llr SLLR099
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['status', 'on', 'off'])

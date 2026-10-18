@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/ui/remote_help.py
+  type: file
 - path: zmala_terminal/common/setup_flow.py
   type: file
 - path: zmala_terminal/common/ui/usb_setup.py

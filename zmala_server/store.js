@@ -49,6 +49,7 @@ class Store extends AccountStore {
   enableAsyncPersistence() {
     this.persistence ??= new SnapshotFile(this.file);
   }
+  // @llr SLLR080
   async flush() {
     await this.persistence?.flush();
   }
@@ -74,6 +75,7 @@ class Store extends AccountStore {
       ? Object.keys(this.value.users).find((id) => this.terminalAccount(id)?.device_token === token)
       : undefined;
   }
+  // @llr SLLR014
   /** @param {unknown} from @param {unknown} to */
   permitted(from, to) {
     const v = this.value;
@@ -86,6 +88,7 @@ class Store extends AccountStore {
       this.derivedPermissions().get(from)?.has(to) === true
     );
   }
+  // @llr SLLR016
   derivedPermissions() {
     if (this.viewVersion !== this.value.configuration_version) {
       this.permissions.clear();
@@ -148,6 +151,7 @@ class Store extends AccountStore {
     // Callers add live fields; never let them modify the shared stable view.
     return contacts.map((contact) => ({ ...contact }));
   }
+  // @llr SLLR015
   /** @param {string} id */
   buildContacts(id) {
     const v = this.value,
@@ -169,6 +173,7 @@ class Store extends AccountStore {
         };
       });
   }
+  // @llr SLLR069
   /** @param {string | null} [id] @returns {import('./types/contracts').TerminalConfiguration} */
   config(id = this.value.local_terminal_id) {
     const p = this.requireTerminal(id),
@@ -205,6 +210,7 @@ class Store extends AccountStore {
       terminal_settings: p.terminal_settings,
     };
   }
+  // @llr SLLR101
   /** @param {string | null} [id] @param {boolean} [lan]
    * @returns {import('./types/contracts').Enrollment} */
   bootstrap(id = this.value.local_terminal_id, lan = false) {
@@ -233,6 +239,7 @@ class Store extends AccountStore {
     const account = this.terminalAccount(id);
     return account?.auto_answer ? Math.max(60, (account.auto_answer_seconds || 5) + 30) : 60;
   }
+  // @llr SLLR068
   /** Device-scoped, field-level compare-and-set; never accepts account/media credentials.
    * @param {string} id @param {import('./types/contracts').JsonObject} changes
    * @param {import('./types/contracts').JsonObject} expected */
@@ -264,6 +271,7 @@ class Store extends AccountStore {
     const p = this.requireTerminal(id);
     this.setSettings(id, { display_name: p.display_name, ...p.terminal_settings, ...changes });
   }
+  // @llr SLLR011
   /** @param {unknown} serial @param {string} accountId */
   associateTerminal(serial, accountId) {
     const v = this.value;

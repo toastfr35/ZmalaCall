@@ -19,6 +19,7 @@ def command_arguments(command, shell, batch_directory=None):
     return arguments(command, shell, batch_directory)
 
 
+# @llr TLLR102
 def bounded_output(stdout, stderr, truncated=False):
     """Limit decoded UTF-8 bytes, including replacement characters and errors."""
     remaining, output = 65536, {}
@@ -92,6 +93,7 @@ class MaintenanceAgent:
     def stop(self):
         self.cancelled.set()
 
+    # @llr TLLR103
     def submit(self, job_id, result):
         route = '/api/console/result/' + job_id
         try:
@@ -108,6 +110,7 @@ class MaintenanceAgent:
                     raise
                 logging.warning('Command result permanently rejected; command will not be rerun')
 
+    # @llr TLLR100
     def loop(self):
         """Retry an unacknowledged result with its lease; never rerun the command after an HTTP failure."""
         pending = None

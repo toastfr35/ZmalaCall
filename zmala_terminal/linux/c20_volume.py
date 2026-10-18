@@ -11,6 +11,7 @@ _configured = None
 _failed = False
 
 
+# @llr TLLR016
 def configure(percent):
     """Keep local adjustments across core rebuilds; a changed server default wins."""
     global _configured
@@ -50,6 +51,7 @@ def request(percent):
             _worker.start()
 
 
+# @llr TLLR015
 def _run():
     global _worker, _applied, _failed
     while True:

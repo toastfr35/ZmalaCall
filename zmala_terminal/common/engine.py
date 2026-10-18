@@ -78,6 +78,7 @@ class Engine(LinphoneAPI):
         if not self.core:
             raise RuntimeError('Liblinphone could not create the call engine')
 
+    # @llr TLLR051
     def configure_media(self, video_window, preview_window=0):
         cfg = self.core_get_config(self.core)
         for section, key, value in [('sip', 'sip_port', -1), ('sip', 'sip_tcp_port', 0),
@@ -195,6 +196,7 @@ class Engine(LinphoneAPI):
         logging.info('Registration %s: %s', state, message.decode(errors='replace') if message else '')
         self.on_registration(self.registered)
 
+    # @llr TLLR041
     def _call_event(self, core, call, state, message):
         try:
             address = self.call_get_remote_address(call)
@@ -215,6 +217,7 @@ class Engine(LinphoneAPI):
         except Exception:
             logging.exception('Call callback failed')
 
+    # @llr TLLR067
     def _message_event(self, core, room, message):
         if not self.on_message or self.config.get('account_type', 'terminal') != 'terminal':
             return
@@ -233,6 +236,7 @@ class Engine(LinphoneAPI):
             expected = hmac.new(encoded(self.config['call_auth_key']), encoded(f'message:{identifier}:{user}'), hashlib.sha256).hexdigest()
             if not hmac.compare_digest(proof, expected) or identifier in self._seen_messages:
                 return
+            # @llr TLLR068
             if len(self._seen_messages) >= 256:
                 self._seen_messages.pop()
             self._seen_messages.add(identifier)
@@ -240,6 +244,7 @@ class Engine(LinphoneAPI):
         except Exception:
             logging.exception('Text notification callback failed')
 
+    # @llr TLLR045
     def hold_call(self, call):
         # Borrowed callback pointers need an owned reference until the UI releases the call.
         if self.call != call:
@@ -260,6 +265,7 @@ class Engine(LinphoneAPI):
         if call == self.call:
             self._last_video_frame = time.monotonic()
 
+    # @llr TLLR057
     def incoming_video_active(self):
         """Show video only after a decoded frame, with tolerance for brief gaps."""
         if not self.call:
@@ -301,6 +307,7 @@ class Engine(LinphoneAPI):
         if result:
             raise RuntimeError('The call could not be answered')
 
+    # @llr TLLR126
     def configure_call_audio(self, params):
         """Without capture hardware, receive speech instead of opening a dummy input.
 

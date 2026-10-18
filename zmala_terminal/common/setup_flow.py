@@ -52,6 +52,7 @@ class ProvisioningFlow:
             self.video.configure(highlightthickness=0)
             self.video_border = (0, None)
 
+    # @llr TLLR025
     def start_scanner(self):
         if self.closed or self.setup_stage not in ('wifi', 'server') or self.scanner or self.needs_c20() or self.needs_pairing():
             return
@@ -71,6 +72,7 @@ class ProvisioningFlow:
             self.setup_feedback = True
             self.render()
 
+    # @llr TLLR033
     def factory_reset(self):
         """Invalidate workers first, then erase enrollment and start setup with a fresh model."""
         if self.model.state != State.HOME:
@@ -118,6 +120,7 @@ class ProvisioningFlow:
         self.render()
         self.start_scanner()
 
+    # @llr TLLR034
     def start_wifi_cleanup(self):
         wifi = (self.enrollment.value or {}).get('wifi_cleanup')
         if wifi and not self.setup_busy:
@@ -132,6 +135,7 @@ class ProvisioningFlow:
                     self.messages.put(('setup', (generation, 'error', None)))
             threading.Thread(target=forget_worker, daemon=True).start()
 
+    # @llr TLLR026
     def qr_found(self, value):
         if self.needs_pairing():
             return
@@ -178,6 +182,7 @@ class ProvisioningFlow:
             self.enrollment.set_wifi(result)
             self.stop_scanner()
             self.setup_stage = 'wifi_ready'
+            # @llr TLLR028
             self.setup_continue_at = time.monotonic() + 10
             self.setup_confirmation_seconds = None
             self.last_qr = ('', 0)

@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_server/defaults.js
+  type: file
 - path: zmala_server/main.js
   type: file
 - path: zmala_server/shutdown.js

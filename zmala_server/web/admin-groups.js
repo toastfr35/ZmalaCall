@@ -80,6 +80,7 @@ export function renderGroups() {
     );
   setView(intro, grid);
 }
+// @llr SLLR059
 export function openGroup(id = '') {
   state.editingGroupId = id;
   state.groupVersion = state.model.configuration_version;

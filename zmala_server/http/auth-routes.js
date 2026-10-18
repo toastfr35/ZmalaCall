@@ -41,6 +41,7 @@ async function authRoutes(req, res, url, context, identity) {
     throw httpError(401, 'Incorrect admin password.');
   if (!setup && passwordHash !== store.adminPassword.hash)
     throw httpError(401, 'Password changed. Sign in again.');
+  // @llr SLLR019
   if (setup || change) {
     // Hold the guard across asynchronous hashing and persistence: two initial
     // setup requests must not race to replace one another's password.

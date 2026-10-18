@@ -12,6 +12,7 @@ function readJson(file, fallback) {
     return typeof fallback === 'function' ? /** @type {() => T} */ (fallback)() : fallback;
   }
 }
+// @llr SLLR083
 /** Startup/setup tools use an immediate rename; HTTP configuration uses SnapshotFile.
  * @param {string} file @param {unknown} value */
 function writeJson(file, value) {

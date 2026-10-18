@@ -1671,6 +1671,7 @@ input[type='file']::file-selector-button {
   grid-column: 2;
 }
 
+/* @llr SLLR057 */
 /* Use the same rows and controls on both layouts: no duplicated mobile forms. */
 @media (max-width: 700px) {
   .accounts-table,

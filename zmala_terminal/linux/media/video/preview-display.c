@@ -32,6 +32,7 @@ static int reduction(const MSPicture *src, unsigned width, unsigned height) {
     return factor;
 }
 
+// @llr TLLR055
 /* Exact rounded box averages, including chroma. SIMD keeps the same result
  * as the scalar path, without the original inner pixel/factor loops. */
 static void average_plane(uint8_t *out, int out_stride, const uint8_t *in,
@@ -150,6 +151,7 @@ static int forward(MSFilter *f, unsigned method, void *arg) {
     s->dirty = 1;
     return s->display ? ms_filter_call_method(s->display, method, arg) : -1;
 }
+// @llr TLLR056
 static int set_window(MSFilter *f, void *arg) {
     PreviewDisplay *s = f->data;
     const MSOglContextInfo *context = *(const MSOglContextInfo **)arg;

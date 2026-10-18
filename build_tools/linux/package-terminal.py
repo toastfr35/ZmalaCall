@@ -10,6 +10,7 @@ TEXT_SUFFIXES = {'.sh', '.txt', '.conf', '.service', '.rules', '.plymouth', '.sc
                  '.py', '.json', '.c', '.h', '.md', '.svg'}
 
 
+# @llr TLLR118
 def package(destination=None):
     """Ship one C20 release; native plugins are compiled by its Pi installer."""
     destination = Path(destination or ROOT / 'build_tools/dist/ZmalaCall-Terminal-rpi.tar.gz')

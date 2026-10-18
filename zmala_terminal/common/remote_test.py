@@ -37,6 +37,7 @@ class RemoteTest:
     def expected(self):
         return BUTTONS[min(self.index, len(BUTTONS)-1)]
 
+    # @llr TLLR023
     def event(self, button, pressed):
         if not self.ready or not self.bond or self.complete:
             return
@@ -53,6 +54,7 @@ class RemoteTest:
             self.armed = False
             if self.index == len(BUTTONS)-1:
                 try:
+                    # @llr TLLR024
                     write_json(self.path, {'version': 1, 'bond': self.bond})
                 except OSError:
                     self.error = True

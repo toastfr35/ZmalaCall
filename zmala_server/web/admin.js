@@ -163,6 +163,7 @@ function actionButton(text, action, cls = 'secondary', glyph) {
   b.onclick = () => run(action);
   return b;
 }
+// @llr SLLR058
 /** @param {string} label @param {string} glyph @param {import('../types/admin').Action} action */
 function iconButton(label, glyph, action) {
   const b = actionButton('', action, 'icon-button', glyph);
@@ -503,6 +504,7 @@ function authControls() {
 
 // admin-setup.js
 // Authenticated provisioning downloads and local test enrollment actions.
+// @llr SLLR063
 /** @param {string} route @param {string} filename @param {import('../types/contracts').JsonObject} [value] */
 async function downloadPdf(route, filename, value) {
   /** @type {Record<string, string>} */
@@ -566,6 +568,7 @@ $('wifi-form').onsubmit = (e) => {
 // admin-clipboard.js
 // The installed server is also used over plain LAN HTTP, where Clipboard API
 // access is unavailable. Keep the fallback inside the open dialog's focus scope.
+// @llr SLLR063
 /** @param {string} value @param {HTMLElement} owner @returns {Promise<boolean>} */
 async function writeClipboard(value, owner) {
   try {
@@ -733,6 +736,7 @@ function renderAccounts() {
   setView(p);
   accountRows();
 }
+// @llr SLLR059
 function openAccount(id = '') {
   accountVersion = state.model.configuration_version;
   accountGeneration++;
@@ -969,6 +973,7 @@ $('console-dialog').addEventListener('close', () => {
   consoleGeneration++;
   state.consoleId = '';
 });
+// @llr SLLR062
 async function refreshConsole() {
   if (!state.consoleId || !$('console-dialog').open || state.consoleFetching) return;
   const id = state.consoleId,
@@ -1176,6 +1181,7 @@ function renderGroups() {
     );
   setView(intro, grid);
 }
+// @llr SLLR059
 function openGroup(id = '') {
   state.editingGroupId = id;
   state.groupVersion = state.model.configuration_version;
@@ -1682,6 +1688,7 @@ function buildTerminalCard(id) {
   terminalCardState(card, id);
   return card;
 }
+// @llr SLLR061
 function renderTerminals() {
   $('page-actions').replaceChildren();
   const ids = Object.keys(state.model.profiles);
@@ -2188,6 +2195,7 @@ function renderActivity() {
 
 // admin-main.js
 // Admin entry point: route rendering and polling share state without overwriting active edits.
+// @llr SLLR056
 function render() {
   const renderers = /** @type {Record<string, () => void>} */ ({
     '/': renderOverview,
@@ -2212,6 +2220,7 @@ function refresh(force = false) {
   });
   return inFlight;
 }
+// @llr SLLR060
 /** @param {boolean} force */
 async function performRefresh(force) {
   try {

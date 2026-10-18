@@ -7,6 +7,7 @@ const scrypt = promisify(crypto.scrypt);
 const COOKIE = 'zmala-admin';
 const SESSION_MS = 8 * 60 * 60 * 1000;
 
+// @llr SLLR017
 /** @param {unknown} password */
 async function hashPassword(password) {
   if (typeof password !== 'string' || password.length < 12 || password.length > 256)
@@ -33,6 +34,7 @@ class AdminSessions {
     this.globalAttempts = { count: 0, until: 0 };
     this.changing = false;
   }
+  // @llr SLLR021
   /** Bound hashing work and per-address state even for unauthenticated clients.
    * @param {string} address */
   allowLogin(address) {
@@ -50,6 +52,7 @@ class AdminSessions {
     this.globalAttempts.count++;
     return true;
   }
+  // @llr SLLR020
   create() {
     this.prune();
     // Keep session memory bounded; the oldest login must sign in again.
@@ -75,6 +78,7 @@ class AdminSessions {
       .find((value) => value.startsWith(COOKIE + '='))
       ?.slice(COOKIE.length + 1);
   }
+  // @llr SLLR020
   /** @param {import('node:http').ServerResponse} res @param {string} token
    * @param {boolean} secure @param {boolean} [clear] */
   setCookie(res, token, secure, clear = false) {

@@ -32,6 +32,7 @@ class SipServer extends SipMessages {
     this.probes = this.presence.probes;
     this.media = new MediaRelay(store.value.host);
   }
+  // @llr SLLR086
   /** @param {string} message */
   log(message) {
     this.events.push({ time: new Date().toISOString(), message });
@@ -77,6 +78,7 @@ class SipServer extends SipMessages {
       return this.originalSend.call(sip, message, ...args);
     };
     sip.send = this.sendWithCancelHeaders;
+    // @llr SLLR033
     this.sweep = setInterval(() => {
       for (const [u, r] of this.registrations)
         if (r.expires < Date.now()) {
@@ -102,6 +104,7 @@ class SipServer extends SipMessages {
 
   /** CANCEL authenticates against the original INVITE's exact transport, From
    * tag, CSeq and Via branch. It must not consume another Digest nonce count. */
+  // @llr SLLR031
   /** @param {import('sip').Message} rq @param {import('sip').Remote} remote */
   cancelStatus(rq, remote) {
     if (!validRequest(rq)) return 400;
@@ -118,6 +121,7 @@ class SipServer extends SipMessages {
     return 0;
   }
 
+  // @llr SLLR027
   /** @param {import('sip').ValidRequest} rq @param {import('sip').Remote} remote */
   register(rq, remote) {
     const v = this.store.value;
@@ -195,6 +199,7 @@ class SipServer extends SipMessages {
     let dialog = this.dialogs.get(id);
     let side;
     if (dialog) {
+      // @llr SLLR030
       side = dialog.peers.findIndex(
         (p) => samePeer(p.remote, remote) && p.tag === rq.headers.from.params?.tag,
       );
@@ -211,6 +216,7 @@ class SipServer extends SipMessages {
         this.reply(rq, 481, 'Call Does Not Exist');
         return;
       }
+      // @llr SLLR028
       const user = this.auth.verify(rq, v.users, true);
       if (!user) {
         proxy.send(this.auth.challenge(rq, true));
@@ -273,6 +279,7 @@ class SipServer extends SipMessages {
       id = rq.headers['call-id'];
     dialog.touched = Date.now();
     const initial = rq.method === 'INVITE' && !rq.headers.to.params?.tag;
+    // @llr SLLR032
     const negotiates = dialog.connected && ['INVITE', 'UPDATE'].includes(rq.method);
     // Delayed offers require staging an answer from ACK, which this relay does
     // not implement. Reject them without changing the established media graph.
@@ -312,6 +319,7 @@ class SipServer extends SipMessages {
     forward.headers.route = [{ uri: sip.encodeFlowUri(target.remote) }];
     delete forward.headers['proxy-authorization'];
     delete forward.headers.authorization;
+    // @llr SLLR029
     delete forward.headers['x-family-auth'];
     const terminal = this.store.terminalAccount(target.user);
     if (terminal)
@@ -416,6 +424,7 @@ class SipServer extends SipMessages {
         });
     });
   }
+  // @llr SLLR033
   /** @param {string} id */
   closeDialog(id) {
     const update = this.dialogs.get(id)?.mediaUpdate;

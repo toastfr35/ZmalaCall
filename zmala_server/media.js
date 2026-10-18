@@ -35,6 +35,7 @@ class MediaRelay {
     }
     throw Error('Media relay capacity reached');
   }
+  // @llr SLLR035
   /** @returns {Promise<import('./types/contracts').MediaLeg[]>} */
   async stream() {
     const sockets = [];
@@ -58,6 +59,7 @@ class MediaRelay {
           const leg = legs[side],
             other = legs[1 - side];
           // Only packets from the authenticated signalling peer can latch a media port.
+          // @llr SLLR037
           if (!leg.peer || !other.peer || remote.address !== leg.peer || packet.length < 4) return;
           const targetKey = kind === 'rtp' ? 'rtpTarget' : 'rtcpTarget';
           leg[targetKey] = { address: remote.address, port: remote.port };
@@ -77,6 +79,7 @@ class MediaRelay {
     session.touched = Date.now();
     return { session, changes: new Map(), allocated: new Set(), active: true };
   }
+  // @llr SLLR038
   /** @param {import('./types/contracts').MediaUpdate} update */
   commit(update) {
     if (!update.active || update.session.closed) throw Error('Media update closed');
@@ -109,6 +112,7 @@ class MediaRelay {
       }
     }
   }
+  // @llr SLLR036
   /** @param {string} id @param {string} sdp @param {number} side @param {string} peer
    * @param {import('./types/contracts').MediaUpdate} [update] */
   async rewrite(id, sdp, side, peer, update) {
@@ -191,6 +195,7 @@ class MediaRelay {
       throw error;
     }
   }
+  // @llr SLLR039
   /** @param {import('./types/contracts').MediaSession} session @param {number} index */
   async streamFor(session, index) {
     if (session.closed) throw Error('Media session closed');

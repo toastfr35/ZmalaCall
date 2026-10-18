@@ -21,6 +21,7 @@ class CallControl:
         self.missed_calls_store.save(config, self.model.notifications)
         self.root.after_idle(self.render)
 
+    # @llr TLLR042
     def call_event(self, call, state, user, domain):
         """Map Liblinphone states to the model; ignore callbacks from an old or unaccepted call."""
         if state == 1:
@@ -46,11 +47,13 @@ class CallControl:
             if self.model.state == State.STOPPING:
                 self.engine.end()
             else:
+                # @llr TLLR065
                 if self.model.connected():
                     self.missed_calls_store.save(self.model.config, self.model.notifications)
                 self.outgoing_deadline = None
         elif state in (13, 14, 19):
             failed = state == 13
+            # @llr TLLR063
             self.model.ended(remote=not failed)
             self.missed_calls_store.save(self.model.config, self.model.notifications)
             self.outgoing_deadline = None
@@ -60,6 +63,7 @@ class CallControl:
                 self.tv_control.cancel()
         self.root.after_idle(self.render)
 
+    # @llr TLLR072
     def show_callback_available(self, now):
         holding = getattr(self, 'settings_hold', None)
         if getattr(self, 'settings_open', False) or holding and holding.started is not None or self.setup_stage or self.model.state != State.HOME or now-self.last_button < 5 or self.callback_alert or self.notice or self.carousel_motion:
@@ -77,6 +81,7 @@ class CallControl:
                 self.render()
                 break
 
+    # @llr TLLR069
     def begin_callback(self, cancel=False):
         """Submit a request once; generation and serial checks guard its asynchronous result."""
         self.callback_serial += 1
@@ -132,6 +137,7 @@ class CallControl:
             self.usb_power.stop_ringing()
         self.engine.answer()
 
+    # @llr TLLR044
     def action(self, action):
         if not action or (not self.engine and action not in ('request_callback', 'cancel_callback')):
             return
@@ -163,9 +169,11 @@ class CallControl:
             if getattr(self, 'tv_control', None):
                 self.tv_control.cancel()
 
+    # @llr TLLR009
     def contact_online(self, contact):
         return bool(contact and contact.get('online') is True and time.monotonic() - self.server_seen < 6)
 
+    # @llr TLLR040
     def dial_ready(self, generation, serial, contact, available, ring_timeout=60):
         """A preflight reply may arrive after cancel/reset; verify both tokens before dialing."""
         if self.closed or self.setup_stage or generation != self.generation or serial != self.dial_serial or self.model.state != State.CALLING:

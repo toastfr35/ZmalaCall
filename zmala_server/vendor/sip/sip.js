@@ -439,6 +439,7 @@ function defaultPort(proto) {
 }
 
 // ZmalaCall: bound framing and unfinished bodies before application authentication.
+// @llr SLLR034
 function makeStreamParser(onMessage, onFlood, maxBytesHeaders, maxContentLength, deadlineMs) {
   onFlood = onFlood || function() {};
   maxBytesHeaders = maxBytesHeaders || 60480;

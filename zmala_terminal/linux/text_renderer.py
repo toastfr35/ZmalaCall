@@ -16,6 +16,7 @@ def color_rgb(color):
     return tuple(int(color[i:i+2], 16) / 255 for i in (1, 3, 5))
 
 
+# @llr TLLR036
 def layout_for(context, text, family, size, width, bold=False):
     layout = PangoCairo.create_layout(context)
     font = Pango.FontDescription()

@@ -27,6 +27,7 @@ class ConsoleJobs {
     await this.persistence?.flush();
   }
   // "Lost" means unknown outcome, not safe to retry: commands may have external side effects.
+  // @llr SLLR076
   expire() {
     let changed = false;
     const devices = new Set(
@@ -67,6 +68,7 @@ class ConsoleJobs {
     }
     this.save();
   }
+  // @llr SLLR078
   /** @param {string} id */
   list(id) {
     this.store.requireTerminal(id);
@@ -76,6 +78,7 @@ class ConsoleJobs {
       .slice(-50)
       .map(({ lease, ...job }) => ({ ...job, terminal_id: id }));
   }
+  // @llr SLLR074
   /** @param {string} id @param {import('./types/contracts').JsonObject} update */
   create(id, { command, timeout_seconds = 60 }) {
     this.store.requireTerminal(id);
@@ -119,6 +122,7 @@ class ConsoleJobs {
     this.save();
     return job;
   }
+  // @llr SLLR075
   /** @param {string} id */
   claim(id) {
     this.store.requireTerminal(id);
@@ -140,6 +144,7 @@ class ConsoleJobs {
       lease: job.lease,
     };
   }
+  // @llr SLLR077
   /** @param {string} id @param {string} jobId @param {import('./types/contracts').JsonObject} result */
   finish(id, jobId, result) {
     this.store.requireTerminal(id);

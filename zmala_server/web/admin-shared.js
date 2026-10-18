@@ -92,6 +92,7 @@ export function actionButton(text, action, cls = 'secondary', glyph) {
   b.onclick = () => run(action);
   return b;
 }
+// @llr SLLR058
 /** @param {string} label @param {string} glyph @param {import('../types/admin').Action} action */
 export function iconButton(label, glyph, action) {
   const b = actionButton('', action, 'icon-button', glyph);

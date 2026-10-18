@@ -17,6 +17,7 @@ def _nmcli(arguments, timeout=40):
     return result.stdout.strip()
 
 
+# @llr TLLR029
 def _add_connection(wifi, identifier, name):
     # D-Bus keeps passwords out of argv and persists the connection in NM's
     # protected system directory; no temporary credential file is necessary.
@@ -55,6 +56,7 @@ def forget_wifi(wifi, profile):
     _nmcli(['connection', 'delete', 'uuid', identifier])
 
 
+# @llr TLLR028
 def connect_wifi(wifi, profile, mode='existing-link', cancelled=None):
     if mode == 'existing-link':
         if not network_link_available():

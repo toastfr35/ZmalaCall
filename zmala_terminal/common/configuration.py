@@ -11,12 +11,14 @@ from zmala_terminal.common.photo_cache import PhotoCache, MAX_BYTES
 from zmala_terminal.common.paths import ROOT as ROOT
 
 
+# @llr TLLR078
 class NoCredentialRedirect(urllib.request.HTTPRedirectHandler):
     """An enrolled origin owns the bearer token; redirects cannot transfer it."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
 
+# @llr TLLR081
 def stable_configuration(config):
     """Offline snapshots retain settings, never live presence or callback state."""
     stable = copy.deepcopy(config)
@@ -105,6 +107,7 @@ class Configuration:
             config = reply
         return self.accept(config, previous, persist)
 
+    # @llr TLLR081
     def accept(self, config, previous, persist=True):
         """Shared poll/write response boundary; callers hold fetch_lock."""
         config = validate(config, self.bootstrap['device_id'])

@@ -85,6 +85,7 @@ class TVCheck:
                 self.persist(lambda: self.set_page('paired'))
         return True
 
+    # @llr TLLR091
     def persist(self, next_action):
         try:
             save_config(self.path, self.record)
@@ -134,6 +135,7 @@ class TVCheck:
         entry['continued_without'] = True
         self.persist(self.begin_source if kind == 'power' else self.finish)
 
+    # @llr TLLR088, TLLR090
     def button(self, button):
         if self.busy or button not in ('green', 'red', 'left', 'right'):
             return

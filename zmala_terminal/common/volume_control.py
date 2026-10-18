@@ -18,6 +18,7 @@ class VolumeGesture:
         self.held = held
         self.remainder = 0
 
+    # @llr TLLR014
     def move(self, dy):
         if not self.held:
             return
@@ -78,6 +79,7 @@ class VolumeControl:
         self.draw()
         self.timer = self.root.after(50, self.refresh)
 
+    # @llr TLLR015
     def draw(self):
         if self.canvas is None:
             self.canvas = tk.Canvas(self.root, width=84, height=300, bg=PANEL,

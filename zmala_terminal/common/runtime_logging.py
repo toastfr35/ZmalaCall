@@ -17,6 +17,7 @@ class DiagnosticFilter(logging.Filter):
         self.next_check = 0
         self.until = 0
 
+    # @llr TLLR106, TLLR107
     def filter(self, record):
         now = time.monotonic()
         if now >= self.next_check:

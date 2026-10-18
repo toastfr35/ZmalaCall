@@ -17,6 +17,7 @@ class MissedCallsStore:
     def load(self, config):
         return set(self.load_counts(config))
 
+    # @llr TLLR066
     def load_counts(self, config):
         """Bind badges to the SIP account and current contacts; migrate legacy contact-only entries to count one."""
         try:

@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/model.py
+  type: file
 - path: zmala_terminal/common/call_control.py
   type: file
 - path: zmala_terminal/common/engine.py

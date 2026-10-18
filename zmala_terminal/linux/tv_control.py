@@ -161,6 +161,7 @@ class TVControl:
                 return None
         return previous
 
+    # @llr TLLR095
     def restore_browsing(self, session):
         """End an idle browsing lease outside Tk; a new wake cancels stale commands."""
         if self._closed or session is None or session is not self._browse_previous:
@@ -180,6 +181,8 @@ class TVControl:
         self._closed = True
         self.cancel()
 
+    # @llr TLLR099
+    # TV sequences use power/routing commands only; playback volume belongs to C20.
     def _run(self, *arguments):
         result = subprocess.run([self.command, '-d', self.device, '-s', *arguments],
                                 capture_output=True, text=True, timeout=4, check=True)
@@ -314,6 +317,7 @@ class TVControl:
             pass
         return {}
 
+    # @llr TLLR094
     def _previous_power(self, output):
         match = re.search(r'pwr-state:\s*(on|standby|to-on|to-standby)\s*\(', output)
         if match and match[1] in ('on', 'standby'):

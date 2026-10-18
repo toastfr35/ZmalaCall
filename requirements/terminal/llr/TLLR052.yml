@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/linux/media/video/auto-framing.c
+  type: file
 - path: zmala_terminal/linux/media/video/mjpeg-stream.c
   type: file
 - path: zmala_terminal/linux/media/video/mjpeg-stream.h

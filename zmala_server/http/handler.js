@@ -29,6 +29,7 @@ function createHandler(context) {
    * @param {import('node:http').ServerResponse} res */
   return async (req, res) => {
     try {
+      // @llr SLLR022
       const host = req.headers.host;
       const secure = 'encrypted' in req.socket && req.socket.encrypted === true;
       const port = req.socket.localPort || v.http_port;
@@ -53,8 +54,10 @@ function createHandler(context) {
           // Compatibility for existing local maintenance tools during initial
           // setup only. The old shortcut token stops working once a password exists.
           (!store.adminPassword.hash && local && token === v.admin_token),
+        // @llr SLLR023
         deviceId = store.deviceAccount(token),
         device = !!deviceId;
+      // @llr SLLR003
       if (context.requireSecureAdmin && !secure && !local && !device)
         return send(res, 403, { error: 'Use HTTPS for administration.' });
       // Cookie-authenticated mutations require an exact same-origin request,
@@ -81,11 +84,13 @@ function createHandler(context) {
           await asyncFs.readFile(path.resolve(__dirname, '../assets/zmala-icon.svg')),
           'image/svg+xml',
         );
+      // @llr SLLR025
       if (req.method === 'GET' && assets[url.pathname]) {
         const [file, type] = assets[url.pathname];
         return send(res, 200, await asyncFs.readFile(path.join(WEB, file)), type);
       }
       if (url.pathname === '/health') return send(res, 200, { ok: true });
+      // @llr SLLR081
       if (url.pathname === '/ready') {
         const persistence = context.persistenceReady?.() ?? true;
         return send(res, persistence ? 200 : 503, { ok: persistence, persistence });

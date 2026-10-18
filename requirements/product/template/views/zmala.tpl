@@ -77,6 +77,9 @@
       </ul></details>
       % end
       % if item.references:
+      % if prefix.endswith('LLR'):
+      <p><a href="../coverage.html#trace-{{item.uid}}">Find code comment anchors →</a></p>
+      % end
       <details class="evidence"><summary>Implementation and test references · {{len(item.references)}}</summary><ul>
       % for ref in item.references:
         <li><code>{{ref['path']}}</code></li>

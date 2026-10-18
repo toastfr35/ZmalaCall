@@ -12,6 +12,7 @@ IDLE_SECONDS = 300
 HELPER = '/usr/local/libexec/zmala-usb-power'
 
 
+# @llr TLLR110
 def should_power_off(now, last_use, active, battery):
     return (not active and type(battery) is int and 25 < battery <= 100
             and now - last_use >= IDLE_SECONDS)
@@ -30,6 +31,7 @@ def media_present():
 
 
 class UsbPower:
+    # @llr TLLR109
     def __init__(self, root):
         self.enabled = sys.platform == 'linux' and os.environ.get('ZMALA_USB_POWER') == '1'
         self.root = root
@@ -84,6 +86,7 @@ class UsbPower:
                     self.ringer.kill()
             self.ringer = None
 
+    # @llr TLLR111
     def refresh(self, engine):
         """Run native device-list refresh only on the thread owning the core."""
         if not self.enabled:
@@ -110,6 +113,7 @@ class UsbPower:
         subprocess.run(['sudo', '-n', HELPER, action], check=True,
                        capture_output=True, timeout=30, text=True)
 
+    # @llr TLLR112
     def run(self):
         next_attempt = 0
         next_status = 0

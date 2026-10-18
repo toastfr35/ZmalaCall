@@ -60,6 +60,7 @@ class RemoteHelpView(RemoteTestView):
             widget.image = picture
             widget.place(relx=x, rely=y, anchor='center')
 
+    # @llr TLLR017
     def update_remote_help(self):
         if self.update_usb_setup() or self.update_pairing_page():
             return
@@ -102,6 +103,7 @@ class RemoteHelpView(RemoteTestView):
         self.remote_help.place(x=0, y=80, relwidth=1, relheight=1, height=-80)
         self.remote_help.lift()
 
+    # @llr TLLR022
     def needs_pairing(self):
         state = self.pairing_status.read()
         if state is None:
