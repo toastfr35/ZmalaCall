@@ -45,7 +45,7 @@ async function readPhotos(directory, files) {
     files.set('photos/' + name, await fs.promises.readFile(file));
   }
 }
-// @llr SLLR105
+// @llr LLR-SRV-DATA-010
 /** Replace only known application data. The external password destination comes
  * from local configuration, never from the uploaded archive.
  * @param {string} directory @param {string} passwordFile @param {Map<string, Buffer>} files */
@@ -67,7 +67,7 @@ function applyFiles(directory, passwordFile, files) {
   syncDirectory(photos);
 }
 
-// @llr SLLR105
+// @llr LLR-SRV-DATA-010
 /** Commit a durable journal last. Before that point the live data is untouched.
  * @param {string} directory @param {Map<string, Buffer>} previous @param {Map<string, Buffer>} next */
 async function stageRestore(directory, previous, next) {
@@ -82,7 +82,7 @@ async function stageRestore(directory, previous, next) {
   syncDirectory(directory);
 }
 
-// @llr SLLR105
+// @llr LLR-SRV-DATA-010
 /** Idempotent across power loss in either phase. Failed rollback leaves the journal
  * and fails startup, preserving the recovery backup instead of serving mixed data.
  * @param {string} directory @param {string} passwordFile

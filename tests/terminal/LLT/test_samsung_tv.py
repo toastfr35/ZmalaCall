@@ -1,5 +1,5 @@
 # @test T-LLT-033
-# @requirements TLLR098
+# @requirements LLR-TERM-TV-015
 # @environment portable
 # @plan Mock Samsung network responses, identity changes, timeouts and encrypted transport; assert pinned-TV commands, token lifecycle, bounded retries and truthful failure results.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

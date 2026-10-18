@@ -1,6 +1,6 @@
 // The installed server is also used over plain LAN HTTP, where Clipboard API
 // access is unavailable. Keep the fallback inside the open dialog's focus scope.
-// @llr SLLR063
+// @llr LLR-SRV-UI-009
 /** @param {string} value @param {HTMLElement} owner @returns {Promise<boolean>} */
 export async function writeClipboard(value, owner) {
   try {

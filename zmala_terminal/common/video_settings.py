@@ -15,7 +15,7 @@ class VideoSettings:
     def dimensions(self):
         return {'480p': (640, 480), '720p': (1280, 720), '1080p': (1920, 1080)}[self.resolution]
 
-    # @llr TLLR046, TLLR047
+    # @llr LLR-TERM-MEDIA-003, LLR-TERM-MEDIA-004
     @classmethod
     def for_config(cls, config):
         # A resolution change rebuilds the native graph only when idle. 720p

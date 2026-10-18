@@ -1,5 +1,5 @@
 // @test S-LLT-022
-// @requirements SLLR071, SLLR072, SLLR073
+// @requirements LLR-SRV-CONFIG-010, LLR-SRV-CONFIG-011, LLR-SRV-CONFIG-012
 // @environment portable
 // @plan Generate setup payloads and PDF bytes directly; reject invalid Wi-Fi input, decode compact UTF-8 identity and inspect one A4 page, text and QR module geometry with its four-module quiet border.
 // @pass All payload fields, validation cases and PDF structure assertions must pass; physical print readability remains a system check.

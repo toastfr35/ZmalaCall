@@ -1,5 +1,5 @@
 // @test S-LLT-021
-// @requirements SLLR003, SLLR011, SLLR022, SLLR023, SLLR024, SLLR025, SLLR042, SLLR048, SLLR068, SLLR069, SLLR074, SLLR077, SLLR081, SLLR084, SLLR085, SLLR086, SLLR101
+// @requirements LLR-SRV-BOOT-004, LLR-SRV-DIR-009, LLR-SRV-AUTH-007, LLR-SRV-AUTH-008, LLR-SRV-AUTH-009, LLR-SRV-AUTH-010, LLR-SRV-SIP-015, LLR-SRV-CALLBACK-007, LLR-SRV-CONFIG-007, LLR-SRV-CONFIG-008, LLR-SRV-MAINT-003, LLR-SRV-MAINT-006, LLR-SRV-DATA-005, LLR-SRV-MAINT-008, LLR-SRV-MAINT-009, LLR-SRV-MAINT-010, LLR-SRV-CONFIG-013
 // @environment portable
 // @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection.
 // @pass Every allowed and denied request must produce the expected status and state; no sockets, actual commands or remote devices are used.

@@ -1,5 +1,5 @@
 # @test T-HLT-012
-# @requirements THLR013
+# @requirements HLR-TERM-CONFIG-001
 # @environment display
 # @plan Render settings on the real Tk UI and drive selection/draft transitions; assert only the active pane shows controls and cancellation preserves configuration.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

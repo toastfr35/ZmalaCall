@@ -1,0 +1,45 @@
+active: true
+area: Appliance startup
+derived: false
+header: |
+  One source-profile process
+level: 5.0
+links:
+- HLR-TERM-SYS-001: wmbArmW1MlQov_i6gw59pUc2EVUMylHiCypmbp63kmc=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/main.py
+  type: file
+- path: build_tools/linux/kiosk-session.py
+  type: file
+- path: build_tools/linux/prepare-display.py
+  type: file
+- path: build_tools/linux/zmalacall-terminal.service
+  type: file
+- path: build_tools/linux/zmalacall-display.service
+  type: file
+- path: build_tools/linux/picom.conf
+  type: file
+- path: build_tools/linux/21-zmalacall-pi4.conf
+  type: file
+- path: build_tools/linux/launcher.py
+  type: file
+- path: build_tools/linux/start-terminal.sh
+  type: file
+- path: build_tools/linux/stop-terminal.sh
+  type: file
+- path: zmala_terminal/linux/process_job.py
+  type: file
+- path: build_tools/linux/start-terminal-unconfigured.sh
+  type: file
+- path: tests/terminal/LLT/test_appliance_install.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Source launchers shall prevent simultaneous ownership of one profile and avoid
+  signalling a reused PID; service shutdown shall stop its owned process group/control
+  group.
+verification: |
+  Start competing launches, simulate stale PID state and verify owned-child cleanup.

@@ -1,5 +1,5 @@
 # @test S-LLT-011
-# @requirements SLLR087, SLLR089
+# @requirements LLR-SRV-DIR-015, LLR-SRV-DIR-017
 # @environment portable
 # @plan Convert synthetic portraits using the image conversion function; inspect bounded valid PNG output and assert excessive decoded dimensions are rejected.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

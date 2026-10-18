@@ -1,5 +1,5 @@
 // @test S-LLT-004
-// @requirements SLLR053, SLLR054, SLLR055
+// @requirements LLR-SRV-SIP-016, LLR-SRV-SIP-017, LLR-SRV-SIP-018
 // @environment portable
 // @plan Invoke SIP message handling with signed and unauthorized requests through a fake transport; assert shared-group permission, preserved text and terminal-specific authentication proof.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

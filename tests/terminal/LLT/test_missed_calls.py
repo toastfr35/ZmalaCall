@@ -1,5 +1,5 @@
 # @test T-LLT-022
-# @requirements TLLR063, TLLR064, TLLR065, TLLR066
+# @requirements LLR-TERM-HISTORY-003, LLR-TERM-HISTORY-004, LLR-TERM-HISTORY-005, LLR-TERM-HISTORY-006
 # @environment portable
 # @plan Drive incoming, rejected, answered, failed and late call events and reload temporary notification state; assert exact per-contact counts, acknowledgement boundaries, identity isolation and restart persistence.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

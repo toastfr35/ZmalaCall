@@ -19,7 +19,7 @@ def start_time(pid):
     return Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()[19]
 
 
-# @llr TLLR005
+# @llr LLR-TERM-SYS-007
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', choices=['start', 'stop', 'run'])

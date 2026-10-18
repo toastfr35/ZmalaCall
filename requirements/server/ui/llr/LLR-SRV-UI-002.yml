@@ -1,0 +1,30 @@
+active: true
+area: Administration pages and editing
+derived: false
+header: |
+  English dark administration pages
+level: 56.0
+links:
+- HLR-SRV-UI-001: 07R0apKobMpSbCfibsiBY0ObW2094Ba2eyMiTT2nySI=
+normative: true
+ref: ''
+references:
+- path: zmala_server/web/admin.html
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: tests/server/LLT/admin-view.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administration shall provide separate dark Overview, Accounts, Groups, Terminals,
+  Callbacks and Activity pages in English; recent events shall be displayed on Activity.
+verification: |
+  Navigate all pages and check their purpose, language and activity placement.

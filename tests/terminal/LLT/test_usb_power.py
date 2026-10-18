@@ -1,5 +1,5 @@
 # @test T-LLT-037
-# @requirements TLLR109, TLLR110, TLLR111, TLLR112, TLLR127
+# @requirements LLR-TERM-POWER-003, LLR-TERM-POWER-004, LLR-TERM-POWER-005, LLR-TERM-POWER-006, LLR-TERM-POWER-007
 # @environment portable
 # @plan Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

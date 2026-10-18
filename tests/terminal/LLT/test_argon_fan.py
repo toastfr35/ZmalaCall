@@ -1,5 +1,5 @@
 # @test T-LLT-004
-# @requirements TLLR108
+# @requirements LLR-TERM-POWER-002
 # @environment portable
 # @plan Inject temperatures, call state and I2C writes; assert the fan stops outside calls, follows thermal bands during calls and never emits power-control bytes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

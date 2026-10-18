@@ -1,5 +1,5 @@
 # @test T-HLT-008
-# @requirements THLR007, THLR008
+# @requirements HLR-TERM-UI-002, HLR-TERM-CALL-001
 # @environment native-display
 # @plan Start the real Linux terminal against a private server, wait for registration and render every language/call state; assert confirmation images and notification state, and retain screenshots for visual review.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

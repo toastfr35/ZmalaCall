@@ -1,5 +1,5 @@
 # @test T-HLT-002
-# @requirements THLR007, THLR008
+# @requirements HLR-TERM-UI-002, HLR-TERM-CALL-001
 # @environment hardware
 # @plan With a disposable configured server profile and display prepared, Drive the real Tk UI through ringing, answering, stalled video and ending with controlled native feedback; assert visible state and retained widget geometry.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,5 +1,5 @@
 // @test S-LLT-013
-// @requirements SLLR064
+// @requirements LLR-SRV-CONFIG-003
 // @environment portable
 // @plan Load legacy and current temporary store profiles; assert obsolete low-resolution presets and missing frame rate migrate once while explicit settings are preserved.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

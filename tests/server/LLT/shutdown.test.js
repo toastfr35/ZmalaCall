@@ -1,5 +1,5 @@
 // @test S-LLT-007
-// @requirements SLLR004, SLLR005
+// @requirements LLR-SRV-BOOT-005, LLR-SRV-BOOT-006
 // @environment portable
 // @plan Use controlled listener and persistence promises; assert shutdown drains both listeners once, tolerates partial startup and propagates persistence failure.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

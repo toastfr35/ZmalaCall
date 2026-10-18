@@ -1,5 +1,5 @@
 # @test T-LLT-007
-# @requirements TLLR058, TLLR060, TLLR061
+# @requirements LLR-TERM-MEDIA-015, LLR-TERM-MEDIA-017, LLR-TERM-MEDIA-018
 # @environment portable
 # @plan Feed synthetic single-person and group boxes, edge coordinates, newcomers and missing detections to crop tracking; assert the 200 percent cap, bounded group crop, stable zoom-in and wide-view recovery.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

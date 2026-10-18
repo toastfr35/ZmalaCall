@@ -1,5 +1,5 @@
 // @test S-HLT-014
-// @requirements SHLR014
+// @requirements HLR-SRV-DATA-001
 // @environment portable
 // @plan Delay and fail real snapshot writes while issuing HTTP reads and updates; assert ordered atomic commits, bounded pending snapshots, acknowledgement barriers and recovery after disk failure.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

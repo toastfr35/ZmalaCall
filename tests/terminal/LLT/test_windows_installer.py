@@ -1,5 +1,5 @@
 # @test T-LLT-043
-# @requirements TLLR113, TLLR115, TLLR119
+# @requirements LLR-TERM-INSTALL-002, LLR-TERM-INSTALL-004, LLR-TERM-INSTALL-008
 # @environment portable
 # @plan Use a fake SSH deployment backend and corrupt payloads; assert supported wired Pi preflight, pinned Ethernet reconnect, mandatory checks and failure reporting without premature reboot.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

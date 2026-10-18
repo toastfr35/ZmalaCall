@@ -1,5 +1,5 @@
 # @test T-LLT-005
-# @requirements TLLR050
+# @requirements LLR-TERM-MEDIA-007
 # @environment portable
 # @plan Validate profile values and configure a fake native core; assert only the Pi loads the selected processing plugin and a missing plugin leaves calling available.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

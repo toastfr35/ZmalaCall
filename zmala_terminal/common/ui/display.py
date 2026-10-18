@@ -209,7 +209,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         remote = getattr(getattr(self, 'presenter_input', None), 'connected', None)
         battery = getattr(getattr(self, 'presenter_input', None), 'battery', None)
         charger = getattr(getattr(self, 'presenter_input', None), 'charger_connected', None) is True
-        # @llr TLLR127
+        # @llr LLR-TERM-POWER-007
         power = getattr(self, 'usb_power', None)
         show_usb = bool(power and power.enabled)
         powered = power.power_state if show_usb else None

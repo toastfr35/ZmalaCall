@@ -77,7 +77,7 @@ code or models.
 | `zmala_terminal/windows/` | Windows native loading, rendering, WLAN and process adapters |
 | `zmala_terminal/linux/` | Pi adapters, native media, Bluetooth, CEC and peripheral control |
 | `build_tools/` | Packaging, installers, launchers, source checks and hardware probes |
-| `requirements/` | Doorstop product (`PROD`), server (`SHLR`/`SLLR`) and Pi terminal (`THLR`/`TLLR`) records |
+| `requirements/` | Doorstop product (`PROD`), themed server (`*-SRV-*`) and Pi terminal (`*-TERM-*`) records |
 | `docs/` | Three implementation guides and four Word user guides |
 
 Source launches keep state in component `data/` directories. Pi installations
@@ -148,7 +148,7 @@ docstrings and executable code (a shebang may precede them). Example:
 
 ```python
 # @test T-LLT-041
-# @requirements TLLR014, TLLR015, TLLR016
+# @requirements LLR-TERM-REMOTE-005, LLR-TERM-REMOTE-006, LLR-TERM-REMOTE-007
 # @environment portable
 # @plan Feed signed motion around deadband and limits while holding/releasing middle; assert relative volume increments, throttled mixer writes, overlay lifetime, default changes and retry after failed writes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
@@ -205,19 +205,32 @@ and dependencies outside those disposable directories are retained.
 
 ## Doorstop requirements
 
-The implementation baseline has five documents:
+Requirements are grouped by component and theme. The catalogue in
+`requirements/groups.json` names each group; each has a Doorstop HLR document
+and a child LLR document. For example:
 
 ```text
 PROD  Product specification
-├── SHLR  Server high-level requirements
-│   └── SLLR  Server low-level requirements
-└── THLR  Pi terminal high-level requirements
-    └── TLLR  Pi terminal low-level requirements
+├── HLR-SRV-MEDIA       Server media relay outcomes
+│   └── LLR-SRV-MEDIA   Server media relay contracts
+└── HLR-TERM-MEDIA      Terminal audio, video and framing outcomes
+    └── LLR-TERM-MEDIA  Terminal media implementation contracts
 ```
 
+IDs use `<HLR|LLR>-<SRV|TERM>-<GROUP>-NNN`, for example
+`LLR-TERM-MEDIA-012`. The three-digit number is unique across **both HLRs and
+LLRs in the same component/theme**: `HLR-TERM-MEDIA-012` cannot coexist with
+`LLR-TERM-MEDIA-012`. Other component/theme groups have independent sequences.
+Product IDs remain `PROD001` etc.; LLT/HLT test IDs are unchanged.
+
+Folders follow `requirements/<server|terminal>/<theme>/<hlr|llr>/`.
+The migration lookup in `requirements/id-migration.json` preserves the old-to-new
+ID correspondence; old IDs are no longer accepted in code/test trace comments.
+Use the report's themed navigation to browse the HLR and LLR documents together.
+
 The YAML records under `requirements/` are authoritative. HLRs link to product
-items; LLRs link to their component HLRs and reference implementation and test
-files relative to the repository root. `area` groups related behavior, `scope`
+items; LLRs link to HLRs in their component/theme and reference implementation and test
+files relative to the repository root. `area` identifies a narrower topic within the theme, `scope`
 distinguishes Core/Optional/Experimental, and `verification` describes a proposed
 check, not its result. Review stamps cover these fields as well as requirement
 text. The scope includes the Linux server, shared/Pi terminal implementation and
@@ -247,8 +260,8 @@ present; otherwise it uses the Makefile's `PYTHON`. Override with
 path because forward-slash project paths can break Doorstop reference lookup on
 Windows.
 
-The build checks the five-document hierarchy, required fields, component-specific
-parent links, leaf implementation references and mapping of every in-scope source
+The build checks the themed hierarchy, shared group-number uniqueness, required
+fields, component/theme-specific parent links, leaf implementation references and mapping of every in-scope source
 module, plus a code comment anchor for every LLR. Its inventory also lists excluded
 generated bundles, test/probe code and
 third-party internals with reasons. Mapping a file is a maintenance aid, not proof
@@ -273,13 +286,18 @@ Use Doorstop or edit YAML directly. Examples on Linux (activate the tooling
 environment first):
 
 ```sh
-doorstop add TLLR --project "$PWD"
-doorstop edit TLLR094 --project "$PWD"
-doorstop link TLLR094 THLR016 --project "$PWD"
+python build_tools/requirements.py --next-id LLR TERM TV
+# Use the printed number with the matching document; example only:
+doorstop add LLR-TERM-TV --number 017 --project "$PWD"
+doorstop edit LLR-TERM-TV-011 --project "$PWD"
+doorstop link LLR-TERM-TV-011 HLR-TERM-TV-002 --project "$PWD"
 ```
 
 On Windows use `build_tools\doorstop.cmd` with the same subcommands; the wrapper
-supplies the native project path. Use the ID printed by `add` for new items; the
+supplies the native project path. Use `--next-id` before `add` and pass its numeric suffix explicitly: Doorstop
+otherwise allocates within one level and could reuse an HLR number. The suggested
+ID is not reserved; concurrent changes must recheck before merging.
+Use the ID printed by `add` for new items; the
 other commands above illustrate an existing runtime TV requirement. Supply its
 header, normative text, area, scope, verification guidance and source references.
 Keep IDs stable once issued; do not renumber them to reorder a document.
@@ -290,18 +308,18 @@ Put a standalone `@llr` comment immediately before the function, declaration or
 cohesive block that implements the requirement. Use the language's comment syntax:
 
 ```python
-# @llr TLLR014
+# @llr LLR-TERM-REMOTE-005
 def move(self, dy):
     ...
 ```
 
 ```javascript
-// @llr SLLR028
+// @llr LLR-SRV-SIP-006
 ```
 
-Use `# @llr SLLR098, TLLR124` for shared Python/shell/configuration policies,
-`// @llr TLLR055` for C, `/* @llr SLLR057 */` for CSS, and
-`<!-- @llr SLLR056 -->` for HTML. Multiple IDs use a comma and one space. Keep
+Use `# @llr LLR-SRV-INSTALL-011, LLR-TERM-SYS-012` for shared Python/shell/configuration policies,
+`// @llr LLR-TERM-MEDIA-012` for C, `/* @llr LLR-SRV-UI-003 */` for CSS, and
+`<!-- @llr LLR-SRV-UI-002 -->` for HTML. Multiple IDs use a comma and one space. Keep
 explanatory prose in a separate comment; the directive contains only IDs. Put it
 before Python decorators or JavaScript JSDoc so those stay attached to the declaration.
 
@@ -328,7 +346,9 @@ LLR ID. Lines are computed at build time, not maintained manually in YAML.
 
 The old ZMC/SERV/TERM baseline was replaced because it mixed abstraction levels
 and included Windows terminal/retired keypad scope. Historical records remain in
-Git; new links use PROD/SHLR/SLLR/THLR/TLLR.
+Git. The subsequent theme migration preserves the implementation-derived content
+and parent relationships while replacing the flat component IDs. New links use
+`PRODNNN`, `HLR-<component>-<theme>-NNN` and `LLR-<component>-<theme>-NNN`.
 
 Structural checks use `--no-review-check` to permit a baseline awaiting human
 review. They still check references and suspect parent links. After an actual

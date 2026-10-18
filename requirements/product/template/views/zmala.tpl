@@ -1,5 +1,14 @@
 % from markdown import markdown
-% titles = {'PROD': 'Product specification', 'SHLR': 'Server · high level', 'SLLR': 'Server · low level', 'THLR': 'Pi terminal · high level', 'TLLR': 'Pi terminal · low level'}
+% from build_tools.requirement_ids import groups
+% themes = groups()
+% titles = {'PROD': 'Product specification'}
+% for component, entries in themes.items():
+%   for group, label in entries.items():
+%     for level in ('HLR', 'LLR'):
+%       titles[f'{level}-{component}-{group}'] = ('Server' if component == 'SRV' else 'Pi terminal') + ' · ' + label + ' · ' + level
+%     end
+%   end
+% end
 % prefix = str(document.prefix) if is_doc else ''
 % base = '../' if is_doc else ''
 % title = titles[prefix] if is_doc else ('Traceability matrix' if doc_attributes['name'] == 'Traceability' else 'Requirements explorer')
@@ -22,8 +31,19 @@
 <aside class="sidebar">
   <p class="eyebrow">Specification → HLR → LLR</p>
   <nav aria-label="Requirement documents">
-  % for key, label in titles.items():
-    <a class="doc-link {{'selected' if key == prefix else ''}}" href="{{base}}documents/{{key}}.html" {{!'aria-current="page"' if key == prefix else ''}}><span class="tag">{{key}}</span>{{label}}</a>
+    <a class="doc-link" href="{{base}}documents/PROD.html">Product specification</a>
+  % for component, entries in themes.items():
+    <details class="theme-nav">
+      <summary>{{'Server' if component == 'SRV' else 'Pi terminal'}}</summary>
+    % for group, label in entries.items():
+      <div class="theme-links"><span>{{label}}</span><div>
+      % for level in ('HLR', 'LLR'):
+        % key = f'{level}-{component}-{group}'
+        <a class="{{'selected' if key == prefix else ''}}" href="{{base}}documents/{{key}}.html" {{!'aria-current="page"' if key == prefix else ''}}>{{level}}</a>
+      % end
+      </div></div>
+    % end
+    </details>
   % end
   </nav>
   % if is_doc:
@@ -43,7 +63,7 @@
 <main id="main">
   <div class="page-heading"><p class="eyebrow">ZmalaCall requirements</p><h1>{{title}}</h1>
   % if is_doc:
-    <p>{{len(document.items)}} requirements · {{'Product outcomes' if prefix == 'PROD' else 'Component behavior' if prefix.endswith('HLR') else 'Implementation contracts and verification guidance'}}</p>
+    <p>{{len(document.items)}} requirements · {{'Product outcomes' if prefix == 'PROD' else 'Component behavior' if prefix.startswith('HLR-') else 'Implementation contracts and verification guidance'}}</p>
   % else:
     <p>From product intent to implementation, with navigable evidence and verification guidance.</p>
   % end
@@ -77,7 +97,7 @@
       </ul></details>
       % end
       % if item.references:
-      % if prefix.endswith('LLR'):
+      % if prefix.startswith('LLR-'):
       <p><a href="../coverage.html#trace-{{item.uid}}">Find code comment anchors →</a></p>
       % end
       <details class="evidence"><summary>Implementation and test references · {{len(item.references)}}</summary><ul>
@@ -93,13 +113,21 @@
   <p id="no-results" hidden>No requirements match this search.</p>
   % elif doc_attributes['name'] == 'Traceability':
   <p>Each row follows parent links. Empty cells in the other component branch are expected.</p>
-  <div class="filter"><label for="search">Find a linked ID</label><input id="search" type="search" placeholder="For example, PROD008 or THLR016"><output id="match-count" aria-live="polite"></output><a href="traceability.csv" download>Download CSV</a></div>
+  <div class="filter"><label for="search">Find a linked ID</label><input id="search" type="search" placeholder="For example, PROD008 or HLR-TERM-TV-002"><output id="match-count" aria-live="polite"></output><a href="traceability.csv" download>Download CSV</a></div>
   <div class="matrix" tabindex="0" aria-label="Scrollable traceability table">{{!body}}</div>
   % else:
+  <div class="filter"><label for="search">Find a theme</label><input id="search" type="search" placeholder="Media, setup, remote…"><output id="match-count" aria-live="polite"></output></div>
   <section class="overview-grid" aria-label="Requirements hierarchy">
     <a class="overview-card product" href="documents/PROD.html"><span class="eyebrow">01 · Product intent</span><h2>Product specification</h2><p>User outcomes, operational boundaries and appliance responsibilities.</p><span class="card-action">Explore PROD →</span></a>
-    <div class="branch"><h2>Server</h2><p>Linux appliance, administration, signaling and media relay.</p><a class="overview-card" href="documents/SHLR.html"><span class="eyebrow">02 · High level</span><h3>Server responsibilities</h3><span class="card-action">Explore SHLR →</span></a><a class="overview-card" href="documents/SLLR.html"><span class="eyebrow">03 · Low level</span><h3>Server implementation contracts</h3><span class="card-action">Explore SLLR →</span></a></div>
-    <div class="branch"><h2>Pi terminal</h2><p>Remote interaction, setup, audiovisual calls and TV integration.</p><a class="overview-card" href="documents/THLR.html"><span class="eyebrow">02 · High level</span><h3>Terminal responsibilities</h3><span class="card-action">Explore THLR →</span></a><a class="overview-card" href="documents/TLLR.html"><span class="eyebrow">03 · Low level</span><h3>Terminal implementation contracts</h3><span class="card-action">Explore TLLR →</span></a></div>
+    % for component, entries in themes.items():
+    <div class="branch"><h2>{{'Server' if component == 'SRV' else 'Pi terminal'}}</h2>
+    % for group, label in entries.items():
+      <section class="overview-card theme-card" data-search><span class="eyebrow">{{component}} · {{group}}</span><h3>{{label}}</h3>
+        <div class="theme-levels"><a href="documents/HLR-{{component}}-{{group}}.html">High-level requirements →</a><a href="documents/LLR-{{component}}-{{group}}.html">Low-level requirements →</a></div>
+      </section>
+    % end
+    </div>
+    % end
   </section>
   <section class="reading-guide"><h2>Read and maintain this baseline</h2><p>Start with a product item and follow its lower-level links. Each LLR provides a specific behavior, a proposed check and implementation/test references. Use the source coverage index to find the requirements associated with a module.</p><p>The server and Pi terminal are in scope, including their installation tools. Windows terminal behavior, retired keypad/CAD work and third-party library internals are excluded. Referenced automated tests, manual scenarios and hardware checks require separate execution evidence.</p><p>Authoritative records are the YAML files in <code>requirements/</code>. This offline report is generated into <code>requirements/output/</code>; edit the records, then rebuild with <code>make requirements</code>.</p></section>
   % end

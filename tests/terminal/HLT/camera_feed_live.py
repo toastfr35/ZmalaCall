@@ -1,5 +1,5 @@
 # @test T-HLT-004
-# @requirements THLR009
+# @requirements HLR-TERM-MEDIA-001
 # @environment hardware
 # @plan Place a bounded real call using an explicitly prepared peer and media devices; sample received frame rate after warmup and optional decoded nonzero audio, fail on placeholders, stalls or missing measurements, and always hang up.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,5 +1,5 @@
 # @test T-LLT-036
-# @requirements TLLR093, TLLR094, TLLR095, TLLR098, TLLR099
+# @requirements LLR-TERM-TV-010, LLR-TERM-TV-011, LLR-TERM-TV-012, LLR-TERM-TV-015, LLR-TERM-TV-016
 # @environment portable
 # @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,0 +1,32 @@
+active: true
+area: Configuration and live state
+derived: false
+header: |
+  Live supported configuration paths
+level: 84.0
+links:
+- HLR-TERM-CONFIG-002: Vspvi6FG3HPkcsnpccACmQy9iAfjOJEi7qr9aDwmT6c=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: tests/terminal/LLT/test_runtime_contracts.py
+  type: file
+- path: tests/terminal/LLT/test_volume_control.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Language, framing and playback-volume changes shall use their supported live paths
+  without rebuilding an active call solely for those settings.
+verification: |
+  Apply each setting during a connected call and compare native core/call identity.

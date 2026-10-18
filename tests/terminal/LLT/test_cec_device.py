@@ -1,5 +1,5 @@
 # @test T-LLT-010
-# @requirements TLLR092
+# @requirements LLR-TERM-TV-009
 # @environment portable
 # @plan Supply synthetic DRM connectors and hotplug layouts; assert selection follows the active HDMI connector and preserves explicit adapter/restore choices.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

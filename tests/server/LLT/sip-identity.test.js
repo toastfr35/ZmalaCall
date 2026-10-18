@@ -1,5 +1,5 @@
 // @test S-LLT-025
-// @requirements SLLR002, SLLR027, SLLR029, SLLR086
+// @requirements LLR-SRV-BOOT-003, LLR-SRV-SIP-005, LLR-SRV-SIP-007, LLR-SRV-MAINT-010
 // @environment portable
 // @plan Replace SIP transport with a capture double; check default/configured UDP/TCP binding options, destination-specific HMAC replacement, authenticated registration identity, expiry/query/deregistration transitions and bounded recent activity history.
 // @pass All signaling assertions must pass without binding sockets or sending packets to real devices.

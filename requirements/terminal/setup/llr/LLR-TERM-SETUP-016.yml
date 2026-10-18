@@ -1,0 +1,28 @@
+active: true
+area: Reset and resumable cleanup
+derived: false
+header: |
+  Deliberate reset confirmation
+level: 32.0
+links:
+- HLR-TERM-SETUP-003: Zqc-Kpt9fuPeQpHq0uFo1d027ItvF9zffxjZl6yXIes=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/linux/wifi.py
+  type: file
+- path: tests/terminal/LLT/test_local_settings.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Reset shall be accessible through Settings and require a separate green confirmation;
+  red shall cancel without deleting enrollment.
+verification: |
+  Enter reset, cancel and confirm using distinct presses.

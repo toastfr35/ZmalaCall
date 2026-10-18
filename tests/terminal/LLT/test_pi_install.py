@@ -1,5 +1,5 @@
 # @test T-LLT-026
-# @requirements TLLR002, TLLR004, TLLR021, TLLR024, TLLR124, TLLR125
+# @requirements LLR-TERM-SYS-004, LLR-TERM-SYS-006, LLR-TERM-SETUP-005, LLR-TERM-SETUP-008, LLR-TERM-SYS-012, LLR-TERM-SYS-013
 # @environment portable
 # @plan Feed installer helpers synthetic boot/journal/network/Bluetooth data with mocked commands; assert display/boot preservation, effective low-write settings, wired guard rules and exclusive verified Presenter pairing status.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

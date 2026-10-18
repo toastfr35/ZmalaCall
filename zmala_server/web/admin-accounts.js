@@ -155,7 +155,7 @@ export function renderAccounts() {
   setView(p);
   accountRows();
 }
-// @llr SLLR059
+// @llr LLR-SRV-UI-005
 export function openAccount(id = '') {
   accountVersion = state.model.configuration_version;
   accountGeneration++;

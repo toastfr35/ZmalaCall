@@ -38,7 +38,7 @@ def switch(action):
     # -e avoids implicitly switching the companion hub a second time.
     for hub in ('1-1', '2'):
         run('/usr/sbin/uhubctl', '-e', '-l', hub, '-a', action)
-        # @llr TLLR127
+        # @llr LLR-TERM-POWER-007
         # A successful process exit alone does not prove port power changed.
         result = run('/usr/sbin/uhubctl', '-e', '-l', hub)
         states = re.findall(r'^\s*Port \d+: [0-9a-fA-F]+ (.*)$', result.stdout, re.MULTILINE)

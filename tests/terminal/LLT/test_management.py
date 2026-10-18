@@ -1,5 +1,5 @@
 # @test T-LLT-020
-# @requirements TLLR079, TLLR080, TLLR085, TLLR104
+# @requirements LLR-TERM-CONFIG-009, LLR-TERM-CONFIG-010, LLR-TERM-CONFIG-015, LLR-TERM-MAINT-007
 # @environment portable
 # @plan Inject setup network status, malformed envelopes and results from an old enrollment generation; assert independent Wi-Fi refresh, strict validation and rejection of stale work.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

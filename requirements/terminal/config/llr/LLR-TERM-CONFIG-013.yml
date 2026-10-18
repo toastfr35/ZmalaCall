@@ -1,0 +1,34 @@
+active: true
+area: Configuration and live state
+derived: false
+header: |
+  Idle media changes and applied revision
+level: 83.0
+links:
+- HLR-TERM-CONFIG-002: Vspvi6FG3HPkcsnpccACmQy9iAfjOJEi7qr9aDwmT6c=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: tests/terminal/LLT/test_local_settings.py
+  type: file
+- path: tests/terminal/LLT/test_reliability.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Media-device/profile changes shall wait until idle; applied revision shall be reported
+  only after successful engine setup. A failed engine shall be released and retried
+  against the latest desired configuration after a five-second idle backoff.
+verification: |
+  Change media during a call and inject setup failures followed by a newer desired
+  revision.

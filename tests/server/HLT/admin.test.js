@@ -1,5 +1,5 @@
 // @test S-HLT-004
-// @requirements SHLR002, SHLR003, SHLR004
+// @requirements HLR-SRV-DIR-001, HLR-SRV-DIR-002, HLR-SRV-AUTH-001
 // @environment portable
 // @plan Use the assembled admin HTTP service to create/edit/delete accounts and groups, enroll terminals and revoke access; assert derived membership and authentication boundaries persist across reload.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,0 +1,27 @@
+active: true
+area: SIP authentication and dialogs
+derived: false
+header: |
+  Caller cancellation on the wire
+level: 31.0
+links:
+- HLR-SRV-SIP-001: DhNBSBicBpeLwEPxhFfo_vrNnU97A6NUDEbqtxntd8I=
+normative: true
+ref: ''
+references:
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: tests/server/LLT/sip-guards.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Forwarded CANCEL shall preserve the INVITE transaction identity and registered flow and
+  include Max-Forwards so an unanswered call stops ringing at the destination.
+verification: |
+  Capture a complete caller-cancelled call and inspect CANCEL headers and destination
+  termination.

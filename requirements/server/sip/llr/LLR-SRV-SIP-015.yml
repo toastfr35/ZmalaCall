@@ -1,0 +1,27 @@
+active: true
+area: Live reachability
+derived: false
+header: |
+  Live state independent of revisions
+level: 42.0
+links:
+- HLR-SRV-SIP-002: YLmSR-V5oFwTCiy56k4IjoyZ3704rDAWFIXaeragedk=
+normative: true
+ref: ''
+references:
+- path: zmala_server/registrations.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Configuration, availability and callback delivery shall use current reachability
+  independently of configuration_version; delta responses shall include fresh presence and
+  callbacks.
+verification: |
+  Change reachability without changing configuration and compare full and delta responses.

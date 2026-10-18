@@ -1,0 +1,28 @@
+active: true
+area: Contact display
+derived: false
+header: |
+  Portrait fallback and replacement
+level: 10.0
+links:
+- HLR-TERM-UI-001: 6YJ9B3oyYMOGCnWBqZvgIFEvSUvtDa6wTN9FJAWcvQQ=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/carousel.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/photo_cache.py
+  type: file
+- path: tests/terminal/LLT/test_image_bounds.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Missing, invalid or not-yet-downloaded portraits shall render initials until a validated
+  picture is available, without blocking carousel navigation.
+verification: |
+  Serve failed/slow portrait responses and replace an invalid cached image.

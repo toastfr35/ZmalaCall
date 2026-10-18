@@ -1,0 +1,32 @@
+active: true
+area: Maintenance queue
+derived: false
+header: |
+  Result size and idempotent persistence
+level: 77.0
+links:
+- HLR-SRV-MAINT-001: JeqKRKn2Yj4tqyBDlp_bKWPfgTTTtqPYtR5c6WniWow=
+normative: true
+ref: ''
+references:
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/types/http.ts
+  type: file
+- path: tests/server/LLT/console-state.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Combined decoded output shall be limited to 65,536 UTF-8 bytes, with a 400,000-byte
+  result-body cap; a repeated result with the same completed lease shall retry persistence
+  without rerunning the command.
+verification: |
+  Post multibyte/escaped output near limits and retry a result after a temporary save
+  failure.

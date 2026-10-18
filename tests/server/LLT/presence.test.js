@@ -1,5 +1,5 @@
 // @test S-LLT-006
-// @requirements SLLR040, SLLR041
+// @requirements LLR-SRV-SIP-013, LLR-SRV-SIP-014
 // @environment portable
 // @plan Inject reachability responses and stale probes for replaced registration flows; assert offline state follows only the current flow and a late reply cannot mark its replacement offline.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

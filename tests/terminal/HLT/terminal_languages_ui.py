@@ -1,5 +1,5 @@
 # @test T-HLT-013
-# @requirements THLR007
+# @requirements HLR-TERM-UI-002
 # @environment hardware
 # @plan With a disposable configured server profile and display prepared, Render supported languages and call/settings states on the real Tk canvas; assert image retention, animated transitions and language changes. Inspect generated captures for glyph shaping and clipping.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

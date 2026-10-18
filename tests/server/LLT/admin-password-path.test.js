@@ -1,5 +1,5 @@
 // @test S-LLT-002
-// @requirements SLLR017
+// @requirements LLR-SRV-AUTH-002
 // @environment portable
 // @plan Use temporary credential files and synthetic Pi detection; assert one-time password migration and persistent credentials through a release symlink.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

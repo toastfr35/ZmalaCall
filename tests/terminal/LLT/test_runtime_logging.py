@@ -1,5 +1,5 @@
 # @test T-LLT-032
-# @requirements TLLR106, TLLR107
+# @requirements LLR-TERM-MAINT-009, LLR-TERM-MAINT-010
 # @environment portable
 # @plan Use temporary debug-expiry state and mocked camera startup; assert verbose logging expires without restart and camera diagnostics inherit the journal stream without opening persistent log files.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

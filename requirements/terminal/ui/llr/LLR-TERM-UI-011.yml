@@ -1,0 +1,32 @@
+active: true
+area: Localized rendering
+derived: false
+header: |
+  Language changes without call restart
+level: 38.0
+links:
+- HLR-TERM-UI-002: xfq8UTsoYX7l9Nnevje4WHS3bagSENh0__GzpCvF6VU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/localization.py
+  type: file
+- path: zmala_terminal/common/text_renderer.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
+  type: file
+- path: zmala_terminal/common/theme.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: tests/terminal/LLT/test_runtime_contracts.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Supported live language changes shall update labels without rebuilding or ending an
+  active call.
+verification: |
+  Change language during an active call and inspect labels and native call identity.

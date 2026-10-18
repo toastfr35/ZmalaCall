@@ -1,5 +1,5 @@
 # @test T-LLT-050
-# @requirements TLLR062
+# @requirements LLR-TERM-MEDIA-019
 # @environment portable
 # @plan Replace network responses with deterministic model bytes; check SHA verification before replacement, bounded download and reuse of a valid installed model without network access. Inject detector construction failure and ensure the call worker falls back wide without fetching dependencies.
 # @pass A mismatched model must not replace a valid file; an installed matching model must avoid download entirely and runtime failure must retain full-frame operation.

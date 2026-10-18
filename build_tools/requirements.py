@@ -6,6 +6,7 @@ or test success. Normative text lives only in Doorstop, never in this script.
 from __future__ import annotations
 
 import argparse
+import csv
 from collections import Counter, defaultdict
 from html import escape
 from html.parser import HTMLParser
@@ -16,17 +17,11 @@ import subprocess
 import sys
 from urllib.parse import unquote, urlsplit
 
+from requirement_ids import documents, document_prefix, category, next_id
 from requirements_trace import audit_traces
 from test_trace import audit_tests, write_test_report
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCUMENTS = {
-    'PROD': ('product', None),
-    'SHLR': ('server/hlr', 'PROD'),
-    'SLLR': ('server/llr', 'SHLR'),
-    'THLR': ('terminal/hlr', 'PROD'),
-    'TLLR': ('terminal/llr', 'THLR'),
-}
 SOURCE_ROOTS = (
     'zmala_server', 'zmala_terminal/common', 'zmala_terminal/linux',
     'build_tools/linux', 'build_tools/windows_installer', 'build_tools/server_installer',
@@ -72,27 +67,35 @@ def source_inventory(root: Path) -> tuple[list[str], dict[str, str]]:
 def audit(root: Path) -> dict:
     import yaml  # Supplied by the pinned Doorstop tool environment.
 
-    errors, records = [], {}
+    errors, records, sequences = [], {}, {}
+    catalogue = documents(root)
     actual = {p.parent.relative_to(root / 'requirements').as_posix()
               for p in (root / 'requirements').rglob('.doorstop.yml')
               if 'output' not in p.relative_to(root / 'requirements').parts}
-    expected = {folder for folder, _ in DOCUMENTS.values()}
+    expected = {folder for folder, _ in catalogue.values()}
     if actual != expected:
         errors.append(f'Doorstop document folders differ: {sorted(actual ^ expected)}')
-    for prefix, (folder, parent) in DOCUMENTS.items():
+    for prefix, (folder, parent) in catalogue.items():
         directory = root / 'requirements' / folder
         config = yaml.safe_load((directory / '.doorstop.yml').read_text(encoding='utf-8'))
-        if config['settings'].get('prefix') != prefix or config['settings'].get('parent') != parent:
+        if (config['settings'].get('prefix') != prefix or config['settings'].get('parent') != parent
+                or config['settings'].get('sep') != ('' if prefix == 'PROD' else '-')
+                or config['settings'].get('digits') != 3):
             errors.append(f'{prefix}: incorrect document prefix/parent')
         for path in sorted(directory.glob('*.yml')):
             if path.name.startswith('.'):
                 continue
             data = yaml.safe_load(path.read_text(encoding='utf-8'))
             uid = path.stem
-            if not re.fullmatch(prefix + r'\d{3}', uid):
+            if not re.fullmatch(re.escape(prefix) + (r'\d{3}' if prefix == 'PROD' else r'-\d{3}'), uid):
                 errors.append(f'{uid}: unexpected record ID')
             if uid in records:
                 errors.append(f'{uid}: duplicate ID')
+            if prefix != 'PROD' and re.fullmatch(r'.*-[0-9]{3}', uid):
+                key = tuple(uid.split('-')[1:])
+                if key in sequences:
+                    errors.append(f'{uid}: group number already used by {sequences[key]}')
+                sequences[key] = uid
             records[uid] = data | {'prefix': prefix}
     referenced, children = defaultdict(set), Counter()
     for uid, item in records.items():
@@ -107,7 +110,7 @@ def audit(root: Path) -> dict:
         if item.get('scope') not in {'Core', 'Optional', 'Experimental'}:
             errors.append(f'{uid}: unknown scope')
         parents = [next(iter(link)) if isinstance(link, dict) else link for link in item.get('links', [])]
-        expected_parent = DOCUMENTS[prefix][1]
+        expected_parent = catalogue[prefix][1]
         if bool(parents) != bool(expected_parent):
             errors.append(f'{uid}: incorrect root/parent links')
         for parent in parents:
@@ -115,7 +118,7 @@ def audit(root: Path) -> dict:
                 errors.append(f'{uid}: invalid parent {parent}')
             children[parent] += 1
         references = item.get('references', [])
-        if prefix in ('SLLR', 'TLLR') and not references:
+        if prefix.startswith('LLR-') and not references:
             errors.append(f'{uid}: LLR has no implementation references')
         has_source = False
         for ref in references:
@@ -125,13 +128,13 @@ def audit(root: Path) -> dict:
                 errors.append(f'{uid}: missing/unsafe reference {name}')
             if name.startswith('zmala_terminal/windows/'):
                 errors.append(f'{uid}: Windows terminal is outside this baseline')
-            if prefix in ('SLLR', 'TLLR'):
+            if prefix.startswith('LLR-'):
                 referenced[name].add(uid)
                 has_source |= not name.startswith('tests/') and '/tests/' not in name and '/test-' not in name
-        if prefix in ('SLLR', 'TLLR') and not has_source:
+        if prefix.startswith('LLR-') and not has_source:
             errors.append(f'{uid}: tests alone do not identify implementation')
     for uid, item in records.items():
-        if item['prefix'] in ('PROD', 'SHLR', 'THLR') and not children[uid]:
+        if (item['prefix'] == 'PROD' or item['prefix'].startswith('HLR-')) and not children[uid]:
             errors.append(f'{uid}: no lower-level requirement')
     included, excluded = source_inventory(root)
     uncovered = sorted(set(included) - set(referenced))
@@ -153,6 +156,10 @@ def audit(root: Path) -> dict:
         raise ValueError('\n'.join(errors))
     return {
         'counts': dict(Counter(item['prefix'] for item in records.values())),
+        'summary': dict(Counter(category(item['prefix']) for item in records.values())),
+        'items': {uid: {'header': item['header'].strip(),
+                        'parents': [next(iter(link)) if isinstance(link, dict) else link for link in item.get('links', [])]}
+                  for uid, item in records.items()},
         'source_coverage': {name: sorted(referenced[name]) for name in included},
         'code_traces': traces,
         'test_trace': test_trace,
@@ -171,14 +178,14 @@ def run_doorstop(root: Path, *args: str) -> None:
 def write_coverage(output: Path, report: dict) -> None:
     rows = []
     for name, ids in report['source_coverage'].items():
-        links = ' '.join(f'<a href="documents/{re.sub(r"[0-9]", "", uid)}.html#{uid}">{uid}</a>' for uid in ids)
+        links = ' '.join(f'<a href="documents/{document_prefix(uid)}.html#{uid}">{uid}</a>' for uid in ids)
         rows.append(f'<tr><td class="source-path"><code>{escape(name)}</code></td><td class="source-links">{links}</td></tr>')
     exclusions = ''.join(f'<li><code>{escape(name)}</code> — {escape(reason)}</li>'
                          for name, reason in report['exclusions'].items())
-    counts = ' · '.join(f'{escape(prefix)} {count}' for prefix, count in report['counts'].items())
+    counts = ' · '.join(f'{escape(prefix)} {count}' for prefix, count in report.get('summary', report['counts']).items())
     traces = []
     for uid, locations in report['code_traces'].items():
-        link = f'documents/{uid[:4]}.html#{uid}'
+        link = f'documents/{document_prefix(uid)}.html#{uid}'
         source = '<br>'.join(f'<code>{escape(entry["path"])}:{entry["line"]}</code>' for entry in locations)
         traces.append(f'<tr id="trace-{uid}"><td><a href="{link}">{uid}</a></td><td>{source}</td></tr>')
     html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -199,6 +206,35 @@ def write_coverage(output: Path, report: dict) -> None:
 <footer>Generated from Doorstop references · <a href="#main">Back to top</a></footer></main></body></html>'''
     (output / 'coverage.html').write_text(html, encoding='utf-8')
     (output / 'coverage.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+
+
+def write_traceability(output: Path, items: dict) -> None:
+    """Keep the themed tree readable: one product/HLR/LLR path per row, not 47 columns."""
+    rows = []
+    for uid, item in sorted(items.items()):
+        if not uid.startswith('LLR-'):
+            continue
+        theme = '-'.join(uid.split('-')[1:3])
+        for parent in item['parents']:
+            for product in items[parent]['parents']:
+                rows.append((theme, product, parent, uid))
+    with (output/'traceability.csv').open('w', newline='', encoding='utf-8') as stream:
+        writer = csv.writer(stream)
+        writer.writerow(['Theme', 'Product', 'HLR', 'LLR'])
+        writer.writerows(rows)
+    def link(uid):
+        return f'<a href="documents/{document_prefix(uid)}.html#{uid}">{uid}</a><br><small>{escape(items[uid]["header"])}</small>'
+    table = ''.join('<tr><td>'+escape(theme)+'</td><td>'+link(product)+'</td><td>'+link(hlr)+'</td><td>'+link(llr)+'</td></tr>'
+                    for theme, product, hlr, llr in rows)
+    # Retain the Doorstop-rendered page shell, replacing only its native wide matrix.
+    page = output/'traceability.html'
+    text = page.read_text(encoding='utf-8')
+    start = text.index('<div class="matrix"')
+    end = text.index('</div>', start) + len('</div>')
+    text = text[:start] + '<div class="matrix" tabindex="0" aria-label="Requirement derivation paths"><table><thead><tr><th>Theme</th><th>Product</th><th>HLR</th><th>LLR</th></tr></thead><tbody>'+table+'</tbody></table></div>' + text[end:]
+    text = text.replace('Each row follows parent links. Empty cells in the other component branch are expected.',
+                        'Each row follows a product-to-HLR-to-LLR path within a component theme. Numbers are shared across HLRs and LLRs in that theme.')
+    page.write_text(text, encoding='utf-8')
 
 
 class ReportPage(HTMLParser):
@@ -226,12 +262,12 @@ def check_report(output: Path, counts: dict) -> None:
     """Reject broken navigation, missing items and external asset dependencies."""
     pages = {p.resolve(): ReportPage(p.read_text(encoding='utf-8'))
              for p in [output / 'index.html', output / 'traceability.html', output / 'coverage.html', output / 'tests.html',
-                       *(output / 'documents' / (prefix + '.html') for prefix in DOCUMENTS)]}
+                       *(output / 'documents' / (prefix + '.html') for prefix in counts)]}
     for path, page in pages.items():
         if page.duplicates:
             raise ValueError(f'{path.name}: duplicate anchors {page.duplicates}')
         if path.stem in counts:
-            ids = [uid for uid in page.ids if re.fullmatch(path.stem + r'\d{3}', uid)]
+            ids = [uid for uid in page.ids if re.fullmatch(re.escape(path.stem) + (r'\d{3}' if path.stem == 'PROD' else r'-\d{3}'), uid)]
             if len(ids) != counts[path.stem]:
                 raise ValueError(f'{path.name}: incomplete rendered requirements')
         for link in page.links:
@@ -248,11 +284,16 @@ def check_report(output: Path, counts: dict) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Validate only; do not publish')
+    parser.add_argument('--next-id', nargs=3, metavar=('LEVEL', 'COMPONENT', 'GROUP'),
+                        help='Print the next shared theme number without creating a record')
     args = parser.parse_args()
     try:
+        if args.next_id:
+            print(next_id(ROOT, *args.next_id))
+            return 0
         report = audit(ROOT)
         run_doorstop(ROOT, '--no-reformat', '--error-all', '--no-review-check')
-        print(f"Baseline: {report['counts']}; {len(report['source_coverage'])} source files mapped; "
+        print(f"Baseline: {report['summary']}; {len(report['source_coverage'])} source files mapped; "
               f"{len(report['code_traces'])} LLRs anchored in code.")
         test_trace = report['test_trace']
         print(f"Test plans: {len(test_trace['tests'])}; unmapped requirements: "
@@ -261,9 +302,10 @@ def main() -> int:
             output = ROOT / 'requirements' / 'output'
             # Only obsolete generated document pages are removed. No recursive workspace deletion.
             for page in (output / 'documents').glob('*.html'):
-                if page.stem not in DOCUMENTS:
+                if page.stem not in report['counts']:
                     page.unlink()
             run_doorstop(ROOT, 'publish', 'all', str(output), '--html', '--template', 'zmala')
+            write_traceability(output, report['items'])
             write_coverage(output, report)
             write_test_report(output, report['test_trace'])
             check_report(output, report['counts'])

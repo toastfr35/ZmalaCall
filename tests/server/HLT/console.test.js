@@ -1,5 +1,5 @@
 // @test S-HLT-009
-// @requirements SHLR013
+// @requirements HLR-SRV-MAINT-001
 // @environment portable
 // @plan Queue, claim and complete maintenance jobs through HTTP across two device identities; reload history and assert single leases, ownership isolation and bounded idempotent results.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

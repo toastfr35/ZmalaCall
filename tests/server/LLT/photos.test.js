@@ -1,5 +1,5 @@
 // @test S-LLT-005
-// @requirements SLLR087, SLLR088, SLLR089
+// @requirements LLR-SRV-DIR-015, LLR-SRV-DIR-016, LLR-SRV-DIR-017
 // @environment portable
 // @plan Inject delayed converters and malformed/oversized image input into PhotoStore; assert concurrency and queue limits, deduplicated atomic output and temporary-file cleanup.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

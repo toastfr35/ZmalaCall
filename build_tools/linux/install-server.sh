@@ -8,7 +8,7 @@ task_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 task_stage=prerequisites
 task_old=
 task_switched=no
-# @llr SLLR095
+# @llr LLR-SRV-INSTALL-008
 task_finish() {
     task_result=$?
     trap - EXIT
@@ -52,7 +52,7 @@ echo "$task_stage"
 apt-get -o APT::Update::Error-Mode=any update
 apt-get install -y --no-install-recommends nodejs npm python3 python3-pil nftables avahi-daemon rpi-swap
 node -e 'if (Number(process.versions.node.split(".")[0]) < 20) process.exit(1)'
-# @llr SLLR093
+# @llr LLR-SRV-INSTALL-006
 task_stage='preparing application release'
 install -d -m 755 /opt/zmalacall-server /opt/zmalacall-server/releases /usr/local/libexec
 task_release=$(mktemp -d /opt/zmalacall-server/releases/install-XXXXXXXX)

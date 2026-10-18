@@ -1,5 +1,5 @@
 # @test T-LLT-014
-# @requirements TLLR010, TLLR120
+# @requirements LLR-TERM-UI-007, LLR-TERM-SYS-008
 # @environment portable
 # @plan Construct valid and malformed PNG/JPEG headers including oversized dimensions; assert preflight bounds allocations and invalid optional portraits fall back before reaching native rendering.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

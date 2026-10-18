@@ -1,0 +1,34 @@
+active: true
+area: Server delivery and upgrade
+derived: false
+header: |
+  Distributable boundaries
+level: 97.0
+links:
+- HLR-SRV-INSTALL-001: iLNbcdF9xcXZ4mfiAgvSyhALEzQKITk-wfpqo9jk-8M=
+normative: true
+ref: ''
+references:
+- path: build_tools/server_installer/backend.py
+  type: file
+- path: build_tools/server_installer/cli.py
+  type: file
+- path: build_tools/server_installer/app.py
+  type: file
+- path: build_tools/server_installer/build.py
+  type: file
+- path: build_tools/linux/package-server.py
+  type: file
+- path: build_tools/linux/install-server.sh
+  type: file
+- path: build_tools/build-admin.cjs
+  type: file
+- path: tests/server/LLT/test_server_installer.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Server archives shall omit private runtime data and credentials; installer downloads
+  shall place the Word user guides beside the executable rather than embed or deploy them.
+verification: |
+  Inspect the Linux archive and collected GitHub download contents.

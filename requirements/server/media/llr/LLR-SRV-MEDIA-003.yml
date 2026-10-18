@@ -1,0 +1,22 @@
+active: true
+area: RTP and RTCP relay
+derived: false
+header: |
+  SDP endpoint rewriting
+level: 36.0
+links:
+- HLR-SRV-MEDIA-001: ahwf7EW_XE93haIkpfpjFHt1LmBhsgIdavicDvpGsI4=
+normative: true
+ref: ''
+references:
+- path: zmala_server/media.js
+  type: file
+- path: tests/server/LLT/media-lifetime.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The relay shall rewrite negotiated media endpoints to server addresses while forwarding
+  encoded RTP/RTCP packets without decoding, transcoding or recording.
+verification: |
+  Inspect offer/answer rewriting and compare forwarded packet payloads.

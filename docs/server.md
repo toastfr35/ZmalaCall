@@ -355,10 +355,10 @@ PDFKit uses built-in fonts. Disk portrait garbage collection remains outstanding
 
 Run `make test`, `make lint` and `make requirements` as described in
 [general.md](general.md#development-tools-and-checks). Unit scenarios under
-`tests/server/LLT/` trace directly to SLLRs; HTTP/SIP/system scenarios under
-`tests/server/HLT/` trace to SHLRs. Each file starts with its stable test ID,
+`tests/server/LLT/` trace directly to server LLRs; HTTP/SIP/system scenarios under
+`tests/server/HLT/` trace to server HLRs. Each file starts with its stable test ID,
 requirement links, procedure and pass criteria. The generated Tests report shows
-remaining HLR gaps separately from planned tests; missing SLLR unit coverage
+remaining HLR gaps separately from planned tests; missing server LLR unit coverage
 fails validation. Plans do not claim execution success. `S-LLT-027` runs the
 actual admin controllers and CSS in headless Chromium with deterministic API
 responses, checking phone/desktop layout and editor-local errors.

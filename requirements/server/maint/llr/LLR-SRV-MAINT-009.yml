@@ -1,0 +1,29 @@
+active: true
+area: Status and activity
+derived: false
+header: |
+  Server-owned receipt time
+level: 85.0
+links:
+- HLR-SRV-MAINT-002: AmmROQBPeYnkoMxsDZpU3zakxQ19sTee1Jyn4DCKIDo=
+normative: true
+ref: ''
+references:
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall timestamp accepted status itself and ignore client-supplied last-seen
+  values; reported device diagnostics shall remain distinct from SIP reachability.
+verification: |
+  Submit forged timestamps and mismatched registration diagnostics and inspect the
+  separate fields.

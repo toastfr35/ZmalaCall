@@ -106,7 +106,7 @@ class Installer(tk.Tk):
             self.target.check()
         self.start(work, 'checked')
 
-    # @llr SLLR091
+    # @llr LLR-SRV-INSTALL-004
     def confirm(self):
         info = self.target.info
         migration = self.data.get().strip()

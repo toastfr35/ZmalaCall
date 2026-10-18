@@ -536,7 +536,7 @@ linked requirements, procedure and expected observations. Installer unit tests
 are included in `make test-llt`. They exercise release preparation with temporary
 state, including restoration of directory mode 0700 after archive copying so an
 imported directory cannot make enrollment credentials readable to other users. See `docs/general.md` for trace validation and
-the generated trace report. Every TLLR has direct unit-test links; validation
+the generated trace report. Every terminal LLR has direct unit-test links; validation
 rejects additions without a corresponding test.
 
 Portable tests do not operate the TV or prove native SDK compatibility. For real

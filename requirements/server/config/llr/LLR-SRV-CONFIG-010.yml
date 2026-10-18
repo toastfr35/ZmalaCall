@@ -1,0 +1,24 @@
+active: true
+area: Setup PDFs
+derived: false
+header: |
+  A4 QR presentation
+level: 71.0
+links:
+- HLR-SRV-CONFIG-002: cY8jhZ5ug9gP1KzfAQDoPG5T3iw36roVK_QMgWg72pc=
+normative: true
+ref: ''
+references:
+- path: zmala_server/setup-pdf.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: tests/server/LLT/setup-payload.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Authenticated setup downloads shall produce one-page A4 PDFs with a readable QR,
+  four-module quiet border, setup label and instructions.
+verification: |
+  Render both PDF types and decode the code at printed size with the C20.

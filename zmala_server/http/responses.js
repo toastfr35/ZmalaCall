@@ -36,7 +36,7 @@ async function body(req, limit = 2 * 1024 * 1024) {
   return Buffer.concat(parts);
 }
 
-// @llr SLLR024
+// @llr LLR-SRV-AUTH-009
 /** @param {import('node:http').IncomingMessage} req @param {number} [limit]
  * @param {boolean} [allowEmpty] @returns {Promise<Record<string, unknown>>} */
 async function readJson(req, limit, allowEmpty = false) {

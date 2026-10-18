@@ -1,5 +1,5 @@
 // @test S-HLT-018
-// @requirements SHLR012
+// @requirements HLR-SRV-CONFIG-002
 // @environment portable
 // @plan Generate Wi-Fi/server enrollment PDFs through authenticated HTTP and inspect payloads; assert escaping, valid terminal-only identity and absence of persisted Wi-Fi secrets.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

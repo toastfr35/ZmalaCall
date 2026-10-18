@@ -1,5 +1,5 @@
 # @test T-LLT-028
-# @requirements TLLR026, TLLR027, TLLR030, TLLR031, TLLR033, TLLR034
+# @requirements LLR-TERM-SETUP-010, LLR-TERM-SETUP-011, LLR-TERM-SETUP-014, LLR-TERM-SETUP-015, LLR-TERM-SETUP-017, LLR-TERM-SETUP-018
 # @environment portable
 # @plan Decode valid and invalid enrollment/Wi-Fi payloads and reset temporary enrollment files; assert canonical server identity, scoped language retention, restart behavior and stale-write rejection.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

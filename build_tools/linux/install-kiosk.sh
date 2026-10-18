@@ -104,7 +104,7 @@ fi
 if [ -n "$data_from" ] && [ ! -d "$data_from" ]; then
     echo 'Migration data directory does not exist' >&2; exit 1
 fi
-# @llr TLLR116
+# @llr LLR-TERM-INSTALL-005
 task_step 'Downloading and installing dependencies (Internet required)'
 apt-get -o APT::Update::Error-Mode=any update
 xargs apt-get install -y --no-install-recommends < "$task_root/build_tools/linux/dependencies.txt"
@@ -148,7 +148,7 @@ mkdir -p /etc/udev/rules.d
 install -m 644 "$task_root/build_tools/linux/70-zmalacall-presenter.rules" /etc/udev/rules.d/
 udevadm control --reload-rules
 udevadm trigger --subsystem-match=hidraw
-# @llr TLLR117
+# @llr LLR-TERM-INSTALL-006
 mkdir -p /opt/zmalacall/releases /var/lib/zmalacall /etc/zmalacall
 if [ -n "$data_from" ]; then
     # Existing installed state wins when upgrading or retrying installation.

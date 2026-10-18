@@ -1,5 +1,5 @@
 // @test S-HLT-016
-// @requirements SHLR018, SHLR004
+// @requirements HLR-SRV-INSTALL-002, HLR-SRV-AUTH-001
 // @environment portable
 // @plan Exercise server SSH endpoints and Host validation through HTTP with a controlled SSH backend; assert admin-only boolean writes and acceptance only of the configured server identity. Physical firewall behavior is covered separately.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,5 +1,5 @@
 // @test S-LLT-016
-// @requirements SLLR043, SLLR044, SLLR045, SLLR046, SLLR047
+// @requirements LLR-SRV-CALLBACK-002, LLR-SRV-CALLBACK-003, LLR-SRV-CALLBACK-004, LLR-SRV-CALLBACK-005, LLR-SRV-CALLBACK-006
 // @environment portable
 // @plan Drive callback storage with fake registration/notification responses; assert deduplication, completion, expiry, permission changes, one notification after reconnect and retry with preserved renamed identity.
 // @pass Every named assertion must pass; failures or skips do not establish requirement verification.

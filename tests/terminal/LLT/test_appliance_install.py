@@ -1,5 +1,5 @@
 # @test T-LLT-052
-# @requirements TLLR003, TLLR005, TLLR116, TLLR117, TLLR123
+# @requirements LLR-TERM-SYS-005, LLR-TERM-SYS-007, LLR-TERM-INSTALL-005, LLR-TERM-INSTALL-006, LLR-TERM-SYS-011
 # @environment portable
 # @plan Inject launcher locks and PID observations to reject concurrent profiles and reused processes; inspect service cleanup policy and execute the Pi 4/driver workaround guard against matching and nonmatching fixtures. Run the release-state shell unit in a temporary filesystem with ownership/build commands replaced, verifying upgrade preservation and release/data separation. Exercise installer orchestration with fake SSH and confirm default Argon and reboot verification.
 # @pass A duplicate profile or reused PID must never launch/kill a process; installation preserves private enrollment and verifies startup before reporting completion.
@@ -67,7 +67,7 @@ class ApplianceInstallTests(unittest.TestCase):
     @unittest.skipIf(sys.platform == 'win32', 'POSIX release filesystem semantics run on Linux CI')
     def test_release_preparation_preserves_existing_enrollment_and_private_data(self):
         source = (ROOT/'build_tools/linux/install-kiosk.sh').read_text()
-        block = source.split('# @llr TLLR117\n',1)[1].split("task_step 'Activating release",1)[0]
+        block = source.split('# @llr LLR-TERM-INSTALL-006\n',1)[1].split("task_step 'Activating release",1)[0]
         # Fixed absolute appliance paths are redirected only into this test's
         # temporary root. Build and ownership operations are command doubles.
         for path in ('/opt/zmalacall', '/var/lib/zmalacall', '/etc/zmalacall'):

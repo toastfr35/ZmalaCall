@@ -12,6 +12,8 @@ import json
 from pathlib import Path
 import re
 
+from requirement_ids import ITEM, category, document_prefix
+
 FIELDS = {'test', 'requirements', 'environment', 'plan', 'pass'}
 ENVIRONMENTS = {'portable', 'display', 'native-sdk', 'native-display', 'hardware', 'linux-root'}
 TEST_SUFFIXES = {'.py', '.js', '.cjs', '.c', '.sh', '.ps1'}
@@ -41,7 +43,7 @@ def read_plan(path: Path) -> dict:
         raise ValueError(f'{path}: missing leading test-plan fields: {sorted(missing)}')
     if not re.fullmatch(r'[ST]-(?:LLT|HLT)-\d{3}', fields['test']):
         raise ValueError(f'{path}: invalid stable test ID')
-    if not re.fullmatch(r'[ST][HL]LR\d{3}(?:, [ST][HL]LR\d{3})*', fields['requirements']):
+    if not re.fullmatch(ITEM + '(?:, ' + ITEM + ')*', fields['requirements']):
         raise ValueError(f'{path}: malformed requirement list')
     fields['requirements'] = fields['requirements'].split(', ')
     if len(set(fields['requirements'])) != len(fields['requirements']):
@@ -76,8 +78,9 @@ def audit_tests(root: Path, records: dict) -> dict:
                     for requirement in plan['requirements']:
                         if requirement not in records:
                             raise ValueError(f'{name}: unknown requirement {requirement}')
-                        if records[requirement]['prefix'] != prefix + reqlevel:
-                            raise ValueError(f'{name}: {level} must trace to {prefix + reqlevel}, not {requirement}')
+                        expected = reqlevel + '-' + ('SRV' if prefix == 'S' else 'TERM')
+                        if category(records[requirement]['prefix']) != expected:
+                            raise ValueError(f'{name}: {level} must trace to {expected}, not {requirement}')
                         references = [ref.get('path') for ref in records[requirement].get('references', [])]
                         if name not in references:
                             raise ValueError(f'{requirement}: missing reciprocal test reference {name}')
@@ -107,9 +110,9 @@ def audit_tests(root: Path, records: dict) -> dict:
                     continue
                 errors.append(f'Test/probe outside tests/: {path.relative_to(root).as_posix()}')
     missing = {prefix: sorted(uid for uid, record in records.items()
-                             if record['prefix'] == prefix and uid not in by_requirement)
-               for prefix in ('SHLR', 'SLLR', 'THLR', 'TLLR')}
-    for prefix in ('SLLR', 'TLLR'):
+                             if category(record['prefix']) == prefix and uid not in by_requirement)
+               for prefix in ('HLR-SRV', 'LLR-SRV', 'HLR-TERM', 'LLR-TERM')}
+    for prefix in ('LLR-SRV', 'LLR-TERM'):
         for uid in missing[prefix]:
             errors.append(f'{uid}: no mapped LLT verifying this LLR')
     if errors:
@@ -123,7 +126,7 @@ def audit_tests(root: Path, records: dict) -> dict:
 def write_test_report(output: Path, trace: dict) -> None:
     """Publish plans and explicit gaps; never invent execution/coverage results."""
     def requirement_link(uid):
-        return f'<a href="documents/{uid[:4]}.html#{uid}">{uid}</a>'
+        return f'<a href="documents/{document_prefix(uid)}.html#{uid}">{uid}</a>'
 
     rows, plans = [], []
     for uid, test in trace['tests'].items():

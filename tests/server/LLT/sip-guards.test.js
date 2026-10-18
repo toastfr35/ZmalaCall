@@ -1,5 +1,5 @@
 // @test S-LLT-009
-// @requirements SLLR028, SLLR030, SLLR031, SLLR032, SLLR033
+// @requirements LLR-SRV-SIP-006, LLR-SRV-SIP-008, LLR-SRV-SIP-009, LLR-SRV-SIP-010, LLR-SRV-SIP-011
 // @environment portable
 // @plan Drive signaling with a fake transport and delayed SDP work; assert malformed/foreign requests fail, cancelled work cannot ring or forward late answers and renegotiation commits exactly once.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

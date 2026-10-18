@@ -1,5 +1,5 @@
 # @test T-LLT-023
-# @requirements TLLR126
+# @requirements LLR-TERM-MEDIA-020
 # @environment portable
 # @plan Reconfigure a fake native core first without and then with a capture device; assert microphone capture can recover on the next call.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

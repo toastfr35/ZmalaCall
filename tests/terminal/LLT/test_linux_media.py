@@ -1,5 +1,5 @@
 # @test T-LLT-017
-# @requirements TLLR048, TLLR051
+# @requirements LLR-TERM-MEDIA-005, LLR-TERM-MEDIA-008
 # @environment portable
 # @plan Supply device catalogs with stale paths, replugged C20 nodes and unrelated devices; assert C20 rediscovery, no silent substitution and playback/ringer routing.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

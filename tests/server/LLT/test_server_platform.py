@@ -1,5 +1,5 @@
 # @test S-LLT-029
-# @requirements SLLR001, SLLR095, SLLR096, SLLR098, SLLR099, SLLR100
+# @requirements LLR-SRV-BOOT-002, LLR-SRV-INSTALL-008, LLR-SRV-INSTALL-009, LLR-SRV-INSTALL-011, LLR-SRV-INSTALL-012, LLR-SRV-INSTALL-013
 # @environment portable
 # @plan Parse installed service policy and inject systemctl, network, disk and boot observations; verify unprivileged startup, wired-only IPv4/IPv6 firewall rules, guard-before-SSH enablement, install-lock refusal and low-write readiness. Execute the actual rollback function with command doubles and failed/successful exit statuses.
 # @pass All service-policy and failure-path assertions must pass; no unit test may modify the host firewall, SSH service or filesystem outside its temporary fixture.

@@ -1,5 +1,5 @@
 # @test T-LLT-008
-# @requirements TLLR015
+# @requirements LLR-TERM-REMOTE-006
 # @environment portable
 # @plan Mock mixer execution at zero, full and invalid levels and on device failures; assert playback-only writes, validation before execution and nonfatal failure.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

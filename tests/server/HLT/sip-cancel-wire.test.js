@@ -1,5 +1,5 @@
 // @test S-HLT-019
-// @requirements SHLR005
+// @requirements HLR-SRV-SIP-001
 // @environment portable
 // @plan Use real UDP signaling against the SIP server with delayed SDP allocation; send authorized and foreign CANCEL messages and assert only the caller cancels, with no late INVITE ringing.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

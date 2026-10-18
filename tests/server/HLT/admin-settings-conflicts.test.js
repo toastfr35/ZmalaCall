@@ -1,5 +1,5 @@
 // @test S-HLT-003
-// @requirements SHLR002, SHLR011
+// @requirements HLR-SRV-DIR-001, HLR-SRV-CONFIG-001
 // @environment portable
 // @plan Perform concurrent admin and terminal edits through HTTP; assert stale revisions receive conflicts without overwriting newer settings, accounts, credentials or groups.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

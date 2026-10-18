@@ -1,5 +1,5 @@
 # @test T-HLT-001
-# @requirements THLR008
+# @requirements HLR-TERM-CALL-001
 # @environment hardware
 # @plan Start isolated caller/receiver peers and the real terminal UI; assert allowed calls connect and forbidden accounts fail without unintended media.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

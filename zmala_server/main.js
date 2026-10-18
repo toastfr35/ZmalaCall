@@ -89,12 +89,12 @@ function createApplication({
     adminSessions,
   };
 }
-// @llr SLLR105
+// @llr LLR-SRV-DATA-010
 async function start() {
   await recoverRestore(DATA, process.env.ZMALA_ADMIN_PASSWORD_FILE || passwordFile(DATA));
   require('../build_tools/build-admin.cjs').buildAdmin();
   const store = new Store();
-  // @llr SLLR102
+  // @llr LLR-SRV-BOOT-007
   if (process.env.VIDEOCALL_HOST) {
     if (isIP(process.env.VIDEOCALL_HOST) !== 4)
       throw Error('VIDEOCALL_HOST must be an IPv4 address');
@@ -116,7 +116,7 @@ async function start() {
   });
   // Keep terminal HTTP available. An optional TLS listener uses the same
   // password/session boundary and marks browser cookies Secure on HTTPS.
-  // @llr SLLR003
+  // @llr LLR-SRV-BOOT-004
   const tlsCert = process.env.ZMALA_TLS_CERT;
   const tlsKey = process.env.ZMALA_TLS_KEY;
   /** @type {import('node:https').Server | undefined} */
@@ -134,7 +134,7 @@ async function start() {
     tlsPort = port;
   }
   const shutdown = createShutdown([server, ...(tlsServer ? [tlsServer] : [])], sipServer, flush);
-  // @llr SLLR005
+  // @llr LLR-SRV-BOOT-006
   /** A failed listener must not leave its sibling serving a half-started app.
    * @param {unknown} error */
   function fail(error) {
@@ -149,7 +149,7 @@ async function start() {
     tlsServer?.listen(tlsPort, '0.0.0.0', () =>
       console.log(`HTTPS administration: https://${v.host}:${tlsPort}/`),
     );
-    // @llr SLLR002
+    // @llr LLR-SRV-BOOT-003
     server.listen(v.http_port, '0.0.0.0', () => {
       console.log(`Administration: http://${v.host}:${v.http_port}/`);
       console.log(`Phone SIP domain: ${v.host}:${v.sip_port}`);

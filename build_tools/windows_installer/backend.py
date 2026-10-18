@@ -34,7 +34,7 @@ class TargetKeyPolicy(paramiko.MissingHostKeyPolicy):
             raise InstallError('The Pi SSH identity changed. Installation stopped. Check the target again.')
 
 
-# @llr TLLR113
+# @llr LLR-TERM-INSTALL-002
 def validate_target(info, storage=True):
     if not info['model'].startswith('Raspberry Pi 4 Model B'):
         raise InstallError('Expected a Raspberry Pi 4 Model B; found ' + info['model'])
@@ -60,7 +60,7 @@ def validate_target(info, storage=True):
         raise InstallError('Insufficient free space: need 3 GiB on /var and 128 MiB on the boot partition.')
 
 
-# @llr SLLR092, TLLR115
+# @llr LLR-SRV-INSTALL-005, LLR-TERM-INSTALL-004
 def verify_payload(archive):
     archive = Path(archive)
     expected = archive.with_name(archive.name + '.sha256').read_text().split()[0]
@@ -220,7 +220,7 @@ with tarfile.open(p / 'terminal.tar.gz') as archive:
         self.emit('Installation complete. The terminal is running after reboot.\n'
                   'Continue the camera, remote and QR setup on the TV.\n')
 
-    # @llr SLLR092, TLLR115
+    # @llr LLR-SRV-INSTALL-005, LLR-TERM-INSTALL-004
     def monitor(self, unit, path):
         offset = 0
         deadline = time.monotonic() + 3600
@@ -257,7 +257,7 @@ with tarfile.open(p / 'terminal.tar.gz') as archive:
         raise InstallError('Installation has exceeded one hour. It may still be running on the Pi. '
                            'See ' + path + ' before retrying.')
 
-    # @llr TLLR119
+    # @llr LLR-TERM-INSTALL-008
     def verify_reboot(self, old_boot):
         deadline = time.monotonic() + 240
         stable_since = None

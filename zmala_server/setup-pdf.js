@@ -3,7 +3,7 @@
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 
-// @llr SLLR072
+// @llr LLR-SRV-CONFIG-011
 /** @param {import('./types/contracts').JsonObject} update @returns {string} */
 function wifiPayload({ ssid, password = '', security = 'WPA', hidden = false }) {
   if (
@@ -43,12 +43,12 @@ function wifiPayload({ ssid, password = '', security = 'WPA', hidden = false }) 
     ]).toString('base64url')
   );
 }
-// @llr SLLR073
+// @llr LLR-SRV-CONFIG-012
 /** @param {import('./types/contracts').Enrollment} bootstrap */
 function serverPayload(bootstrap) {
   return JSON.stringify({ type: 'family-call-server', version: 1, ...bootstrap });
 }
-// @llr SLLR071
+// @llr LLR-SRV-CONFIG-010
 /** @param {{kind: 'wifi' | 'server', label: string, payload: string, serverUrl?: string}} options
  * @returns {Promise<Buffer>} */
 async function setupPdf({ kind, label, payload, serverUrl }) {

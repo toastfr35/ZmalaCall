@@ -1,5 +1,5 @@
 // @test S-LLT-019
-// @requirements SLLR009, SLLR011, SLLR012, SLLR016, SLLR068, SLLR069, SLLR101, SLLR102
+// @requirements LLR-SRV-DIR-007, LLR-SRV-DIR-009, LLR-SRV-DIR-010, LLR-SRV-DIR-014, LLR-SRV-CONFIG-007, LLR-SRV-CONFIG-008, LLR-SRV-CONFIG-013, LLR-SRV-BOOT-007
 // @environment portable
 // @plan Create isolated accounts, mutate revisions and reassign serials; assert random independent credentials, private cached directory views, compare-and-set settings, device-owned profiles and bootstrap identity. Feed network-interface fixtures to check LAN address preference and fallback.
 // @pass Every identity, privacy, invalidation and rejected-write assertion must pass; HTTP active-call exclusion is checked separately.

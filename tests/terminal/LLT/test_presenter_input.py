@@ -1,5 +1,5 @@
 # @test T-LLT-027
-# @requirements TLLR011, TLLR012, TLLR013, TLLR014, TLLR018
+# @requirements LLR-TERM-REMOTE-002, LLR-TERM-REMOTE-003, LLR-TERM-REMOTE-004, LLR-TERM-REMOTE-005, LLR-TERM-REMOTE-009
 # @environment portable
 # @plan Feed recorded-format raw and evdev reports, signed motion, repeats and disconnects; assert Presenter-only button mapping, held-middle motion gating and release/status cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,0 +1,29 @@
+active: true
+area: Status and activity
+derived: false
+header: |
+  Validated device status
+level: 84.0
+links:
+- HLR-SRV-MAINT-002: AmmROQBPeYnkoMxsDZpU3zakxQ19sTee1Jyn4DCKIDo=
+normative: true
+ref: ''
+references:
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Status requests shall derive device identity from the bearer token, enforce the
+  request-size bound and validate state, registration, revision and device lists before
+  replacing accepted diagnostics.
+verification: |
+  Send malformed and oversized status and verify the previous accepted status remains.

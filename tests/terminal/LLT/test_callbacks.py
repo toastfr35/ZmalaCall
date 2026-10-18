@@ -1,5 +1,5 @@
 # @test T-LLT-009
-# @requirements TLLR069, TLLR070, TLLR071
+# @requirements LLR-TERM-HISTORY-009, LLR-TERM-HISTORY-010, LLR-TERM-HISTORY-011
 # @environment portable
 # @plan Drive the model and management controller with pending, completed and stale callback results; assert one confirmed request, cancellable tags, failure retention and protection against stale poll resurrection.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

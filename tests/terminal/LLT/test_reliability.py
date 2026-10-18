@@ -1,5 +1,5 @@
 # @test T-LLT-044
-# @requirements TLLR015, TLLR066, TLLR078, TLLR081, TLLR083, TLLR085, TLLR102, TLLR103, TLLR120, TLLR121
+# @requirements LLR-TERM-REMOTE-006, LLR-TERM-HISTORY-006, LLR-TERM-CONFIG-008, LLR-TERM-CONFIG-011, LLR-TERM-CONFIG-013, LLR-TERM-CONFIG-015, LLR-TERM-MAINT-005, LLR-TERM-MAINT-006, LLR-TERM-SYS-008, LLR-TERM-SYS-009
 # @environment portable
 # @plan Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled-photo fencing and coalesced mixer writes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

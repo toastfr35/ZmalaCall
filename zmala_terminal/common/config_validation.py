@@ -5,7 +5,7 @@ from zmala_terminal.common.local_settings import TV_IDLE_DELAYS
 from zmala_terminal.common.video_settings import FRAME_RATES
 
 
-# @llr TLLR079
+# @llr LLR-TERM-CONFIG-009
 def validate(config, device_id):
     if not isinstance(config, dict):
         raise ValueError('Configuration must be an object')
@@ -53,7 +53,7 @@ def validate(config, device_id):
     return config
 
 
-# @llr TLLR080
+# @llr LLR-TERM-CONFIG-010
 def validate_contacts(contacts, sip):
     if not isinstance(contacts, list) or len(contacts) > 40:
         raise ValueError('Invalid contacts')
@@ -79,7 +79,7 @@ def validate_contacts(contacts, sip):
             raise ValueError('Invalid photo path')
 
 
-# @llr TLLR080
+# @llr LLR-TERM-CONFIG-010
 def validate_callbacks(callbacks, username):
     if not isinstance(callbacks, list) or len(callbacks) > 80:
         raise ValueError('Invalid callback requests')

@@ -1,0 +1,29 @@
+active: true
+area: Accounts and device ownership
+derived: false
+header: |
+  Required contact email list
+level: 8.0
+links:
+- HLR-SRV-DIR-001: myFgpWaqhqC1Oh51HryuIhMLD67V-cGo_YzCEr6X1HM=
+normative: true
+ref: ''
+references:
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: tests/server/LLT/callback-reminders.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  New accounts shall require one to ten unique valid email addresses; legacy accounts
+  without addresses shall retain their credentials and be flagged for completion rather
+  than receive invented addresses.
+verification: |
+  Create and migrate accounts with empty, duplicate, malformed and valid address lists.

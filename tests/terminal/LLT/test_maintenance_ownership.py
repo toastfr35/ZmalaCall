@@ -1,5 +1,5 @@
 # @test T-LLT-047
-# @requirements TLLR100, TLLR101
+# @requirements LLR-TERM-MAINT-003, LLR-TERM-MAINT-004
 # @environment portable
 # @plan Feed bounded leased jobs through a stopped-thread polling agent and fake subprocesses; assert three-second polling, single execution and lease reporting, supported POSIX shells, noninteractive working directory, timeout/cancellation cleanup and process-group ownership checks.
 # @pass Assertions must reject invalid jobs and foreign process groups, terminate owned groups exactly once and never launch real shell commands.

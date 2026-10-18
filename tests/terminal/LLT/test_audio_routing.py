@@ -1,5 +1,5 @@
 # @test T-LLT-006
-# @requirements TLLR051
+# @requirements LLR-TERM-MEDIA-008
 # @environment portable
 # @plan Configure a fake native core with explicit playback devices; assert ringback and ringtone use the effective playback device. Windows camera preservation is a compatibility subcase.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

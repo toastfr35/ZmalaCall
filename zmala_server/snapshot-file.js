@@ -19,7 +19,7 @@ class SnapshotFile {
     /** @type {{contents: string} | undefined} */
     this.queued = undefined;
   }
-  // @llr SLLR079
+  // @llr LLR-SRV-DATA-003
   /** @param {string} contents @returns {Promise<void>} */
   write(contents) {
     this.contents = contents;

@@ -1,5 +1,5 @@
 # @test T-HLT-010
-# @requirements THLR005
+# @requirements HLR-TERM-SETUP-002
 # @environment display
 # @plan Connect the real setup controller and UI to an isolated HTTP service; scan valid/invalid enrollment payloads, resize views and assert errors, canonical enrollment and camera cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

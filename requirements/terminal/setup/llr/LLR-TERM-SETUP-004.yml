@@ -1,0 +1,30 @@
+active: true
+area: First-run peripherals
+derived: false
+header: |
+  Camera connection gate
+level: 20.0
+links:
+- HLR-TERM-SETUP-001: ztQMsBA8VrhLuf26JMej3qwrs1QIaWxVa_1875Z2NnY=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/usb_setup.py
+  type: file
+- path: zmala_terminal/linux/c20_status.py
+  type: file
+- path: tests/terminal/LLT/test_pairing_setup.py
+  type: file
+- path: tests/terminal/LLT/test_usb_setup.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Before Bluetooth setup, a missing C20 shall show the English two-cable illustration:
+  camera to blue USB 3 and charger to the adjacent USB socket. The power-only charger
+  shall not be required to enumerate as a USB device.
+verification: |
+  Boot without C20, connect it and confirm advancement without inventing charger
+  detection.

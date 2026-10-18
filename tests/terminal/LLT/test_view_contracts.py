@@ -1,5 +1,5 @@
 # @test T-LLT-048
-# @requirements TLLR003, TLLR007, TLLR036, TLLR037, TLLR075
+# @requirements LLR-TERM-SYS-005, LLR-TERM-UI-004, LLR-TERM-UI-009, LLR-TERM-UI-010, LLR-TERM-CONFIG-005
 # @environment portable
 # @plan Record drawing calls at small and full-HD dimensions; check in-frame contact labels, portrait margins, localized rounded affirmative/negative controls, settings-only chrome and serial footer. Inject Pango to verify unchanged Unicode text and bounded shaping, and test absolute carousel deadlines under delayed frames.
 # @pass Geometry, color, text and timing assertions must pass; these unit checks do not replace physical display or font-rendering acceptance.

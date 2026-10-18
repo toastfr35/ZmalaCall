@@ -1,5 +1,5 @@
 # @test T-HLT-015
-# @requirements THLR006, THLR017
+# @requirements HLR-TERM-SETUP-003, HLR-TERM-MAINT-001
 # @environment portable
 # @plan Run real Linux shell commands that fail, time out or spawn descendants and inject NetworkManager profile listings; assert bounded UTF-8 output, process-group cancellation and deletion of only the owned Wi-Fi profile.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

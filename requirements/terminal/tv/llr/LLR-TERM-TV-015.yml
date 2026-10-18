@@ -1,0 +1,38 @@
+active: true
+area: TV state ownership
+derived: false
+header: |
+  Pinned Samsung fallback
+level: 98.0
+links:
+- HLR-TERM-TV-002: AaRTYO95hEXy6Wj35iucOog4yAbMUlyXD_-I4txcxPE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+- path: zmala_terminal/linux/cec_device.py
+  type: file
+- path: zmala_terminal/linux/cec_observer.py
+  type: file
+- path: zmala_terminal/linux/samsung_tv.py
+  type: file
+- path: zmala_terminal/common/idle_return.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: build_tools/linux/pair-samsung-tv.py
+  type: file
+- path: tests/terminal/LLT/test_samsung_tv.py
+  type: file
+- path: tests/terminal/LLT/test_tv_control.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Samsung network control shall store credentials privately, pin the TLS certificate and
+  use user-verified HDMI key/address bindings; incompatible cable/address changes shall
+  invalidate bindings. Power-toggle fallback shall require a freshly confirmed settled
+  on-state.
+verification: |
+  Change certificate/address, withhold fresh power status and inspect rejected commands.

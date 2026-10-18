@@ -1,5 +1,5 @@
 # @test T-LLT-018
-# @requirements TLLR001, TLLR118
+# @requirements LLR-TERM-SYS-003, LLR-TERM-INSTALL-007
 # @environment portable
 # @plan Build archives from temporary and real source fixtures and inspect every manifest entry; assert clean identity, source-only payload, Linux permissions/newlines and retry of cold-boot display timeout.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

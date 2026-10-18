@@ -1,5 +1,5 @@
 # @test T-HLT-009
-# @requirements THLR004
+# @requirements HLR-TERM-SETUP-001
 # @environment display
 # @plan Render USB, Bluetooth and ordered button-test stages on a real Tk canvas; assert current-step illustration and button feedback. Inspect the generated screens for legibility.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

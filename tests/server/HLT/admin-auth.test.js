@@ -1,5 +1,5 @@
 // @test S-HLT-002
-// @requirements SHLR004
+// @requirements HLR-SRV-AUTH-001
 // @environment portable
 // @plan Exercise first setup, login, CSRF, logout and password replacement over the assembled HTTP application; restart credential storage and assert old credentials/sessions are revoked and simultaneous setup cannot replace the winner.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

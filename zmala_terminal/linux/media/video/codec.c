@@ -17,7 +17,7 @@ static void close_context(Codec *s) {
     av_packet_free(&s->packet);
 }
 
-// @llr TLLR049
+// @llr LLR-TERM-MEDIA-006
 static int open_context(Codec *s, MSVideoConfiguration config) {
     const char *name = s->encoder ? "h264_v4l2m2m" : "h264";
     const AVCodec *codec = avcodec_find_decoder_by_name(name);
@@ -77,7 +77,7 @@ static void publish(Codec *s, mblk_t *message) {
     pthread_mutex_unlock(&s->mutex);
 }
 
-// @llr TLLR054
+// @llr LLR-TERM-MEDIA-011
 static int encode(Codec *s, mblk_t *input) {
     MSPicture picture;
     if (ms_yuv_buf_init_from_mblk(&picture, input) < 0) return AVERROR(EINVAL);
@@ -171,7 +171,7 @@ static int decode(Codec *s, mblk_t *input) {
     return result == AVERROR(EAGAIN) ? 0 : result;
 }
 
-// @llr TLLR053
+// @llr LLR-TERM-MEDIA-010
 static void *worker(void *argument) {
     Codec *s = argument;
     for (;;) {
@@ -260,7 +260,7 @@ void zmala_codec_free(MSFilter *filter) {
     ms_free(s);
 }
 
-// @llr TLLR053
+// @llr LLR-TERM-MEDIA-010
 void zmala_codec_submit(Codec *s, mblk_t *message) {
     pthread_mutex_lock(&s->mutex);
     int limit = s->encoder ? 2 : 16;

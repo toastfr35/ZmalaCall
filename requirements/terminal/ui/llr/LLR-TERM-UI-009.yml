@@ -1,0 +1,31 @@
+active: true
+area: Localized rendering
+derived: false
+header: |
+  Unicode shaping and names
+level: 36.0
+links:
+- HLR-TERM-UI-002: xfq8UTsoYX7l9Nnevje4WHS3bagSENh0__GzpCvF6VU=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/localization.py
+  type: file
+- path: zmala_terminal/common/text_renderer.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
+  type: file
+- path: zmala_terminal/common/theme.py
+  type: file
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Pi text rendering shall use Pango/Cairo and suitable installed fonts for Unicode shaping
+  and right-to-left scripts, preserve names as supplied and constrain text to its
+  available layout.
+verification: |
+  Render representative Arabic, Asian and long-name fixtures at supported display sizes.

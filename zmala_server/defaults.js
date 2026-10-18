@@ -37,7 +37,7 @@ function profile(name = 'Family') {
     terminal_settings: { camera: '', microphone: '', speaker: '' },
   };
 }
-// @llr SLLR002, SLLR012
+// @llr LLR-SRV-BOOT-003, LLR-SRV-DIR-010
 /** @returns {import('./types/contracts').ServerState} */
 function defaultState() {
   return {

@@ -7,7 +7,7 @@ import { renderTerminals, terminalCardState } from './admin-terminals.js';
 import { page, state } from './admin-state.js';
 import { liveSignature, api, message } from './admin-shared.js';
 import { signIn, authControls } from './admin-auth.js';
-// @llr SLLR056
+// @llr LLR-SRV-UI-002
 export function render() {
   const renderers = /** @type {Record<string, () => void>} */ ({
     '/': renderOverview,
@@ -32,7 +32,7 @@ export function refresh(force = false) {
   });
   return inFlight;
 }
-// @llr SLLR060
+// @llr LLR-SRV-UI-006
 /** @param {boolean} force */
 async function performRefresh(force) {
   if (state.restoring) return;

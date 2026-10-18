@@ -1,5 +1,5 @@
 # @test T-LLT-049
-# @requirements TLLR038, TLLR045, TLLR072, TLLR084, TLLR105, TLLR123
+# @requirements LLR-TERM-UI-011, LLR-TERM-CALL-008, LLR-TERM-HISTORY-012, LLR-TERM-CONFIG-014, LLR-TERM-MAINT-008, LLR-TERM-SYS-011
 # @environment portable
 # @plan Use native-call, UI and transport doubles to check retained call handles and shutdown order, live language/framing changes, idle-only callback notices and status snapshots. Inject failed JSON replacement to verify old private state survives and successful UTF-8 state is complete.
 # @pass Every transition must preserve unrelated call ownership; notifications must never dial automatically and failed persistence must preserve the prior snapshot.

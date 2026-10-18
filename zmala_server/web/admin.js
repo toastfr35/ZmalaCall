@@ -163,7 +163,7 @@ function actionButton(text, action, cls = 'secondary', glyph) {
   b.onclick = () => run(action);
   return b;
 }
-// @llr SLLR058
+// @llr LLR-SRV-UI-004
 /** @param {string} label @param {string} glyph @param {import('../types/admin').Action} action */
 function iconButton(label, glyph, action) {
   const b = actionButton('', action, 'icon-button', glyph);
@@ -504,7 +504,7 @@ function authControls() {
 
 // admin-setup.js
 // Authenticated provisioning downloads and local test enrollment actions.
-// @llr SLLR063
+// @llr LLR-SRV-UI-009
 /** @param {string} route @param {string} filename @param {import('../types/contracts').JsonObject} [value] */
 async function downloadPdf(route, filename, value) {
   /** @type {Record<string, string>} */
@@ -568,7 +568,7 @@ $('wifi-form').onsubmit = (e) => {
 // admin-clipboard.js
 // The installed server is also used over plain LAN HTTP, where Clipboard API
 // access is unavailable. Keep the fallback inside the open dialog's focus scope.
-// @llr SLLR063
+// @llr LLR-SRV-UI-009
 /** @param {string} value @param {HTMLElement} owner @returns {Promise<boolean>} */
 async function writeClipboard(value, owner) {
   try {
@@ -736,7 +736,7 @@ function renderAccounts() {
   setView(p);
   accountRows();
 }
-// @llr SLLR059
+// @llr LLR-SRV-UI-005
 function openAccount(id = '') {
   accountVersion = state.model.configuration_version;
   accountGeneration++;
@@ -973,7 +973,7 @@ $('console-dialog').addEventListener('close', () => {
   consoleGeneration++;
   state.consoleId = '';
 });
-// @llr SLLR062
+// @llr LLR-SRV-UI-008
 async function refreshConsole() {
   if (!state.consoleId || !$('console-dialog').open || state.consoleFetching) return;
   const id = state.consoleId,
@@ -1181,7 +1181,7 @@ function renderGroups() {
     );
   setView(intro, grid);
 }
-// @llr SLLR059
+// @llr LLR-SRV-UI-005
 function openGroup(id = '') {
   state.editingGroupId = id;
   state.groupVersion = state.model.configuration_version;
@@ -1688,7 +1688,7 @@ function buildTerminalCard(id) {
   terminalCardState(card, id);
   return card;
 }
-// @llr SLLR061
+// @llr LLR-SRV-UI-007
 function renderTerminals() {
   $('page-actions').replaceChildren();
   const ids = Object.keys(state.model.profiles);
@@ -2043,7 +2043,7 @@ function callbackHours(hours) {
 }
 
 // admin-backups.js
-// @llr SLLR106
+// @llr LLR-SRV-DATA-011
 function backupPanel() {
   const section = panel(
     'Backup and restore',
@@ -2080,7 +2080,7 @@ async function backupRequest(url, options) {
   return response;
 }
 
-// @llr SLLR106
+// @llr LLR-SRV-DATA-011
 function openBackups() {
   const dialog = el('dialog', null, 'backup-dialog');
   dialog.setAttribute('aria-labelledby', 'backup-title');
@@ -2397,7 +2397,7 @@ function renderActivity() {
 
 // admin-main.js
 // Admin entry point: route rendering and polling share state without overwriting active edits.
-// @llr SLLR056
+// @llr LLR-SRV-UI-002
 function render() {
   const renderers = /** @type {Record<string, () => void>} */ ({
     '/': renderOverview,
@@ -2422,7 +2422,7 @@ function refresh(force = false) {
   });
   return inFlight;
 }
-// @llr SLLR060
+// @llr LLR-SRV-UI-006
 /** @param {boolean} force */
 async function performRefresh(force) {
   if (state.restoring) return;

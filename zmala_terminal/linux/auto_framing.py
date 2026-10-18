@@ -15,7 +15,7 @@ import time
 WIDE = (.5, .5, 1.)
 
 
-# @llr TLLR058
+# @llr LLR-TERM-MEDIA-015
 def group_frame(boxes):
     """Return (centre x, centre y, fractional size), preserving aspect ratio."""
     valid = [b for b in boxes if len(b) == 4 and all(math.isfinite(v) for v in b)
@@ -39,7 +39,7 @@ class FramingPolicy:
         self.last_seen = None
         self.recent = []
 
-    # @llr TLLR060
+    # @llr LLR-TERM-MEDIA-017
     def update(self, boxes, now):
         candidate = group_frame(boxes)
         if candidate is None:
@@ -132,7 +132,7 @@ class AutoFraming:
         plugin.zmala_framing_target.argtypes = [C.c_uint64, C.c_float, C.c_float, C.c_float]
         plugin.zmala_framing_target.restype = None
 
-    # @llr TLLR061
+    # @llr LLR-TERM-MEDIA-018
     def configure(self, enabled):
         enabled = enabled is True
         if enabled == self.enabled:
@@ -146,7 +146,7 @@ class AutoFraming:
             self.thread = threading.Thread(target=self._run, name='person-framing', daemon=True)
             self.thread.start()
 
-    # @llr TLLR059
+    # @llr LLR-TERM-MEDIA-016
     def _run(self):
         # Linux nice applies to this detector thread and its inference workers,
         # never to the UI or real-time media threads in the same process.

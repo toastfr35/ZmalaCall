@@ -1,5 +1,5 @@
 # @test T-HLT-003
-# @requirements THLR012
+# @requirements HLR-TERM-HISTORY-002
 # @environment hardware
 # @plan Run an isolated SIP/HTTP server with real terminal and phone peers; create and cancel callback requests and assert delivery, badges and notification behavior.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

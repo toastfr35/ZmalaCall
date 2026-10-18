@@ -1,0 +1,29 @@
+active: true
+area: TV capability checks
+derived: false
+header: |
+  Consented power cycle
+level: 87.0
+links:
+- HLR-TERM-TV-001: kYpGs_BmR8aL_2eLSYxblKePovp4taDJjgFWbwA0GMc=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: tests/terminal/LLT/test_tv_check.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The power test shall explain its action and wait for green consent, request standby,
+  bound the wait for a report, wait three seconds and attempt wake even when standby
+  acknowledgement failed.
+verification: |
+  Withhold power reports and inspect command order and eventual wake attempt.

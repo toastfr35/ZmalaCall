@@ -6,7 +6,7 @@ TV_IDLE_DELAYS = (30, 60, 120, 300, 600, 1200, 0)
 ANSWER_DELAYS = (0, 10, 30, 60, 120, 300, 600)
 
 
-# @llr TLLR073
+# @llr LLR-TERM-CONFIG-003
 class SettingsHold:
     def __init__(self):
         self.clear()
@@ -51,7 +51,7 @@ class SettingsDraft:
         return config.get(key, {'language': 'en', 'auto_framing': False,
                                'c20_speaker_volume': 50, 'carousel_portraits': 3, 'tv_idle_seconds': 30}.get(key))
 
-    # @llr TLLR076
+    # @llr LLR-TERM-CONFIG-006
     def open(self, config):
         if self.key == 'reset':
             raise ValueError('Reset uses its own confirmation page')

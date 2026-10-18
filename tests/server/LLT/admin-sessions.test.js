@@ -1,5 +1,5 @@
 // @test S-LLT-015
-// @requirements SLLR017, SLLR020, SLLR021
+// @requirements LLR-SRV-AUTH-002, LLR-SRV-AUTH-005, LLR-SRV-AUTH-006
 // @environment portable
 // @plan Hash the same password twice and inject expired sessions and repeated logins; assert distinct salts, correct verification, restart invalidation and bounded sessions/login work.
 // @pass Every named assertion must pass; failures or skips do not establish requirement verification.

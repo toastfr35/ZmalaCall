@@ -1,5 +1,5 @@
 // @test S-HLT-010
-// @requirements SHLR011
+// @requirements HLR-SRV-CONFIG-001
 // @environment portable
 // @plan Send valid, invalid, foreign and stale setting updates through HTTP, reload the store and inspect generated device configuration; assert device ownership, persistence, privacy and answer-delay ring budget.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

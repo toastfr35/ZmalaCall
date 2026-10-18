@@ -21,37 +21,37 @@ class TestPlanAuditTests(unittest.TestCase):
         self.path.parent.mkdir(parents=True)
         self.header = (
             '# @test T-LLT-001\n'
-            '# @requirements TLLR001\n'
+            '# @requirements LLR-TERM-SYS-003\n'
             '# @environment portable\n'
             '# @plan Supply bad input to the parser and assert rejection without mutation.\n'
             '# @pass All parser assertions pass and original state remains unchanged after rejection.\n'
         )
         self.path.write_text(self.header + 'value = 1\n', encoding='utf-8')
         self.records = {
-            'TLLR001': {'prefix': 'TLLR', 'references': [{'path': 'tests/terminal/LLT/example.py'}]},
-            'THLR001': {'prefix': 'THLR', 'references': []},
+            'LLR-TERM-SYS-003': {'prefix': 'LLR-TERM-SYS', 'references': [{'path': 'tests/terminal/LLT/example.py'}]},
+            'HLR-TERM-SYS-001': {'prefix': 'HLR-TERM-SYS', 'references': []},
         }
 
     def test_valid_plan_and_unmapped_hlr_are_separate_from_execution(self):
         trace = audit_tests(self.root, self.records)
-        self.assertEqual(trace['requirements'], {'TLLR001': ['T-LLT-001']})
-        self.assertEqual(trace['unmapped']['THLR'], ['THLR001'])
+        self.assertEqual(trace['requirements'], {'LLR-TERM-SYS-003': ['T-LLT-001']})
+        self.assertEqual(trace['unmapped']['HLR-TERM'], ['HLR-TERM-SYS-001'])
         self.assertNotIn('passed', trace['tests']['T-LLT-001'])
 
     def test_every_llr_needs_a_direct_unit_test(self):
-        for uid, prefix in (('SLLR999', 'SLLR'), ('TLLR002', 'TLLR')):
+        for uid, prefix in (('LLR-SRV-BOOT-999', 'LLR-SRV-BOOT'), ('LLR-TERM-SYS-004', 'LLR-TERM-SYS')):
             with self.subTest(uid=uid):
                 records = self.records | {uid: {'prefix': prefix, 'references': []}}
                 adhoc = self.root / 'tests/adhoc/experiment.py'
                 adhoc.parent.mkdir(exist_ok=True)
-                adhoc.write_text(self.header.replace('TLLR001', uid), encoding='utf-8')
+                adhoc.write_text(self.header.replace('LLR-TERM-SYS-003', uid), encoding='utf-8')
                 with self.assertRaisesRegex(ValueError, f'{uid}: no mapped LLT'):
                     audit_tests(self.root, records)
 
     def test_unknown_id_wrong_level_and_wrong_component_fail(self):
         for old, new, message in (
-                ('TLLR001', 'TLLR999', 'unknown requirement'),
-                ('TLLR001', 'THLR001', 'must trace'),
+                ('LLR-TERM-SYS-003', 'LLR-TERM-SYS-999', 'unknown requirement'),
+                ('LLR-TERM-SYS-003', 'HLR-TERM-SYS-001', 'must trace'),
                 ('T-LLT-001', 'S-LLT-001', 'component/level')):
             with self.subTest(new=new):
                 self.path.write_text(self.header.replace(old, new), encoding='utf-8')
@@ -68,10 +68,10 @@ class TestPlanAuditTests(unittest.TestCase):
             read_plan(self.path)
 
     def test_missing_reciprocal_links_fail_in_both_directions(self):
-        self.records['TLLR001']['references'] = []
+        self.records['LLR-TERM-SYS-003']['references'] = []
         with self.assertRaisesRegex(ValueError, 'missing reciprocal'):
             audit_tests(self.root, self.records)
-        self.records['THLR001']['references'] = [{'path': 'tests/terminal/HLT/missing.py'}]
+        self.records['HLR-TERM-SYS-001']['references'] = [{'path': 'tests/terminal/HLT/missing.py'}]
         with self.assertRaisesRegex(ValueError, 'no reciprocal requirement trace'):
             audit_tests(self.root, self.records)
 
@@ -86,7 +86,7 @@ class TestPlanAuditTests(unittest.TestCase):
         for text, message in (
                 ('\n'.join(line for line in self.header.splitlines() if '@plan' not in line), 'missing leading'),
                 (self.header.replace('portable', 'anything'), 'unknown test environment'),
-                (self.header.replace('@requirements TLLR001', '@requirements TLLR001, TLLR001'), 'duplicate requirement'),
+                (self.header.replace('@requirements LLR-TERM-SYS-003', '@requirements LLR-TERM-SYS-003, LLR-TERM-SYS-003'), 'duplicate requirement'),
                 (self.header.replace('@plan Supply bad input to the parser and assert rejection without mutation.', '@plan Check it.'), 'must explain')):
             self.path.write_text(text, encoding='utf-8')
             with self.assertRaisesRegex(ValueError, message):
@@ -112,7 +112,7 @@ class TestPlanAuditTests(unittest.TestCase):
         self.assertNotIn('<script>unsafe', report)
         self.assertIn('No mapped test', report)
         self.assertIn('id="T-LLT-001"', report)
-        self.assertIn('documents/TLLR.html#TLLR001', report)
+        self.assertIn('documents/LLR-TERM-SYS.html#LLR-TERM-SYS-003', report)
 
 
 if __name__ == '__main__':

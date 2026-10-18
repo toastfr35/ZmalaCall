@@ -1,5 +1,5 @@
 # @test T-LLT-046
-# @requirements TLLR025, TLLR028, TLLR029
+# @requirements LLR-TERM-SETUP-009, LLR-TERM-SETUP-012, LLR-TERM-SETUP-013
 # @environment portable
 # @plan Inject QR workers, monotonic time and NetworkManager D-Bus into setup; assert camera failure feedback and five-second retry, scanner release before engine activation, ten-second successful Wi-Fi confirmation and private owned-profile cleanup on cancellation.
 # @pass All ownership, timing and credential-boundary assertions must pass without accessing a camera or changing network profiles.

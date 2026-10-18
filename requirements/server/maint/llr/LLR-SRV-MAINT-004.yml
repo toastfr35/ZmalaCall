@@ -1,0 +1,27 @@
+active: true
+area: Maintenance queue
+derived: false
+header: |
+  Device serial and lease ownership
+level: 75.0
+links:
+- HLR-SRV-MAINT-001: JeqKRKn2Yj4tqyBDlp_bKWPfgTTTtqPYtR5c6WniWow=
+normative: true
+ref: ''
+references:
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: tests/server/LLT/console-state.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A device token shall claim/report only jobs bound to its immutable serial; each
+  execution lease shall authenticate its result, and legacy jobs with unknown device
+  ownership shall never run.
+verification: |
+  Reuse usernames, reassign devices and submit wrong/stale leases.

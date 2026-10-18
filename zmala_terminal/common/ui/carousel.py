@@ -104,13 +104,13 @@ class CarouselView:
                                     fill=ACCENT if selected else '#6d7b92', font=(self.font_family, max(10,int(size*.38)), 'bold'))
         if idle and person and person['id'] in self.model.missed_calls:
             self.draw_missed_call(x+size/2-18, y-size/2+18, 22 if selected else 18, person['id'], count=self.model.notification_count(person['id']))
-        # @llr TLLR070
+        # @llr LLR-TERM-HISTORY-010
         if idle and self.model.pending_callback(person):
             badge = self.icon_renderer.callback(20 if selected else 16, ACCENT, BG)
             self.current_photos.append(badge)
             self.avatar.create_image(x-size/2+18, y-size/2+18, image=badge,
                                      tags=('callback-pending', 'callback-pending-'+person['id']))
-        # @llr TLLR007
+        # @llr LLR-TERM-UI-004
         if idle or focus < .8:
             text = person['name'] if person else '—'
             label_size = 16
@@ -155,7 +155,7 @@ class CarouselView:
         self.current_text_images.append(label)
         self.avatar.create_image(x+12, status_y, image=label)
 
-    # @llr TLLR064
+    # @llr LLR-TERM-HISTORY-004
     def draw_corner_notification(self, count):
         if self.corner_notification_state == count:
             return
@@ -182,7 +182,7 @@ class CarouselView:
     def blend_color(start, end, amount):
         return '#'+''.join(f'{round(int(start[i:i+2],16)*(1-amount)+int(end[i:i+2],16)*amount):02x}' for i in (1,3,5))
 
-    # @llr TLLR010
+    # @llr LLR-TERM-UI-007
     def contact_image(self, contact, size, background=PANEL):
         if contact and contact.get('photo'):
             file = ROOT / 'data' / contact['photo'].lstrip('/')

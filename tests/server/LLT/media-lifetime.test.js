@@ -1,5 +1,5 @@
 // @test S-LLT-003
-// @requirements SLLR035, SLLR036, SLLR038, SLLR039
+// @requirements LLR-SRV-MEDIA-002, LLR-SRV-MEDIA-003, LLR-SRV-MEDIA-005, LLR-SRV-MEDIA-006
 // @environment portable
 // @plan Defer relay allocation and close/update streams at controlled points; assert shared allocation, valid RTCP bounds, transactional endpoints and reclamation of late sockets.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

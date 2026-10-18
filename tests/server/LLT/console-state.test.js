@@ -1,5 +1,5 @@
 // @test S-LLT-020
-// @requirements SLLR074, SLLR075, SLLR076, SLLR077, SLLR078
+// @requirements LLR-SRV-MAINT-003, LLR-SRV-MAINT-004, LLR-SRV-MAINT-005, LLR-SRV-MAINT-006, LLR-SRV-MAINT-007
 // @environment portable
 // @plan Exercise the command queue with fixed device identities and injected time; check admission bounds, captured shell, exclusive leases, wrong-owner rejection, UTF-8 output limits, lost executions, cancellation and bounded redacted history.
 // @pass All queue transitions and boundary assertions must pass without executing any command or contacting a terminal.

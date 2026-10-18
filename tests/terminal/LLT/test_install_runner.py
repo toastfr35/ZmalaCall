@@ -1,5 +1,5 @@
 # @test T-LLT-015
-# @requirements TLLR115
+# @requirements LLR-TERM-INSTALL-004
 # @environment portable
 # @plan Run controlled installer child commands that succeed, fail, cannot launch or are killed; assert exit status and output are durably reported without false success.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

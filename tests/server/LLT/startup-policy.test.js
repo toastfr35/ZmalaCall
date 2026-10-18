@@ -1,5 +1,5 @@
 // @test S-LLT-028
-// @requirements SLLR002, SLLR003, SLLR083, SLLR101, SLLR102
+// @requirements LLR-SRV-BOOT-003, LLR-SRV-BOOT-004, LLR-SRV-DATA-007, LLR-SRV-CONFIG-013, LLR-SRV-BOOT-007
 // @environment portable
 // @plan Load the real composition module with fake listeners and snapshot writers; assert default/overridden binds, optional TLS certificate checks, IPv4 advertised-host validation and revision persistence. Fail one bootstrap writer to prove per-file failure propagation without claiming a multi-file transaction.
 // @pass Startup must bind only the requested listeners, invalid configuration must fail, and write failures must propagate while already completed independent files remain completed.

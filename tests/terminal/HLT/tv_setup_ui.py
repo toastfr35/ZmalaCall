@@ -1,5 +1,5 @@
 # @test T-HLT-017
-# @requirements THLR015
+# @requirements HLR-TERM-TV-001
 # @environment display
 # @plan Render TV-check prompts using the real UI with controlled state transitions; assert localized controls and current test outcome. Physical TV power/input behavior requires a separate device run.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

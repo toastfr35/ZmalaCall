@@ -1,0 +1,35 @@
+active: true
+area: TV state ownership
+derived: false
+header: |
+  Connector and observer selection
+level: 92.0
+links:
+- HLR-TERM-TV-002: AaRTYO95hEXy6Wj35iucOog4yAbMUlyXD_-I4txcxPE=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+- path: zmala_terminal/linux/cec_device.py
+  type: file
+- path: zmala_terminal/linux/cec_observer.py
+  type: file
+- path: zmala_terminal/linux/samsung_tv.py
+  type: file
+- path: zmala_terminal/common/idle_return.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: build_tools/linux/zmalacall-cec.service
+  type: file
+- path: tests/terminal/LLT/test_cec_device.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  CEC selection shall prefer the connected EDID-bearing connector, honor an explicit fixed
+  adapter and retain the adapter through standby; a saved restoration shall not migrate
+  adapters mid-call. Passive routing observation shall not itself claim the active source.
+verification: |
+  Exercise two connectors, standby EDID loss and mid-call connection changes.

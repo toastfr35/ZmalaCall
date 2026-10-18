@@ -1,5 +1,5 @@
 // @test S-HLT-006
-// @requirements SHLR019
+// @requirements HLR-SRV-DATA-002
 // @environment portable
 // @plan Populate the assembled service with accounts, credentials, histories and pictures, export and restore it, then reopen storage; compare all records and photo bytes, verify restored credentials and command cancellation, and reject unsafe or unauthorized HTTP restores without mutation.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,5 +1,5 @@
 // @test T-LLT-001
-// @requirements TLLR058, TLLR059, TLLR060, TLLR061, TLLR062
+// @requirements LLR-TERM-MEDIA-015, LLR-TERM-MEDIA-016, LLR-TERM-MEDIA-017, LLR-TERM-MEDIA-018, LLR-TERM-MEDIA-019
 // @environment native-sdk
 // @plan Feed synthetic 1080p YUV frames through the framing filter; assert crop bounds, 200 percent ceiling, unchanged source pixels/metadata, full-frame copy bypass and stale-detector fencing.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

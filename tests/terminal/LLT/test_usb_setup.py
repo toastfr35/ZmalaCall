@@ -1,5 +1,5 @@
 # @test T-LLT-038
-# @requirements TLLR020, TLLR021, TLLR035
+# @requirements LLR-TERM-SETUP-004, LLR-TERM-SETUP-005, LLR-TERM-UI-008
 # @environment portable
 # @plan Supply USB catalogs and setup/call states; assert only the C20 satisfies the camera gate, scanning waits for attachment and installation English does not replace the configured language.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

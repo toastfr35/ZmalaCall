@@ -23,7 +23,7 @@ function speakerVolume(value) {
   return value;
 }
 
-// @llr SLLR066
+// @llr LLR-SRV-CONFIG-005
 /** @param {import('./types/contracts').JsonObject} update
  * @returns {import('./types/contracts').TerminalSettings} */
 function mediaDevices(update) {
@@ -48,14 +48,14 @@ function terminalProfileFields(profile, update) {
     update.display_name.length > 80
   )
     throw Error('Enter a display name.');
-  // @llr SLLR065
+  // @llr LLR-SRV-CONFIG-004
   const language = proposed(update, 'language', profile.language || 'en');
   if (typeof language !== 'string' || !own(LANGUAGES, language))
     throw Error('Choose a supported terminal language.');
   return {
     display_name: update.display_name.trim(),
     language,
-    // @llr SLLR070
+    // @llr LLR-SRV-CONFIG-009
     command_shell: choice(
       proposed(update, 'command_shell', profile.command_shell || 'powershell'),
       /** @type {const} */ (['powershell', 'pwsh', 'cmd', 'sh', 'bash']),
@@ -66,7 +66,7 @@ function terminalProfileFields(profile, update) {
       /** @type {const} */ (['normal', 'speech']),
       'Choose a supported audio profile.',
     ),
-    // @llr SLLR064
+    // @llr LLR-SRV-CONFIG-003
     video_resolution: choice(
       proposed(update, 'video_resolution', profile.video_resolution || '720p'),
       /** @type {const} */ (['480p', '720p', '1080p']),

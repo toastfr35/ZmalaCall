@@ -11,6 +11,8 @@ from pathlib import Path
 import re
 import tokenize
 
+from requirement_ids import LLR
+
 COMMENT_STYLES = {
     '.py': ('#', ''), '.sh': ('#', ''), '.service': ('#', ''),
     '.conf': ('#', ''), '.rules': ('#', ''), '.plymouth': ('#', ''),
@@ -18,7 +20,7 @@ COMMENT_STYLES = {
     '.c': ('//', ''), '.h': ('//', ''), '.script': ('#', ''),
     '.css': ('/*', '*/'), '.html': ('<!--', '-->'),
 }
-IDS = re.compile(r'[ST]LLR\d{3}(?:, [ST]LLR\d{3})*')
+IDS = re.compile(LLR + '(?:, ' + LLR + ')*')
 
 
 def read_markers(path: Path) -> list[tuple[int, list[str]]]:
@@ -57,7 +59,7 @@ def read_markers(path: Path) -> list[tuple[int, list[str]]]:
             body = body[:-len(closing)].rstrip()
         payload = body.removeprefix('@llr ')
         if not IDS.fullmatch(payload) or len(set(payload.split(', '))) != len(payload.split(', ')):
-            raise ValueError(f'{path}:{number}: malformed @llr directive; use @llr TLLR001, SLLR001')
+            raise ValueError(f'{path}:{number}: malformed @llr directive; use @llr LLR-TERM-SYS-003, LLR-SRV-BOOT-002')
         result.append((number, payload.split(', ')))
     return result
 
@@ -77,14 +79,14 @@ def audit_traces(root: Path, records: dict, files: list[str], referenced: dict) 
         for line, ids in markers:
             for uid in ids:
                 location = f'{name}:{line}'
-                if uid not in records or records[uid]['prefix'] not in ('SLLR', 'TLLR'):
+                if uid not in records or not records[uid]['prefix'].startswith('LLR-'):
                     errors.append(f'{location}: unknown LLR {uid}')
                 elif uid not in referenced.get(name, set()):
                     errors.append(f'{location}: {uid} must reference this implementation file')
                 else:
                     traces[uid].append({'path': name, 'line': line})
     for uid, record in records.items():
-        if record['prefix'] in ('SLLR', 'TLLR') and uid not in traces:
+        if record['prefix'].startswith('LLR-') and uid not in traces:
             errors.append(f'{uid}: no implementation @llr comment')
     if errors:
         raise ValueError('\n'.join(errors))

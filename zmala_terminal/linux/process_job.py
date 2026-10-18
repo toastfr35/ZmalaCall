@@ -16,7 +16,7 @@ class ProcessJob:
             pass  # A fast command may have exited before ownership is attached.
         self.group = process.pid
 
-    # @llr TLLR101
+    # @llr LLR-TERM-MAINT-004
     def close(self):
         if self.group is not None:
             try:

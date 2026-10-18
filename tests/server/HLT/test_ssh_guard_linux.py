@@ -1,5 +1,5 @@
 # @test S-HLT-022
-# @requirements SHLR018
+# @requirements HLR-SRV-INSTALL-002
 # @environment linux-root
 # @plan Create isolated Linux network namespaces with Ethernet and Wi-Fi interfaces, apply the real nftables guard twice and attempt IPv4/IPv6 connections; assert SSH accepts only Ethernet while other service ports remain reachable, then destroy every fixture.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

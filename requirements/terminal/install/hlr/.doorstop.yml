@@ -1,0 +1,19 @@
+settings:
+  digits: 3
+  itemformat: yaml
+  prefix: HLR-TERM-INSTALL
+  sep: '-'
+  parent: PROD
+attributes:
+  defaults:
+    doc:
+      name: HLR-TERM-INSTALL
+      title: Deployment and delivery — HLR
+  publish:
+  - area
+  - scope
+  - verification
+  reviewed:
+  - area
+  - scope
+  - verification

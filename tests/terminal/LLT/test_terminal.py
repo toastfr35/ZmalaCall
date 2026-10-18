@@ -1,5 +1,5 @@
 # @test T-LLT-034
-# @requirements TLLR006, TLLR008, TLLR009, TLLR035, TLLR039, TLLR040, TLLR041, TLLR042, TLLR043, TLLR044, TLLR079
+# @requirements LLR-TERM-UI-003, LLR-TERM-UI-005, LLR-TERM-UI-006, LLR-TERM-UI-008, LLR-TERM-CALL-002, LLR-TERM-CALL-003, LLR-TERM-CALL-004, LLR-TERM-CALL-005, LLR-TERM-CALL-006, LLR-TERM-CALL-007, LLR-TERM-CONFIG-009
 # @environment portable
 # @plan Drive model call states, availability changes, configuration validation, localization and carousel geometry with deterministic inputs; assert two-step calling, caller permission checks, cancellation, stable selection and three/five-contact layout.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

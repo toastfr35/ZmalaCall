@@ -1,5 +1,5 @@
 # @test T-LLT-011
-# @requirements TLLR078, TLLR081, TLLR085
+# @requirements LLR-TERM-CONFIG-008, LLR-TERM-CONFIG-011, LLR-TERM-CONFIG-015
 # @environment portable
 # @plan Inject settings and polling replies, older revisions and redirects; assert cached configuration never rolls back, photo policy stays consistent and enrollment credentials are not forwarded to redirects.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

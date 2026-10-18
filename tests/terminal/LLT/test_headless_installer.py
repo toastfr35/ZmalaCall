@@ -1,5 +1,5 @@
 # @test T-LLT-012
-# @requirements TLLR114, TLLR115, TLLR119
+# @requirements LLR-TERM-INSTALL-003, LLR-TERM-INSTALL-004, LLR-TERM-INSTALL-008
 # @environment portable
 # @plan Use a fake deployment backend and payload; assert explicit consent, preflight-before-install ordering, Argon defaults, failed completion reporting and GUI-free dispatch.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

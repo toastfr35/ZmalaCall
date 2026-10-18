@@ -1,5 +1,5 @@
 # @test T-LLT-035
-# @requirements TLLR086, TLLR087, TLLR088, TLLR089, TLLR090, TLLR091
+# @requirements LLR-TERM-TV-003, LLR-TERM-TV-004, LLR-TERM-TV-005, LLR-TERM-TV-006, LLR-TERM-TV-007, LLR-TERM-TV-008
 # @environment portable
 # @plan Run the setup state machine against fake TV responses and saved attempts; assert consent before switching, independent user-confirmed outcomes, alternate-input sequence and restart-safe TV binding.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

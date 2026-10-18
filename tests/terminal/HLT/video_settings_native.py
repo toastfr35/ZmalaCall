@@ -1,5 +1,5 @@
 # @test T-HLT-019
-# @requirements THLR009
+# @requirements HLR-TERM-MEDIA-001
 # @environment hardware
 # @plan Configure the installed native engine for legacy VGA, VGA, 720p and 1080p without starting capture; read back the preferred size and packet repair state, and assert every supported target is applied before closing each core.
 # @pass Every named assertion must pass; record platform and native prerequisites with the result.

@@ -1,5 +1,5 @@
 # @test T-LLT-025
-# @requirements TLLR081, TLLR082, TLLR122
+# @requirements LLR-TERM-CONFIG-011, LLR-TERM-CONFIG-012, LLR-TERM-SYS-010
 # @environment portable
 # @plan Repeat stable and changed polls and render requests with fake widgets and small caches; assert live updates avoid cache rewrites, stable identity is protected and redundant rendering is suppressed.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

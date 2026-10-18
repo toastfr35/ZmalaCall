@@ -1,5 +1,5 @@
 # @test S-LLT-012
-# @requirements SLLR090, SLLR091, SLLR092, SLLR093, SLLR094, SLLR097
+# @requirements LLR-SRV-INSTALL-003, LLR-SRV-INSTALL-004, LLR-SRV-INSTALL-005, LLR-SRV-INSTALL-006, LLR-SRV-INSTALL-007, LLR-SRV-INSTALL-010
 # @environment portable
 # @plan Use fake SSH targets and temporary migration/release archives; assert supported wired Pi preflight, consent, pinned reconnect, failed-recheck abort and exact private-state/payload boundaries.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,5 +1,5 @@
 // @test S-LLT-023
-// @requirements SLLR103, SLLR104, SLLR105
+// @requirements LLR-SRV-DATA-008, LLR-SRV-DATA-009, LLR-SRV-DATA-010
 // @environment portable
 // @plan Use isolated backup maps with fake live services; corrupt versions, schemas, hashes and sizes before decoding, then inject apply/rollback failures into journal recovery. Check snapshot isolation, restore exclusion gates and revision/network preservation.
 // @pass Rejections must leave live files unchanged; accepted snapshots and recovered transactions must match expected state without replaying commands.

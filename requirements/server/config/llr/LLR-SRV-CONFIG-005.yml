@@ -1,0 +1,29 @@
+active: true
+area: Configuration contract
+derived: false
+header: |
+  Audio and device selection validation
+level: 66.0
+links:
+- HLR-SRV-CONFIG-001: 0zG8kyY0lp66rKhLYxvU4RQ_7rk3OBiAGzVYRxuP6SI=
+normative: true
+ref: ''
+references:
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+- path: tests/server/LLT/terminal-fields.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Profiles shall accept normal/speech audio processing and string
+  camera/microphone/speaker selectors of at most 256 characters, preserving an existing
+  optional setting when omitted but rejecting explicit invalid values.
+verification: |
+  Submit missing, null, excessive and valid selectors and profiles.

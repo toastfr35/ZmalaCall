@@ -1,0 +1,29 @@
+{
+  "SRV": {
+    "BOOT": "Service lifecycle",
+    "DIR": "Accounts, directory and portraits",
+    "AUTH": "Administration security",
+    "SIP": "Signaling, presence and messages",
+    "MEDIA": "Media relay",
+    "CALLBACK": "Callbacks and reminders",
+    "UI": "Administration interface",
+    "CONFIG": "Settings and enrollment",
+    "MAINT": "Maintenance and diagnostics",
+    "DATA": "Persistence, backup and restore",
+    "INSTALL": "Deployment and host policy"
+  },
+  "TERM": {
+    "SYS": "Appliance lifecycle and resources",
+    "UI": "Contact display and localization",
+    "REMOTE": "Remote input and health",
+    "SETUP": "First-run setup and reset",
+    "CALL": "Calling and authorization",
+    "MEDIA": "Audio, video and framing",
+    "HISTORY": "Unread history and callbacks",
+    "CONFIG": "Local settings and synchronization",
+    "TV": "TV qualification and control",
+    "MAINT": "Maintenance and diagnostics",
+    "POWER": "Case and USB power",
+    "INSTALL": "Deployment and delivery"
+  }
+}

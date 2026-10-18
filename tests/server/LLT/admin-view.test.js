@@ -1,5 +1,5 @@
 // @test S-LLT-027
-// @requirements SLLR056, SLLR057, SLLR058, SLLR059
+// @requirements LLR-SRV-UI-002, LLR-SRV-UI-003, LLR-SRV-UI-004, LLR-SRV-UI-005
 // @environment display
 // @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation.
 // @pass All computed layout and interaction assertions must pass against the mocked API; no live service or account is changed.

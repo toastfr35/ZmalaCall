@@ -1,0 +1,31 @@
+active: true
+area: Unread contact history
+derived: false
+header: |
+  Missed-call definition
+level: 63.0
+links:
+- HLR-TERM-HISTORY-001: rXrlQCwJ4ZlxChtOrCyIko6B8WojkvEKjGrrTsndgMg=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/missed_calls.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: tests/terminal/LLT/test_missed_calls.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Only a permitted incoming call cancelled by its caller while still ringing shall add a
+  missed-call notification; answered, locally declined and outgoing calls shall not.
+  Cancellation shall stop ringtone/countdown and return to idle.
+verification: |
+  Exercise each termination reason and inspect saved counts and UI.

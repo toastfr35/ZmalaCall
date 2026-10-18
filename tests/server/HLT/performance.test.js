@@ -1,5 +1,5 @@
 // @test S-HLT-013
-// @requirements SHLR003, SHLR013, SHLR014, SHLR015
+// @requirements HLR-SRV-DIR-002, HLR-SRV-MAINT-001, HLR-SRV-DATA-001, HLR-SRV-MAINT-002
 // @environment portable
 // @plan Use HTTP device/admin polling while delaying persistence; assert live state remains responsive, cached contacts cannot leak mutations, claims wait for durable leases and callback notifications follow commit.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

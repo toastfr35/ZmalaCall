@@ -6,8 +6,10 @@ Keep code, documentation and requirements synchronized in every change.
   comments and documentation. Update affected artifacts in the same change set;
   a change is not complete while they disagree.
 - Keep normative product, server and Raspberry Pi terminal requirements only in
-  `requirements/`. Maintain the PROD → SHLR → SLLR and PROD → THLR → TLLR
-  hierarchy, stable IDs, implementation references and verification guidance.
+  `requirements/`. Maintain PROD → HLR → LLR within each component/theme,
+  using `<HLR|LLR>-<SRV|TERM>-<GROUP>-NNN` IDs. Numbers are unique across
+  both levels in each component/theme; use `--next-id` in the requirements tool.
+  Keep IDs stable and maintain implementation references and verification guidance.
 - Maintain standalone `@llr` comments beside the owning implementation. When
   moving, adding or removing code, update both the comments and the corresponding
   Doorstop references. Follow the format documented in `docs/general.md`.
@@ -27,7 +29,7 @@ remain accurate need no gratuitous edits. Report any unresolved inconsistency.
 
 Tests belong in the top-level `tests/` tree. Product verification is requirement
 based: `tests/server/LLT/` and `tests/terminal/LLT/` contain unit tests linked to
-SLLRs/TLLRs; `HLT/` contains system/integration scenarios linked to SHLRs/THLRs.
+component LLRs; `HLT/` contains system/integration scenarios linked to component HLRs.
 Every LLT/HLT scenario starts with the stable `@test`, `@requirements`,
 `@environment`, `@plan` and `@pass` comments documented in `docs/general.md`.
 Every server and Pi terminal LLR must have one or more direct LLT verification

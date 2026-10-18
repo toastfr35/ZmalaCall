@@ -23,7 +23,7 @@ class ServerBackups {
     this.restoring = false;
     this.requests = 0;
   }
-  // @llr SLLR103
+  // @llr LLR-SRV-DATA-008
   async snapshot() {
     // Serialize the complete model before yielding. Pictures have immutable names.
     const files = new Map([
@@ -46,7 +46,7 @@ class ServerBackups {
     const file = path.join(this.store.dir, 'restore-result.json');
     return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : { result: 'none' };
   }
-  // @llr SLLR105
+  // @llr LLR-SRV-DATA-010
   /** @param {Awaited<ReturnType<typeof import('./backup-format').decodeBackup>>} backup
    * @param {number} expectedVersion */
   async stage(backup, expectedVersion) {

@@ -1,5 +1,5 @@
 // @test S-LLT-010
-// @requirements SLLR060, SLLR061, SLLR063, SLLR064, SLLR065, SLLR066, SLLR067, SLLR070
+// @requirements LLR-SRV-UI-006, LLR-SRV-UI-007, LLR-SRV-UI-009, LLR-SRV-CONFIG-003, LLR-SRV-CONFIG-004, LLR-SRV-CONFIG-005, LLR-SRV-CONFIG-006, LLR-SRV-CONFIG-009
 // @environment portable
 // @plan Render terminal field definitions with DOM/API doubles; assert controls attach to the intended sections, frame-rate choices are present and drafts/download errors retain ownership.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

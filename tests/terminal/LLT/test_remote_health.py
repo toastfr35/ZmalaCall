@@ -1,5 +1,5 @@
 # @test T-LLT-029
-# @requirements TLLR017, TLLR018, TLLR019
+# @requirements LLR-TERM-REMOTE-008, LLR-TERM-REMOTE-009, LLR-TERM-REMOTE-010
 # @environment portable
 # @plan Inject remote connection, status-file freshness, battery and charging changes; assert stale or malformed status cannot report a healthy remote and assistance does not interrupt a call.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

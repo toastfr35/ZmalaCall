@@ -1,5 +1,5 @@
 // @test S-HLT-021
-// @requirements SHLR015
+// @requirements HLR-SRV-MAINT-002
 // @environment portable
 // @plan Post valid and malformed diagnostic payloads through device HTTP authentication; assert invalid fields do not replace the last valid status and the server owns receipt time.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

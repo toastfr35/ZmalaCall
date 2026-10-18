@@ -1,0 +1,37 @@
+active: true
+area: Camera QR enrollment
+derived: false
+header: |
+  Supported Wi-Fi formats
+level: 27.0
+links:
+- HLR-TERM-SETUP-002: xsUqrJRcAecV4CLoi2Dh_NK-nTXrLg2KsBUy886ovaw=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/qr_scanner.py
+  type: file
+- path: zmala_terminal/common/qr_worker.py
+  type: file
+- path: zmala_terminal/common/native_qr.py
+  type: file
+- path: zmala_terminal/linux/qr.py
+  type: file
+- path: zmala_terminal/common/wifi.py
+  type: file
+- path: zmala_terminal/linux/wifi.py
+  type: file
+- path: tests/terminal/LLT/test_provisioning.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Wi-Fi setup shall decode standard escaped WIFI payloads and compact FAMILY-WIFI:1
+  payloads, including Unicode SSIDs, and validate supported authentication and password
+  fields before joining.
+verification: |
+  Decode escape/Unicode/security boundary fixtures.

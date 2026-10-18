@@ -1,5 +1,5 @@
 # @test T-LLT-013
-# @requirements TLLR093, TLLR096, TLLR097
+# @requirements LLR-TERM-TV-010, LLR-TERM-TV-013, LLR-TERM-TV-014
 # @environment portable
 # @plan Advance a controlled clock and inject physical input, TV visibility, calls and pending writes; assert countdown reset, ten-second bar delay, inhibition and one expiry without saving a draft.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

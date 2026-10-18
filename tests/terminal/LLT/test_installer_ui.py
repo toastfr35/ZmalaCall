@@ -1,5 +1,5 @@
 # @test T-LLT-016
-# @requirements TLLR114
+# @requirements LLR-TERM-INSTALL-003
 # @environment portable
 # @plan Drive installer UI callbacks with widget/backend doubles; assert checks gate installation, cancel does not deploy, address edits invalidate checks and Argon setup is automatic.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
