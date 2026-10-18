@@ -20,9 +20,9 @@ class CleanTests(unittest.TestCase):
             root = Path(directory)
             subprocess.run(['git', 'init', '-q', str(root)], check=True)
             disposable = ['src/__pycache__/module.pyc', 'src/old.pyo', '.ruff_cache/entry',
-                          'tmp/document.png', 'build_tools/tmp/test.log',
+                          'tmp/document.png', 'build_tools/tmp/test.log', 'requirements/output/index.html',
                           'build_tools/dist/setup.exe', 'build_tools/.npm-cache/cache']
-            preserved = ['src/module.py', 'data/settings.json', '.venv/__pycache__/keep.pyc',
+            preserved = ['requirements/terminal/TERM001.yml', 'src/module.py', 'data/settings.json', '.venv/__pycache__/keep.pyc',
                          'node_modules/__pycache__/keep.pyc', 'build_tools/runtime/engine.dll',
                          'zmala_terminal/data/__pycache__/keep.pyc', '.env', 'important.tmp',
                          'source/__pycache__/tracked.txt']

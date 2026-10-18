@@ -123,7 +123,7 @@ generated bundles and JavaScript fixtures are outside that scope.
 ### Cleanup
 
 `make clean` removes Python bytecode/cache directories, Ruff/pytest/mypy caches,
-root `tmp/`, and `build_tools/tmp/`, `build_tools/dist/` and
+root `tmp/`, `requirements/output/`, and `build_tools/tmp/`, `build_tools/dist/` and
 `build_tools/.npm-cache/`. Preview with `make clean CLEAN_FLAGS=--dry-run`.
 Run after builds/tests finish. Files inside these scratch/output directories,
 including diagnostic logs and installer binaries, are disposable. Tracked files
@@ -168,19 +168,19 @@ review, use `doorstop clear <ID>` to accept parent changes and `doorstop review
 <ID>` to stamp reviewed text; omit `--no-review-check` for review validation.
 Running `doorstop` alone validates the records; it does not render a report.
 `publish` writes to the destination supplied on the command line. Optional HTML
-reports belong in ignored scratch space:
+reports go in the ignored `requirements/output/` directory:
 
 ```sh
-doorstop publish all build_tools/tmp/requirements-html --html --project "$PWD"
+doorstop publish all requirements/output --html --project "$PWD"
 ```
 
 On Windows, the repository wrapper supplies the native absolute project path:
 
 ```powershell
-& .\build_tools\doorstop.cmd publish all build_tools/tmp/requirements-html --html
+& .\build_tools\doorstop.cmd publish all requirements/output --html
 ```
 
-Open `build_tools/tmp/requirements-html/index.html`. The report includes individual
+Open `requirements/output/index.html`. The report includes individual
 HTML documents under `documents/` and `traceability.html`/`traceability.csv` at its
 root. Generated reports are ignored by Git and removed by `make clean`; the YAML
 records under `requirements/` remain the authoritative source.

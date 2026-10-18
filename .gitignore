@@ -10,6 +10,7 @@ __pycache__/
 *.log
 build_tools/tmp/
 build_tools/dist/
+/requirements/output/
 
 # Local scratch work and generated test output.
 /tmp/
