@@ -1,7 +1,9 @@
 # Installation guide sources
 
-The installation guides are committed under `output/docx` and `output/pdf`.
-Both use `zmala_terminal_setup.exe` without exposing its build-machine path.
+The installation guide is committed as `docs/ZmalaCall-Pi4-Installation-Guide.docx`.
+It uses `zmala_terminal_setup.exe` without exposing its build-machine path.
+The PDF builder writes a temporary intermediate under ignored `tmp/pdfs`;
+the PDF is not committed or included in installer downloads.
 
 To regenerate on Windows, install `reportlab`, `Pillow` and `python-docx` into
 your document-building Python environment. Put Poppler's `pdftoppm` on PATH;

@@ -25,8 +25,7 @@ runtime/model. Downloads need Internet access; calls do not download models.
 ### Windows installer (recommended)
 
 The illustrated fresh-card installation guide is available as an
-[editable Word document](../output/docx/ZmalaCall-Pi4-Installation-Guide.docx)
-and [PDF](../output/pdf/ZmalaCall-Pi4-Installation-Guide.pdf).
+[editable Word document](ZmalaCall-Pi4-Installation-Guide.docx).
 It includes the Imager settings, Argon case connections and remote/QR setup.
 
 Download the installer and guide from the

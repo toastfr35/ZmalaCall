@@ -9,7 +9,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'output/pdf/ZmalaCall-Pi4-Installation-Guide.pdf'
+OUT = ROOT / 'tmp/pdfs/ZmalaCall-Pi4-Installation-Guide.pdf'
 OUT.parent.mkdir(parents=True, exist_ok=True)
 for name, fn in [('Segoe','segoeui.ttf'), ('SegoeBold','segoeuib.ttf')]:
     pdfmetrics.registerFont(TTFont(name, 'C:/Windows/Fonts/'+fn))

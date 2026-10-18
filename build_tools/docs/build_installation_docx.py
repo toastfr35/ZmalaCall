@@ -15,7 +15,7 @@ diagram=root/'tmp/pdfs/connections.png'
 diagram.parent.mkdir(parents=True,exist_ok=True)
 subprocess.run(['pdftoppm','-f','2','-l','2','-r','180','-x','110','-y','407',
                 '-W','1268','-H','908','-singlefile','-png',
-                str(root/'output/pdf/ZmalaCall-Pi4-Installation-Guide.pdf'),
+                str(root/'tmp/pdfs/ZmalaCall-Pi4-Installation-Guide.pdf'),
                 str(diagram.with_suffix(''))],check=True)
 d=Document()
 for style in d.styles:
@@ -127,4 +127,4 @@ rich('Replacing term2','Keep the old terminal stopped. Reuse its existing server
 h('Final check')
 p('Confirm that contacts appear and the remote buttons work. Make a test call and check picture and sound in both directions. Setup screens are in English; enrollment applies the selected language.')
 p('If setup stalls, check the C20 cable, charge the remote, or check the scanned QR. The USB help screen appears automatically when the C20 is missing.')
-out=root/'output/docx/ZmalaCall-Pi4-Installation-Guide.docx';out.parent.mkdir(parents=True,exist_ok=True);d.save(out);print(out)
+out=root/'docs/ZmalaCall-Pi4-Installation-Guide.docx';out.parent.mkdir(parents=True,exist_ok=True);d.save(out);print(out)
