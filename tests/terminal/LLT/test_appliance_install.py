@@ -1,7 +1,7 @@
 # @test T-LLT-052
-# @requirements TLLR005, TLLR116, TLLR117, TLLR123
+# @requirements TLLR003, TLLR005, TLLR116, TLLR117, TLLR123
 # @environment portable
-# @plan Inject launcher locks and PID observations to reject concurrent profiles and reused processes; inspect service cleanup policy. Run the release-state shell unit in a temporary filesystem with ownership/build commands replaced, verifying upgrade preservation and release/data separation. Exercise installer orchestration with fake SSH and confirm default Argon and reboot verification.
+# @plan Inject launcher locks and PID observations to reject concurrent profiles and reused processes; inspect service cleanup policy and execute the Pi 4/driver workaround guard against matching and nonmatching fixtures. Run the release-state shell unit in a temporary filesystem with ownership/build commands replaced, verifying upgrade preservation and release/data separation. Exercise installer orchestration with fake SSH and confirm default Argon and reboot verification.
 # @pass A duplicate profile or reused PID must never launch/kill a process; installation preserves private enrollment and verifies startup before reporting completion.
 
 import configparser
@@ -78,6 +78,7 @@ class ApplianceInstallTests(unittest.TestCase):
                 (root/name).mkdir(parents=True,exist_ok=True)
             (root/'var/lib/zmalacall/terminal.json').write_text('existing-private-state')
             (root/'migrate/terminal.json').write_text('must-not-overwrite')
+            (root/'migrate').chmod(0o755)  # Source permissions must not weaken private state.
             script = '''set -eu
 unit_root=$(pwd)
 task_root="$unit_root/source"; data_from="$unit_root/migrate"; bootstrap=; task_user=fixture; framing=yes
@@ -92,3 +93,22 @@ task_step() { :; }; chown() { printf 'OWNER %s\\n' "$*"; }; id() { echo fixture;
             self.assertEqual((root/'var/lib/zmalacall').stat().st_mode & 0o777, 0o700)
             self.assertIn('build-media.sh', result.stdout)
             self.assertIn('setup-auto-framing.sh', result.stdout)
+
+    @unittest.skipIf(sys.platform == 'win32', 'POSIX display installer unit runs on Linux CI')
+    def test_pi4_acceleration_workaround_requires_matching_board_and_driver(self):
+        source = (ROOT/'build_tools/linux/install-kiosk.sh').read_text(encoding='utf-8')
+        block = 'if [ -r /proc/device-tree/model ]' + source.split('if [ -r /proc/device-tree/model ]',1)[1].split('\nfi',1)[0] + '\nfi\n'
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for board in ('Raspberry Pi 4 Model B', 'Raspberry Pi 3 Model B', None):
+                for driver in ('contains msdri3 path', 'generic modesetting', None):
+                    for name, value in (('model',board),('driver',driver)):
+                        path = root/name
+                        if value is None:
+                            path.unlink(missing_ok=True)
+                        else:
+                            path.write_text(value, encoding='utf-8')
+                    script = block.replace('/proc/device-tree/model','./model').replace('/usr/lib/xorg/modules/drivers/modesetting_drv.so','./driver')
+                    result = shell('task_root=fixture; mkdir() { :; }; install() { echo APPLY; };\n'+script, folder)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual('APPLY' in result.stdout, board == 'Raspberry Pi 4 Model B' and driver == 'contains msdri3 path')

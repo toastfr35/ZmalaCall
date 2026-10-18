@@ -150,11 +150,12 @@ udevadm control --reload-rules
 udevadm trigger --subsystem-match=hidraw
 # @llr TLLR117
 mkdir -p /opt/zmalacall/releases /var/lib/zmalacall /etc/zmalacall
-chmod 700 /var/lib/zmalacall
 if [ -n "$data_from" ]; then
     # Existing installed state wins when upgrading or retrying installation.
     cp -an "$data_from/." /var/lib/zmalacall/
 fi
+# Archive copying can preserve the source directory mode; restore privacy afterward.
+chmod 700 /var/lib/zmalacall
 if [ -n "$bootstrap" ]; then
     install -m 600 "$bootstrap" /var/lib/zmalacall/terminal.json
 fi

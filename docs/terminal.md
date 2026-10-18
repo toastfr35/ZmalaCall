@@ -533,7 +533,9 @@ use one worker, a 40-path queue, atomic publication and one-minute failure backo
 Requirement-based unit tests live in `tests/terminal/LLT/`; system and integration
 scenarios live in `tests/terminal/HLT/`. Their leading comments identify the test,
 linked requirements, procedure and expected observations. Installer unit tests
-are included in `make test-llt`. See `docs/general.md` for trace validation and
+are included in `make test-llt`. They exercise release preparation with temporary
+state, including restoration of directory mode 0700 after archive copying so an
+imported directory cannot make enrollment credentials readable to other users. See `docs/general.md` for trace validation and
 the generated trace report. Every TLLR has direct unit-test links; validation
 rejects additions without a corresponding test.
 

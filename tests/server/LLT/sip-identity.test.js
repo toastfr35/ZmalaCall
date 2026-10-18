@@ -1,7 +1,7 @@
 // @test S-LLT-025
-// @requirements SLLR027, SLLR029, SLLR086
+// @requirements SLLR002, SLLR027, SLLR029, SLLR086
 // @environment portable
-// @plan Replace SIP transport with a capture double; check destination-specific HMAC replacement, authenticated registration identity, expiry/query/deregistration transitions and bounded recent activity history.
+// @plan Replace SIP transport with a capture double; check default/configured UDP/TCP binding options, destination-specific HMAC replacement, authenticated registration identity, expiry/query/deregistration transitions and bounded recent activity history.
 // @pass All signaling assertions must pass without binding sockets or sending packets to real devices.
 
 'use strict';
@@ -155,5 +155,30 @@ test('SIP routing enforces groups and authenticates every terminal recipient', a
     if (encodeFlowUri) sip.encodeFlowUri = encodeFlowUri;
     else delete sip.encodeFlowUri;
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('SIP binds both transports on all IPv4 interfaces with configured port', (t) => {
+  const options = [];
+  t.mock.method(proxy, 'start', (value) => options.push(value));
+  t.mock.method(console, 'log', () => {});
+  const originalSend = sip.send;
+  t.after(() => {
+    sip.send = originalSend;
+  });
+  const store = storeFixture(t);
+  for (const port of [5060, 5091]) {
+    store.value.sip_port = port;
+    const server = new SipServer(store);
+    try {
+      server.start();
+      assert.equal(options.at(-1).address, '0.0.0.0');
+      assert.equal(options.at(-1).port, port);
+      assert.equal(options.at(-1).udp, true);
+      assert.equal(options.at(-1).tcp, true);
+    } finally {
+      clearInterval(server.sweep);
+      sip.send = originalSend;
+    }
   }
 });
