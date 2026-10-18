@@ -188,7 +188,7 @@ the maintained local SIP transport patch.
 - [Implementation and verification](docs/implementation.md)
 - [Requirements source and generated catalogues](docs/README.md)
 - [Persistence and recovery limits](docs/reliability.md)
-- [Review findings and follow-up work](astra.md)
+- [Outstanding review work](astra.md)
 
 Linux HDMI-CEC, camera enrollment, Bluetooth onboarding, Windows/Linux consoles
 and boot services are implemented. TV compatibility, room acoustics, USB power
