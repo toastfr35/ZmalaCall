@@ -1,5 +1,5 @@
 // @test S-HLT-001
-// @requirements HLR-SRV-DIR-001, HLR-SRV-DIR-002
+// @requirements HLR-SRV-DIR-018
 // @environment portable
 // @plan Use authenticated HTTP account edits and inspect persisted configuration; assert conversion revokes terminal enrollment while retaining personal fields and malformed selections cannot mutate state.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

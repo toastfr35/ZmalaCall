@@ -1,0 +1,32 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Incoming caller proof
+level: 61.0
+links:
+- HLR-TERM-CALL-010: hbQs3eyZULeCZkex9UB4iPMwF_oN1-crHSU_D5PXsiM=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_engine_adapter.py
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An incoming call shall require a permitted contact in the configured SIP domain. It
+  shall also require valid server proof bound to the call and caller. A rejected
+  caller shall not open normal ringing pages.
+verification: |
+  Vary contact permission, domain, proof, caller and call identity. Check rejection
+  before normal ringing.

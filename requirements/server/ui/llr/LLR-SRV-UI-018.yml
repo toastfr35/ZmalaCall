@@ -1,0 +1,35 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Editor response ownership
+level: 103.0
+links:
+- HLR-SRV-UI-011: LPHJUJznAKObB5O3At_q4lceri2jKB5KEIO0WY4T5CQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/account-workflows.test.js
+  type: file
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: zmala_server/web/admin-accounts.js
+  type: file
+- path: zmala_server/web/admin-console.js
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin.html
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Closing or replacing an account editor shall prevent a pending photo upload from saving that draft. Closing or replacing a console shall invalidate results from its previous opening.
+verification: |
+  Delay uploads and console replies, close or replace dialogs, then release success and failure responses. Check new drafts remain intact.

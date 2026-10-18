@@ -9,7 +9,7 @@ import re
 import subprocess
 
 
-# @llr LLR-SRV-INSTALL-011, LLR-TERM-SYS-012
+# @llr LLR-SRV-HOST-003, LLR-TERM-NET-006
 def rules(interface, ports):
     if not re.fullmatch(r'[a-zA-Z0-9_-]{1,15}', interface):
         raise ValueError('Invalid Ethernet interface')

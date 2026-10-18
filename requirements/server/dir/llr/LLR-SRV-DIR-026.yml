@@ -1,0 +1,23 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Active-call edit restrictions
+level: 24.0
+links:
+- HLR-SRV-DIR-018: 3FwHcV_bZoMa3n3BHEtxN-ucUFWdkDK29qi_hycUoA4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An active call shall prevent account deletion, username changes, type changes and SIP password replacement. Reassociation shall check both affected accounts before changing either device association.
+verification: |
+  Attempt each change during a call and check HTTP 409 with unchanged identities. Repeat after call termination.

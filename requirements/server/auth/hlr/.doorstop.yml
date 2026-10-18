@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-SRV-AUTH
-      title: Administration security — HLR
+      title: Administration and access control — HLR
   publish:
   - area
   - scope

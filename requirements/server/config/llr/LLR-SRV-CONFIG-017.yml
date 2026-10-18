@@ -1,0 +1,27 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Presentation and volume choices
+level: 35.0
+links:
+- HLR-SRV-CONFIG-014: fknMq0kyen45efxKNWehc_4FZsH-E_5vdh5bdGbZTig=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/configuration-policy.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Profiles shall accept supported language codes, boolean framing, integer volume from 0 to 100, and 3 or 5 portraits. TV timeouts shall be 0, 30, 60, 120, 300, 600 or 1200 seconds. New defaults shall be English, framing off, volume 50, 3 portraits and 30 seconds.
+verification: |
+  Test accepted choices, explicit nulls, wrong types and out-of-range values. Compare fresh defaults with device responses.

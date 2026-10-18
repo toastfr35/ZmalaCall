@@ -1,0 +1,23 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Bounded portrait conversion
+level: 32.0
+links:
+- HLR-SRV-DIR-020: Wi28sATQzGIkhny_fldDAIC2B6bdZPh4gIebLGufpqY=
+normative: true
+ref: ''
+references:
+- path: build_tools/convert-photo.py
+  type: file
+- path: tests/server/LLT/photos.test.js
+  type: file
+- path: zmala_server/photos.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Portrait processing shall admit at most ten uploads and run at most two converters. Excess work shall receive an error. Concurrent identical inputs shall share conversion work.
+verification: |
+  Hold converter completion, submit a burst and duplicate inputs, and inspect admission and concurrent worker counts.

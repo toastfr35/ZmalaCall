@@ -14,7 +14,7 @@ def enabled():
     return sys.platform == 'linux' and os.environ.get('ZMALA_ARGON_ONE_FAN') == '1'
 
 
-# @llr LLR-TERM-POWER-002
+# @llr LLR-TERM-POWER-011
 def fan_speed(active, temperature):
     if not active:
         return 0

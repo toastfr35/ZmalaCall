@@ -11,14 +11,14 @@ from zmala_terminal.common.photo_cache import PhotoCache, MAX_BYTES
 from zmala_terminal.common.paths import ROOT as ROOT
 
 
-# @llr LLR-TERM-CONFIG-008
+# @llr LLR-TERM-COM-003
 class NoCredentialRedirect(urllib.request.HTTPRedirectHandler):
     """An enrolled origin owns the bearer token; redirects cannot transfer it."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
 
-# @llr LLR-TERM-CONFIG-011
+# @llr LLR-TERM-COM-006
 def stable_configuration(config):
     """Offline snapshots retain settings, never live presence or callback state."""
     stable = copy.deepcopy(config)
@@ -107,10 +107,12 @@ class Configuration:
             config = reply
         return self.accept(config, previous, persist)
 
-    # @llr LLR-TERM-CONFIG-011
+    # @llr LLR-TERM-COM-006
     def accept(self, config, previous, persist=True):
         """Shared poll/write response boundary; callers hold fetch_lock."""
         config = validate(config, self.bootstrap['device_id'])
+        if config.get('secure_calls') and not self.bootstrap['server_url'].startswith('https://'):
+            raise ValueError('Secure-call enrollment requires HTTPS')
         if previous and previous['configuration_version'] > config['configuration_version']:
             raise ValueError('Refusing an older configuration')
         stable = stable_configuration(config)

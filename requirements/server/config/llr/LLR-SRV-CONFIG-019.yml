@@ -1,0 +1,27 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Answer delay and ringing budget
+level: 37.0
+links:
+- HLR-SRV-CONFIG-014: fknMq0kyen45efxKNWehc_4FZsH-E_5vdh5bdGbZTig=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/configuration-policy.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Automatic answer shall use explicit boolean enablement and an integer delay from 5 to 600 seconds. The advertised ringing budget shall be 60 seconds for manual answer. Automatic answer shall use the greater of 60 seconds or its delay plus 30 seconds.
+verification: |
+  Test both enabled states and delay boundaries. Inspect availability responses and the budget used for call admission.

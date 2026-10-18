@@ -1,0 +1,25 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Picture input bounds
+level: 31.0
+links:
+- HLR-SRV-DIR-020: Wi28sATQzGIkhny_fldDAIC2B6bdZPh4gIebLGufpqY=
+normative: true
+ref: ''
+references:
+- path: build_tools/convert-photo.py
+  type: file
+- path: tests/server/LLT/photos.test.js
+  type: file
+- path: tests/server/LLT/test_photo_conversion.py
+  type: file
+- path: zmala_server/photos.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Authenticated portrait uploads shall accept JPEG or PNG of at most 2 MiB. Input dimensions shall not exceed 8192 pixels per side or 16 million pixels. Header checks shall precede conversion.
+verification: |
+  Submit valid images and malformed headers, excessive bytes and excessive dimensions. Check rejected images start no converter.

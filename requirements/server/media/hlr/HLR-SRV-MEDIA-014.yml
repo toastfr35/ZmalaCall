@@ -1,0 +1,20 @@
+active: true
+area: Audio and video relay
+derived: false
+header: Secure relay deployment
+level: 152.0
+links:
+- PROD005: null
+- PROD012: null
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/secure_network_lab.py
+  type: file
+reviewed: null
+scope: Core
+text: The server shall support a secure relay deployment for terminals on networks that block UDP.
+  It shall preserve authenticated call routing and provide the configuration needed for encrypted
+  signalling and relayed audio and video.
+verification: Run the real server and terminals through isolated NAT gateways with blocked UDP. Verify
+  authenticated registration, configuration and decoded calls in both directions.

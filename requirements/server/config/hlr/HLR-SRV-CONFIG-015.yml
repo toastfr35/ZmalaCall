@@ -1,0 +1,23 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Consistent configuration changes
+level: 11.0
+links:
+- PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/admin-settings-conflicts.test.js
+  type: file
+- path: tests/server/HLT/device-settings.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall accept authenticated changes from administration and the supported local terminal settings. It shall detect conflicting edits and return the accepted state.
+verification: |
+  Interleave browser and device edits. Check conflict responses, idempotent retries, scoped credentials and saved state.

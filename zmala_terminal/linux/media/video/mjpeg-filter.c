@@ -1,3 +1,4 @@
+// @llr LLR-TERM-VIDEO-018
 /* C20 camera entry using public SDK interfaces. This source acquires strict-size
  * MJPEG frames; separate decoder/framing adapters and the SDK own downstream
  * scaling, preview and H.264 encoding. */

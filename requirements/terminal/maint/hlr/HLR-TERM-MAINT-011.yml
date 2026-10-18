@@ -1,0 +1,25 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Controlled maintenance work
+level: 31.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/provisioning_ui.py
+  type: file
+- path: tests/terminal/HLT/test_linux_platform.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall execute authorized maintenance jobs with bounded duration and
+  output. Cancellation, reset and shutdown shall stop owned work.
+verification: |
+  Execute isolated leased jobs, failures and cancellations. Check process ownership,
+  result bounds and duplicate execution prevention.

@@ -1,0 +1,33 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  First password and private hash
+level: 8.0
+links:
+- HLR-SRV-AUTH-011: q53zUb-vi08hsh8i21X28-8w0MruYUDG5SZmaP8xtrM=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-auth-setup.test.js
+  type: file
+- path: tests/server/LLT/admin-password-path.test.js
+  type: file
+- path: tests/server/LLT/admin-sessions.test.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/web/admin-auth.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Initial setup shall accept an administrator password from 12 to 256 characters. It shall save a salted scrypt hash in the configured private credential file. Normal configuration and API views shall omit that hash.
+verification: |
+  Set boundary-length passwords, compare independently salted hashes and check private storage and response fields.

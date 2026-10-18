@@ -1,0 +1,31 @@
+active: true
+area: Configuration
+derived: false
+header: |
+  Settings identity display
+level: 31.0
+links:
+- HLR-TERM-CONFIG-016: tF6jWzImg7gepg3fagqe56SUaj2ierhVysKpWA6YeEU=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_settings_workflows.py
+  type: file
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/local_settings.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/ui/settings.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Settings shall hide the normal status icons. It shall show the assigned terminal ID
+  in small text at the bottom. Reset shall follow the ordinary settings.
+verification: |
+  Render Settings at supported sizes. Check identifier, status-strip absence and reset
+  order.

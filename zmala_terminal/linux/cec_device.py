@@ -13,7 +13,7 @@ def connector(device):
     return (card, identifier) if kind == 1 else None
 
 
-# @llr LLR-TERM-TV-009
+# @llr LLR-TERM-TV-025
 def select_device(current=None, devices=Path('/dev'), drm=Path('/sys/class/drm')):
     """Prefer a detected display, then scanout, retaining the current port on ties.
 

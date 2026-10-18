@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-SRV-DATA
-      title: Persistence, backup and restore — HLR
+      title: Saved state — HLR
   publish:
   - area
   - scope

@@ -6,6 +6,7 @@ def requested_profile(config):
     return config.get('audio_profile', 'normal')
 
 
+# @llr LLR-TERM-AUDIO-003
 def configure(engine):
     from zmala_terminal.common.native_runtime import WINDOWS
     profile = engine.audio_profile = requested_profile(engine.config)

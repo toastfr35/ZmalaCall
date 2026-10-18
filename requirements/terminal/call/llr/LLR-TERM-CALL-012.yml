@@ -1,0 +1,33 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Current-call event ownership
+level: 62.0
+links:
+- HLR-TERM-CALL-010: hbQs3eyZULeCZkex9UB4iPMwF_oN1-crHSU_D5PXsiM=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_call_orchestration.py
+  type: file
+- path: tests/terminal/LLT/test_management_loop.py
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An incoming call shall cancel pending outgoing confirmation and unfinished page
+  actions. The terminal shall decline a second incoming call while it owns an
+  active call. Events or preflight responses from an older call shall not dial,
+  end or replace the newer call.
+verification: |
+  Deliver late preflight responses and native events across incoming calls. Check
+  preserved current-call state.

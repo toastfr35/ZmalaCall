@@ -75,6 +75,7 @@ class CarouselView:
         border = self.blend_color('#31594e', GREEN, .5+.5*math.sin(elapsed*3.5))
         self.avatar.itemconfigure('ring-card', outline=border)
 
+    # @llr LLR-TERM-UI-014
     def draw_card(self, person, slot, center_x, center_y, width, height, idle, layout=None):
         """Draw one interpolated carousel slot; portrait/text references live until the next frame."""
         focus = max(0.0, 1.0-abs(slot))
@@ -104,13 +105,13 @@ class CarouselView:
                                     fill=ACCENT if selected else '#6d7b92', font=(self.font_family, max(10,int(size*.38)), 'bold'))
         if idle and person and person['id'] in self.model.missed_calls:
             self.draw_missed_call(x+size/2-18, y-size/2+18, 22 if selected else 18, person['id'], count=self.model.notification_count(person['id']))
-        # @llr LLR-TERM-HISTORY-010
+        # @llr LLR-TERM-HISTORY-022
         if idle and self.model.pending_callback(person):
             badge = self.icon_renderer.callback(20 if selected else 16, ACCENT, BG)
             self.current_photos.append(badge)
             self.avatar.create_image(x-size/2+18, y-size/2+18, image=badge,
                                      tags=('callback-pending', 'callback-pending-'+person['id']))
-        # @llr LLR-TERM-UI-004
+        # @llr LLR-TERM-UI-015
         if idle or focus < .8:
             text = person['name'] if person else '—'
             label_size = 16
@@ -155,7 +156,7 @@ class CarouselView:
         self.current_text_images.append(label)
         self.avatar.create_image(x+12, status_y, image=label)
 
-    # @llr LLR-TERM-HISTORY-004
+    # @llr LLR-TERM-HISTORY-016
     def draw_corner_notification(self, count):
         if self.corner_notification_state == count:
             return
@@ -182,7 +183,7 @@ class CarouselView:
     def blend_color(start, end, amount):
         return '#'+''.join(f'{round(int(start[i:i+2],16)*(1-amount)+int(end[i:i+2],16)*amount):02x}' for i in (1,3,5))
 
-    # @llr LLR-TERM-UI-007
+    # @llr LLR-TERM-UI-016
     def contact_image(self, contact, size, background=PANEL):
         if contact and contact.get('photo'):
             file = ROOT / 'data' / contact['photo'].lstrip('/')

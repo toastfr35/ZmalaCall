@@ -1,0 +1,23 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Versioned bounded backup format
+level: 88.0
+links:
+- HLR-SRV-BACKUP-001: Dk6eZ8JEMDnUAF6tNqYKNJHXepgziAiQiGvKYdRBRm0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/backup-format.js
+  type: file
+- path: zmala_server/backup-storage.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Backup shall use a versioned gzip JSON file map with SHA-256 checksums. Compressed input and expanded JSON shall each be limited to 64 MiB. Only four state files and at most 1000 permitted portrait files shall be accepted.
+verification: |
+  Round-trip valid data and reject size, count and format boundaries. Checksums detect corruption, not archive authenticity.

@@ -1,0 +1,31 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Serialized password replacement
+level: 10.0
+links:
+- HLR-SRV-AUTH-011: q53zUb-vi08hsh8i21X28-8w0MruYUDG5SZmaP8xtrM=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-auth-setup.test.js
+  type: file
+- path: tests/server/LLT/credential-transitions.test.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/web/admin-auth.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Password replacement shall verify the current password and reject concurrent changes. It shall await the new hash write before revoking existing sessions. Failed persistence shall not report a successful change.
+verification: |
+  Overlap setup or password changes and inject write failure. Check session validity before and after the successful commit.

@@ -1,72 +1,50 @@
 # Isolated network lab
 
-This fixture runs the actual server and shared terminal Engine in disposable
-Docker containers. Two home routers and a server router sit between three LANs
-and a simulated Internet bridge. No container port is published to the PC or
-the real LAN. Credentials are generated for the lab; live server data is not
-part of the image build context. Run only on the dedicated WSL Docker daemon.
+This fixture runs the actual server and shared terminal Engine in disposable Docker
+containers. Two home routers and a server router separate three LANs and a simulated
+Internet. No port is published to the PC or real LAN. Disposable credentials and
+certificates live in a Docker volume; real server data is excluded from image builds.
+Use only the dedicated WSL Docker daemon, and keep WSL active until each run finishes.
 
-From the repository root in Ubuntu WSL, as root:
+Run from the checkout in WSL as root:
 
 ```sh
 python3 tests/support/network_lab/lab.py build
-python3 tests/adhoc/network_tls.py
+python3 -m tests.server.HLT.secure_network_lab
 ZMALA_LAB_TLS=1 python3 tests/support/network_lab/lab.py down
+python3 tests/server/HLT/network_lab.py
+python3 tests/support/network_lab/lab.py down
 ```
 
-The final command removes the lab containers, networks, credentials and host
-bridge rules. Keep WSL running until a test finishes. Concurrent scenario runs
-use an exclusive lock. Results are written under `tests/coverage/network-lab/`.
-The TLS experiment is ad-hoc and is **not product requirement coverage**.
-It does not change installed Pis or enable production fallback.
+The secure server and terminal HLT entry points share the same matrix; do not run
+them concurrently. An exclusive lock prevents overlapping scenario runs. Reports
+are written below `tests/coverage/network-lab/`. Cleanup removes containers, networks,
+credentials and the narrow host bridge forwarding rules; it retains the image.
 
-## TLS prototype
+The TLS overlay uses three simulated public IPs: HTTPS .15, SIP .13 and TURN .14,
+all on TCP 443 in 10.231.100.0/24. It uses actual production `secure-calls.js` and
+`secure_calls.py`, with no transport monkeypatch. Coturn validates temporary HMAC
+credentials issued by the application server. A disposable CA authenticates endpoints;
+mandatory SRTP protects media. The server preserves ICE SDP and signed call proofs.
 
-The overlay provides HTTPS configuration at `10.231.100.15:443`, SIP TLS at
-`10.231.100.13:443`, and authenticated TURN TLS at `10.231.100.14:443`.
-It uses a disposable CA, verifies server certificates, and requires SRTP.
-SDES keys travel in TLS-protected SIP. This is not a claim of end-to-end
-encryption against the signalling server.
+The matrix blocks UDP before established-flow acceptance at A, B and both homes,
+and runs unrestricted regressions. Each policy calls both ways, requires native
+SRTP/relay ICE state, actual decoded opposite audio tones and fresh H.264 frames,
+then hangs up and verifies resource release. It checks HTTPS configuration and
+firewall counters. Separate probes reject untrusted endpoint certificates; native
+SIP probes reject an unrelated CA and a wrong certificate name. Each recording
+starts with a new file, preventing stale audio from satisfying a later assertion.
 
-The lab-only server adapter preserves ICE SDP instead of passing it through
-the production UDP relay. SIP authentication and terminal call proofs remain
-active. Production relay source-address checks are not relaxed. The terminal
-adapter enables ICE, TURN TLS and mandatory SRTP, including the explicit
-outgoing-call encryption setting. The matrix blocks UDP before established-flow
-acceptance at A, B, and both homes, calls in both directions, checks firewall
-counters, and verifies fresh decoded H.264 frames and the opposite audio tone.
-HTTPS configuration must still load. All media control executes on the SDK
-owner thread. WAV files are removed before each recording to prevent stale
-audio from satisfying a later test.
+`build_tools/linux/build-turn.py` builds the same pinned SDK correction used by the
+Pi installer. `tests/terminal/LLT/turn_parser.cpp` tests fragmented headers, padded
+ChannelData and coalesced STUN at every chunk size. The original parser must reproduce
+the padded-length assertion; the corrected parser must pass. Build evidence and
+upstream source stay under `zmala_terminal/linux/turn-runtime/`, outside Git.
 
-## SDK correction under test
-
-The Debian Trixie SDK uses mediastreamer2 5.3.105. Its TURN TCP parser can retain
-ChannelData padding on a fragmented packet and read an incomplete header.
-Extra bytes invalidate SRTP authentication. `turn-framing.patch` accumulates
-input until a complete frame is available and removes padding consistently.
-The image fetches the two upstream source files using pinned SHA-256 hashes,
-builds a lab-only shared override, and leaves the installed SDK files intact.
-The upstream source retains its AGPL-3.0-or-later licence; see
-[mediastreamer2 5.3.105](https://github.com/BelledonneCommunications/mediastreamer2/tree/5.3.105).
-
-`tests/adhoc/turn_parser.cpp` checks fragmented headers, padding, coalesced frames and
-every input chunk size. The build requires the original parser to fail and the
-patched parser to pass. Evidence is stored in `/opt/zmala-lab/parser-results.json`.
-This is an SDK experiment, not an installer dependency or a production patch.
-
-## Limits and next steps
-
-The camera is a static 640×480 image, normally about one frame per second.
-Audio is generated; Xvfb replaces the TV. OpenH264 replaces the Pi V4L2 encoder;
-the production FFmpeg decoder is used. The fixture requests keyframes after
-ICE negotiation. It does not establish Pi performance or moving-image quality.
-
-Before production use: qualify the SDK correction on ARM, add server-managed
-transport configuration and automatic selection, issue short-lived TURN
-credentials, deploy trusted certificates and public routing, test trust/auth
-failures, and qualify reconnects, long calls and restricted HTTP proxies.
-TCP 443 alone does not guarantee passage through an HTTPS-only proxy or TLS
-inspection. Do not describe this experiment as deployed automatic fallback.
-Numeric addresses avoid DNS in this lab; endpoint resolution on a network
-that also blocks ordinary DNS still needs qualification.
+The synthetic camera is a static 640x480 image, normally about one frame per second.
+Generated audio and Xvfb replace physical devices. Software OpenH264 replaces Pi
+V4L2 encoding; the actual production FFmpeg decoder is used. This does not qualify
+moving-image quality, ARM call throughput, long calls or institution-specific
+firewalls. Numeric addresses avoid DNS; HTTPS-only proxies and TLS inspection can
+still reject these protocols. Public deployment and certificate renewal are described
+in `docs/server.md`; the lab does not configure an Internet service.

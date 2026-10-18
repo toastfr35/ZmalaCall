@@ -1,5 +1,5 @@
 // @test S-LLT-017
-// @requirements LLR-SRV-DIR-006, LLR-SRV-CALLBACK-004, LLR-SRV-CALLBACK-005, LLR-SRV-CALLBACK-008, LLR-SRV-CALLBACK-009, LLR-SRV-DATA-006
+// @requirements LLR-SRV-DIR-023, LLR-SRV-CALLBACK-017, LLR-SRV-CALLBACK-018, LLR-SRV-CALLBACK-021, LLR-SRV-CALLBACK-022, LLR-SRV-DATA-016
 // @environment portable
 // @plan Inject time and per-address mailer success/failure into callback storage; assert reminder deadlines, durable per-recipient progress, no revival after completion/expiry, preserved email privacy and migration without changed credentials.
 // @pass Every named assertion must pass; failures or skips do not establish requirement verification.

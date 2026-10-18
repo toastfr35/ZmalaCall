@@ -1,0 +1,31 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Durable restore staging
+level: 91.0
+links:
+- HLR-SRV-BACKUP-002: IFolSJN9Y715aTkpB7gvbpLtrP-V3gVekpN7XH7bXWk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: zmala_server/backup-storage.js
+  type: file
+- path: zmala_server/backups.js
+  type: file
+- path: zmala_server/http/backup-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Restore shall block new HTTP and SIP work and pause callback delivery before flushing state. It shall durably save previous and replacement backups, then commit an apply journal. Successful staging shall request supervised restart after the response.
+verification: |
+  Check maintenance gates, write/fsync ordering and restart scheduling. Fail before and after journal publication and check safe service state.

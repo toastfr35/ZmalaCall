@@ -4,6 +4,7 @@
 
 /** @param {import('node:http').ServerResponse} res @param {number} status
  * @param {unknown} value @param {string} [type] */
+// @llr LLR-SRV-AUTH-024
 function send(res, status, value, type = 'application/json', cache = 'no-store') {
   res.writeHead(status, {
     'Content-Type': type,
@@ -36,7 +37,7 @@ async function body(req, limit = 2 * 1024 * 1024) {
   return Buffer.concat(parts);
 }
 
-// @llr LLR-SRV-AUTH-009
+// @llr LLR-SRV-AUTH-022
 /** @param {import('node:http').IncomingMessage} req @param {number} [limit]
  * @param {boolean} [allowEmpty] @returns {Promise<Record<string, unknown>>} */
 async function readJson(req, limit, allowEmpty = false) {

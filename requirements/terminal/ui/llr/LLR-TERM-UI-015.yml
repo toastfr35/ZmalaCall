@@ -1,0 +1,32 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Names inside portrait cards
+level: 50.0
+links:
+- HLR-TERM-UI-012: oGtUUTddZ_nmYzq5oqJRjVPaN4_KxriLlc03R9qaalI=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+- path: zmala_terminal/common/carousel.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Each card shall place its contact name directly below the picture and above
+  availability, inside the frame. The selected card shall use the same placement. The
+  idle page shall not add a separate selected-name footer or mouse action controls.
+verification: |
+  Render selected and adjacent cards. Inspect name bounds and absence of the separate
+  footer and action controls.

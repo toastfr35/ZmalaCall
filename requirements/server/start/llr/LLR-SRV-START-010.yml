@@ -1,0 +1,29 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Persistence readiness response
+level: 7.0
+links:
+- HLR-SRV-START-003: M62YIzO8GK5Ts3ae4QKRHXkRaKxAHVcBpH_thFTlVL4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/json-file.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/snapshot-file.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  GET /health shall return process liveness. GET /ready shall return 503 while any latest application snapshot has an unresolved write failure. It shall return 200 after that failure recovers.
+verification: |
+  Inject a writer failure, issue both reads and recover the writer. Check bootstrap, callback and console writers as well as configuration.

@@ -1,7 +1,7 @@
 // @test S-LLT-016
-// @requirements LLR-SRV-CALLBACK-002, LLR-SRV-CALLBACK-003, LLR-SRV-CALLBACK-004, LLR-SRV-CALLBACK-005, LLR-SRV-CALLBACK-006
+// @requirements LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-017, LLR-SRV-CALLBACK-018, LLR-SRV-CALLBACK-019
 // @environment portable
-// @plan Drive callback storage with fake registration/notification responses; assert deduplication, completion, expiry, permission changes, one notification after reconnect and retry with preserved renamed identity.
+// @plan Drive callback storage with fake registration/notification responses; assert the 400-pending boundary, duplicate acceptance at capacity, deduplication, completion, expiry, permission changes, one notification after reconnect and retry with preserved renamed identity. Exercise the real SIP notifier with a fake transport and clock: preserve UTF-8 and exact recipient flow, ignore provisional responses, accept only 2xx, and fail closed on rejection, timeout or send error.
 // @pass Every named assertion must pass; failures or skips do not establish requirement verification.
 
 'use strict';
@@ -14,6 +14,116 @@ const fs = require('node:fs'),
   path = require('node:path');
 
 const flush = () => new Promise((r) => setImmediate(r));
+
+test('400 pending requests allow duplicates but refuse a new pair until capacity is released', async (t) => {
+  const { storeFixture } = require('../../support/server/unit-fixture');
+  const store = storeFixture(t);
+  for (let i = 1; i <= 19; i++)
+    for (const type of ['terminal', 'linphone']) {
+      store.createAccount({
+        id: `${type}${i}`,
+        type,
+        name: `Fixture ${type} ${i}`,
+        emails: ['fixture@example.test'],
+      });
+    }
+  store.createGroup({ name: 'Capacity fixture', members: Object.keys(store.value.users) });
+  const service = new Callbacks(store, { registrations: new Map() });
+  service.create('term1', 'phone1');
+  const template = structuredClone(service.requests[0]);
+  const senders = Object.keys(store.value.users).filter((id) => store.terminal(id));
+  const recipients = Object.keys(store.value.users).filter((id) => !store.terminal(id));
+  service.requests = senders.flatMap((from) =>
+    recipients.map((to) => ({
+      ...structuredClone(template),
+      id: `fixture-${from}-${to}`,
+      from,
+      to,
+    })),
+  );
+  assert.equal(service.requests.length, 400);
+  service.save();
+  const snapshot = structuredClone(service.requests);
+  assert.equal(service.create('term1', 'phone1').id, 'fixture-term1-phone1');
+  assert.throws(() => service.create('term1', 'terminal1'), /Too many pending/);
+  assert.deepEqual(service.requests, snapshot);
+  service.cancel(service.requests.at(-1).id);
+  assert.equal(service.create('term1', 'terminal1').status, 'pending');
+  assert.equal(service.requests.filter((r) => r.status === 'pending').length, 400);
+  await flush();
+  const restored = new Callbacks(store, { registrations: new Map() });
+  assert.equal(restored.requests.filter((r) => r.status === 'pending').length, 400);
+  assert.equal(restored.create('term1', 'phone1').id, 'fixture-term1-phone1');
+  await flush();
+});
+
+test('callback SIP delivery preserves UTF-8, exact flow and final acceptance with a bounded timeout', async (t) => {
+  const sip = require('../../../zmala_server/node_modules/sip');
+  const { SipMessages } = require('../../../zmala_server/sip-messages');
+  sip.send ??= () => {};
+  sip.encodeFlowUri ??= () => '';
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const store = { value: { host: '192.0.2.1' }, permitted: () => true };
+  const service = new SipMessages(store);
+  const request = { from: 'term1', to: 'phone1' };
+  const remote = { address: '192.0.2.2', port: 5060, protocol: 'UDP' };
+  const sent = [];
+  t.mock.method(sip, 'encodeFlowUri', (flow) => {
+    assert.equal(flow, remote);
+    return 'sip:exact-flow';
+  });
+  const send = t.mock.method(sip, 'send', (message, callback) => sent.push({ message, callback }));
+  assert.equal(await service.notifyCallback(request, 'absent'), false);
+  service.registrations.set('phone1', {
+    expires: Date.now() + 60000,
+    contact: { uri: 'sip:phone@192.0.2.2' },
+    remote,
+  });
+  store.permitted = () => false;
+  assert.equal(await service.notifyCallback(request, 'forbidden'), false);
+  assert.equal(sent.length, 0);
+  store.permitted = () => true;
+  const text = 'Rappelez Zoë — sip:term1@192.0.2.1';
+  let resolved = false;
+  const delivery = service.notifyCallback(request, text).then((ok) => {
+    resolved = true;
+    return ok;
+  });
+  const { message, callback } = sent.at(-1);
+  assert.equal(Buffer.from(message.content, 'latin1').toString('utf8'), text);
+  assert.equal(message.uri, 'sip:phone@192.0.2.2');
+  assert.deepEqual(message.headers.route, [{ uri: 'sip:exact-flow' }]);
+  assert.equal(message.headers.from.uri, 'sip:term1@192.0.2.1');
+  assert.equal(message.headers.to.uri, 'sip:phone1@192.0.2.1');
+  assert.match(message.headers['call-id'], /^callback-/);
+  callback({ status: 180 });
+  await Promise.resolve();
+  assert.equal(resolved, false, 'A provisional response is not delivery');
+  callback({ status: 202 });
+  assert.equal(await delivery, true);
+  const rejected = service.notifyCallback(request, text);
+  sent.at(-1).callback({ status: 503 });
+  assert.equal(await rejected, false);
+  resolved = false;
+  const timeout = service.notifyCallback(request, text).then((ok) => {
+    resolved = true;
+    return ok;
+  });
+  t.mock.timers.tick(9999);
+  await Promise.resolve();
+  assert.equal(resolved, false);
+  t.mock.timers.tick(1);
+  assert.equal(await timeout, false);
+  const errors = t.mock.method(console, 'error', () => {});
+  send.mock.mockImplementation(() => {
+    throw Error('unavailable');
+  });
+  assert.equal(await service.notifyCallback(request, text), false);
+  assert.deepEqual(errors.mock.calls.at(-1).arguments, [
+    'Callback SIP message failed:',
+    'unavailable',
+  ]);
+});
 test('callback requests persist, deduplicate, expire, complete and obey changed groups', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zmala-callbacks-')),
     store = new Store(dir),

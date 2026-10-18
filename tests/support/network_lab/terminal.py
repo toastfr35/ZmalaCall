@@ -59,13 +59,6 @@ def api(engine, name, result, types, *args):
 
 
 class SyntheticEngine(implementation.Engine):
-    def configure_transports(self):
-        if os.environ.get('ZMALA_LAB_TLS') == '1':
-            from tls_client import configure
-            configure(self, IDENTITY)
-        else:
-            super().configure_transports()
-
     def apply_settings(self, settings):
         # Preserve actual protocol/codec configuration; substitute only the devices.
         devices = super().devices()
@@ -145,8 +138,6 @@ def main():
             if attempt == 29:
                 raise
             time.sleep(1)
-    if os.environ.get('ZMALA_LAB_TLS') == '1':
-        config['sip']['proxy'] = 'sip:10.231.100.13:443;transport=tls'
     engine = SyntheticEngine(config, call_event, lambda registered: None, profile='network-lab')
     server = ThreadingHTTPServer(('127.0.0.1', 9090), Control)
     threading.Thread(target=server.serve_forever, daemon=True).start()

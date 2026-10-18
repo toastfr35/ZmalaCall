@@ -1,0 +1,22 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Independent server operation
+level: 1.0
+links:
+- PROD001: 4fW6PPWrP16gAqSCbhixs6pGUTY3fOkFmKN-9QSRxFM=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/lifecycle.test.js
+  type: file
+- path: tests/server/HLT/test_installed_storage.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall start automatically on its Raspberry Pi and provide the configured network services without a terminal application. It shall report startup failure.
+verification: |
+  Start the installed service with saved state and with unavailable listeners. Check independence, network bindings and failure cleanup.

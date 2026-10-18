@@ -1,0 +1,27 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Expiry and bounded completed history
+level: 69.0
+links:
+- HLR-SRV-CALLBACK-012: vFmH4gPjiuWqXjcLt3ra4thtjuHcDm2q0NO50dmc1yo=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-reminders.test.js
+  type: file
+- path: tests/server/LLT/callback-state.test.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Expired requests shall be removed from saved state and views. History trimming shall retain pending work and at most the latest 200 completed or cancelled records.
+verification: |
+  Advance removal times, create excess completed history and retain pending records. Check persistence and retry-state cleanup.

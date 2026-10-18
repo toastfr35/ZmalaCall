@@ -1,7 +1,7 @@
 # @test T-LLT-035
-# @requirements LLR-TERM-TV-003, LLR-TERM-TV-004, LLR-TERM-TV-005, LLR-TERM-TV-006, LLR-TERM-TV-007, LLR-TERM-TV-008
+# @requirements LLR-TERM-TV-019, LLR-TERM-TV-020, LLR-TERM-TV-021, LLR-TERM-TV-022, LLR-TERM-TV-023, LLR-TERM-TV-024
 # @environment portable
-# @plan Run the setup state machine against fake TV responses and saved attempts; assert consent before switching, independent user-confirmed outcomes, alternate-input sequence and restart-safe TV binding.
+# @plan Run the setup state machine against fake TV responses and saved attempts; assert consent before switching, independent user-confirmed outcomes, alternate-input sequence and restart-safe TV binding. Run queued setup work with controlled threads, late cancellation and failures; verify persisted-state recovery and retry/brand/skip choices.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Isolated tests: no commands reach a real television."""
@@ -22,6 +22,46 @@ IDENTITY = {'address': '2.0.0.0', 'display': 'test-edid'}
 
 
 class CheckTests(unittest.TestCase):
+    def test_worker_delivers_one_outcome_and_cancelled_check_ignores_late_results(self):
+        import zmala_terminal.common.tv_check as module
+        check = TVCheck('unused', Mock())
+        check.transport.probe.return_value = IDENTITY
+        with patch.object(module.threading, 'Thread') as thread:
+            check.start()
+            self.assertTrue(check.busy)
+            thread.call_args.kwargs['target']()
+            self.assertEqual(check.messages.get_nowait(), ('probe', IDENTITY, False))
+            check.transport.probe.side_effect = OSError('offline')
+            check.start(); thread.call_args.kwargs['target']()
+            self.assertEqual(check.messages.get_nowait(), ('probe', None, True))
+        self.assertFalse(check.poll())
+        check.messages.put(('probe', IDENTITY, False)); check.close()
+        self.assertFalse(check.poll())
+        self.assertEqual(check.messages.qsize(), 1)
+
+    def test_setup_recovery_navigation_and_completed_summary(self):
+        c = self.check
+        self.path.write_text('[]')
+        self.deliver('probe', IDENTITY)
+        self.assertEqual(c.page, 'power_ready')
+        c.button('pointer'); self.assertEqual(c.page, 'power_ready')
+        c.busy = True; c.button('red'); self.assertEqual(c.page, 'power_ready'); c.busy = False
+        c.page = 'retry_power'; c.button('green'); c.launch.assert_called_with('power')
+        c.page = 'sony'; c.button('red'); self.assertEqual(c.page, 'retry_source')
+        c.page = 'samsung_help'; c.button('red'); self.assertEqual(c.page, 'retry_source')
+        self.deliver('discover', [{'host':'192.0.2.1'}, {'host':'192.0.2.2'}])
+        c.button('left'); self.assertEqual(c.selection, 1)
+        c.button('right'); self.assertEqual(c.selection, 0)
+        c.button('red'); self.assertEqual(c.page, 'retry_source')
+        self.deliver('pair', None, True); self.assertEqual(c.page, 'retry_source')
+        self.deliver('probe', None); self.assertEqual(c.page, 'unavailable')
+        c.button('green'); c.launch.assert_called_with('probe')
+        self.deliver('probe', None); c.button('red'); self.assertEqual(c.page, 'summary')
+        self.assertTrue(c.record['complete'])
+        self.assertEqual(c.record['power']['status'], 'skipped')
+        c.button('green'); self.assertEqual(c.page, 'done')
+        c.page = 'source_ready'; c.button('left'); self.assertEqual(c.page, 'source_ready')
+
     def setUp(self):
         self.folder = tempfile.TemporaryDirectory()
         self.addCleanup(self.folder.cleanup)

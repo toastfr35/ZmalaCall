@@ -6,6 +6,7 @@ services:
   server:
     environment:
       ZMALA_LAB_TLS: '1'
+      ZMALA_SECURE_CALLS_FILE: /lab/secure-calls.json
       VIDEOCALL_DEBUG: '1'
       ZMALA_TLS_CERT: /lab/server.pem
       ZMALA_TLS_KEY: /lab/server.key

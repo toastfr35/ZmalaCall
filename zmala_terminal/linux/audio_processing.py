@@ -3,7 +3,7 @@ import ctypes as C
 import logging
 from pathlib import Path
 
-# @llr LLR-TERM-MEDIA-007
+# @llr LLR-TERM-AUDIO-003
 def configure(engine):
     profile = engine.audio_profile
     path = Path(__file__).parent / 'media/audio/libzmala_speech_audio.so'

@@ -60,21 +60,23 @@ class QRDecoder:
 
 
 class NativeQRScanner:
+    # @llr LLR-TERM-SETUP-027
     def __init__(self, on_qr, video_window=0, profile='terminal', camera=None):
         self.on_qr, self.capture, self.picture = on_qr, None, None
         self.last_qr, self.next_frame, self.next_decode = ('', 0), 0, 0
-        self.decoder = QRDecoder()
-        self.root = tk.Tk()
-        self.root.overrideredirect(True)
-        self.root.configure(bg='#0d121c')
-        self.label = tk.Label(self.root, bg='#0d121c', borderwidth=0)
-        self.label.pack(fill='both', expand=True)
-        self.root.geometry('640x480')
-        self.root.update()
+        self.decoder, self.root = None, None
         self.x11, self.display, self.parent = None, None, video_window
-        if video_window:
-            self._embed(video_window)
         try:
+            self.decoder = QRDecoder()
+            self.root = tk.Tk()
+            self.root.overrideredirect(True)
+            self.root.configure(bg='#0d121c')
+            self.label = tk.Label(self.root, bg='#0d121c', borderwidth=0)
+            self.label.pack(fill='both', expand=True)
+            self.root.geometry('640x480')
+            self.root.update()
+            if video_window:
+                self._embed(video_window)
             if camera != 'StaticImage: Static picture':
                 device = camera or '/dev/video0'
                 if device.startswith(('V4L2:', 'ZmalaMJPEG:')):
@@ -158,7 +160,9 @@ class NativeQRScanner:
     def close(self):
         if self.capture is not None:
             self.capture.release(); self.capture = None
-        self.decoder.close()
+        if self.decoder:
+            self.decoder.close(); self.decoder = None
         if self.display:
             self.x11.XCloseDisplay(self.display); self.display = None
-        self.root.destroy()
+        if self.root:
+            self.root.destroy(); self.root = None

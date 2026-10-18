@@ -1,3 +1,4 @@
+# @llr LLR-TERM-START-004
 Window.SetBackgroundTopColor(0.051, 0.071, 0.106);
 Window.SetBackgroundBottomColor(0.051, 0.071, 0.106);
 background = Image("boot-family.png");

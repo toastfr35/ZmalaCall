@@ -1,7 +1,7 @@
 # @test T-LLT-029
-# @requirements LLR-TERM-REMOTE-008, LLR-TERM-REMOTE-009, LLR-TERM-REMOTE-010
+# @requirements LLR-TERM-REMOTE-017, LLR-TERM-REMOTE-018, LLR-TERM-REMOTE-019, LLR-TERM-REMOTE-020
 # @environment portable
-# @plan Inject remote connection, status-file freshness, battery and charging changes; assert stale or malformed status cannot report a healthy remote and assistance does not interrupt a call.
+# @plan Inject remote connection, status-file freshness, battery and charging changes; assert stale or malformed status cannot report a healthy remote and assistance does not interrupt a call. Check that shipped disconnection guidance describes battery failure as a possibility and offers switch/charger actions. Drive the watcher through input failure, charging and disconnect snapshots with a fake wait event; verify query cadence and close behavior.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Hardware failures must not be mislabeled as a remote being switched off."""
@@ -20,6 +20,34 @@ from zmala_terminal.common.localization import LANGUAGES, REMOTE_MESSAGES, REMOT
 
 
 class RemoteHealthTests(unittest.TestCase):
+    def test_background_snapshot_queries_charger_only_for_connected_remote_and_stops(self):
+        import zmala_terminal.linux.remote_health as module
+        with patch.object(module.threading, 'Thread') as thread:
+            health = RemoteHealth()
+        thread.return_value.start.assert_called_once()
+        seen = []
+        def wait(seconds):
+            self.assertEqual(seconds, 5)
+            seen.append(health.snapshot)
+            if len(seen) == 2:
+                health.close()
+        with patch.object(health.stopped, 'wait', side_effect=wait), \
+                patch.object(module, 'bluetooth_snapshot', side_effect=[('input_unavailable', 47), ('disconnected', None)]), \
+                patch.object(module, 'remote_charger_connected', return_value=True) as charger, \
+                patch.object(module.time, 'monotonic', return_value=100):
+            health.watch()
+        charger.assert_called_once()
+        self.assertEqual(seen, [('input_unavailable', 47, True, 100), ('disconnected', None, None, 100)])
+        self.assertEqual(health.state, 'disconnected')
+        with patch.object(module.subprocess, 'run', return_value=Mock(stdout='Powered: no')) as run:
+            self.assertEqual(module.bluetooth_snapshot(), ('bluetooth_unavailable', None))
+            self.assertEqual(run.call_args.args[0], ['bluetoothctl', 'show'])
+            self.assertEqual(run.call_args.kwargs['timeout'], 3)
+        with patch.dict(sys.modules, {'fcntl':Mock()}), patch.object(module.Path, 'glob', return_value=[]), \
+                patch.object(module.os, 'open') as opened:
+            self.assertIsNone(module.remote_charger_connected())
+            opened.assert_not_called()
+
     def test_battery_formats_absence_and_invalid_values(self):
         self.assertEqual(battery_percentage('\tBattery Percentage: 0x5f (95)\n'), 95)
         self.assertEqual(battery_percentage('Battery Percentage: 20'), 20)
@@ -69,6 +97,12 @@ class RemoteHealthTests(unittest.TestCase):
             self.assertEqual(close.call_count, 2)
 
     def test_recovery_translations_and_explicit_fallback(self):
+        # A disconnected link cannot identify the battery or switch condition.
+        guidance = translate('en', 'remote_disconnected_detail')
+        self.assertIn('may be flat', guidance)
+        self.assertIn('switch', guidance)
+        self.assertIn('charging dock', guidance)
+        self.assertNotIn('battery is flat', guidance)
         self.assertEqual(set(REMOTE_MESSAGES['en']), set(REMOTE_MESSAGES['fr']))
         for key in REMOTE_MESSAGES['en']:
             self.assertTrue(translate('fr', key))

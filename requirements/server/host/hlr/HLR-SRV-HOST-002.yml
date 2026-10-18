@@ -1,0 +1,20 @@
+active: true
+area: Host access and storage
+derived: false
+header: |
+  Reduced routine storage writes
+level: 31.0
+links:
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/test_installed_storage.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The installed server shall use volatile storage for routine logs, temporary work and swap. Application state and administrator credentials shall remain persistent.
+verification: |
+  Inspect installed host policy and state paths. Distinguish temporary data from persistent configuration and credentials.

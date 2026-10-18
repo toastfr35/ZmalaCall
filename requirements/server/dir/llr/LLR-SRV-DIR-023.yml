@@ -1,0 +1,29 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Contact email list
+level: 21.0
+links:
+- HLR-SRV-DIR-018: 3FwHcV_bZoMa3n3BHEtxN-ucUFWdkDK29qi_hycUoA4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-reminders.test.js
+  type: file
+- path: tests/server/LLT/directory-policy.test.js
+  type: file
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  New accounts shall require one to ten distinct valid mailbox addresses. Email comparison shall ignore case for duplicates. Older accounts without addresses shall remain usable and be identified for completion.
+verification: |
+  Test malformed addresses, duplicates, limits and older empty lists. Check migration never invents an address.

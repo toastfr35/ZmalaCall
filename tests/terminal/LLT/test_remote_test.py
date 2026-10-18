@@ -1,5 +1,5 @@
 # @test T-LLT-030
-# @requirements LLR-TERM-SETUP-006, LLR-TERM-SETUP-007, LLR-TERM-SETUP-008
+# @requirements LLR-TERM-SETUP-024, LLR-TERM-SETUP-025, LLR-TERM-SETUP-026
 # @environment portable
 # @plan Feed the ordered right/left/green/red/middle sequence including repeats, keyboard input, early releases and changed bonds; assert only distinct physical edges complete and persist verification.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

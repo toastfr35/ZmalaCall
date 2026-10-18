@@ -1,0 +1,29 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  English administration pages
+level: 97.0
+links:
+- HLR-SRV-UI-010: MlEJf_-NKL2j0CSwG3cxFR64ABJCLXrvy9ljngju91U=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-view.test.js
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin.html
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The dark English interface shall provide Overview, Accounts, Groups, Terminals, Callbacks and Activity pages. Recent events shall appear on Activity and ongoing calls on Overview.
+verification: |
+  Navigate all pages with current fixture state and verify selected-page headings, ongoing calls and activity content.

@@ -1,0 +1,32 @@
+active: true
+area: Configuration
+derived: false
+header: |
+  Acknowledged local edits
+level: 33.0
+links:
+- HLR-TERM-CONFIG-017: uZSyhrSat5ls4qT4zxAKIh_MOcpkFhw80u6tLM3GRZE=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_local_settings.py
+  type: file
+- path: tests/terminal/LLT/test_settings_workflows.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/local_settings.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/ui/settings.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Accepted edits shall include the expected previous values. The terminal shall mark
+  them saved only after server acknowledgement. Failure or conflict shall show
+  localized feedback. An incoming call shall discard an unfinished draft.
+verification: |
+  Delay, reject and conflict a save, including omitted optional defaults. Check editor
+  state, acknowledgement and incoming-call interruption.

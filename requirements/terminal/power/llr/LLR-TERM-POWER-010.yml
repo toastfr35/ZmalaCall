@@ -1,0 +1,34 @@
+active: true
+area: Connected devices and power
+derived: false
+header: |
+  C20 identity after reconnection
+level: 109.0
+links:
+- HLR-TERM-POWER-008: 35cBTKX3R_qHYmXB8VF639bs2vG63ISfQ1HlOVVGPVg=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_linux_media.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/native_runtime.py
+  type: file
+- path: zmala_terminal/common/video_settings.py
+  type: file
+- path: zmala_terminal/linux/c20_status.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+- path: zmala_terminal/linux/native_runtime.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Pi shall rediscover C20 capture and playback by device identity after USB
+  enumeration changes. Missing C20 devices shall produce diagnostics. The Pi shall not
+  silently select unrelated hardware or use a stale server device identifier.
+verification: |
+  Renumber C20 nodes, provide stale configured names and remove the C20. Check
+  selected identities and missing-device diagnostics.

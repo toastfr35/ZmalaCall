@@ -1,0 +1,22 @@
+active: true
+area: Server communication
+derived: false
+header: |
+  Protected server exchange
+level: 8.0
+links:
+- PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_server_exchange_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall use its assigned credentials for server requests. It shall
+  validate received data before that data changes accepted terminal state.
+verification: |
+  Return valid, invalid and unauthorized responses from an isolated endpoint. Check
+  credentials and retained state.

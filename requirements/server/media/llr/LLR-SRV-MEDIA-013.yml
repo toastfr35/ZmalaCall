@@ -1,0 +1,21 @@
+active: true
+area: Audio and video relay
+derived: false
+header: |
+  Allocation and closure ownership
+level: 62.0
+links:
+- HLR-SRV-MEDIA-008: 5uCWTTaRH4AQoptIHD7EgydMCTLzTcZfhc1kW97UIm0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/media-lifetime.test.js
+  type: file
+- path: zmala_server/media.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Concurrent allocation for one session stream shall share the same operation. Late allocations shall release their sockets if the session closed. Call teardown and server shutdown shall release every owned relay port.
+verification: |
+  Close while bind is pending and resolve operations in different orders. Check empty ownership maps and zero retained sockets.

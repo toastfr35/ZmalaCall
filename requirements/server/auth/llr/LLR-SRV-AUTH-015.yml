@@ -1,0 +1,27 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Damaged credentials and local recovery
+level: 9.0
+links:
+- HLR-SRV-AUTH-011: q53zUb-vi08hsh8i21X28-8w0MruYUDG5SZmaP8xtrM=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/credential-transitions.test.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A malformed existing credential file shall stop startup instead of enabling initial setup. Deliberate removal while the server is stopped shall permit password setup on restart.
+verification: |
+  Load malformed state and then deliberately remove the file. Check failure and recovery without deleting accounts.

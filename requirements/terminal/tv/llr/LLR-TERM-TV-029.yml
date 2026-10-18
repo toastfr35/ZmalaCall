@@ -1,0 +1,35 @@
+active: true
+area: TV control
+derived: false
+header: |
+  Idle TV return
+level: 105.0
+links:
+- HLR-TERM-TV-018: ZYWJZfxPFY-U2Faag_owNyuH0jhoHw1LvN3GtcRGSgo=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_idle_return.py
+  type: file
+- path: zmala_terminal/common/idle_return.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/linux/cec_device.py
+  type: file
+- path: zmala_terminal/linux/cec_observer.py
+  type: file
+- path: zmala_terminal/linux/samsung_tv.py
+  type: file
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Browsing shall restore previous TV state after the configured idle timeout, with 30
+  seconds as default and Never supported. Every button activity shall restart the
+  countdown. A thin blue bar at the screen bottom shall appear after ten seconds
+  without button activity.
+verification: |
+  Control time at bar and timeout boundaries. Press consumed and normal buttons and
+  check countdown reset and Never behavior.

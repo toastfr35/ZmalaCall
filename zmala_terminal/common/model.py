@@ -82,7 +82,7 @@ class TerminalModel:
             self.callback_request = dict(request)
             self.state = State.CONFIRM_CALLBACK
 
-    # @llr LLR-TERM-UI-005
+    # @llr LLR-TERM-NAV-004
     def configure(self, config):
         old = self.selected
         if self.config and (self.config['sip']['username'], self.config['sip']['domain'].lower()) != (config['sip']['username'], config['sip']['domain'].lower()):
@@ -96,7 +96,7 @@ class TerminalModel:
         else:
             self.index = 0
 
-    # @llr LLR-TERM-CALL-004, LLR-TERM-CALL-006
+    # @llr LLR-TERM-CALL-011, LLR-TERM-CALL-013
     def incoming(self, username, domain):
         if self.state not in (State.HOME, State.CONFIRMING, State.CONFIRM_CALLBACK, State.REQUESTING_CALLBACK) or not self.config or domain.lower() != self.config['sip']['domain'].lower():
             return False
@@ -109,7 +109,7 @@ class TerminalModel:
         self.deadline = time.monotonic() + self.config['auto_answer_seconds'] if auto_answer else None
         return True
 
-    # @llr LLR-TERM-CALL-002, LLR-TERM-CALL-006
+    # @llr LLR-TERM-NAV-006, LLR-TERM-CALL-013
     def button(self, button, registered=True):
         if self.state == State.HOME:
             if button == 'red' and self.pending_callback(self.selected):
@@ -146,7 +146,7 @@ class TerminalModel:
             return self.button('green')
         return None
 
-    # @llr LLR-TERM-HISTORY-005
+    # @llr LLR-TERM-HISTORY-017
     def connected(self):
         # A late answer event must not reverse an already requested hang-up.
         changed = False
@@ -167,7 +167,7 @@ class TerminalModel:
         if not online:
             self.confirm_callback_cancellation()
 
-    # @llr LLR-TERM-HISTORY-003
+    # @llr LLR-TERM-HISTORY-015
     def ended(self, remote=False):
         if remote and self.state == State.RINGING and self.contact:
             self.mark_notification(self.contact['id'])

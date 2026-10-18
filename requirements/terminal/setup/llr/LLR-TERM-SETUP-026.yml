@@ -1,0 +1,32 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Saved remote verification
+level: 10.0
+links:
+- HLR-TERM-SETUP-019: CHEZt2g7ZxzJa7GZyJoZyIghXVyPbmQ1qd2QTgVYrA0=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_pairing_setup.py
+  type: file
+- path: tests/terminal/LLT/test_pi_install.py
+  type: file
+- path: tests/terminal/LLT/test_remote_test.py
+  type: file
+- path: zmala_terminal/common/remote_test.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/usb_setup.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Setup shall continue only after verification is saved for the current bond.
+  Disconnection or bond replacement shall clear an unfinished test. Restart shall
+  retain verification for the same compatible bond.
+verification: |
+  Fail the save, disconnect during a test and replace the bond. Restart with unchanged
+  verified state.

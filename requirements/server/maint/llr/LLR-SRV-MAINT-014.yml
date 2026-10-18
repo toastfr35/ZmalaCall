@@ -1,0 +1,25 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Device serial and execution lease
+level: 77.0
+links:
+- HLR-SRV-MAINT-011: sJW1dvGdS_-Gm5aD0PVVtKqWW8MUnT6xi1cG7zemBs0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/console-state.test.js
+  type: file
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A token shall claim and report jobs only for its current device serial. One device shall have at most one running lease. The lease shall be saved before claim acknowledgement and shall authenticate the result. Jobs with unknown original device ownership shall not run.
+verification: |
+  Claim repeatedly, exchange account associations and submit foreign or obsolete leases. Hold persistence before claim response.

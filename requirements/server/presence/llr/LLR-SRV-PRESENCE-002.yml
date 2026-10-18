@@ -1,0 +1,25 @@
+active: true
+area: Registration and availability
+derived: false
+header: |
+  Authenticated registration flow
+level: 46.0
+links:
+- HLR-SRV-PRESENCE-001: lzQ8x2LfimBdJ0H6qcdLShlijXMVNhEpDl6HgUdDEw4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/sip-identity.test.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Registration shall authenticate matching From and To account identities and retain one current Contact with its actual UDP or TCP flow. Numeric expiry shall be limited to 0 through 600 seconds. Missing Contact shall query state; zero expiry or wildcard Contact shall deregister it. Nonnumeric expiry shall be rejected.
+verification: |
+  Register, query, replace and remove UDP/TCP contacts. Check identity mismatch, expiry bounds and recorded network flow.

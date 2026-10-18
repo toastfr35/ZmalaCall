@@ -1,0 +1,22 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Automatic startup
+level: 1.0
+links:
+- PROD001: 4fW6PPWrP16gAqSCbhixs6pGUTY3fOkFmKN-9QSRxFM=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/linux_launcher.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall start without a local login. It shall resume incomplete setup or
+  enter normal operation from its saved state.
+verification: |
+  Start configured and unconfigured Pi profiles. Check the first visible page and
+  startup without the server.

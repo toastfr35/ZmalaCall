@@ -1,0 +1,24 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Deliberate local reset
+level: 5.0
+links:
+- PROD007: CVFnBhIEqG3Rok_D6npspt2MsVV8o9N_NM64q2fSo0U=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/provisioning_ui.py
+  type: file
+- path: tests/terminal/HLT/test_linux_platform.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall provide a confirmed reset for a new setup. Reset shall preserve
+  server accounts and data owned by other terminal profiles.
+verification: |
+  Cancel and confirm reset. Interrupt cleanup and restart. Check deletion scope and
+  resumed setup.

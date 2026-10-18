@@ -1,0 +1,34 @@
+active: true
+area: Server communication
+derived: false
+header: |
+  Independent live refresh
+level: 27.0
+links:
+- HLR-TERM-COM-002: wUJC3SC-xkWW6uYImtth5z9iNCm34rMDyV6CD1vOSck=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_management_loop.py
+  type: file
+- path: tests/terminal/LLT/test_performance.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall request live state at approximately two-second intervals.
+  Presence and callback changes shall apply independently of stable configuration
+  revisions. Slow portrait loading shall not delay this polling.
+verification: |
+  Advance a controlled clock while delaying portrait work. Check refresh intervals and
+  live changes with an unchanged revision.

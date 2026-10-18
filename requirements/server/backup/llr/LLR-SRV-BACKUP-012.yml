@@ -1,0 +1,25 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Backup check and recovery feedback
+level: 96.0
+links:
+- HLR-SRV-BACKUP-001: Dk6eZ8JEMDnUAF6tNqYKNJHXepgziAiQiGvKYdRBRm0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/http/backup-routes.js
+  type: file
+- path: zmala_server/web/admin-backups.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The overview shall provide backup download, validation summary and explicitly confirmed restore. It shall explain sensitive contents, local-network exclusions and restored login credentials. It shall display restart progress and the saved restored or rolled-back outcome.
+verification: |
+  Use download, check, confirmation, failure and restart paths. Change the selected file while validation is pending and check stale results are ignored.

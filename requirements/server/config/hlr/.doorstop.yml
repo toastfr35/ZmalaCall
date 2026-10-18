@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-SRV-CONFIG
-      title: Settings and enrollment — HLR
+      title: Terminal configuration — HLR
   publish:
   - area
   - scope

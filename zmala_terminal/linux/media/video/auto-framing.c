@@ -48,7 +48,7 @@ uint64_t zmala_framing_take(uint8_t *rgb, int *width, int *height) {
     return token;
 }
 
-// @llr LLR-TERM-MEDIA-018
+// @llr LLR-TERM-VIDEO-016
 void zmala_framing_target(uint64_t token, float x, float y, float size) {
     if (!isfinite(x) || !isfinite(y) || !isfinite(size) || size < .5f || size > 1.f ||
         x < size / 2 - .00001f || y < size / 2 - .00001f ||
@@ -98,7 +98,7 @@ static void reset(void) {
     pthread_mutex_unlock(&mutex);
 }
 
-// @llr LLR-TERM-MEDIA-016
+// @llr LLR-TERM-VIDEO-014
 static void sample(Framing *s, MSPicture *src, uint64_t now) {
     pthread_mutex_lock(&mutex);
     int due = control.enabled && now - control.sampled >= 2000;
@@ -126,7 +126,7 @@ static void sample(Framing *s, MSPicture *src, uint64_t now) {
     pthread_mutex_unlock(&mutex);
 }
 
-// @llr LLR-TERM-MEDIA-015, LLR-TERM-MEDIA-017, LLR-TERM-MEDIA-018
+// @llr LLR-TERM-VIDEO-013, LLR-TERM-VIDEO-015, LLR-TERM-VIDEO-016
 static mblk_t *frame(Framing *s, mblk_t *input) {
     MSPicture src, dst;
     if (ms_yuv_buf_init_from_mblk(&src, input)) return input;
@@ -182,7 +182,7 @@ static mblk_t *frame(Framing *s, mblk_t *input) {
 
 /* JPEGs are independent pictures. Replace stale waiting work before decoding;
  * H.264 packets farther downstream must never be dropped this way. */
-// @llr LLR-TERM-MEDIA-009
+// @llr LLR-TERM-VIDEO-007
 static void *decode_worker(void *context) {
     Framing *s = context;
     for (;;) {

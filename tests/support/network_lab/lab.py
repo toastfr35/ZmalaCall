@@ -43,12 +43,12 @@ def build():
     with tempfile.TemporaryDirectory(prefix='zmala-network-build-') as directory:
         context = Path(directory)
         excluded = shutil.ignore_patterns('node_modules', 'data', '__pycache__', 'account-pictures',
-                                         'framing-runtime', 'models', '*.log', '*.so', '*.pyc',
+                                         'framing-runtime', 'turn-runtime', 'models', '*.log', '*.so', '*.pyc',
                                          '.env', '.env.*', '*.pem', '*.key', '*.p12', '*.pfx', 'password.txt')
         for name in ('zmala_server', 'zmala_terminal/common', 'zmala_terminal/linux', 'tests/support/network_lab'):
             shutil.copytree(ROOT/name, context/name, ignore=excluded)
         for name in ('build_tools/build-admin.cjs', 'build_tools/convert-photo.py',
-                     'build_tools/linux/build-media.sh', 'tests/adhoc/turn_parser.cpp'):
+                     'build_tools/linux/build-media.sh', 'tests/terminal/LLT/turn_parser.cpp', 'build_tools/linux/build-turn.py'):
             destination = context/name
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes((ROOT/name).read_bytes().replace(b'\r\n', b'\n'))

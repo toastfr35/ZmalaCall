@@ -1,0 +1,54 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Single profile owner
+level: 3.0
+links:
+- HLR-TERM-START-002: bsR3IZBSDdhaSgxeSmDTPiNnYlEv497rd_UbYvIjVaA=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/21-zmalacall-pi4.conf
+  type: file
+- path: build_tools/linux/kiosk-session.py
+  type: file
+- path: build_tools/linux/launcher.py
+  type: file
+- path: build_tools/linux/picom.conf
+  type: file
+- path: build_tools/linux/prepare-display.py
+  type: file
+- path: build_tools/linux/start-terminal-unconfigured.sh
+  type: file
+- path: build_tools/linux/start-terminal.sh
+  type: file
+- path: build_tools/linux/stop-terminal.sh
+  type: file
+- path: build_tools/linux/zmalacall-display.service
+  type: file
+- path: build_tools/linux/zmalacall-terminal.service
+  type: file
+- path: tests/terminal/LLT/test_appliance_install.py
+  type: file
+- path: tests/terminal/LLT/test_application_lifetime.py
+  type: file
+- path: tests/terminal/LLT/test_engine_adapter.py
+  type: file
+- path: tests/terminal/LLT/test_linux_lifecycle.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/main.py
+  type: file
+- path: zmala_terminal/linux/process_job.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The launcher shall allow only one process to own a terminal profile. It shall verify
+  process identity before sending a stop signal. Service shutdown shall stop the owned
+  control group.
+verification: |
+  Start a duplicate profile and simulate PID reuse. Check that unrelated processes
+  receive no signals.

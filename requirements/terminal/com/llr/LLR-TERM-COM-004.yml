@@ -1,0 +1,34 @@
+active: true
+area: Server communication
+derived: false
+header: |
+  Configuration identity and bounds
+level: 24.0
+links:
+- HLR-TERM-COM-001: ydNPWcnm6yTEn1zC-hL6mdqdWGyJaKNXJaxgGGafcOo=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_management.py
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Configuration shall use schema 1, the enrolled device ID and a positive integer
+  revision. It shall contain no more than 40 unique valid contacts. Each contact URI
+  shall match its account and the configured SIP domain.
+verification: |
+  Vary schema, identity, revision, contact count, duplicate IDs and domain. Check
+  acceptance and rejection at each boundary.

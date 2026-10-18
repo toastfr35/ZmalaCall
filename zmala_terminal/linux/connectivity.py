@@ -2,7 +2,7 @@
 from pathlib import Path
 
 
-# @llr LLR-TERM-MAINT-007
+# @llr LLR-TERM-NET-005
 def network_link_available(wifi_only=False):
     try:
         for device in Path('/sys/class/net').iterdir():

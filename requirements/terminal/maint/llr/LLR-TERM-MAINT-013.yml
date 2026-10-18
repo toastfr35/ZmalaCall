@@ -1,0 +1,26 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Low-write runtime policy
+level: 118.0
+links:
+- HLR-TERM-MAINT-012: BYCtRD3d-Wx2oRuznD6OcNT7x-_eCUfqXGpQHUJiAyk=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/low-wear-journal.conf
+  type: file
+- path: build_tools/linux/low-wear-swap.conf
+  type: file
+- path: tests/terminal/LLT/test_pi_install.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall use a volatile journal capped at 64 MiB, RAM-backed temporary
+  files, RAM-only zram swap and noatime on root. Persistent application state shall
+  remain writable.
+verification: |
+  Inspect effective mounts, swap and journal policy and write persistent profile
+  state. Configuration presence alone does not prove effective runtime policy.

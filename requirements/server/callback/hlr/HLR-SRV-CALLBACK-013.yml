@@ -1,0 +1,22 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Callback notification delivery
+level: 20.0
+links:
+- PROD010: CH0z8p296_lCSujO-jWk_j36hz5ah55zBlfEYDgM1eU=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/callbacks.test.js
+  type: file
+- path: tests/server/HLT/performance.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall make eligible callback requests available to terminals and notify reachable phones. It shall distinguish notification acceptance from a completed callback.
+verification: |
+  Poll terminal views and control phone acceptance and failure. Check retries, current eligibility and call completion.

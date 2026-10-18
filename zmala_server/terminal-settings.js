@@ -23,7 +23,7 @@ function speakerVolume(value) {
   return value;
 }
 
-// @llr LLR-SRV-CONFIG-005
+// @llr LLR-SRV-CONFIG-018
 /** @param {import('./types/contracts').JsonObject} update
  * @returns {import('./types/contracts').TerminalSettings} */
 function mediaDevices(update) {
@@ -48,25 +48,26 @@ function terminalProfileFields(profile, update) {
     update.display_name.length > 80
   )
     throw Error('Enter a display name.');
-  // @llr LLR-SRV-CONFIG-004
+  // @llr LLR-SRV-CONFIG-017
   const language = proposed(update, 'language', profile.language || 'en');
   if (typeof language !== 'string' || !own(LANGUAGES, language))
     throw Error('Choose a supported terminal language.');
   return {
     display_name: update.display_name.trim(),
     language,
-    // @llr LLR-SRV-CONFIG-009
+    // @llr LLR-SRV-CONFIG-020
     command_shell: choice(
       proposed(update, 'command_shell', profile.command_shell || 'powershell'),
       /** @type {const} */ (['powershell', 'pwsh', 'cmd', 'sh', 'bash']),
       'Choose a supported command shell.',
     ),
+    // @llr LLR-SRV-CONFIG-018
     audio_profile: choice(
       proposed(update, 'audio_profile', profile.audio_profile || 'normal'),
       /** @type {const} */ (['normal', 'speech']),
       'Choose a supported audio profile.',
     ),
-    // @llr LLR-SRV-CONFIG-003
+    // @llr LLR-SRV-CONFIG-016
     video_resolution: choice(
       proposed(update, 'video_resolution', profile.video_resolution || '720p'),
       /** @type {const} */ (['480p', '720p', '1080p']),
@@ -77,6 +78,7 @@ function terminalProfileFields(profile, update) {
       /** @type {const} */ ([10, 15, 20, 25, 30]),
       'Choose a video frame rate of 10, 15, 20, 25 or 30 fps.',
     ),
+    // @llr LLR-SRV-CONFIG-017
     auto_framing: choice(
       proposed(update, 'auto_framing', profile.auto_framing === true),
       [false, true],

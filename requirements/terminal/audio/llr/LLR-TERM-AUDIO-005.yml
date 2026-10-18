@@ -1,0 +1,26 @@
+active: true
+area: Audio
+derived: false
+header: |
+  Missing microphone handling
+level: 67.0
+links:
+- HLR-TERM-AUDIO-001: PFoiG3qDcQEzEGeZgfZ4kZuS7cdKL3JpiWMY7aSgPII=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_engine_adapter.py
+  type: file
+- path: tests/terminal/LLT/test_missing_microphone.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Without usable microphone capture, a call shall disable outgoing audio capture while
+  preserving available playback and video. The next call shall check capture
+  availability again.
+verification: |
+  Start without a microphone, reconnect it and start another call. Check capture
+  parameters and retained receive capability.

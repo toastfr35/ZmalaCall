@@ -1,7 +1,7 @@
 # @test T-LLT-028
-# @requirements LLR-TERM-SETUP-010, LLR-TERM-SETUP-011, LLR-TERM-SETUP-014, LLR-TERM-SETUP-015, LLR-TERM-SETUP-017, LLR-TERM-SETUP-018
+# @requirements LLR-TERM-SETUP-028, LLR-TERM-SETUP-030, LLR-TERM-SETUP-031, LLR-TERM-SETUP-033, LLR-TERM-SETUP-034, LLR-TERM-SETUP-035, LLR-TERM-NET-003
 # @environment portable
-# @plan Decode valid and invalid enrollment/Wi-Fi payloads and reset temporary enrollment files; assert canonical server identity, scoped language retention, restart behavior and stale-write rejection.
+# @plan Decode valid and invalid enrollment/Wi-Fi payloads and reset temporary enrollment files; assert canonical server identity, scoped language retention, restart behavior and stale-write rejection. Reject compact QR length/type/SSID/port violations and recover corrupt or obsolete local enrollment files to fresh setup without credentials.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 import json
@@ -16,6 +16,31 @@ from zmala_terminal.common.configuration import Configuration
 
 
 class ProvisioningTests(unittest.TestCase):
+    def test_malformed_qr_fields_and_saved_state_recover_without_reusing_credentials(self):
+        for text in ['FAMILY-WIFI:1:', 'FAMILY-WIFI:1:!', 'FAMILY-WIFI:1:'+'x'*161,
+                     'WIFI:S:;;', 'WIFI:S:'+'é'*17+';;', 'WIFI:S:bad\x7f;;']:
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                parse_wifi(text)
+        for packed in [b'\0\0', b'\4\1x', b'\0\33x', b'\0\4x']:
+            with self.assertRaises(ValueError):
+                parse_wifi('FAMILY-WIFI:1:'+base64.urlsafe_b64encode(packed).decode().rstrip('='))
+        good = {'type':'family-call-server', 'version':1, 'server_url':'http://unit',
+                'device_id':'term', 'device_token':'a'*40}
+        for text in [None, 'x'*4097, json.dumps(good | {'server_url':None}),
+                     json.dumps(good | {'server_url':'http://unit:0'})]:
+            with self.assertRaises(ValueError):
+                parse_server(text)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'provisioning.json'
+            for saved in ['broken', '[]', '{"version":2}']:
+                path.write_text(saved)
+                enrollment = Enrollment(directory)
+                self.assertEqual(enrollment.value, {'version':1})
+                self.assertEqual(enrollment.stage, 'wifi')
+            enrollment.set_wifi({'password':'never retain'})
+            enrollment = Enrollment(directory, force=True)
+            self.assertEqual(json.loads(path.read_text()), {'version':1})
+
     def test_existing_provisioning_file_survives_source_reorganization(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'provisioning.json'

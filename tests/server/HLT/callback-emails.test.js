@@ -1,5 +1,5 @@
 // @test S-HLT-007
-// @requirements HLR-SRV-CALLBACK-001
+// @requirements HLR-SRV-CALLBACK-014
 // @environment portable
 // @plan Use authenticated HTTP SMTP settings with an isolated SMTP service; assert secret retention/privacy, connection checks without sending mail, and reminder delivery through the configured mailer.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

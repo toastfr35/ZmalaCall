@@ -16,7 +16,7 @@ class IdleCountdown:
         self.anchor = None
         self.paused = False
 
-    # @llr LLR-TERM-TV-013
+    # @llr LLR-TERM-TV-029
     def tick(self, now, session, seconds, activity, eligible=True):
         """Return (remaining fraction, just expired); pause always gives a fresh interval."""
         changed = session is not self.session or seconds != self.seconds or activity != self.activity
@@ -44,7 +44,7 @@ class IdleCountdown:
 
 
 class IdleReturn:
-    # @llr LLR-TERM-TV-014
+    # @llr LLR-TERM-TV-030
     def tick_tv_idle(self, now):
         session = self.tv_control.browsing_session()
         config = self.model.config or {}

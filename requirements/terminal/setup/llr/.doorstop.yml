@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-TERM-SETUP
-      title: First-run setup and reset — LLR
+      title: Initial setup and reset — LLR
   publish:
   - area
   - scope

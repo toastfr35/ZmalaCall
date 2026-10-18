@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-SRV-AUTH
-      title: Administration security — LLR
+      title: Administration and access control — LLR
   publish:
   - area
   - scope

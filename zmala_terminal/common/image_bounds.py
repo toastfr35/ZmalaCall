@@ -8,6 +8,7 @@ MAX_PIXELS = 4 * 1024 * 1024
 PNG = b'\x89PNG\r\n\x1a\n'
 
 
+# @llr LLR-TERM-UI-020
 def checked_size(width, height):
     if not (0 < width <= MAX_SIDE and 0 < height <= MAX_SIDE and width * height <= MAX_PIXELS):
         raise ValueError('Portrait dimensions exceed the decoding limit')

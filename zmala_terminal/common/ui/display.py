@@ -82,6 +82,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         self.build_usb_setup()
         self.build_tv_setup()
 
+    # @llr LLR-TERM-UI-023
     def text(self, key, **values):
         language = 'en' if self.setup_stage in ('wifi', 'wifi_ready', 'server') else self.language
         return translate(language, key, **values)
@@ -92,6 +93,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
             if self.model.state in (State.CONFIRMING, State.CONFIRM_CALLBACK, State.REQUESTING_CALLBACK):
                 self.draw_confirmation()
 
+    # @llr LLR-TERM-UI-024, LLR-TERM-UI-025
     def fit_text(self):
         """Fit longer translations and scripts into the available display width."""
         width = max(700, self.root.winfo_width() - 80)
@@ -159,6 +161,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
             if not self.title.winfo_manager():
                 self.title.pack(before=self.body, pady=(16, 8))
 
+    # @llr LLR-TERM-CALL-014, LLR-TERM-VIDEO-012
     def update_video_message(self):
         if not self.setup_stage and self.model.state == State.IN_CALL:
             self.local_video.place(relx=1, rely=1, relwidth=.2, relheight=.2, anchor='se')
@@ -178,6 +181,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
             self.missing_video.place_forget()
             self.missing_video_bottom.place_forget()
 
+    # @llr LLR-TERM-SETUP-032
     def draw_reset(self):
         self.avatar.delete('all')
         self.current_text_images = []
@@ -191,6 +195,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
             self.current_text_images.append(image)
             self.avatar.create_image(x, y+90, image=image)
 
+    # @llr LLR-TERM-SETUP-029
     def draw_wifi_confirmation(self):
         self.avatar.delete('all')
         width, height = max(700, self.avatar.winfo_width()), max(120, self.avatar.winfo_height())
@@ -201,6 +206,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         self.avatar.create_text(x, height * .82, text=str(seconds), fill=FG, font=('Segoe UI', 36, 'bold'))
         self.setup_confirmation_seconds = seconds
 
+    # @llr LLR-TERM-NET-005
     def draw_connectivity(self, registered):
         self.update_remote_help()
         c = self.connectivity
@@ -209,7 +215,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         remote = getattr(getattr(self, 'presenter_input', None), 'connected', None)
         battery = getattr(getattr(self, 'presenter_input', None), 'battery', None)
         charger = getattr(getattr(self, 'presenter_input', None), 'charger_connected', None) is True
-        # @llr LLR-TERM-POWER-007
+        # @llr LLR-TERM-POWER-017
         power = getattr(self, 'usb_power', None)
         show_usb = bool(power and power.enabled)
         powered = power.power_state if show_usb else None
@@ -231,6 +237,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
             self.usb_image = self.icon_renderer.usb_power(powered, BG)
             c.create_image(0, 4, anchor='nw', image=self.usb_image, tags='usb-power')
 
+    # @llr LLR-TERM-SETUP-027
     def render_setup_feedback(self):
         label = self.setup_feedback_label
         if self.setup_stage not in ('wifi', 'server') or not getattr(self, 'setup_feedback', False):
@@ -246,6 +253,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         label.image = picture
         label.pack(before=self.body, pady=(0, 10))
 
+    # @llr LLR-TERM-UI-015, LLR-TERM-CALL-013
     def render(self):
         """Render the model on Tk's thread; keep the video surface alive through call transitions."""
         if self.closed:

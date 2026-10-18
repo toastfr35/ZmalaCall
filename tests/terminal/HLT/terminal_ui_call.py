@@ -1,5 +1,5 @@
 # @test T-HLT-014
-# @requirements HLR-TERM-CALL-001, HLR-TERM-MEDIA-001
+# @requirements HLR-TERM-CALL-009, HLR-TERM-VIDEO-001
 # @environment hardware
 # @plan Run the real terminal against a controlled SIP peer, establish and end a call, collect native media counters and screenshots; assert connection, decoded video and cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

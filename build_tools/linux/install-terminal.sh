@@ -8,4 +8,5 @@ if [ "${1:-}" = '--testing' ]; then
     sudo apt-get install -y --no-install-recommends xvfb xauth x11-utils
 fi
 sh "$task_dir/build-media.sh"
+python3 "$task_dir/build-turn.py"
 printf '\nInstalled ZmalaCall terminal dependencies. Run it inside an X11/XWayland desktop session.\n'

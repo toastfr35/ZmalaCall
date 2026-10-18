@@ -26,7 +26,7 @@ class CallbackMailer {
       socketTimeout: 15000,
     });
   }
-  // @llr LLR-SRV-CALLBACK-010
+  // @llr LLR-SRV-CALLBACK-023
   async verify() {
     if (!this.enabled()) throw Error('Enable and save SMTP settings first.');
     try {

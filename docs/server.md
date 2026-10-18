@@ -7,16 +7,198 @@ For user-facing installation and account setup, read `server_prep.docx`
 and `terminal_config.docx`. Network and build conventions are in
 [general.md](general.md); client behavior is in [terminal.md](terminal.md).
 
-Contents: [deployment](#deployment-pipeline), [service and SSH](#service-ssh-and-storage),
+The [three-network Docker lab](general.md#three-network-docker-lab) exercises this
+server with two native terminal call engines behind separate NAT gateways. It
+uses disposable state and never connects to the installed server or terminals.
+
+Contents: [purpose and functions](#server-purpose-and-functions),
+[deployment](#deployment-pipeline), [service and SSH](#service-ssh-and-storage),
 [authentication](#administration-and-authentication), [account model](#accounts-groups-and-terminal-settings),
 [SIP/media](#sip-and-media-internals), [persistence](#persistence-and-backup),
 [source map](#source-map-and-verification).
 
+## Server purpose and functions
+
+The ZmalaCall server connects a family's call terminals and compatible SIP phones.
+It runs independently on a Raspberry Pi. It holds the shared directory, controls
+communication permissions and supplies settings to each terminal. Terminals own
+their cameras, microphones, speakers, displays and remote controls.
+
+An administrator uses a web browser to manage the server. Terminal users make
+calls and change the permitted local settings through their terminals. The server
+connects these two views of the same configuration and reports conflicts.
+
+This description covers the installed Linux server and its host policies. It
+excludes installer executables, release packaging and SD-card preparation. Client
+behavior appears only where it defines an interface with the server.
+
+### 1. Startup and shutdown
+
+The server starts as a supervised service without a terminal application. It loads
+saved state, completes pending restore recovery and opens its network services.
+It provides separate process-liveness and persistence-readiness responses.
+
+Shutdown closes listeners and call resources and waits for accepted work and
+state writes. Startup failures produce an error instead of leaving a partially
+started service available.
+
+### 2. Administration and access control
+
+The first administrator sets a shared password. Later administration requires a
+valid session. Password replacement ends existing sessions, and sign-out ends the
+selected session. Password hashes and session credentials remain private.
+
+The server separates administrator sessions, terminal device tokens and SIP account
+credentials. Each credential grants only its intended access. Browser requests
+also pass address and origin checks. Optional HTTPS protects administration traffic.
+
+### 3. Accounts, groups and portraits
+
+The administrator creates phone and terminal accounts with names, pictures and
+contact addresses. Shared groups determine who can communicate. Membership through
+a third person does not grant permission.
+
+The server derives contact lists from account data and group membership. A physical
+terminal keeps its device identity when it moves between accounts. Account edits
+update dependent records, and changes that would disrupt an active call are blocked.
+Picture processing limits input size and concurrent work.
+
+### 4. Terminal configuration
+
+The server stores each terminal's language, call, media and presentation settings.
+It checks each proposed change before it changes the accepted configuration.
+Terminal users can change only the local subset exposed by their Settings page.
+
+Browser editors retain the revision they opened. Account creation checks this
+revision too; a stale new-account form receives the same conflict as an edit. Local terminal edits compare the
+affected previous values. A conflicting edit produces a visible error. Device
+configuration includes that device's credentials but excludes other accounts' secrets.
+
+### 5. Terminal enrollment
+
+The administrator downloads printable Wi-Fi and server QR codes. The Wi-Fi code
+contains connection details. The server code identifies the selected terminal and
+supplies its device credential. The server does not retain submitted Wi-Fi passwords.
+
+These documents support camera-based setup without a preassigned identity on the
+Pi. A separate authenticated bootstrap interface supports existing development clients.
+
+### 6. Registration and availability
+
+SIP clients register their current contact and network flow. The server checks
+that the authenticated account matches the registration identity. It checks
+reachability on that flow and removes expired registrations.
+
+A saved registration alone does not guarantee that a client is reachable. Terminal
+polls receive current availability even when the configuration revision is unchanged.
+
+### 7. Call control
+
+The server authenticates callers and checks group permission, destination availability
+and account occupancy. Each account can participate in one current call.
+Authorized calls pass through the server to the destination client.
+
+The server correlates answers, cancellation, termination and media changes with the
+owning call and network flow. It releases failed or expired calls. Forwarded calls
+to a terminal include a proof that the terminal can verify.
+
+### 8. Audio and video relay
+
+The server provides separate packet paths for each participant's audio, video and
+control traffic. It forwards encoded media without decoding, recording or changing
+the video quality. The clients select their capture and codec settings.
+
+Media destinations come from the authenticated call peers. Negotiation changes take
+effect only after acceptance. A rejected change leaves the established path active.
+Closing a call releases its ports, including allocations that finish late.
+
+### 9. Phone text notifications
+
+A permitted phone can send a text notification to a reachable terminal. The
+server checks sender identity, content type and size, and supplies a verifiable
+sender proof. It does not queue text for an unavailable terminal.
+
+The terminal decides how to present the notification. Server activity records
+identify the event without retaining the message body.
+
+### 10. Callback requests and reminders
+
+A terminal can request a callback from a permitted contact. Repeated requests
+share one pending record. The requester or administrator can cancel it. A connected
+call completes requests between the two accounts.
+
+Terminals obtain requests through polling. Reachable phones receive SIP notices.
+Optional email reminders use the configured deadline and recipient addresses.
+Delivery attempts stop when the request is no longer eligible. Acceptance by a
+phone or mail server does not prove that a person read the notice.
+
+### 11. Maintenance and diagnostics
+
+The administrator can queue a command for a specific terminal. The server permits
+one active command lease per device and records its bounded result. An uncertain
+execution becomes lost; the server does not automatically execute it again.
+
+The administration pages show current calls, registrations, terminal reports and
+recent events. Device reports remain distinct from server-observed SIP reachability.
+The server records when it received a report.
+
+### 12. Saved state
+
+The server retains configuration, callback records and command history across restarts.
+Supported migrations preserve identities and credentials. Ordinary saves replace
+complete files and limit queued writes.
+
+A successful mutation response waits for its required writes. A failed write
+produces an error and affects readiness. Ordinary saves are independent per-file
+operations; they do not provide the restore transaction's recovery guarantees.
+
+### 13. Backup and restore
+
+An authenticated administrator can export application data and check a backup
+before replacement. Backups include credentials and are sensitive private files.
+Operating-system configuration and active network sessions are outside the backup.
+
+Restore requires confirmation and an idle service. It stages the old and replacement
+data, then restarts. Startup completes the replacement or restores the previous
+data before serving requests. The local network address and ports remain local.
+Saved commands do not execute again because of a restore.
+
+### 14. Administration interface
+
+The English web interface supports phone and desktop layouts. It provides separate
+pages for overview, accounts, groups, terminals, callbacks and activity. Editors
+retain user input until an accepted save or cancellation.
+
+The interface reports validation, conflict and connection failures near the affected
+action. Background refresh preserves the active edit and keyboard focus. Sensitive
+downloads and credential copying provide explicit feedback.
+
+### 15. Host access and storage
+
+The installed server runs with a dedicated unprivileged account. SSH ingress is
+restricted to the physical Ethernet interface. Authenticated administration can
+enable or disable wired SSH without stopping the call service.
+
+Routine logs and temporary work use RAM-backed storage to reduce microSD writes.
+Application data remains persistent. These policies reduce routine writes; they
+do not guarantee recovery from every power or storage failure.
+
+### Qualities that apply to all functions
+
+The server checks external data before use, bounds retained work and isolates
+late results from newer operations. It keeps durable configuration separate from
+short-lived availability and session state. Errors do not become success messages.
+Functional tests and measured code coverage provide distinct evidence; neither
+alone proves call quality or hardware compatibility.
+
 ## Deployment pipeline
 
 `build_tools/server_installer/` provides the Tk GUI and headless entry point.
-It reuses the terminal installer's SSH/probe machinery while supplying the server
-package, host validation and post-reboot checks. Its accepted target is Raspberry
+It shares `windows_installer/ssh_transport.py` and the read-only target probe with
+the terminal installer. Transport owns host-key pinning, bounded SSH commands,
+reconnection and durable job monitoring; each product owns its package, host
+validation and post-reboot checks. Server readiness uses `check-server.py`,
+not the terminal-specific `check-low-wear.py`. Its accepted target is Raspberry
 Pi OS Lite 64-bit Debian 13 Trixie on Pi 3 Model B/B+ or Pi 4 Model B. The factory
 host/account defaults are `zmalaserver.local` and `zmalaserver`; the initial login
 password matches the account name. These defaults are distinct from the web
@@ -219,6 +401,10 @@ exactly-once guarantee.
 The terminal polls for work every three seconds, runs one command at a time and
 reports stdout/stderr/status/exit code under a unique lease. Ownership follows
 immutable device identity; a replacement account cannot claim old commands.
+Factory development state retains the legacy `windows-terminal` serial and PowerShell default.
+Pi enrollment selects its POSIX shell; the server accepts legacy desktop shell values
+for compatible clients. These labels do not identify the server operating system.
+
 Each job retains its selected shell: Windows PowerShell, PowerShell 7 or cmd for
 Windows; sh/bash for Linux. Missing/incompatible shells fail explicitly.
 
@@ -242,7 +428,7 @@ five seconds with a five-second timeout. Unreachable unexpired registrations are
 retained for recovery; late probes cannot alter replacement flows. Clients refresh
 presence independently of configuration revision and preflight outgoing calls.
 
-Phone text supports nonempty text/plain or message/cpim up to 16 KiB. The terminal
+Phone text supports nonempty text/plain or message/cpim up to 16,384 JavaScript UTF-16 code units. This content limit is not a UTF-8 byte limit. The terminal
 validates the server proof and increments a badge without displaying/persisting
 the body. Unsupported typing/payload types are rejected; offline delivery returns
 480 rather than queueing text. Callback notifications use a separate lifecycle.
@@ -370,3 +556,148 @@ at 320, 390, 768, 1024 and 1920 CSS pixels, 700/850 breakpoints and short landsc
 height. Check modal scrolling, long names, keyboard focus across polling,
 Escape/Enter behavior, plain-LAN-HTTP copying, conflict messages, console reopening
 and settings persistence. Viewport tests do not certify physical iOS/Android use.
+
+### Server requirement baseline
+
+The server baseline follows [the rewrite procedure](../howto_rewrite_requirements.md).
+Its 15 functional areas contain 31 HLRs and 107 LLRs. HLRs link to product items,
+and each LLR links to an HLR in the same area. The text uses short sentences,
+active voice and consistent technical terms, following the published
+[ASD-STE100 principles](https://www.asd-ste100.org/STE_faq.html). This review is
+not a controlled-dictionary compliance certificate.
+
+[The server migration map](../requirements/server/migration.json) records all
+replaced items and their successors, including splits. A successor records the
+behavior that was carried forward; it does not establish verification. The flat
+legacy ID lookup selects a primary successor for older tooling.
+
+All server LLRs have direct LLT plans and implementation anchors; all HLRs have
+direct HLT plans. System coverage
+is separate: a planned trace does not prove that a scenario passed or that all
+conditions in its requirement were tested. The local
+[server rewrite report](../tests/coverage/server-rebaseline/index.html) records
+execution results, LLT-only coverage, missing system plans and environment limits.
+Regenerate published requirements with `make requirements`.
+
+The Linux HLTs now include real UDP Digest-authenticated text delivery, real
+portrait conversion through HTTP and Pillow, and a disposable production process
+for listener startup, startup failure and SIGTERM persistence. The shutdown
+scenario also holds an admitted HTTP request open and checks concurrent stop
+requests, draining and media-resource release. These tests do not modify live
+accounts or require a deployed terminal.
+
+For installed-host acceptance after reboot, use a prepared checkout on the Pi:
+`sudo env ZMALA_INSTALLED_HOST_TESTS=server python3 -m unittest
+tests.server.HLT.test_installed_storage -v`. It reads effective journal, swap,
+mount and service policy and checks that account/password storage is persistent
+and private. It does not print credentials or change the host. Ordinary CI skips
+this test explicitly; a process-level pass does not qualify the installed Pi.
+
+The runtime photo converter is `build_tools/convert-photo.py`. The requirement
+inventory explicitly includes this helper, so its code and command entrypoint
+contribute to server coverage even though the file is outside `zmala_server/`.
+
+
+## Secure calls when a terminal network blocks UDP
+
+Secure relay mode is an explicit deployment choice for all terminal accounts.
+The default remains the existing LAN SIP/UDP relay. Secure mode uses HTTPS for
+configuration, SIP over TLS, and endpoint ICE/SRTP through coturn over TLS. It
+keeps SIP Digest authentication and signed caller proofs. The signalling server
+can read the SDES media keys; this is not end-to-end encryption against the server.
+Plain SIP phones must support this secure ICE/SRTP policy to join this deployment.
+There is no silent downgrade and no automatic retry of a failed call over plaintext.
+
+Provide three reachable TLS endpoints on TCP 443: configuration, SIP and TURN.
+The tested topology uses separate public IPs for these endpoints. Three DNS names
+on one IP do not by themselves provide three listeners on port 443. TLS/SNI
+multiplexing is not qualified. A normal HTTP reverse proxy cannot proxy SIP or
+TURN; use TCP forwarding without terminating SIP/TURN TLS. These connections also
+need working DNS and a correct system clock. A firewall that permits only browser
+HTTPS through a proxy can still block SIP/TURN on port 443.
+
+On the server, create a private JSON policy file readable by the service account:
+
+```json
+{
+  "https_url": "https://config.example.org",
+  "sip_host": "sip.example.org",
+  "sip_listen_port": 5061,
+  "sip_cert": "/etc/zmalacall-server/sip-fullchain.pem",
+  "sip_key": "/etc/zmalacall-server/sip-key.pem",
+  "turn_host": "turn.example.org",
+  "turn_realm": "turn.example.org",
+  "turn_secret_file": "/etc/zmalacall-server/turn-secret"
+}
+```
+
+Replace the example names with real DNS names and obtain trusted certificates.
+Keep the keys and shared secret out of Git and account exports. Generate the secret
+with `openssl rand -hex 32`, store it with mode 0640 and the service group, and use
+that same value in coturn's `static-auth-secret`. Add a systemd service override:
+
+```ini
+[Service]
+Environment=ZMALA_SECURE_CALLS_FILE=/etc/zmalacall-server/secure-calls.json
+Environment=ZMALA_TLS_CERT=/etc/zmalacall-server/https-fullchain.pem
+Environment=ZMALA_TLS_KEY=/etc/zmalacall-server/https-key.pem
+Environment=ZMALA_HTTPS_PORT=8443
+```
+
+Forward public configuration TCP 443 to the server's 8443, and public SIP TCP 443
+to 5061. The Host check accepts the policy's public HTTPS origin. SIP Via and
+Record-Route advertise the public TLS endpoint, not the internal listener port.
+Run `systemctl daemon-reload` and restart `zmalacall-server`. Invalid policy or
+missing certificates stops startup. HTTP remains available only for health/readiness
+checks in secure mode. Use the HTTPS address for administration and print new server
+QR codes: existing HTTP enrollment is not automatically changed.
+
+Configure an Internet-reachable coturn host with its own certificate and key:
+
+```ini
+tls-listening-port=443
+use-auth-secret
+static-auth-secret=REPLACE_WITH_THE_PRIVATE_SHARED_SECRET
+realm=turn.example.org
+fingerprint
+no-udp
+no-tcp
+no-dtls
+no-tlsv1
+no-tlsv1_1
+no-cli
+no-multicast-peers
+no-tcp-relay
+user-quota=8
+total-quota=200
+min-port=30000
+max-port=30199
+cert=/etc/turnserver/fullchain.pem
+pkey=/etc/turnserver/key.pem
+```
+
+Bind the coturn listening/relay IPs explicitly. If that host is behind NAT, set its
+`external-ip=PUBLIC/PRIVATE` mapping and forward the configured relay range as well.
+Allow TCP 443 from the terminal networks. TURN's server-side UDP relay sockets are
+still used; only the terminal-to-relay leg travels over TLS/TCP. Do not enable
+`no-udp-relay`. Restrict relay peer addresses with coturn allow/deny lists and host
+firewall rules so allocations cannot reach private services, loopback, link-local
+or cloud metadata addresses. For this single-relay design, allow its own relay
+address/range and deny unrelated destinations. Keep coturn and OpenSSL patched,
+monitor allocation quotas, and protect the relay from unauthenticated resource use.
+See the [coturn options](https://github.com/coturn/coturn/blob/master/README.turnserver)
+and [Liblinphone network API](https://download.linphone.org/releases/docs/liblinphone/5.2/5.3/c/group__network__parameters.html).
+
+The server returns per-account HMAC credentials compatible with coturn REST
+authentication. They expire eight hours after the start of the issuing hour and
+rotate hourly. Full authenticated configuration responses renew them even without
+an account revision change. The shared signing secret is never returned. Revoke
+or rotate the server secret to invalidate outstanding credentials; removing an
+account alone does not revoke already issued TURN credentials before expiry.
+Back up the deployment policy, TLS keys and TURN secret separately from account
+backups. Renew certificates and restart the affected listeners before expiry.
+
+Secure mode validates every active SDP media section for ICE credentials and
+supported SRTP key sizes, then preserves it. It creates no legacy UDP relay
+sockets. LAN mode retains its source-address pinning and SDP rewrite unchanged.
+No mixed legacy/secure media gateway or transcoding is implemented.

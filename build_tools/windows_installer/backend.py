@@ -1,6 +1,4 @@
 """SSH deployment for the standalone Windows terminal installer."""
-import base64
-import hashlib
 import ipaddress
 import json
 from pathlib import Path
@@ -10,31 +8,18 @@ import uuid
 
 import paramiko
 
+# Support both the package import and PyInstaller's standalone entrypoint.
+if __package__:
+    from .ssh_transport import SSHDeployment, InstallError, verify_payload, fingerprint as fingerprint, TargetKeyPolicy as TargetKeyPolicy
+else:
+    from ssh_transport import SSHDeployment, InstallError, verify_payload, fingerprint as fingerprint, TargetKeyPolicy as TargetKeyPolicy
+
 USER = PASSWORD = 'zmala'
 SERVICES = ('zmalacall-terminal', 'zmalacall-display', 'zmalacall-pairing',
             'zmalacall-compositor', 'zmalacall-cec', 'ssh', 'zmalacall-ssh-guard',
             'nftables', 'bluetooth', 'NetworkManager')
 
 
-class InstallError(Exception):
-    pass
-
-
-def fingerprint(key):
-    return 'SHA256:' + base64.b64encode(hashlib.sha256(key.asbytes()).digest()).decode().rstrip('=')
-
-
-class TargetKeyPolicy(paramiko.MissingHostKeyPolicy):
-    """First check shows the key for confirmation; subsequent connections pin it."""
-    def __init__(self, expected):
-        self.expected = expected
-
-    def missing_host_key(self, client, hostname, key):
-        if self.expected is not None and fingerprint(key) != self.expected:
-            raise InstallError('The Pi SSH identity changed. Installation stopped. Check the target again.')
-
-
-# @llr LLR-TERM-INSTALL-002
 def validate_target(info, storage=True):
     if not info['model'].startswith('Raspberry Pi 4 Model B'):
         raise InstallError('Expected a Raspberry Pi 4 Model B; found ' + info['model'])
@@ -60,78 +45,10 @@ def validate_target(info, storage=True):
         raise InstallError('Insufficient free space: need 3 GiB on /var and 128 MiB on the boot partition.')
 
 
-# @llr LLR-SRV-INSTALL-005, LLR-TERM-INSTALL-004
-def verify_payload(archive):
-    archive = Path(archive)
-    expected = archive.with_name(archive.name + '.sha256').read_text().split()[0]
-    actual = hashlib.sha256(archive.read_bytes()).hexdigest()
-    if actual != expected:
-        raise InstallError('The bundled installation package is damaged. Obtain a fresh installer.')
-    return actual
-
-
-class Deployment:
+class Deployment(SSHDeployment):
     user = USER
     password = PASSWORD
 
-    def __init__(self, host, emit=lambda message: None):
-        self.host = host.strip()
-        if not self.host or any(c.isspace() for c in self.host):
-            raise InstallError('Enter the Pi hostname or Ethernet IP address.')
-        self.emit = emit
-        self.client = None
-        self.key = None
-        self.info = None
-        self.wired_address = None
-
-    def close(self):
-        if self.client:
-            self.client.close()
-            self.client = None
-
-    def connect(self):
-        self.close()
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(TargetKeyPolicy(self.key))
-        try:
-            client.connect(self.wired_address or self.host, username=self.user, password=self.password, timeout=10,
-                           auth_timeout=10, banner_timeout=10, look_for_keys=False, allow_agent=False)
-        except Exception:
-            client.close()
-            raise
-        self.key = fingerprint(client.get_transport().get_remote_server_key())
-        client.get_transport().set_keepalive(10)
-        self.client = client
-
-    def command(self, command, data='', sudo=False, timeout=30):
-        if sudo:
-            command = 'sudo -S -k -p "" ' + command
-            data = self.password + '\n' + data
-        channel = self.client.get_transport().open_session(timeout=10)
-        channel.set_combine_stderr(True)
-        chunks = []
-        try:
-            channel.exec_command(command)
-            if data:
-                channel.sendall(data.encode())
-            channel.shutdown_write()
-            deadline = time.monotonic() + timeout
-            while True:
-                if channel.recv_ready():
-                    chunks.append(channel.recv(65536))
-                elif channel.exit_status_ready():
-                    break
-                elif time.monotonic() > deadline:
-                    raise InstallError('Timed out waiting for the Pi to finish a command.')
-                else:
-                    time.sleep(.05)
-            output = b''.join(chunks).decode('utf-8', errors='replace')
-            status = channel.recv_exit_status()
-            if status != 0:
-                raise InstallError(f'Pi command failed (exit {status}):\n{output[-6000:]}')
-            return output
-        finally:
-            channel.close()
 
     def probe(self):
         script = Path(__file__).with_name('remote_probe.py').read_text()
@@ -156,17 +73,6 @@ class Deployment:
         self.emit('Target SSH fingerprint: ' + self.key + '\n')
         return self.info
 
-    def reconnect(self, deadline):
-        while time.monotonic() < deadline:
-            try:
-                self.connect()
-                return
-            except InstallError:
-                raise
-            except (OSError, EOFError, paramiko.SSHException):
-                time.sleep(3)
-        raise InstallError('The Pi did not reconnect. Keep it powered and connected to Ethernet. '
-                           'An installation already started on the Pi continues independently.')
 
     def install(self, archive, argon=True):
         if self.info is None:
@@ -220,44 +126,7 @@ with tarfile.open(p / 'terminal.tar.gz') as archive:
         self.emit('Installation complete. The terminal is running after reboot.\n'
                   'Continue the camera, remote and QR setup on the TV.\n')
 
-    # @llr LLR-SRV-INSTALL-005, LLR-TERM-INSTALL-004
-    def monitor(self, unit, path):
-        offset = 0
-        deadline = time.monotonic() + 3600
-        while time.monotonic() < deadline:
-            try:
-                with self.client.open_sftp() as sftp, sftp.open(path, 'rb') as log:
-                    log.seek(offset)
-                    data = log.read(512 * 1024)
-                    offset += len(data)
-                    if data:
-                        self.emit(data.decode('utf-8', errors='replace'))
-                state = self.command('systemctl show ' + unit
-                                     + ' -p ActiveState -p SubState -p ExecMainStatus -p Result')
-            except (EOFError, OSError, paramiko.SSHException):
-                self.emit('Connection interrupted; reconnecting to the same Pi...\n')
-                self.reconnect(min(deadline, time.monotonic() + 120))
-                continue
-            props = dict(line.split('=', 1) for line in state.splitlines() if '=' in line)
-            if props.get('ActiveState') == 'active' and props.get('SubState') == 'exited':
-                if props.get('ExecMainStatus') != '0' or props.get('Result') != 'success':
-                    raise InstallError('The Pi installer reported a failure. See the installation log.')
-                # Drain any last output written between the read and service completion.
-                with self.client.open_sftp() as sftp, sftp.open(path, 'rb') as log:
-                    log.seek(offset)
-                    self.emit(log.read().decode('utf-8', errors='replace'))
-                return
-            if props.get('ActiveState') in ('failed', 'inactive'):
-                with self.client.open_sftp() as sftp, sftp.open(path, 'rb') as log:
-                    log.seek(offset)
-                    self.emit(log.read().decode('utf-8', errors='replace'))
-                raise InstallError('Installation failed on the Pi. Output: ' + path
-                                   + '\nDetailed logs: /var/log/zmalacall-install/.\n' + state)
-            time.sleep(2)
-        raise InstallError('Installation has exceeded one hour. It may still be running on the Pi. '
-                           'See ' + path + ' before retrying.')
 
-    # @llr LLR-TERM-INSTALL-008
     def verify_reboot(self, old_boot):
         deadline = time.monotonic() + 240
         stable_since = None

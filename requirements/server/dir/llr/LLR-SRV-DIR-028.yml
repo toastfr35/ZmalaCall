@@ -1,0 +1,27 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Initial account state
+level: 26.0
+links:
+- HLR-SRV-DIR-018: 3FwHcV_bZoMa3n3BHEtxN-ucUFWdkDK29qi_hycUoA4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/store-views.test.js
+  type: file
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/defaults.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  With no saved configuration, the server shall create one terminal, one phone and a shared group. SIP passwords, the device token and the initial maintenance credential shall be generated independently.
+verification: |
+  Create two isolated fresh stores. Check account types, shared permission and independent nonshared credentials. Factory labels are compatibility data, not installation inputs.

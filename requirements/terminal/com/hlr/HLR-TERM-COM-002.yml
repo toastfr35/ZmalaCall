@@ -1,0 +1,23 @@
+active: true
+area: Server communication
+derived: false
+header: |
+  Current server state
+level: 9.0
+links:
+- PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_server_exchange_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall refresh contacts, settings and live status in the background.
+  Delayed responses shall not replace state accepted from a newer operation.
+verification: |
+  Delay, reorder and fail server responses. Check directory freshness, stable saved
+  state and continued user interaction.

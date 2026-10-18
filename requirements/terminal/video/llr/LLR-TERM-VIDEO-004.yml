@@ -1,0 +1,41 @@
+active: true
+area: Video
+derived: false
+header: |
+  Video targets
+level: 71.0
+links:
+- HLR-TERM-VIDEO-001: zbWy8C5TtS0N-sUV1-bRZ0USwx1A9MbmT0v2_pHAY18=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-camera-boundaries.c
+  type: file
+- path: tests/terminal/LLT/test-camera-filter.c
+  type: file
+- path: tests/terminal/LLT/test-video-recovery.c
+  type: file
+- path: tests/terminal/LLT/test_engine_adapter.py
+  type: file
+- path: tests/terminal/LLT/test_video_settings.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/native_runtime.py
+  type: file
+- path: zmala_terminal/common/video_settings.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+- path: zmala_terminal/linux/native_runtime.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall accept 640 by 480, 1280 by 720 and 1920 by 1080 video targets. It
+  shall accept 10, 15, 20, 25 and 30 frames per second. The default shall be 1280 by
+  720 at 15 frames per second. Legacy 360p values shall become 640 by 480. Actual
+  delivery can be lower than the target.
+verification: |
+  Inspect native requests for each target and legacy normalization. Use measured
+  frames, not configured values, to assess actual delivery.

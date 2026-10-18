@@ -1,0 +1,41 @@
+active: true
+area: Audio
+derived: false
+header: |
+  Audio processing profile
+level: 65.0
+links:
+- HLR-TERM-AUDIO-001: PFoiG3qDcQEzEGeZgfZ4kZuS7cdKL3JpiWMY7aSgPII=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-echo-rate.c
+  type: file
+- path: tests/terminal/LLT/test_audio_profile.py
+  type: file
+- path: zmala_terminal/common/audio_processing.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/native_runtime.py
+  type: file
+- path: zmala_terminal/common/video_settings.py
+  type: file
+- path: zmala_terminal/linux/audio_processing.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+- path: zmala_terminal/linux/media/audio/echo-rate.c
+  type: file
+- path: zmala_terminal/linux/native_runtime.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall support normal and speech processing profiles. Speech processing
+  shall cap capture processing at 16 kHz while retaining the 48 kHz Opus clock and
+  playback. Speech echo cancellation shall use a 500 ms window. Missing optional
+  processing shall leave calling available and report the applied profile.
+verification: |
+  Inject plugin availability and registration failures. Inspect echo-rate parameters
+  and the reported profile without assuming acoustic quality.

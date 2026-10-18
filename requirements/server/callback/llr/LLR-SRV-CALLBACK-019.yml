@@ -1,0 +1,27 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Phone callback notice
+level: 70.0
+links:
+- HLR-SRV-CALLBACK-013: aU7IT7AvEwNAfKAJQ4zrT2oQO1PSbRzCjtDd_0BsSR0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-state.test.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+- path: zmala_server/sip-messages.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Eligible reachable phones shall receive UTF-8 SIP callback notices with the requester's SIP address over their registration flow. Accepted delivery shall be recorded. Failed delivery shall retry no more than once per minute; pending work shall be checked every five seconds.
+verification: |
+  Control offline, failed and accepted delivery, restart, and change request eligibility during delivery. Check exact flow, text and retry spacing.

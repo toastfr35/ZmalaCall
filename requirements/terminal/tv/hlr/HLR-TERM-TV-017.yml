@@ -1,0 +1,22 @@
+active: true
+area: TV control
+derived: false
+header: |
+  Verified TV capabilities
+level: 27.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD008: ruef0Jq8r9sLWfpYz4_I7M-ICnYI7g0mnfgj_jZzLMU=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/tv_setup_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall guide the user through separate TV power and input tests. Only
+  user-confirmed capabilities shall enable the corresponding automatic TV actions.
+verification: |
+  Pass, fail and interrupt each guided test. Check saved results, capability
+  separation and changed-TV handling.

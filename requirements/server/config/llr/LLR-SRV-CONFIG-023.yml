@@ -1,0 +1,21 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Administrator revision conflict
+level: 41.0
+links:
+- HLR-SRV-CONFIG-015: Qeg0QhgVf-TJOc4PKESBLgrxxD1VAR7LNyjK4LYM7dg=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Versioned administrator creation and edit requests shall compare the submitted opening revision with the current revision. A mismatch shall return 409 before mutation. Existing unversioned API requests shall retain compatibility.
+verification: |
+  Submit stale account creation, account edits, group, terminal, shell, deadline and SMTP changes. Check unchanged state and unversioned compatibility.

@@ -1,7 +1,7 @@
 import { state } from './admin-state.js';
 import { el, panel, actionButton, api } from './admin-shared.js';
 
-// @llr LLR-SRV-DATA-011
+// @llr LLR-SRV-BACKUP-012
 export function backupPanel() {
   const section = panel(
     'Backup and restore',
@@ -38,7 +38,7 @@ async function backupRequest(url, options) {
   return response;
 }
 
-// @llr LLR-SRV-DATA-011
+// @llr LLR-SRV-BACKUP-012
 export function openBackups() {
   const dialog = el('dialog', null, 'backup-dialog');
   dialog.setAttribute('aria-labelledby', 'backup-title');

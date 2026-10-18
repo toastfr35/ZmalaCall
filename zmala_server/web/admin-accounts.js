@@ -155,7 +155,7 @@ export function renderAccounts() {
   setView(p);
   accountRows();
 }
-// @llr LLR-SRV-UI-005
+// @llr LLR-SRV-UI-015
 export function openAccount(id = '') {
   accountVersion = state.model.configuration_version;
   accountGeneration++;
@@ -254,6 +254,7 @@ export function deleteAccount(id) {
   );
 }
 /** @param {string} value @param {HTMLButtonElement} b @param {HTMLElement} feedback */
+// @llr LLR-SRV-UI-019
 export async function copyValue(value, b, feedback) {
   const copied = await writeClipboard(value, b);
   feedback.textContent = copied
@@ -308,8 +309,8 @@ export function renderConnection() {
   for (const [name, value, secret] of /** @type {const} */ ([
     ['Username', id],
     ['Password', u.password, true],
-    ['Domain', `${state.model.host}:${state.model.sip_port}`],
-    ['SIP server', `sip:${state.model.host}:${state.model.sip_port};transport=udp`],
+    ['Domain', state.model.host],
+    ['SIP server', state.model.sip_proxy],
     ['SIP address', `sip:${id}@${state.model.host}`],
   ]))
     list.append(credential(name, value, secret));
@@ -318,7 +319,9 @@ export function renderConnection() {
     container.append(
       el(
         'p',
-        'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
+        state.model.sip_proxy.includes('transport=tls')
+          ? 'This deployment uses TLS and TURN. Use a Zmala terminal enrolled with an HTTPS QR code. Manual phone provisioning is not supported in secure relay mode.'
+          : 'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
         'info-box',
       ),
     );

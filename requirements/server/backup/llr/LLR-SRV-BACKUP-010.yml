@@ -1,0 +1,21 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Local network identity and new revision
+level: 94.0
+links:
+- HLR-SRV-BACKUP-002: IFolSJN9Y715aTkpB7gvbpLtrP-V3gVekpN7XH7bXWk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/backups.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Restored configuration shall retain this installation's advertised address and HTTP and SIP ports. Its revision shall exceed both current and saved revisions. Restored credentials shall govern new sessions and registrations after restart.
+verification: |
+  Restore older and newer revisions with different network settings. Compare preserved endpoints and new authenticated state.

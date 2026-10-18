@@ -1,0 +1,22 @@
+active: true
+area: Network connection
+derived: false
+header: |
+  Network access
+level: 6.0
+links:
+- PROD001: 4fW6PPWrP16gAqSCbhixs6pGUTY3fOkFmKN-9QSRxFM=
+- PROD007: CVFnBhIEqG3Rok_D6npspt2MsVV8o9N_NM64q2fSo0U=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/network_restart.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall support Ethernet and configured Wi-Fi for network access. Wi-Fi
+  setup shall save a connection that can be used after restart.
+verification: |
+  Join a controlled Wi-Fi network and restart. Check communication through each
+  available network interface.

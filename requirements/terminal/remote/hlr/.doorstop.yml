@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-TERM-REMOTE
-      title: Remote input and health — HLR
+      title: Remote control — HLR
   publish:
   - area
   - scope

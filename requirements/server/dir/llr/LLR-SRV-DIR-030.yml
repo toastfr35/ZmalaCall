@@ -1,0 +1,25 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Direct shared-group permission
+level: 28.0
+links:
+- HLR-SRV-DIR-019: IcDUkI-RpZ7F_aYw43oK9f9t-Tdba8xsxU7Kj5aQQu4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/store-auth.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Two distinct existing accounts shall have permission exactly when they share a group. Permission shall be symmetric. A membership path through another account shall not grant permission.
+verification: |
+  Use overlapping groups and unknown, self and disconnected accounts. Change membership and compare both communication directions.

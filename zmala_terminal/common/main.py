@@ -191,14 +191,15 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
     def run(self):
         self.root.mainloop()
 
-if __name__ == '__main__':
+# @llr LLR-TERM-START-005
+def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--fullscreen', action='store_true')
     parser.add_argument('--bootstrap', type=Path, default=ROOT / 'data/terminal.json')
     parser.add_argument('--profile', default='terminal', help='Separate runtime/cache profile for an additional terminal')
     parser.add_argument('--unconfigured', action='store_true', help='Start fresh in this profile, with camera QR setup')
     parser.add_argument('--wifi-mode', choices=['existing-link', 'connect'], default='existing-link', help='Shared-PC test link, or actually join scanned Wi-Fi using the operating system network manager')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if not re.fullmatch(r'[a-z][a-z0-9_-]{0,40}', args.profile):
         parser.error('Profile must use lowercase letters, digits, - or _.')
     (ROOT / 'data').mkdir(exist_ok=True)
@@ -214,3 +215,7 @@ if __name__ == '__main__':
     finally:
         if application is not None:
             application.close()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,23 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Application snapshot contents
+level: 87.0
+links:
+- HLR-SRV-BACKUP-001: Dk6eZ8JEMDnUAF6tNqYKNJHXepgziAiQiGvKYdRBRm0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/backup-storage.js
+  type: file
+- path: zmala_server/backups.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Backup shall snapshot configuration, administrator password hash, callbacks and command history before yielding, then include immutable hash-named portraits. Sessions, registrations, logs, recovery files and OS configuration shall be excluded.
+verification: |
+  Export populated state while later mutations occur. Compare all included records and picture bytes and confirm excluded runtime files.

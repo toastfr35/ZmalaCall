@@ -1,0 +1,21 @@
+active: true
+area: Registration and availability
+derived: false
+header: |
+  Current client availability
+level: 13.0
+links:
+- PROD001: 4fW6PPWrP16gAqSCbhixs6pGUTY3fOkFmKN-9QSRxFM=
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/performance.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall accept authenticated client registrations and check their reachability. Calls and terminal availability responses shall use current registration and reachability state.
+verification: |
+  Register clients, interrupt their flow, restore it and replace a registration during an outstanding probe. Check availability without configuration edits.

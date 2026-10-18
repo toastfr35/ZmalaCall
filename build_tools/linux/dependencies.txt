@@ -1,5 +1,7 @@
 liblinphone-dev
 build-essential
+patch
+ca-certificates
 pkg-config
 libmediastreamer-dev
 libavcodec-dev

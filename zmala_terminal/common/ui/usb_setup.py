@@ -16,7 +16,7 @@ class UsbSetupView:
         self.usb_setup_picture = tk.Label(self.usb_setup, bg=BG, borderwidth=0)
         self.usb_setup_picture.place(relx=.5, rely=.5, anchor='center')
 
-    # @llr LLR-TERM-SETUP-004
+    # @llr LLR-TERM-SETUP-022
     def needs_c20(self):
         return (self.setup_stage in ('wifi', 'wifi_ready', 'server')
                 and self.model.state == State.HOME and self.c20_status.read() is False)

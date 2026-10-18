@@ -7,7 +7,7 @@ $('console-dialog').addEventListener('close', () => {
   consoleGeneration++;
   state.consoleId = '';
 });
-// @llr LLR-SRV-UI-008
+// @llr LLR-SRV-UI-018
 export async function refreshConsole() {
   if (!state.consoleId || !$('console-dialog').open || state.consoleFetching) return;
   const id = state.consoleId,

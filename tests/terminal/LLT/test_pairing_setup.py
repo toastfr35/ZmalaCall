@@ -1,5 +1,5 @@
 # @test T-LLT-024
-# @requirements LLR-TERM-SETUP-004, LLR-TERM-SETUP-006, LLR-TERM-SETUP-008
+# @requirements LLR-TERM-SETUP-022, LLR-TERM-SETUP-024, LLR-TERM-SETUP-026
 # @environment portable
 # @plan Inject installation status, saved bonds, keyboard events and verified remote status into the setup controller; assert pairing alone cannot advance setup, camera ownership stays gated and calls keep priority.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

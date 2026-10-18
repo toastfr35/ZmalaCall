@@ -1,0 +1,33 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Selected terminal controls
+level: 102.0
+links:
+- HLR-SRV-UI-010: MlEJf_-NKL2j0CSwG3cxFR64ABJCLXrvy9ljngju91U=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/terminal-fields.test.js
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/web/admin-terminalfields.js
+  type: file
+- path: zmala_server/web/admin-terminals.js
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin.html
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Terminals page shall select one device card and separate association from settings changes. Settings shall appear under Calls, Video and audio, and General. Registered controls shall remain attached to the visible form.
+verification: |
+  Select different devices, inspect section controls and save association separately from profile settings.

@@ -1,0 +1,30 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  One owned maintenance lease
+level: 119.0
+links:
+- HLR-TERM-MAINT-011: 99a2S4ByS6aFNDfkZ4HdHD-WV5hSRGrcT0AYaDRgcTg=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_maintenance_ownership.py
+  type: file
+- path: zmala_terminal/common/maintenance.py
+  type: file
+- path: zmala_terminal/common/process_job.py
+  type: file
+- path: zmala_terminal/linux/commands.py
+  type: file
+- path: zmala_terminal/linux/process_job.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Maintenance shall poll approximately every three seconds and run one device-owned
+  leased command at a time. It shall accept sh and bash and reject other shells.
+  Commands shall run noninteractively as the service user from the terminal directory.
+verification: |
+  Supply leases for this and other devices and unsupported shells. Check polling, one
+  active command, identity and working directory.

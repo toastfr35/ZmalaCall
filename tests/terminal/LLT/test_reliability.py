@@ -1,11 +1,12 @@
 # @test T-LLT-044
-# @requirements LLR-TERM-REMOTE-006, LLR-TERM-HISTORY-006, LLR-TERM-CONFIG-008, LLR-TERM-CONFIG-011, LLR-TERM-CONFIG-013, LLR-TERM-CONFIG-015, LLR-TERM-MAINT-005, LLR-TERM-MAINT-006, LLR-TERM-SYS-008, LLR-TERM-SYS-009
+# @requirements LLR-TERM-COM-003, LLR-TERM-COM-006, LLR-TERM-COM-008, LLR-TERM-CONFIG-023, LLR-TERM-CONFIG-024, LLR-TERM-UI-020, LLR-TERM-UI-021, LLR-TERM-AUDIO-007, LLR-TERM-HISTORY-018, LLR-TERM-MAINT-016, LLR-TERM-MAINT-017
 # @environment portable
-# @plan Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled-photo fencing and coalesced mixer writes.
+# @plan Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled-photo fencing and coalesced mixer writes. Bound the portrait queue and retry delay; exercise the real worker with cached, invalid and cancelled data. Gate reconfiguration during setup/calls and verify bounded authenticated HTTP requests and deactivation.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Regression coverage for unattended recovery, with no native devices or live server."""
 import hashlib
+import io
 import json
 from pathlib import Path
 import queue
@@ -38,6 +39,116 @@ def png():
 
 
 class ReliabilityTests(unittest.TestCase):
+    def test_http_requests_are_bounded_authenticated_and_json_only_for_writes(self):
+        import zmala_terminal.common.configuration as module
+        client = Configuration({'device_id':'test', 'device_token':'unit-secret', 'server_url':'http://unit.test'})
+        client.opener = Mock()
+        client.opener.open.side_effect = lambda *args, **kwargs: io.BytesIO(b'{"ok":true}')
+        self.assertEqual(client.request('/api/config'), b'{"ok":true}')
+        request = client.opener.open.call_args.args[0]
+        self.assertEqual(request.full_url, 'http://unit.test/api/config')
+        self.assertEqual(request.get_header('Authorization'), 'Bearer unit-secret')
+        self.assertIsNone(request.data)
+        self.assertEqual(client.opener.open.call_args.kwargs['timeout'], 4)
+        client.report({'registered':True})
+        request = client.opener.open.call_args.args[0]
+        self.assertEqual(json.loads(request.data), {'registered':True})
+        self.assertEqual(request.get_header('Content-type'), 'application/json')
+        client.opener.open.side_effect = lambda *args, **kwargs: io.BytesIO(b'x'*(module.MAX_BYTES+1))
+        with self.assertRaisesRegex(ValueError, 'too large'):
+            client.request('/oversized')
+        client.deactivate()
+        with self.assertRaisesRegex(RuntimeError, 'reset'):
+            client.update_settings({}, {})
+
+    def test_configuration_gates_setup_media_readiness_and_revoked_autoanswer(self):
+        from zmala_terminal.common.configuration_control import ConfigurationControl
+        app = ConfigurationControl()
+        app.setup_stage = 'wifi'; app.render = Mock(); app.begin_tv_setup = Mock(return_value=True)
+        app.apply_config(config()); app.begin_tv_setup.assert_not_called()
+        app.setup_stage = None; app.tv_setup_checked = False
+        app.apply_config(config()); app.render.assert_called_once()
+        app.tv_setup_checked = True; app.model = TerminalModel(); app.model.configure(config())
+        app.engine = Mock(); app.available_fonts = set(); app.root = Mock(); app.text = lambda key:key
+        app.press = Mock(); app.usb_media_ready = Mock(return_value=False); app.engine_retry_at = 0
+        app.model.incoming('alice', 'family.test')
+        desired = config(); desired['contacts'] = []
+        app.apply_config(desired); app.press.assert_called_once_with('red')
+        desired = config(); desired['auto_answer'] = False
+        app.apply_config(desired); self.assertIsNone(app.model.deadline)
+        app.model.ended(); app.apply_config(desired)
+        self.assertEqual(app.pending_config, desired)
+        app.usb_media_ready.assert_called_once()
+        # An existing engine that fails to apply or close remains detached and retryable.
+        app.usb_media_ready.return_value = True
+        app.configure_engine = Mock(side_effect=RuntimeError('apply failed'))
+        failed_engine = app.engine; failed_engine.close.side_effect = OSError('close failed')
+        with patch('zmala_terminal.common.configuration_control.logging.exception'), patch('time.monotonic', return_value=100):
+            app.apply_config(desired)
+        self.assertIsNone(app.engine)
+        self.assertEqual(app.engine_retry_at, 105)
+        self.assertEqual(app.diagnostics, {'registered':False})
+
+    def test_configuration_refresh_updates_devices_without_replacing_same_native_graph(self):
+        from zmala_terminal.common.configuration_control import ConfigurationControl
+        from zmala_terminal.common.video_settings import VideoSettings
+        app = ConfigurationControl(); desired = config()
+        app.engine = Mock(audio_profile='normal', config=desired); app.engine.video_settings = VideoSettings.for_config(desired)
+        app.current_settings = {}; desired['terminal_settings'] = {'camera':'selected'}
+        original = app.engine
+        app.configure_engine(desired, desired['sip'], 'normal')
+        original.apply_settings.assert_called_once_with({'camera':'selected'})
+        original.apply_call_timeout.assert_called_once()
+        self.assertIs(app.engine, original)
+        app.engine = None; app.make_engine = Mock(return_value=Mock()); app.usb_power = Mock(enabled=True)
+        app.configure_engine(desired, None, 'normal')
+        app.engine.core_set_ring.assert_called_once_with(app.engine.core, None)
+
+    def test_photo_queue_is_bounded_and_retry_waits_before_requeue(self):
+        import zmala_terminal.common.photo_cache as photos
+        cache = PhotoCache('unused', Mock())
+        with patch.object(photos.threading, 'Thread') as thread, patch.object(photos.time, 'monotonic', return_value=100):
+            cache.schedule([{'photo':f'/photos/{i:x}.png'} for i in range(50)])
+            self.assertEqual(len(cache.pending), 40)
+            self.assertEqual(len(cache.queued), 40)
+            thread.return_value.start.assert_called_once()
+            cache.schedule([{'photo':f'/photos/{i:x}.png'} for i in range(50)])
+            self.assertEqual(len(cache.pending), 40)
+            cache.pending.clear(); cache.queued.clear()
+            cache.retry['/photos/a.png'] = 160
+            cache.schedule([{'photo':'/photos/a.png'}])
+            self.assertFalse(cache.pending)
+        cache.completed.put('/photos/a.png')
+        self.assertTrue(cache.changed())
+        self.assertFalse(cache.changed())
+        cache.close(); cache.completed.put('/photos/a.png')
+        self.assertFalse(cache.changed())
+        cache.schedule([{'photo':'/photos/b.png'}]); self.assertFalse(cache.pending)
+
+    def test_failed_photo_download_retries_and_valid_cache_avoids_network(self):
+        import zmala_terminal.common.photo_cache as photos
+        for valid in (False, True):
+            with tempfile.TemporaryDirectory() as directory:
+                data = png(); name = '/photos/'+hashlib.sha256(data).hexdigest()+'.png'
+                cache = PhotoCache(directory, Mock(return_value=b'invalid'))
+                file = Path(directory)/name.lstrip('/'); file.parent.mkdir()
+                file.write_bytes(data if valid else b'stale')
+                cache.pending.append(name); cache.queued.add(name)
+                def wait():
+                    cache.cancelled = True
+                with patch.object(cache.condition, 'wait', side_effect=wait), patch.object(photos.time, 'monotonic', return_value=100):
+                    cache.run()
+                self.assertFalse(cache.queued)
+                self.assertEqual(file.exists(), valid)
+                if valid:
+                    cache.request.assert_not_called()
+                    self.assertIn(name, cache.valid)
+                else:
+                    cache.request.assert_called_once_with(name)
+                    self.assertEqual(cache.retry[name], 160)
+                    self.assertNotIn(name, cache.valid)
+                self.assertFalse(list(file.parent.glob('*.tmp')))
+
     def test_output_contract_counts_replacement_characters_and_json_expansion(self):
         for stdout, stderr in [(b'\0' * 65536, b''), (b'\xff' * 65536, b'error'),
                                ('日本語'.encode() * 10000, 'été'.encode() * 10000)]:
@@ -133,7 +244,7 @@ class ReliabilityTests(unittest.TestCase):
         terminal.current_settings = {}; terminal.profile = 'test'
         terminal.video_window = terminal.preview_window = 0
         desired = config(); desired.update(configuration_version=2, video_fps=25)
-        replacement = Mock(auto_framing=None, audio_profile='normal')
+        replacement = Mock(auto_framing=None, audio_profile='normal', config=desired)
         replacement.video_settings = VideoSettings.for_config(desired)
         with patch('zmala_terminal.common.main.Engine', return_value=replacement) as build:
             terminal.apply_config(desired)

@@ -1,0 +1,25 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Device-scoped bearer identity
+level: 14.0
+links:
+- HLR-SRV-AUTH-012: MOCfbUqJnGtS0uCylJvif3sDDS0Y39Bq9Dw79detQzk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A device token shall identify its owning terminal and shall not grant administrator access. Device routes shall derive identity from that token, not from a requested account or serial number.
+verification: |
+  Try another device identity and administrator endpoints with a device token. Check configuration, callbacks, status and command ownership.

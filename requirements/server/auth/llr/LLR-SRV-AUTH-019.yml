@@ -1,0 +1,31 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Cookie and API sessions
+level: 13.0
+links:
+- HLR-SRV-AUTH-012: MOCfbUqJnGtS0uCylJvif3sDDS0Y39Bq9Dw79detQzk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-auth-setup.test.js
+  type: file
+- path: tests/server/LLT/credential-transitions.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/web/admin-auth.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Browser login shall issue a session cookie. An explicit authenticated API-session request may also return a bearer credential. Sign-out shall revoke that session; successful password replacement shall revoke all sessions.
+verification: |
+  Log in both ways, sign out and replace the password. Check invalidation against administrator endpoints.

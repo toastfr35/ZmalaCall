@@ -1,5 +1,5 @@
 // @test S-HLT-017
-// @requirements HLR-SRV-MEDIA-001
+// @requirements HLR-SRV-MEDIA-007, HLR-SRV-MEDIA-008
 // @environment portable
 // @plan Create real UDP relay sockets with disposable signalling peers; negotiate audio and video SDP and verify rewritten endpoints, bidirectional RTP/RTCP delivery and forwarding counters.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

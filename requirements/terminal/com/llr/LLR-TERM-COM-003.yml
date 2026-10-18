@@ -1,0 +1,34 @@
+active: true
+area: Server communication
+derived: false
+header: |
+  Authenticated HTTP requests
+level: 23.0
+links:
+- HLR-TERM-COM-001: ydNPWcnm6yTEn1zC-hL6mdqdWGyJaKNXJaxgGGafcOo=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_configuration.py
+  type: file
+- path: tests/terminal/LLT/test_reliability.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Configuration and management requests shall use the enrolled device token. They
+  shall refuse HTTP redirects. Failed or malformed responses shall not replace
+  accepted terminal state.
+verification: |
+  Inspect authorization headers and reject redirects, failed requests and malformed
+  responses. Confirm that accepted state remains unchanged.

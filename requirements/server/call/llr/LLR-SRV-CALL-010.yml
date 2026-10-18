@@ -1,0 +1,29 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Bounded SIP transport state
+level: 57.0
+links:
+- HLR-SRV-CALL-002: vKvKSfN3xgoiMdmf7TxIlFx-u6Ua_ZZAMvsLNKfPvA0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/sip-bounds.test.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/vendor/sip/proxy.js
+  type: file
+- path: zmala_server/vendor/sip/sip.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  SIP framing shall reject malformed, duplicate and excessive Content-Length fields and expire incomplete messages after 30 seconds. ACK shall retain no proxy context. Other contexts shall have per-peer and global limits and a 90-second lifetime.
+verification: |
+  Feed fragments, pipelines and malformed lengths. Exhaust proxy quotas, advance deadlines and inspect context cleanup.

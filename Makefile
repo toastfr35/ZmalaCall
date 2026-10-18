@@ -12,7 +12,7 @@ CPPCHECK ?= $(if $(wildcard C:/msys64/ucrt64/bin/cppcheck.exe),C:/msys64/ucrt64/
 POWERSHELL ?= powershell.exe
 REQUIREMENTS_PYTHON ?= $(if $(wildcard build_tools/runtime/doorstop/Scripts/python.exe),build_tools/runtime/doorstop/Scripts/python.exe,$(PYTHON))
 
-.PHONY: help clean lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test test-llt test-hlt test-adhoc requirements requirements-check
+.PHONY: help clean lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test test-llt test-hlt test-hlt-display test-adhoc requirements requirements-check
 .DEFAULT_GOAL := help
 
 help:
@@ -20,6 +20,7 @@ help:
 	@echo "make clean: remove caches, scratch files and build outputs (preview: make clean CLEAN_FLAGS=--dry-run)"
 	@echo "make requirements: validate coverage and publish requirements/output/index.html"
 	@echo "make requirements-check: validate requirements without publishing"
+	@echo "make coverage-llt: LLT-only execution coverage in tests/coverage/LLT; coverage-check enforces 100 percent"
 
 requirements:
 	$(REQUIREMENTS_PYTHON) build_tools/requirements.py
@@ -74,8 +75,20 @@ test-hlt:
 	$(PYTHON) -m unittest discover -s tests/server/HLT -t . -p "test_*.py"
 	$(PYTHON) -m unittest discover -s tests/terminal/HLT -t . -p "test_*.py"
 
+# Explicit display target: never auto-run live/native/hardware scenarios.
+test-hlt-display:
+	$(PYTHON) build_tools/run_display_hlt.py
+
 # Toolchain/Windows compatibility checks are not Pi product requirement coverage.
 # Do not discover manual or live scenarios here.
 test-adhoc:
 	$(NODE) build_tools/run-tests.cjs adhoc
 	$(PYTHON) -m unittest discover -s tests/adhoc -t . -p "test_*.py"
+
+# LLT only: no HLT or ad-hoc execution contributes to these reports.
+.PHONY: coverage-llt coverage-check
+coverage-llt:
+	$(REQUIREMENTS_PYTHON) build_tools/rbt_coverage.py
+
+coverage-check:
+	$(REQUIREMENTS_PYTHON) build_tools/rbt_coverage.py --check

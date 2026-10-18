@@ -1,5 +1,5 @@
 // @test S-LLT-026
-// @requirements LLR-SRV-MEDIA-004
+// @requirements LLR-SRV-MEDIA-011
 // @environment portable
 // @plan Inject event-emitting UDP socket doubles into a relay stream; send undersized, unknown-peer and forged-IP packets, then authenticated RTP and RTCP in both directions. Observe port learning and forwarded bytes.
 // @pass Rejected packets must neither alter learned ports nor forward bytes; valid signaling peers must forward unchanged packets to the opposite learned destination.

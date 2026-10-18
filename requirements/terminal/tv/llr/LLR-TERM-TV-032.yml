@@ -1,0 +1,32 @@
+active: true
+area: TV control
+derived: false
+header: |
+  TV audio preservation
+level: 108.0
+links:
+- HLR-TERM-TV-018: ZYWJZfxPFY-U2Faag_owNyuH0jhoHw1LvN3GtcRGSgo=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_tv_control.py
+  type: file
+- path: zmala_terminal/common/idle_return.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/linux/cec_device.py
+  type: file
+- path: zmala_terminal/linux/cec_observer.py
+  type: file
+- path: zmala_terminal/linux/samsung_tv.py
+  type: file
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  TV checks, wake, input selection and restoration shall not change TV volume or mute.
+verification: |
+  Record commands for each TV operation. Assert that no volume or mute command is
+  sent.

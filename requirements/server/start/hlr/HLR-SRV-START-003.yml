@@ -1,0 +1,20 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Separate liveness and readiness
+level: 3.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/persistence.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall report process liveness separately from unresolved failures to save state. A persistence failure shall prevent a ready response until recovery.
+verification: |
+  Compare liveness and readiness before, during and after an injected snapshot failure.

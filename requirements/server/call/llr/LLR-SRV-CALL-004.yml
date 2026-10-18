@@ -1,0 +1,29 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Initial call checks
+level: 51.0
+links:
+- HLR-SRV-CALL-001: rQ_uICMCozUEY5XBaymy7PTQjYtc6-mIrVU254nt5Ig=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/sip-guards.test.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/types/sip-proxy.d.ts
+  type: file
+- path: zmala_server/types/sip.d.ts
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An initial INVITE shall require authenticated identity, valid routing fields, shared-group permission and a reachable destination. Neither account shall already own a call. Rejection shall leave no lasting dialog or media allocation.
+verification: |
+  Exercise forged identity, invalid fields, missing registration, denied groups and busy peers before SDP work.

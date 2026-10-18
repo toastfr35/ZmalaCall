@@ -1,0 +1,27 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Terminal shell selection
+level: 38.0
+links:
+- HLR-SRV-CONFIG-014: fknMq0kyen45efxKNWehc_4FZsH-E_5vdh5bdGbZTig=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/configuration-policy.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administration shall accept sh and bash as terminal command shells and retain the supported legacy shell choices. Unknown choices shall be rejected. Each command shall retain the selected shell for the terminal to validate and execute.
+verification: |
+  Save each supported enumeration and reject unknown values. Check captured job shells; execution compatibility belongs to the terminal.

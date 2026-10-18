@@ -1,0 +1,27 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Language and text support
+level: 17.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/linux_smoke.py
+  type: file
+- path: tests/terminal/HLT/render_cache_ui.py
+  type: file
+- path: tests/terminal/HLT/setup_feedback_ui.py
+  type: file
+- path: tests/terminal/HLT/terminal_languages_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall use the selected language during normal operation. It shall
+  preserve contact names and display the supported writing systems.
+verification: |
+  Render each supplied language and representative Unicode names. Inspect shaping,
+  direction, fallback and text bounds.

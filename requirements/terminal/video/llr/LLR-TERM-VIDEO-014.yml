@@ -1,0 +1,28 @@
+active: true
+area: Video
+derived: false
+header: |
+  Local detector worker
+level: 81.0
+links:
+- HLR-TERM-VIDEO-002: ilNONDH5vone7Toahq_M3aw-xudbyAigWd9tHX75S84=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-auto-framing.c
+  type: file
+- path: tests/terminal/LLT/test_framing_worker.py
+  type: file
+- path: zmala_terminal/linux/auto_framing.py
+  type: file
+- path: zmala_terminal/linux/media/video/auto-framing.c
+  type: file
+reviewed: null
+scope: Optional
+text: |
+  Detection shall use a local worker thread with reduced scheduling priority and two
+  inference threads. It shall sample approximately every two seconds from one latest-
+  thumbnail slot. It shall not upload images or block the UI or media ticker.
+verification: |
+  Delay detection and submit new thumbnails. Check replacement, worker scheduling,
+  inference options and absence of network calls.

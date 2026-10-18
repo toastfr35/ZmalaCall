@@ -1,5 +1,5 @@
 # @test T-HLT-007
-# @requirements HLR-TERM-SETUP-002
+# @requirements HLR-TERM-SETUP-020, HLR-TERM-UI-012
 # @environment native-display
 # @plan Start the real QR worker with a synthetic green image inside a red-header window; resize repeatedly, assert camera pixels stay in the viewport and the header remains unobscured, then verify worker termination.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

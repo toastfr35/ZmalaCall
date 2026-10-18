@@ -1,8 +1,8 @@
 """Validate requirement-based test plans and build bidirectional trace data.
 
 Metadata describes a test scenario/suite, not a passed execution. Coverage is
-explicit: every LLR requires a direct unit-test plan. Unmapped HLRs are reported;
-coverage is never inferred from imports or parent relationships.
+explicit: every LLR requires a direct unit-test plan and every HLR a direct
+system-test plan. Coverage is never inferred from imports or parent relationships.
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from requirement_ids import ITEM, category, document_prefix
 
 FIELDS = {'test', 'requirements', 'environment', 'plan', 'pass'}
 ENVIRONMENTS = {'portable', 'display', 'native-sdk', 'native-display', 'hardware', 'linux-root'}
-TEST_SUFFIXES = {'.py', '.js', '.cjs', '.c', '.sh', '.ps1'}
+TEST_SUFFIXES = {'.py', '.js', '.cjs', '.c', '.cpp', '.sh', '.ps1'}
 
 
 def read_plan(path: Path) -> dict:
@@ -99,7 +99,7 @@ def audit_tests(root: Path, records: dict) -> dict:
     # Test sources cannot drift back into implementation directories.
     for folder in ('zmala_server', 'zmala_terminal', 'build_tools'):
         for path in (root / folder).rglob('*'):
-            if any(part in {'node_modules', 'runtime', 'tmp', 'dist', '__pycache__', 'data', 'framing-runtime'}
+            if any(part in {'node_modules', 'runtime', 'tmp', 'dist', '__pycache__', 'data', 'framing-runtime', 'turn-runtime'}
                    for part in path.relative_to(root).parts):
                 continue
             if path.is_file() and (path.name.startswith(('test_', 'test-', 'probe-'))
@@ -112,9 +112,10 @@ def audit_tests(root: Path, records: dict) -> dict:
     missing = {prefix: sorted(uid for uid, record in records.items()
                              if category(record['prefix']) == prefix and uid not in by_requirement)
                for prefix in ('HLR-SRV', 'LLR-SRV', 'HLR-TERM', 'LLR-TERM')}
-    for prefix in ('LLR-SRV', 'LLR-TERM'):
+    for prefix in ('LLR-SRV', 'LLR-TERM', 'HLR-SRV', 'HLR-TERM'):
         for uid in missing[prefix]:
-            errors.append(f'{uid}: no mapped LLT verifying this LLR')
+            level = 'LLT' if prefix.startswith('LLR') else 'HLT'
+            errors.append(f'{uid}: no mapped {level} verifying this {prefix[:3]}')
     if errors:
         raise ValueError('\n'.join(errors))
     return {'tests': dict(sorted(tests.items())),

@@ -89,12 +89,13 @@ function createApplication({
     adminSessions,
   };
 }
-// @llr LLR-SRV-DATA-010
+
 async function start() {
+  // @llr LLR-SRV-BACKUP-008
   await recoverRestore(DATA, process.env.ZMALA_ADMIN_PASSWORD_FILE || passwordFile(DATA));
   require('../build_tools/build-admin.cjs').buildAdmin();
   const store = new Store();
-  // @llr LLR-SRV-BOOT-007
+  // @llr LLR-SRV-START-007
   if (process.env.VIDEOCALL_HOST) {
     if (isIP(process.env.VIDEOCALL_HOST) !== 4)
       throw Error('VIDEOCALL_HOST must be an IPv4 address');
@@ -105,6 +106,8 @@ async function start() {
     }
   }
   const v = store.value;
+  if (store.secureCalls && (!process.env.ZMALA_TLS_CERT || !process.env.ZMALA_TLS_KEY))
+    throw Error('Secure calls require the HTTPS certificate and key.');
   const { server, handler, sipServer, flush } = createApplication({
     store,
     restart: () => {
@@ -116,7 +119,7 @@ async function start() {
   });
   // Keep terminal HTTP available. An optional TLS listener uses the same
   // password/session boundary and marks browser cookies Secure on HTTPS.
-  // @llr LLR-SRV-BOOT-004
+  // @llr LLR-SRV-START-006
   const tlsCert = process.env.ZMALA_TLS_CERT;
   const tlsKey = process.env.ZMALA_TLS_KEY;
   /** @type {import('node:https').Server | undefined} */
@@ -134,7 +137,7 @@ async function start() {
     tlsPort = port;
   }
   const shutdown = createShutdown([server, ...(tlsServer ? [tlsServer] : [])], sipServer, flush);
-  // @llr LLR-SRV-BOOT-006
+  // @llr LLR-SRV-START-008
   /** A failed listener must not leave its sibling serving a half-started app.
    * @param {unknown} error */
   function fail(error) {
@@ -149,7 +152,7 @@ async function start() {
     tlsServer?.listen(tlsPort, '0.0.0.0', () =>
       console.log(`HTTPS administration: https://${v.host}:${tlsPort}/`),
     );
-    // @llr LLR-SRV-BOOT-003
+    // @llr LLR-SRV-START-005
     server.listen(v.http_port, '0.0.0.0', () => {
       console.log(`Administration: http://${v.host}:${v.http_port}/`);
       console.log(`Phone SIP domain: ${v.host}:${v.sip_port}`);

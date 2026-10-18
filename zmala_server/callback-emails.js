@@ -27,7 +27,7 @@ class CallbackEmails {
       (address) => !sent.has(address.toLowerCase()),
     );
   }
-  // @llr LLR-SRV-CALLBACK-009
+  // @llr LLR-SRV-CALLBACK-022
   deliver() {
     if (!this.mailer.enabled()) return;
     for (const request of this.callbacks.requests) {
@@ -52,7 +52,7 @@ class CallbackEmails {
         });
     }
   }
-  // @llr LLR-SRV-CALLBACK-008
+  // @llr LLR-SRV-CALLBACK-021
   /** @param {import('./types/contracts').CallbackRecord} request */
   async send(request) {
     // A queued reminder must survive a restart before any external delivery.

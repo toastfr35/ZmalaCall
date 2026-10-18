@@ -1,13 +1,65 @@
 // @test S-LLT-003
-// @requirements LLR-SRV-MEDIA-002, LLR-SRV-MEDIA-003, LLR-SRV-MEDIA-005, LLR-SRV-MEDIA-006
+// @requirements LLR-SRV-MEDIA-009, LLR-SRV-MEDIA-010, LLR-SRV-MEDIA-012, LLR-SRV-MEDIA-013
 // @environment portable
-// @plan Defer relay allocation and close/update streams at controlled points; assert shared allocation, valid RTCP bounds, transactional endpoints and reclamation of late sockets.
+// @plan Defer relay allocation and close/update streams at controlled points; assert shared allocation, valid RTCP bounds, transactional endpoints and reclamation of late sockets. Inject UDP bind errors and asynchronous socket errors; verify reservation before await, port retry and cleanup of a partly allocated stream.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { MediaRelay } = require('../../../zmala_server/media');
+const dgram = require('node:dgram');
+const { EventEmitter } = require('node:events');
+
+test('socket allocation reserves pending ports, retries failed binds and releases partial streams', async (t) => {
+  const sockets = [],
+    pending = [];
+  t.mock.method(dgram, 'createSocket', () => {
+    const socket = new EventEmitter();
+    socket.closed = 0;
+    socket.close = () => {
+      socket.closed++;
+    };
+    socket.bind = (port, host, callback) => {
+      pending.push({ socket, port, host, callback });
+    };
+    sockets.push(socket);
+    return socket;
+  });
+  t.mock.method(console, 'error', () => {});
+  const relay = new MediaRelay('192.0.2.1', 20000, 20002);
+  const a = relay.socket(),
+    b = relay.socket();
+  assert.deepEqual(
+    pending.map((p) => p.port),
+    [20000, 20001],
+  );
+  assert.ok(pending.every((p) => p.host === '0.0.0.0'));
+  pending[0].socket.emit('error', Error('occupied'));
+  pending[1].callback();
+  await Promise.resolve();
+  assert.equal(pending[2].port, 20002);
+  pending[2].callback();
+  const [first, second] = await Promise.all([a, b]);
+  assert.equal(first.port, 20002);
+  assert.equal(second.port, 20001);
+  assert.equal(sockets[0].closed, 1);
+  assert.equal(relay.used.has(20000), false);
+  first.socket.emit('error', Error('async transport failure'));
+  assert.equal(console.error.mock.calls.length, 1);
+  relay.used.add(20000);
+  await assert.rejects(relay.socket(), /capacity/);
+  // Failure partway through the four-socket stream releases all prior reservations.
+  let count = 0;
+  relay.socket = async () => {
+    if (count++ === 2) throw Error('exhausted');
+    return count === 1 ? first : second;
+  };
+  await assert.rejects(relay.stream(), /exhausted/);
+  assert.equal(first.socket.closed, 1);
+  assert.equal(second.socket.closed, 1);
+  assert.deepEqual([...relay.used], [20000]);
+});
 
 const sdp = 'v=0\r\nc=IN IP4 127.0.0.1\r\nm=audio 4000 RTP/AVP 0\r\n';
 function deferredStream(relay) {

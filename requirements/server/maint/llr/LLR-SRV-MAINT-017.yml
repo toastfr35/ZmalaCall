@@ -1,0 +1,27 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Cancellation and bounded command history
+level: 80.0
+links:
+- HLR-SRV-MAINT-011: sJW1dvGdS_-Gm5aD0PVVtKqWW8MUnT6xi1cG7zemBs0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/console-state.test.js
+  type: file
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administration shall cancel only queued jobs. Device history shall show at most its latest 50 jobs without execution leases. Trimming shall preserve pending jobs and at most 200 completed records.
+verification: |
+  Cancel queued and running jobs, generate excess history and inspect device ownership and lease omission.

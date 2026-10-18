@@ -1,0 +1,29 @@
+active: true
+area: Saved state
+derived: false
+header: |
+  Commit acknowledgement and retry
+level: 85.0
+links:
+- HLR-SRV-DATA-012: lDZLOJEkyH9qDeBNPNGuPdGLsV68ZRaDJGN20zEJpK4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/snapshot-file.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: zmala_server/json-file.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/snapshot-file.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A mutation shall wait for the writers it changes before returning success. An unresolved latest write shall fail that acknowledgement. A later barrier shall retry the latest snapshot while unrelated read-only routes remain available.
+verification: |
+  Inject slow and failed disk writes, issue concurrent reads and retry without another mutation. Compare committed files and response timing.

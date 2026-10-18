@@ -3,6 +3,7 @@ import argparse
 from PIL import Image, ImageOps
 
 
+# @llr LLR-SRV-DIR-033, LLR-SRV-DIR-035
 def convert(source, destination):
     Image.MAX_IMAGE_PIXELS = 16000000
     with Image.open(source) as image:
@@ -13,6 +14,7 @@ def convert(source, destination):
         image.convert('RGBA').save(destination, format='PNG')
 
 
+# @llr LLR-SRV-DIR-035
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-Source', required=True)

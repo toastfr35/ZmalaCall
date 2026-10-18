@@ -1,0 +1,19 @@
+settings:
+  digits: 3
+  itemformat: yaml
+  prefix: LLR-SRV-BACKUP
+  sep: '-'
+  parent: HLR-SRV-BACKUP
+attributes:
+  defaults:
+    doc:
+      name: LLR-SRV-BACKUP
+      title: Backup and restore — LLR
+  publish:
+  - area
+  - scope
+  - verification
+  reviewed:
+  - area
+  - scope
+  - verification

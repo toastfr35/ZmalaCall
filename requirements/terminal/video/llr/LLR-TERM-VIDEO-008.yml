@@ -1,0 +1,38 @@
+active: true
+area: Video
+derived: false
+header: |
+  Compressed video order
+level: 75.0
+links:
+- HLR-TERM-VIDEO-003: os3xFxhh_DxiDwfgqhuRpXE6TF2VMSL8cB-X-FVV9hM=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-codec-boundaries.c
+  type: file
+- path: tests/terminal/LLT/test-video-filters.c
+  type: file
+- path: tests/terminal/LLT/test-video-recovery.c
+  type: file
+- path: zmala_terminal/linux/media/video/codec.c
+  type: file
+- path: zmala_terminal/linux/media/video/codec.h
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-filter.c
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-stream.c
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-stream.h
+  type: file
+- path: zmala_terminal/linux/media/video/preview-display.c
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The H.264 path shall preserve compressed frame and reference order. Overflow
+  recovery shall combine pending recovery work and restore required codec headers. It
+  shall not apply independent-JPEG dropping to dependent H.264 frames.
+verification: |
+  Submit ordered compressed references and overflow the queue. Check decode order,
+  combined recovery and restored headers.

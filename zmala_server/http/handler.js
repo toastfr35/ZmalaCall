@@ -32,15 +32,20 @@ function createHandler(context) {
     const backups = context.backups;
     if (backups) backups.requests++;
     try {
+      // @llr LLR-SRV-BACKUP-007
       if (backups?.restoring)
         return send(res, 503, { error: 'Server is restarting to restore a backup.' });
-      // @llr LLR-SRV-AUTH-007
+      // @llr LLR-SRV-AUTH-021
       const host = req.headers.host;
       const secure = 'encrypted' in req.socket && req.socket.encrypted === true;
+      // @llr LLR-SRV-MEDIA-015
+      if (store.secureCalls && !secure && req.url !== '/health' && req.url !== '/ready')
+        return send(res, 403, { error: 'This deployment requires HTTPS.' });
       const port = req.socket.localPort || v.http_port;
       const protocol = secure ? 'https' : 'http';
       const interfaceAddress = req.socket.localAddress?.replace(/^::ffff:/, '');
       const allowedHosts = [`127.0.0.1:${port}`, `localhost:${port}`, `${v.host}:${port}`];
+      if (secure && store.secureCalls) allowedHosts.push(new URL(store.secureCalls.httpsUrl).host);
       if (interfaceAddress) allowedHosts.push(`${interfaceAddress}:${port}`);
       if (process.env.ZMALA_SERVER_NAME)
         allowedHosts.push(`${process.env.ZMALA_SERVER_NAME}:${port}`);
@@ -59,10 +64,10 @@ function createHandler(context) {
           // Compatibility for existing local maintenance tools during initial
           // setup only. The old shortcut token stops working once a password exists.
           (!store.adminPassword.hash && local && token === v.admin_token),
-        // @llr LLR-SRV-AUTH-008
+        // @llr LLR-SRV-AUTH-019, LLR-SRV-AUTH-020
         deviceId = store.deviceAccount(token),
         device = !!deviceId;
-      // @llr LLR-SRV-BOOT-004
+      // @llr LLR-SRV-START-006
       if (context.requireSecureAdmin && !secure && !local && !device)
         return send(res, 403, { error: 'Use HTTPS for administration.' });
       // Cookie-authenticated mutations require an exact same-origin request,
@@ -89,13 +94,13 @@ function createHandler(context) {
           await asyncFs.readFile(path.resolve(__dirname, '../assets/zmala-icon.svg')),
           'image/svg+xml',
         );
-      // @llr LLR-SRV-AUTH-010
+      // @llr LLR-SRV-AUTH-023
       if (req.method === 'GET' && assets[url.pathname]) {
         const [file, type] = assets[url.pathname];
         return send(res, 200, await asyncFs.readFile(path.join(WEB, file)), type);
       }
       if (url.pathname === '/health') return send(res, 200, { ok: true });
-      // @llr LLR-SRV-DATA-005
+      // @llr LLR-SRV-START-010
       if (url.pathname === '/ready') {
         const persistence = context.persistenceReady?.() ?? true;
         return send(res, persistence ? 200 : 503, { ok: persistence, persistence });

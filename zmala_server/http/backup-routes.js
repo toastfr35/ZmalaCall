@@ -2,7 +2,7 @@
 'use strict';
 const { body, send, httpError } = require('./responses');
 const { MAX_BACKUP, decodeBackup } = require('../backup-format');
-// @llr LLR-SRV-DATA-011
+// @llr LLR-SRV-BACKUP-012
 /** Reached only after the common administrator/session/origin checks.
  * @param {import('node:http').IncomingMessage} req @param {import('node:http').ServerResponse} res
  * @param {URL} url @param {import('../types/http').HttpContext} context */
@@ -39,6 +39,7 @@ async function backupRoutes(req, res, url, context) {
         pictures: backup.files.size - 4,
         configuration_version: context.store.value.configuration_version,
       });
+    // @llr LLR-SRV-BACKUP-006
     if (req.headers['x-zmala-confirm-restore'] !== 'replace')
       throw httpError(400, 'Confirm replacement before restoring.');
     await service.stage(backup, Number(req.headers['x-zmala-configuration-version']));

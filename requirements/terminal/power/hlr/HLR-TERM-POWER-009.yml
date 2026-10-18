@@ -1,0 +1,22 @@
+active: true
+area: Connected devices and power
+derived: false
+header: |
+  Optional shared USB power saving
+level: 30.0
+links:
+- PROD006: 2sjm1b2_Q_Jv_p06bviz-a-392AWlzkTtedgJlXNvLc=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_peripheral_workers.py
+  type: file
+reviewed: null
+scope: Experimental
+text: |
+  When enabled, USB power saving shall retain power while devices are needed or remote
+  battery state is uncertain. User activity shall request power restoration.
+verification: |
+  Exercise idle, low battery, unknown state and wake events. Check power confirmation
+  and media readiness after restoration.

@@ -20,8 +20,9 @@ def seed():
     (root/'extensions').write_text('subjectAltName=IP:10.231.100.13,IP:10.231.100.14,IP:10.231.100.15\nextendedKeyUsage=serverAuth\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\n')
     openssl('x509', '-req', '-in', 'server.csr', '-CA', 'ca.pem', '-CAkey', 'ca.key',
             '-CAcreateserial', '-days', '2', '-extfile', 'extensions', '-out', 'server.pem')
-    users = {peer: secrets.token_hex(24) for peer in ('a', 'b')}
-    (root/'turn.json').write_text(json.dumps(users))
+    secret = secrets.token_hex(32)
+    (root/'turn-secret').write_text(secret)
+    (root/'secure-calls.json').write_text(json.dumps({'https_url':'https://10.231.100.15:443', 'sip_host':'10.231.100.13', 'sip_listen_port':5061, 'sip_cert':'/lab/server.pem', 'sip_key':'/lab/server.key', 'turn_host':'10.231.100.14', 'turn_realm':'zmala.lab', 'turn_secret_file':'/lab/turn-secret'}))
     (root/'turn.conf').write_text('''listening-ip=10.231.100.14
 relay-ip=10.231.100.14
 tls-listening-port=443
@@ -30,7 +31,7 @@ min-port=30000
 max-port=30199
 realm=zmala.lab
 server-name=zmala.lab
-lt-cred-mech
+use-auth-secret
 fingerprint
 no-udp
 no-tcp
@@ -43,8 +44,8 @@ cert=/lab/server.pem
 pkey=/lab/server.key
 log-file=stdout
 simple-log
-''' + ''.join(f'user={peer}:{password}\n' for peer, password in users.items()))
-    for name in ('ca.key', 'server.key', 'turn.json', 'turn.conf'):
+''' + 'static-auth-secret='+secret+'\n')
+    for name in ('ca.key', 'server.key', 'turn-secret', 'secure-calls.json', 'turn.conf'):
         (root/name).chmod(0o600)
     (root/'tls-ready').touch()
 

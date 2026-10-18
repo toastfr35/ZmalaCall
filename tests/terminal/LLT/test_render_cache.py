@@ -1,5 +1,5 @@
 # @test T-LLT-031
-# @requirements LLR-TERM-SYS-010
+# @requirements LLR-TERM-UI-022
 # @environment portable
 # @plan Exercise count and byte limits with synthetic render entries; assert eviction, oversized-entry bypass and retained-reference accounting stay bounded.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

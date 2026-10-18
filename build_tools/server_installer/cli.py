@@ -12,7 +12,6 @@ def resources():
     return Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else Path(__file__).parents[1]/'dist'
 
 
-# @llr LLR-SRV-INSTALL-004
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--headless', action='store_true', required=True)

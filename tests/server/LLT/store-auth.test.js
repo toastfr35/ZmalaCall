@@ -1,5 +1,5 @@
 // @test S-LLT-014
-// @requirements LLR-SRV-DIR-004, LLR-SRV-DIR-005, LLR-SRV-DIR-008, LLR-SRV-DIR-011, LLR-SRV-DIR-012, LLR-SRV-DIR-013, LLR-SRV-SIP-004, LLR-SRV-DATA-006
+// @requirements LLR-SRV-DIR-021, LLR-SRV-DIR-022, LLR-SRV-DIR-025, LLR-SRV-DIR-029, LLR-SRV-DIR-030, LLR-SRV-DIR-031, LLR-SRV-CALL-003, LLR-SRV-DATA-016
 // @environment portable
 // @plan Use temporary stores and signed digest requests; assert account/group validation, direct membership, sorted derived contacts, credential-preserving migration and rejection of replay, wrong passwords and changed targets.
 // @pass Every named assertion must pass; failures or skips do not establish requirement verification.

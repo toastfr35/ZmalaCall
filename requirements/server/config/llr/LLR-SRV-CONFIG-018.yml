@@ -1,0 +1,27 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Audio and device selection
+level: 36.0
+links:
+- HLR-SRV-CONFIG-014: fknMq0kyen45efxKNWehc_4FZsH-E_5vdh5bdGbZTig=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/configuration-policy.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Profiles shall accept normal or speech audio processing. Camera, microphone and speaker selectors shall be strings of at most 256 characters. Omitted optional settings shall retain existing values; explicit invalid values shall be rejected.
+verification: |
+  Validate selector lengths and audio choices with omitted, null and invalid values. Check atomic updates.

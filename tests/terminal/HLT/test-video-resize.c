@@ -1,5 +1,5 @@
 // @test T-HLT-018
-// @requirements HLR-TERM-MEDIA-001
+// @requirements HLR-TERM-VIDEO-001, HLR-TERM-VIDEO-003
 // @environment hardware
 // @plan On an idle Pi with the terminal stopped, submit synthetic YUV pictures through the V4L2 encoder and software decoder while changing source and target dimensions; require at least twenty correctly sized decoded frames per phase and no codec error.
 // @pass Every named assertion must pass; record platform and native prerequisites with the result.

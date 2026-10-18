@@ -7,10 +7,9 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[2]
 TEXT_SUFFIXES = {'.sh', '.txt', '.conf', '.service', '.rules', '.plymouth', '.script',
-                 '.py', '.json', '.c', '.h', '.md', '.svg'}
+                 '.py', '.json', '.c', '.cpp', '.h', '.md', '.svg', '.patch'}
 
 
-# @llr LLR-TERM-INSTALL-007
 def package(destination=None):
     """Ship one C20 release; native plugins are compiled by its Pi installer."""
     destination = Path(destination or ROOT / 'build_tools/dist/ZmalaCall-Terminal-rpi.tar.gz')
@@ -19,7 +18,7 @@ def package(destination=None):
     with tarfile.open(destination, 'w:gz') as archive:
         for base in (ROOT / 'zmala_terminal/common', ROOT / 'zmala_terminal/linux', ROOT / 'build_tools/linux'):
             for path in sorted(base.rglob('*')):
-                if not path.is_file() or any(part in ('data', '__pycache__', 'framing-runtime', 'models')
+                if not path.is_file() or any(part in ('data', '__pycache__', 'framing-runtime', 'turn-runtime', 'models')
                                              for part in path.relative_to(ROOT).parts):
                     continue
                 if path.suffix in ('.so', '.o'):
@@ -40,6 +39,12 @@ def package(destination=None):
                 info.size = len(content)
                 archive.addfile(info, io.BytesIO(content))
                 checksums.append(hashlib.sha256(content).hexdigest() + '  ' + info.name)
+        source = ROOT / 'tests/terminal/LLT/turn_parser.cpp'
+        content = source.read_bytes().replace(b'\r\n', b'\n')
+        info = tarfile.TarInfo('tests/terminal/LLT/turn_parser.cpp')
+        info.size = len(content)
+        archive.addfile(info, io.BytesIO(content))
+        checksums.append(hashlib.sha256(content).hexdigest() + '  ' + info.name)
         for name in ('general.md', 'server.md', 'terminal.md'):
             archive.add(ROOT / 'docs' / name, arcname='docs/' + name)
             checksums.append(hashlib.sha256((ROOT / 'docs' / name).read_bytes()).hexdigest() + '  docs/' + name)

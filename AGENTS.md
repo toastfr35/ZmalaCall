@@ -10,6 +10,9 @@ Keep code, documentation and requirements synchronized in every change.
   using `<HLR|LLR>-<SRV|TERM>-<GROUP>-NNN` IDs. Numbers are unique across
   both levels in each component/theme; use `--next-id` in the requirements tool.
   Keep IDs stable and maintain implementation references and verification guidance.
+  Scope requirements to the Pi server and Pi terminal runtime and host policies;
+  keep installers, packaging and deployment checks outside the baseline. Preserve
+  installer tests under `tests/adhoc/` and run them independently in CI.
 - Maintain standalone `@llr` comments beside the owning implementation. When
   moving, adding or removing code, update both the comments and the corresponding
   Doorstop references. Follow the format documented in `docs/general.md`.
@@ -33,7 +36,8 @@ component LLRs; `HLT/` contains system/integration scenarios linked to component
 Every LLT/HLT scenario starts with the stable `@test`, `@requirements`,
 `@environment`, `@plan` and `@pass` comments documented in `docs/general.md`.
 Every server and Pi terminal LLR must have one or more direct LLT verification
-plans and assertions; missing LLR coverage fails `make requirements`.
+plans and assertions; every HLR must have a direct HLT plan. Missing LLR or HLR
+test links fail `make requirements`. A hardware plan is not a passed hardware run.
 Keep reciprocal Doorstop references synchronized. Plans explain the inputs,
 procedure and expected behavior actually checked; do not claim whole-requirement
 coverage from a partial assertion or count skipped/manual checks as passed.

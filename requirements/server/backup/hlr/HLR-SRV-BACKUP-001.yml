@@ -1,0 +1,21 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Complete application backup
+level: 26.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/backups.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall let an authenticated administrator export and validate a complete application backup. Validation shall reject unsupported or damaged data before replacement.
+verification: |
+  Export a populated server, inspect included and excluded data, and reject corrupt, oversized and structurally invalid backups.

@@ -1,7 +1,7 @@
 // @test S-LLT-009
-// @requirements LLR-SRV-SIP-006, LLR-SRV-SIP-008, LLR-SRV-SIP-009, LLR-SRV-SIP-010, LLR-SRV-SIP-011
+// @requirements LLR-SRV-CALL-004, LLR-SRV-CALL-006, LLR-SRV-CALL-007, LLR-SRV-CALL-008, LLR-SRV-CALL-009
 // @environment portable
-// @plan Drive signaling with a fake transport and delayed SDP work; assert malformed/foreign requests fail, cancelled work cannot ring or forward late answers and renegotiation commits exactly once.
+// @plan Drive signaling with a fake transport and delayed SDP work; assert malformed/foreign requests fail, cancelled work cannot ring or forward late answers and renegotiation commits exactly once. Capture startup callbacks and the sweep timer to verify CANCEL header preservation, request-error replies, registration/dialog expiry and transport cleanup. Check authenticated admission against forged destinations, offline/busy recipients and missing contact, then reject malformed offers/answers and release failed initial calls and completed BYEs.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -18,6 +18,80 @@ const { SipServer } = require('../../../zmala_server/sip-server');
 sip.encodeFlowUri ??= () => '';
 sip.send ??= () => {};
 sip.stop ??= () => {};
+
+test('startup wraps CANCEL headers, handles route failures and sweeps expired ownership', async (t) => {
+  let options, route, sweep;
+  t.mock.method(proxy, 'start', (config, callback) => {
+    options = config;
+    route = callback;
+  });
+  t.mock.method(global, 'setInterval', (callback, delay) => {
+    assert.equal(delay, 5000);
+    sweep = callback;
+    return 'sweep';
+  });
+  const cleared = t.mock.method(global, 'clearInterval', () => {});
+  const sent = t.mock.method(sip, 'send', () => 'sent');
+  const stop = t.mock.method(sip, 'stop', () => {});
+  const contexts = t.mock.method(proxy, 'clearContexts', () => {});
+  const logged = t.mock.method(console, 'log', () => {});
+  t.mock.method(Date, 'now', () => 20000000);
+  const s = new SipServer({ value: { host: '192.0.2.1', sip_port: 5060 } });
+  s.callbacks = { deliver: t.mock.fn() };
+  s.presence.check = t.mock.fn();
+  s.presence.cancel = t.mock.fn();
+  s.presence.close = t.mock.fn();
+  s.media.closeAll = t.mock.fn();
+  s.start();
+  try {
+    assert.equal(options.address, '0.0.0.0');
+    const cancel = { method: 'CANCEL', headers: {} };
+    assert.equal(sip.send(cancel), 'sent');
+    assert.equal(cancel.headers['max-forwards'], 70);
+    cancel.headers['max-forwards'] = 12;
+    sip.send(cancel);
+    assert.equal(cancel.headers['max-forwards'], 12);
+    assert.equal(sent.mock.calls.length, 2);
+    const old = process.env.VIDEOCALL_DEBUG;
+    try {
+      process.env.VIDEOCALL_DEBUG = '1';
+      options.logger.recv({ method: 'OPTIONS' }, caller);
+      options.logger.send({ status: 200 }, caller);
+      options.logger.error(Error('transport'));
+    } finally {
+      if (old === undefined) delete process.env.VIDEOCALL_DEBUG;
+      else process.env.VIDEOCALL_DEBUG = old;
+    }
+    assert.ok(logged.mock.calls.some((c) => c.arguments[0] === 'SIP error: transport'));
+    s.request = async () => {
+      throw Error('route failure');
+    };
+    s.reply = t.mock.fn();
+    const req = request('OPTIONS');
+    route(req, caller);
+    await Promise.resolve();
+    assert.deepEqual(s.reply.mock.calls[0].arguments, [req, 500, 'Internal Server Error']);
+    s.registrations.set('expired', { expires: 19999999 });
+    s.registrations.set('current', { expires: 20000001 });
+    s.dialogs.set('ringing', { touched: 0, connected: false, ringing_timeout: 10000 });
+    s.dialogs.set('default-ringing', { touched: 0, connected: false });
+    s.dialogs.set('old-call', { touched: 0, connected: true });
+    s.dialogs.set('current-call', { touched: 19999999, connected: true });
+    sweep();
+    assert.deepEqual([...s.registrations.keys()], ['current']);
+    assert.deepEqual([...s.dialogs.keys()], ['current-call']);
+    assert.equal(s.presence.cancel.mock.calls[0].arguments[0], 'expired');
+    assert.equal(s.callbacks.deliver.mock.calls.length, 1);
+    assert.equal(s.presence.check.mock.calls.length, 1);
+  } finally {
+    s.close();
+  }
+  assert.equal(sip.send, sent);
+  assert.equal(cleared.mock.calls[0].arguments[0], 'sweep');
+  assert.equal(stop.mock.calls.length, 1);
+  assert.equal(contexts.mock.calls.length, 1);
+  assert.equal(s.dialogs.size, 0);
+});
 
 const caller = { address: '127.0.0.1', port: 51001, protocol: 'UDP' };
 const recipient = { address: '127.0.0.1', port: 51002, protocol: 'UDP' };
@@ -67,6 +141,116 @@ function server() {
   s.dialogs.set('guard-test', dialog);
   return { s, dialog };
 }
+
+test('call admission rejects forged, offline, busy and contactless callers before creating a dialog', async (t) => {
+  const { s } = server();
+  s.dialogs.clear();
+  const sent = [];
+  t.mock.method(proxy, 'send', (message) => sent.push(message));
+  t.mock.method(console, 'log', () => {});
+  s.auth.verify = () => 'phone1';
+  s.store.permitted = () => true;
+  s.store.ringTimeout = () => 90;
+  async function rejected(rq, status) {
+    await s.request(rq, caller);
+    assert.equal(sent.at(-1).status, status);
+  }
+  await rejected({ ...request(), headers: {} }, 400);
+  await rejected(request('OPTIONS'), 200);
+  const message = t.mock.method(s, 'message', () => {});
+  await s.request(request('MESSAGE'), caller);
+  assert.equal(message.mock.callCount(), 1);
+  await rejected(request('BYE'), 481);
+  s.auth.verify = () => null;
+  s.auth.challenge = () => ({ status: 407 });
+  await rejected(request(), 407);
+  s.auth.verify = () => 'phone1';
+  const forged = request();
+  forged.uri = 'sip:other@127.0.0.1';
+  await rejected(forged, 403);
+  await rejected(request(), 480);
+  s.registrations.set('term1', {
+    expires: Date.now() + 60000,
+    contact: { uri: 'sip:term1@127.0.0.1' },
+    remote: recipient,
+  });
+  for (let i = 0; i < 24; i++) s.dialogs.set(String(i), {});
+  await rejected(request(), 486);
+  s.dialogs.clear();
+  s.dialogs.set('busy', { peers: [{ user: 'term1' }] });
+  await rejected(request(), 486);
+  s.dialogs.clear();
+  const contactless = request();
+  delete contactless.headers.contact;
+  await rejected(contactless, 400);
+  assert.equal(s.dialogs.size, 0);
+  const forward = t.mock.method(s, 'forwardDialog', async () => {});
+  await s.request(request(), caller);
+  assert.equal(forward.mock.callCount(), 1);
+  const dialog = s.dialogs.get('guard-test');
+  assert.equal(dialog.ringing_timeout, 120000);
+  assert.deepEqual(
+    dialog.peers.map((p) => p.user),
+    ['phone1', 'term1'],
+  );
+  assert.equal(dialog.peers[0].remote, caller);
+});
+
+test('dialog methods, offer and answer failures preserve ownership and close failed initial calls', async (t) => {
+  const sent = [];
+  t.mock.method(proxy, 'send', (message, reply) => sent.push({ message, reply }));
+  t.mock.method(sip, 'encodeFlowUri', () => 'sip:flow');
+  t.mock.method(console, 'log', () => {});
+  let { s, dialog } = server();
+  await s.request(request('SUBSCRIBE'), caller);
+  assert.equal(sent.at(-1).message.status, 405);
+  await s.request(request(), { ...caller, port: 12345 });
+  assert.equal(sent.at(-1).message.status, 403);
+  assert.equal(s.cancelStatus({ headers: {} }, caller), 400);
+  const unknown = request('CANCEL');
+  unknown.headers['call-id'] = 'absent';
+  assert.equal(s.cancelStatus(unknown, caller), 481);
+  dialog.connected = true;
+  await s.forwardDialog(request(), caller, dialog, 0);
+  assert.equal(sent.at(-1).message.status, 488);
+  dialog.connected = false;
+  for (const hops of [0, 'invalid']) {
+    const rq = request();
+    rq.headers['max-forwards'] = hops;
+    await s.forwardDialog(rq, caller, dialog, 0);
+    assert.equal(sent.at(-1).message.status, hops === 0 ? 483 : 400);
+  }
+  for (const body of [undefined, 'bad SDP']) {
+    ({ s, dialog } = server());
+    const rq = request();
+    rq.headers['content-type'] = 'application/sdp';
+    rq.content = body;
+    s.media.rewrite = async () => {
+      throw Error('bad SDP');
+    };
+    await s.forwardDialog(rq, caller, dialog, 0);
+    assert.equal(sent.at(-1).message.status, 488);
+    assert.equal(s.dialogs.size, 0);
+    assert.equal(dialog.invites.size, 0);
+  }
+  ({ s, dialog } = server());
+  await s.forwardDialog(request(), caller, dialog, 0);
+  const forward = sent.at(-1);
+  const answer = sip.makeResponse(forward.message, 200, 'OK');
+  answer.headers['content-type'] = 'application/sdp';
+  answer.content = undefined;
+  forward.reply(answer);
+  await dialog.queue;
+  assert.equal(sent.at(-1).message.status, 488);
+  assert.equal(s.dialogs.size, 0);
+  ({ s, dialog } = server());
+  dialog.connected = true;
+  await s.forwardDialog(request('BYE'), caller, dialog, 0);
+  const bye = sent.at(-1);
+  bye.reply(sip.makeResponse(bye.message, 200, 'OK'));
+  await dialog.queue;
+  assert.equal(s.dialogs.size, 0);
+});
 
 test('SIP field and hop validation rejects malformed input before routing', async (t) => {
   for (const bad of ['NaN', '1.5', '-1', '', 256, Infinity, true, null, [70], {}])

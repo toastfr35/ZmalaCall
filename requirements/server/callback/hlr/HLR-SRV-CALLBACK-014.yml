@@ -1,0 +1,21 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Optional callback email reminders
+level: 21.0
+links:
+- PROD010: CH0z8p296_lCSujO-jWk_j36hz5ah55zBlfEYDgM1eU=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/callback-emails.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall support administrator-configured email reminders for pending callback requests. It shall track each recipient's accepted delivery and stop attempts when eligibility ends.
+verification: |
+  Configure SMTP and deadlines. Exercise partial success, retries, restart, address changes and expiry with a controlled mail transport.

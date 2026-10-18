@@ -1,0 +1,25 @@
+active: true
+area: Registration and availability
+derived: false
+header: |
+  Reachability probes
+level: 47.0
+links:
+- HLR-SRV-PRESENCE-001: lzQ8x2LfimBdJ0H6qcdLShlijXMVNhEpDl6HgUdDEw4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/presence.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/registrations.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall probe each unexpired registration flow every five seconds with a five-second timeout. Failed probes shall mark it unreachable. Further probes shall permit recovery before registration expiry.
+verification: |
+  Control responses and time. Check offline routing, continuing probes and recovery on the recorded flow.

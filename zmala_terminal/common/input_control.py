@@ -7,7 +7,7 @@ from zmala_terminal.common.volume_control import VolumeControl
 
 
 class InputControl:
-    # @llr LLR-TERM-POWER-004
+    # @llr LLR-TERM-POWER-014
     def input_activity(self):
         """Wake USB before any TV routing, debounce or setup consumption."""
         self.last_button = time.monotonic()
@@ -78,7 +78,7 @@ class InputControl:
             self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
         return 'break'
 
-    # @llr LLR-TERM-TV-010
+    # @llr LLR-TERM-TV-026
     def keypress(self, button):
         self.input_activity()
         if self.remote_setup_blocked():

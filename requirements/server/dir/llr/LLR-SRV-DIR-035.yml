@@ -1,0 +1,25 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Complete portrait publication
+level: 33.0
+links:
+- HLR-SRV-DIR-020: Wi28sATQzGIkhny_fldDAIC2B6bdZPh4gIebLGufpqY=
+normative: true
+ref: ''
+references:
+- path: build_tools/convert-photo.py
+  type: file
+- path: tests/server/LLT/photos.test.js
+  type: file
+- path: tests/server/LLT/test_photo_conversion.py
+  type: file
+- path: zmala_server/photos.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Linux conversion shall use Python and Pillow to produce PNG output of at most 480 pixels per side. It shall preserve aspect ratio and apply EXIF orientation. Publication shall use an immutable content-derived filename and atomic replacement. Failure shall not expose partial output.
+verification: |
+  Convert representative aspect ratios and inspect pixels. Inject converter and rename failure and check output and temporary-file cleanup.

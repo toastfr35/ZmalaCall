@@ -1,7 +1,7 @@
 # @test T-LLT-046
-# @requirements LLR-TERM-SETUP-009, LLR-TERM-SETUP-012, LLR-TERM-SETUP-013
+# @requirements LLR-TERM-SETUP-027, LLR-TERM-SETUP-029, LLR-TERM-NET-004
 # @environment portable
-# @plan Inject QR workers, monotonic time and NetworkManager D-Bus into setup; assert camera failure feedback and five-second retry, scanner release before engine activation, ten-second successful Wi-Fi confirmation and private owned-profile cleanup on cancellation.
+# @plan Inject QR workers, monotonic time and NetworkManager D-Bus into setup; assert camera failure feedback and five-second retry, scanner release before engine activation, ten-second successful Wi-Fi confirmation and private owned-profile cleanup on cancellation. Inject NetworkManager command and D-Bus failures, pre-cancelled work and unavailable cleanup; verify private diagnostics, owned-profile deletion and successful join metadata.
 # @pass All ownership, timing and credential-boundary assertions must pass without accessing a camera or changing network profiles.
 
 import io
@@ -17,6 +17,43 @@ from zmala_terminal.linux import wifi
 
 
 class SetupOwnershipTests(unittest.TestCase):
+    def test_join_failures_are_private_and_cleanup_is_owned_and_retryable(self):
+        with patch.object(wifi.subprocess, 'run', return_value=Mock(returncode=0, stdout=' ready \n')) as run:
+            self.assertEqual(wifi._nmcli(['connection', 'show']), 'ready')
+            self.assertEqual(run.call_args.kwargs['timeout'], 40)
+            run.return_value = Mock(returncode=1, stderr='private password')
+            with self.assertRaisesRegex(OSError, '^NetworkManager operation failed;'):
+                wifi._nmcli(['connection', 'show'])
+        with patch.object(wifi, 'network_link_available', return_value=False):
+            with self.assertRaisesRegex(OSError, 'Connect the terminal'):
+                wifi.connect_wifi({}, 'term', 'existing-link')
+        stopped = threading.Event()
+        stopped.set()
+        with patch.object(wifi, '_add_connection') as add:
+            with self.assertRaisesRegex(OSError, 'cancelled'):
+                wifi.connect_wifi({}, 'term', 'native', stopped)
+            add.assert_not_called()
+        with patch.object(wifi, '_add_connection'), patch.object(wifi, '_nmcli') as command:
+            command.side_effect = [OSError('join failed'), OSError('cleanup unavailable')]
+            with self.assertRaisesRegex(OSError, 'join failed'):
+                wifi.connect_wifi({}, 'term', 'native')
+            self.assertEqual(command.call_args.args[0][:3], ['connection', 'delete', 'uuid'])
+            command.side_effect = None
+            command.return_value = ''
+            result = wifi.connect_wifi({'ssid':'unit'}, 'term', 'native')
+            self.assertEqual(result['connection_mode'], 'native')
+            self.assertTrue(result['linux_profile'].startswith('ZmalaCall-term-'))
+            command.reset_mock()
+            wifi.forget_wifi(result, 'term')
+            self.assertEqual(command.call_count, 1, 'An already deleted UUID needs no second deletion')
+        gio = SimpleNamespace(DBusProxy=Mock(), BusType=SimpleNamespace(SYSTEM=1),
+                              DBusProxyFlags=SimpleNamespace(NONE=0), DBusCallFlags=SimpleNamespace(NONE=0))
+        gio.DBusProxy.new_for_bus_sync.side_effect = RuntimeError('private D-Bus diagnostic')
+        glib = SimpleNamespace(Variant=lambda signature, value: value, Error=RuntimeError)
+        with patch.dict(sys.modules, {'gi.repository':SimpleNamespace(Gio=gio, GLib=glib)}):
+            with self.assertRaisesRegex(OSError, '^Wi-Fi setup failed; check NetworkManager user permissions$'):
+                wifi._add_connection({'ssid':'unit', 'security':'nopass', 'hidden':False}, 'id', 'name')
+
     def flow(self):
         f = ProvisioningFlow()
         f.scanner = Mock()

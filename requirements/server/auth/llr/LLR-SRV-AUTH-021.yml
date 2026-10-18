@@ -1,0 +1,27 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Host and browser-origin checks
+level: 15.0
+links:
+- HLR-SRV-AUTH-013: eZZKb2Z8txA9h8r8PE8NhnyDHG_K8qTxv2WPWZqUdTQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  HTTP requests shall use an allowed server Host value. A supplied Origin shall match the request scheme and Host. Cookie-authenticated mutations shall require that matching Origin, including authentication actions.
+verification: |
+  Vary configured host, listener address, explicit hostname, origin, scheme and cookie mutation headers before route dispatch.

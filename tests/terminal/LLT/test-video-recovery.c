@@ -1,5 +1,5 @@
 // @test T-LLT-045
-// @requirements LLR-TERM-MEDIA-003, LLR-TERM-MEDIA-010
+// @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-008
 // @environment native-sdk
 // @plan Request 1080p from a deliberately absent camera and inject repeated codec recovery requests; assert failure retains the requested size and keyframe work coalesces until the recovery interval passes.
 // @pass Every named assertion must pass; record platform and native prerequisites with the result.

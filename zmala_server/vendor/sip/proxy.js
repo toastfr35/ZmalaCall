@@ -83,7 +83,7 @@ function forwardRequest(ctx, rq, callback) {
 }
 
 
-// @llr LLR-SRV-SIP-012
+// @llr LLR-SRV-CALL-010
 function onRequest(rq, route, remote) {
   // ACK has no response and needs no response/cancellation context.
   if (rq.method === 'ACK') return route(sip.copyMessage(rq), remote);

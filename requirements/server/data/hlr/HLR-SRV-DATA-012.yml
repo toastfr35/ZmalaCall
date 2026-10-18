@@ -1,0 +1,24 @@
+active: true
+area: Saved state
+derived: false
+header: |
+  Ordered saved state
+level: 24.0
+links:
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/performance.test.js
+  type: file
+- path: tests/server/HLT/persistence.test.js
+  type: file
+- path: tests/server/HLT/reliability.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall retain configuration and relevant histories across ordinary restarts. A successful mutation response shall wait for the state writes required by that operation.
+verification: |
+  Delay and fail individual writes while issuing mutations and reads. Restart and compare the committed state.

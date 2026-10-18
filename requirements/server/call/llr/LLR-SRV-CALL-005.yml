@@ -1,0 +1,25 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Terminal caller proof
+level: 52.0
+links:
+- HLR-SRV-CALL-001: rQ_uICMCozUEY5XBaymy7PTQjYtc6-mIrVU254nt5Ig=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/sip-identity.test.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Forwarding to a terminal shall replace any supplied caller proof with an HMAC derived from that terminal's device token. The proof shall bind the caller and call identity.
+verification: |
+  Forward calls to different terminals, recalculate proofs independently and verify that supplied proofs cannot pass through.

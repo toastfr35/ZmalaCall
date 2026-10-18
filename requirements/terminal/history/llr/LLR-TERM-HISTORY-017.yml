@@ -1,0 +1,43 @@
+active: true
+area: Call history and callback requests
+derived: false
+header: |
+  Notification acknowledgement
+level: 87.0
+links:
+- HLR-TERM-HISTORY-013: ZGQCIQhYH4LqhbQ02qnhpRh2v_QPnv8nCHSfJ1fj4iA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_call_orchestration.py
+  type: file
+- path: tests/terminal/LLT/test_linux_renderers.py
+  type: file
+- path: tests/terminal/LLT/test_missed_calls.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/icon_shapes.py
+  type: file
+- path: zmala_terminal/common/missed_calls.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: zmala_terminal/linux/icons.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Opening a contact confirmation or first connecting its incoming call shall
+  acknowledge existing counts for that contact. Navigation, ringing, failed answer and
+  decline shall not acknowledge them. Repeated connected events shall preserve
+  notifications received after connection.
+verification: |
+  Exercise acknowledgement and non-acknowledgement actions. Add a notification after
+  connection and deliver another connected event.

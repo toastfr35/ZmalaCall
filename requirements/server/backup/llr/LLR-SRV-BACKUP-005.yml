@@ -1,0 +1,21 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Validate before replacement
+level: 89.0
+links:
+- HLR-SRV-BACKUP-001: Dk6eZ8JEMDnUAF6tNqYKNJHXepgziAiQiGvKYdRBRm0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/backup-format.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Backup validation shall reject unsupported schema versions, unsafe or duplicate paths, prototype keys and inconsistent account, profile, group or history records. It shall check credentials, picture dimensions, referenced pictures and checksums before changing live data.
+verification: |
+  Mutate each structural boundary and verify validation fails with unchanged files and memory.

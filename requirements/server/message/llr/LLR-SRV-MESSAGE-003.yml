@@ -1,0 +1,21 @@
+active: true
+area: Phone text notifications
+derived: false
+header: |
+  Text content and identity bounds
+level: 64.0
+links:
+- HLR-SRV-MESSAGE-001: ZFIJ7wnAEffUosWXginl4cxes7Mc-BqmR6QMhPumwsw=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/messages.test.js
+  type: file
+- path: zmala_server/sip-messages.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Text notifications shall use nonempty text/plain or message/cpim content of at most 16384 JavaScript UTF-16 code units. The server shall validate message identity, sequence and hop count before forwarding.
+verification: |
+  Test content types, blank text, boundary lengths, invalid call IDs and sequences, and exhausted hop counts.

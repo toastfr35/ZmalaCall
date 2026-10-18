@@ -1,0 +1,21 @@
+active: true
+area: TV control
+derived: false
+header: |
+  TV selection and restoration
+level: 28.0
+links:
+- PROD008: ruef0Jq8r9sLWfpYz4_I7M-ICnYI7g0mnfgj_jZzLMU=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_tv_routing_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall reveal its view when required and restore the observed previous
+  TV state after use. It shall preserve TV audio settings.
+verification: |
+  Start from standby and another input. Exercise button wake, incoming calls and idle
+  return. Check restoration and unchanged TV volume.

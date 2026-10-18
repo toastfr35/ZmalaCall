@@ -1,0 +1,29 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  SMTP configuration and verification
+level: 74.0
+links:
+- HLR-SRV-CALLBACK-014: uZf3ONOKmHR0QXEUn1rlEgvMzbSXZM8fdrJmVPey3iA=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-editor.test.js
+  type: file
+- path: tests/server/LLT/credential-transitions.test.js
+  type: file
+- path: zmala_server/callback-emails.js
+  type: file
+- path: zmala_server/callback-mailer.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/web/admin-callbacks.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administration shall configure SMTP enablement, host, port, security, sender and optional credentials. Enabled delivery shall require a host and sender and complete configured credentials. Connection verification shall test transport and authentication without sending a message.
+verification: |
+  Test missing fields, invalid ports and transport modes. Verify the connection and assert zero message sends.

@@ -15,6 +15,9 @@ function passwordField(text, fresh = false) {
   return { input, label };
 }
 
+// @llr LLR-SRV-AUTH-014
+// @llr LLR-SRV-AUTH-018
+// @llr LLR-SRV-AUTH-019
 export async function signIn() {
   if (document.querySelector('.signin-card')) return;
   const status = await api('/api/auth/status');
@@ -67,6 +70,7 @@ export async function signIn() {
   setView(form);
 }
 
+// @llr LLR-SRV-AUTH-016
 export function authControls() {
   if (document.getElementById('admin-auth-controls')) return;
   const controls = el('div', null, 'admin-auth-controls');

@@ -1,7 +1,7 @@
 # @test T-LLT-033
-# @requirements LLR-TERM-TV-015
+# @requirements LLR-TERM-TV-031
 # @environment portable
-# @plan Mock Samsung network responses, identity changes, timeouts and encrypted transport; assert pinned-TV commands, token lifecycle, bounded retries and truthful failure results.
+# @plan Mock Samsung network responses, identity changes, timeouts and encrypted transport; assert pinned-TV commands, token lifecycle, bounded retries and truthful failure results. Run the pairing CLI with fake network/save boundaries and assert private pin persistence, bounded connect timeout and connection closure on success or failure.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Verify private authentication, certificate pins and restricted TV commands."""
@@ -18,6 +18,28 @@ from zmala_terminal.linux.samsung_tv import SamsungTV, connect, save_config
 
 
 class SamsungTVTests(unittest.TestCase):
+    def test_pairing_helper_persists_pin_only_after_connection_and_always_closes(self):
+        from tests.terminal.LLT.test_pi_install import module
+        helper = module('pair-samsung-tv')
+        with tempfile.TemporaryDirectory() as directory, patch.object(helper, 'connect') as connection, \
+                patch.object(helper, 'save_config') as save, patch('builtins.print') as output, \
+                patch.object(sys, 'argv', ['pair', '192.0.2.1', '--config', str(Path(directory)/'tv.json')]):
+            remote = Mock()
+            connection.return_value = (remote, {'certificate_sha256':'pin'})
+            self.assertEqual(helper.main(), 0)
+            connection.assert_called_once_with('192.0.2.1', timeout=30)
+            save.assert_called_once_with(Path(directory)/'tv.json', {'certificate_sha256':'pin'})
+            remote.close.assert_called_once_with(timeout=0)
+            remote.reset_mock(); save.side_effect = OSError('private failure data')
+            self.assertEqual(helper.main(), 1)
+            remote.close.assert_called_once_with(timeout=0)
+            self.assertNotIn('private failure data', str(output.call_args_list))
+            connection.side_effect = RuntimeError('offline')
+            remote.reset_mock(); save.reset_mock()
+            self.assertEqual(helper.main(), 1)
+            remote.close.assert_not_called()
+            save.assert_not_called()
+
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)

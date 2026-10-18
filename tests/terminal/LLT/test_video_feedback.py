@@ -1,5 +1,5 @@
 # @test T-LLT-039
-# @requirements LLR-TERM-MEDIA-013, LLR-TERM-MEDIA-014
+# @requirements LLR-TERM-VIDEO-011, LLR-TERM-VIDEO-012
 # @environment portable
 # @plan Inject native video dimensions, timestamps, stalls and call replacement; assert separate preview context, missing-video feedback and stale-call isolation.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

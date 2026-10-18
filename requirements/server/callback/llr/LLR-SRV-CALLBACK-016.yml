@@ -1,0 +1,31 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Cancellation and call completion
+level: 67.0
+links:
+- HLR-SRV-CALLBACK-012: vFmH4gPjiuWqXjcLt3ra4thtjuHcDm2q0NO50dmc1yo=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-editor.test.js
+  type: file
+- path: tests/server/LLT/callback-state.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+- path: zmala_server/web/admin-callbacks.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The requester or administrator shall be able to cancel a pending request. A connected call in either direction shall complete requests for the pair. Permission removal, account deletion or requester conversion shall cancel invalid requests; rename shall preserve valid requests.
+verification: |
+  Exercise both cancellation authorities, either call direction and account/group changes. Check pending and completed views.

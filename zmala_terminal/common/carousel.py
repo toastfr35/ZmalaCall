@@ -19,7 +19,7 @@ class CarouselLayout:
         offset = self.spacing*min(1, distance) + (self.spacing-self.portrait_size*.25)*max(0, distance-1)
         return offset if slot >= 0 else -offset
 
-    # @llr LLR-TERM-UI-003
+    # @llr LLR-TERM-NAV-003, LLR-TERM-UI-014
     @classmethod
     def fit(cls, width, height, contacts, portraits=3):
         """Fit the chosen layout, using three slots for smaller contact lists."""

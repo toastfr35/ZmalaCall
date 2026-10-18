@@ -1,5 +1,5 @@
 # @test T-LLT-040
-# @requirements LLR-TERM-MEDIA-003, LLR-TERM-MEDIA-004, LLR-TERM-MEDIA-006
+# @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-005, LLR-TERM-VIDEO-006
 # @environment portable
 # @plan Configure fake native media with each resolution and frame rate plus invalid/legacy values; assert supported size validation, proportional send budget, receive capacity and repair activation only after verified dimensions.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

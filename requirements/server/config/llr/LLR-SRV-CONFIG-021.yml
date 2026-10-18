@@ -1,0 +1,29 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Device-local compare-and-set
+level: 39.0
+links:
+- HLR-SRV-CONFIG-015: Qeg0QhgVf-TJOc4PKESBLgrxxD1VAR7LNyjK4LYM7dg=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: tests/server/LLT/store-views.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Local writes shall permit only language, automatic answer, framing, volume, portrait count and TV timeout fields. Each field shall match its supplied previous value or already equal the requested value. A conflict shall return 409 before mutation. An unchanged retry shall preserve the revision and still wait for persistence.
+verification: |
+  Interleave local and administrator writes. Test forbidden fields, mismatched expected keys, conflicts, unchanged retries and delayed persistence.

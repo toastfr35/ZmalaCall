@@ -35,7 +35,7 @@ async function adminRoutes(req, res, url, context) {
     }
     return sendResponse(...args);
   }
-  // @llr LLR-SRV-DIR-008
+  // @llr LLR-SRV-DIR-025, LLR-SRV-DIR-026
   /** @param {string} id */
   function idleAccount(id) {
     if ([...sipServer.dialogs.values()].some((d) => d.peers.some((p) => p.user === id))) {
@@ -48,7 +48,7 @@ async function adminRoutes(req, res, url, context) {
     sipServer.registrations.delete(id);
     delete terminalStatuses[id];
   }
-  // @llr LLR-SRV-UI-006
+  // @llr LLR-SRV-CONFIG-023
   /** @param {import('../types/contracts').JsonObject} update */
   function version(update) {
     if (
@@ -179,6 +179,7 @@ async function adminRoutes(req, res, url, context) {
   }
   if (url.pathname === '/api/users' && req.method === 'POST') {
     const update = await readJson(req, 10000);
+    version(update);
     const id = store.createAccount(update);
     await writeBootstrap();
     return send(res, 201, { ok: true, id });

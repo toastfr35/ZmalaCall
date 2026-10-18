@@ -1,0 +1,19 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Phone and desktop administration
+level: 28.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/browser-admin.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall provide an English administration interface usable on phone and desktop screens. It shall present account, terminal, callback and operational information in separate pages.
+verification: |
+  Use the administration interface at phone and desktop sizes. Check navigation, labels, scrolling, touch controls and keyboard focus.

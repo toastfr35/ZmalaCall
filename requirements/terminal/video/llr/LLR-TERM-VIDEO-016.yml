@@ -1,0 +1,30 @@
+active: true
+area: Video
+derived: false
+header: |
+  Wide view on failure
+level: 83.0
+links:
+- HLR-TERM-VIDEO-002: ilNONDH5vone7Toahq_M3aw-xudbyAigWd9tHX75S84=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-auto-framing.c
+  type: file
+- path: tests/terminal/LLT/test_auto_framing.py
+  type: file
+- path: tests/terminal/LLT/test_framing_worker.py
+  type: file
+- path: zmala_terminal/linux/auto_framing.py
+  type: file
+- path: zmala_terminal/linux/media/video/auto-framing.c
+  type: file
+reviewed: null
+scope: Optional
+text: |
+  A new call, disabled framing or failed detector shall use the wide view. Eight
+  seconds without native crop control updates shall restore that view. Results from
+  stale samples or earlier calls shall not change the current crop.
+verification: |
+  Stop updates, replace call sessions and deliver old results. Check the watchdog
+  boundary and rejection of stale work.

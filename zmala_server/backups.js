@@ -23,7 +23,7 @@ class ServerBackups {
     this.restoring = false;
     this.requests = 0;
   }
-  // @llr LLR-SRV-DATA-008
+  // @llr LLR-SRV-BACKUP-003
   async snapshot() {
     // Serialize the complete model before yielding. Pictures have immutable names.
     const files = new Map([
@@ -46,9 +46,10 @@ class ServerBackups {
     const file = path.join(this.store.dir, 'restore-result.json');
     return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : { result: 'none' };
   }
-  // @llr LLR-SRV-DATA-010
+
   /** @param {Awaited<ReturnType<typeof import('./backup-format').decodeBackup>>} backup
    * @param {number} expectedVersion */
+  // @llr LLR-SRV-BACKUP-006
   async stage(backup, expectedVersion) {
     if (!this.restart) throw httpError(503, 'Restore requires the supervised server service.');
     if (expectedVersion !== this.store.value.configuration_version)
@@ -64,12 +65,14 @@ class ServerBackups {
         409,
         'Wait for calls, remote commands and other server operations to finish, then retry.',
       );
+    // @llr LLR-SRV-BACKUP-007
     this.restoring = true;
     this.sip.maintenance = true;
     this.callbacks.paused = true;
     try {
       await this.flush();
       const previous = await this.snapshot();
+      // @llr LLR-SRV-BACKUP-010
       const version =
         Math.max(this.store.value.configuration_version, backup.state.configuration_version) + 1;
       if (!Number.isSafeInteger(version)) throw Error('Configuration revision is too large.');
@@ -80,6 +83,7 @@ class ServerBackups {
         backup.state[key] = this.store.value[key];
       backup.files.set('server.json', Buffer.from(JSON.stringify(backup.state)));
       const jobs = parse(backup.files.get('console-jobs.json') || '[]');
+      // @llr LLR-SRV-BACKUP-011
       for (const job of jobs) {
         if (['queued', 'running'].includes(job.status)) {
           job.status = job.status === 'queued' ? 'cancelled' : 'lost';

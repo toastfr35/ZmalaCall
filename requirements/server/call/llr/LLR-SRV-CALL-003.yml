@@ -1,0 +1,25 @@
+active: true
+area: Call control
+derived: false
+header: |
+  SIP Digest authentication
+level: 50.0
+links:
+- HLR-SRV-CALL-001: rQ_uICMCozUEY5XBaymy7PTQjYtc6-mIrVU254nt5Ig=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/store-auth.test.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  SIP Digest shall verify account, realm, method, URI, qop=auth and response using a signed nonce valid for at most five minutes. Reused or decreasing nonce counts for the same user and client nonce shall be rejected.
+verification: |
+  Use valid and forged challenges, altered targets, expiry and repeated counts. Confirm failed authentication does not consume a valid count.

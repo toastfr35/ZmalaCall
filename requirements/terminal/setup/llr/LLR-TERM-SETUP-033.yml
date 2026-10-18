@@ -1,0 +1,33 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Reset scope
+level: 17.0
+links:
+- HLR-TERM-SETUP-021: IlCJKycBgVFTVWZ1TQFaWKxNiwjy7VbkK7Sdw1C34r0=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_enrollment_lifecycle.py
+  type: file
+- path: tests/terminal/LLT/test_provisioning.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/linux/wifi.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Confirmed reset shall stop media and maintenance work and invalidate pending
+  responses. It shall remove this profile’s enrollment, cache, notifications and
+  setup-test results. It shall preserve other profiles, server accounts and the
+  Bluetooth bond. Setup shall require the remote test again.
+verification: |
+  Reset a populated profile beside another profile. Deliver late results and check
+  deletion boundaries and repeated remote verification.

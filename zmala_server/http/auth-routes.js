@@ -41,7 +41,7 @@ async function authRoutes(req, res, url, context, identity) {
     throw httpError(401, 'Incorrect admin password.');
   if (!setup && passwordHash !== store.adminPassword.hash)
     throw httpError(401, 'Password changed. Sign in again.');
-  // @llr LLR-SRV-AUTH-004
+  // @llr LLR-SRV-AUTH-016
   if (setup || change) {
     // Hold the guard across asynchronous hashing and persistence: two initial
     // setup requests must not race to replace one another's password.
@@ -55,6 +55,7 @@ async function authRoutes(req, res, url, context, identity) {
       adminSessions.changing = false;
     }
   }
+  // @llr LLR-SRV-AUTH-019
   const token = adminSessions.create();
   adminSessions.setCookie(res, token, identity.secure);
   // CLI tools can keep the same short-lived session as a bearer token. The UI

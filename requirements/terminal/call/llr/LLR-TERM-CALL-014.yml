@@ -1,0 +1,34 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Connected-call controls
+level: 64.0
+links:
+- HLR-TERM-CALL-009: fXQS1fCYPbcw7cqC7rLu_dz3aqdZd2rXOMWKXRq34m0=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_call_orchestration.py
+  type: file
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Red shall end the connected call. Left and right shall not change the selected
+  contact while that call is active. The call page shall show received video and a
+  bottom-right local preview.
+verification: |
+  Send each button during a connected call. Check hangup, unchanged contact selection
+  and both video regions.

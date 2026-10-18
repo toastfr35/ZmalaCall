@@ -1,0 +1,23 @@
+active: true
+area: Contact selection and navigation
+derived: false
+header: |
+  Permitted contact selection
+level: 14.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/contact_presence_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall let the user browse permitted contacts by name and portrait.
+  Directory changes shall preserve the current selection when that contact remains
+  available.
+verification: |
+  Browse short and long lists. Update and remove contacts while observing selection
+  and permissions.

@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-SRV-MEDIA
-      title: Media relay — LLR
+      title: Audio and video relay — LLR
   publish:
   - area
   - scope

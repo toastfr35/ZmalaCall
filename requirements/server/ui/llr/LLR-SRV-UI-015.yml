@@ -1,0 +1,35 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Explicit account and group edits
+level: 100.0
+links:
+- HLR-SRV-UI-011: LPHJUJznAKObB5O3At_q4lceri2jKB5KEIO0WY4T5CQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/account-workflows.test.js
+  type: file
+- path: tests/server/LLT/admin-view.test.js
+  type: file
+- path: zmala_server/web/admin-accounts.js
+  type: file
+- path: zmala_server/web/admin-groups.js
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin.html
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Account and group editors shall preserve unsaved input until acceptance or cancellation. Destructive actions shall request confirmation. Server errors shall appear in the active editor without closing its draft.
+verification: |
+  Create, edit, cancel and delete with accepted and rejected responses. Check fields, confirmation and editor-local errors.

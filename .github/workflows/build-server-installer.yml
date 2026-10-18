@@ -6,10 +6,11 @@ on:
     branches: [main]
     paths:
       - 'build_tools/server_installer/**'
-      - 'build_tools/windows_installer/backend.py'
+      - 'build_tools/windows_installer/ssh_transport.py'
       - 'build_tools/windows_installer/remote_probe.py'
       - 'build_tools/linux/**'
-      - 'tests/server/LLT/test_server_installer.py'
+      - 'tests/adhoc/server_installer/**'
+      - 'tests/support/**'
       - 'zmala_server/**'
       - 'docs/**'
       - 'build_tools/assets/**'
@@ -29,7 +30,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r build_tools/windows_installer/requirements.txt
-      - run: python -m unittest discover -s tests/server/LLT -t . -p test_server_installer.py
+      - run: python -m unittest discover -s tests/adhoc/server_installer -t . -p "test_*.py"
       - run: python build_tools/server_installer/build.py
       - name: Check executable modes
         shell: pwsh

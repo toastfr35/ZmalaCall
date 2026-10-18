@@ -1,0 +1,29 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Account rename and retirement
+level: 23.0
+links:
+- HLR-SRV-DIR-018: 3FwHcV_bZoMa3n3BHEtxN-ucUFWdkDK29qi_hycUoA4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/store-auth.test.js
+  type: file
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Rename shall preserve group membership and valid callback and command ownership. Deletion or terminal-to-phone conversion shall remove obsolete enrollment and reconcile pending device work. Obsolete registrations and status shall be discarded after credential changes.
+verification: |
+  Rename, convert, delete and recreate accounts. Check dependent records and that reused usernames cannot claim retired device work.

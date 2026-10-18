@@ -74,7 +74,7 @@ class SettingsControl:
         else:
             self._press_action(button)
 
-    # @llr LLR-TERM-SETUP-016, LLR-TERM-CONFIG-004
+    # @llr LLR-TERM-SETUP-032, LLR-TERM-CONFIG-019
     def settings_button(self, button):
         draft = self.settings_draft
         if draft.busy:
@@ -127,7 +127,7 @@ class SettingsControl:
             self.messages.put(('local-settings', (generation, draft, success, config)))
         threading.Thread(target=worker, daemon=True).start()
 
-    # @llr LLR-TERM-CONFIG-007
+    # @llr LLR-TERM-CONFIG-022
     def local_settings_result(self, generation, draft, success, config):
         if generation != self.generation or self.closed:
             return
@@ -138,5 +138,7 @@ class SettingsControl:
         if success:
             draft.editing = False
         elif config:
-            draft.expected = {key: config[key] for key in draft.expected}
+            # Older valid configurations can omit optional settings. Rebase
+            # against the same defaults used when the editor was opened.
+            draft.expected = draft.fields(config, draft.value(config, draft.key))
         self.render()

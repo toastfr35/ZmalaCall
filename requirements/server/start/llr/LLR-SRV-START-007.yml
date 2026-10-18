@@ -1,0 +1,29 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Advertised IPv4 address
+level: 4.0
+links:
+- HLR-SRV-START-001: tlqAlEiBhnE4rUwFiA26CSP98TW2Ryi4UrcbTLNiNFo=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: tests/server/LLT/store-views.test.js
+  type: file
+- path: tests/server/LLT/test_server_platform.py
+  type: file
+- path: zmala_server/defaults.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An explicit VIDEOCALL_HOST shall be an IPv4 address. A changed address shall advance and save the configuration revision. Initial automatic selection shall prefer a private nonvirtual IPv4 address, then another noninternal IPv4 address, then loopback. The service launcher shall prefer active eth0, then wlan0, then another global IPv4 address. It shall fail until an address exists.
+verification: |
+  Supply several interface lists and valid or invalid overrides. Check unchanged overrides do not create revisions.

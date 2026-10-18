@@ -1,0 +1,25 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Boot presentation
+level: 2.0
+links:
+- HLR-TERM-START-001: 5v-Cf82XELFAE-WnzQ0nNxqE2DlnDv6PpyBL7uYcwJo=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/zmala.plymouth
+  type: file
+- path: build_tools/linux/zmala.script
+  type: file
+- path: tests/terminal/LLT/test_linux_lifecycle.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  During supported Plymouth boot stages, the terminal shall show the Zmala family-
+  word-cloud artwork. A recovery console shall remain available.
+verification: |
+  Check theme configuration and inspect a Pi boot. Firmware frames before Plymouth are
+  outside this check.

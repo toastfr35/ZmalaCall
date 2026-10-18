@@ -1,5 +1,5 @@
 // @test S-HLT-005
-// @requirements HLR-SRV-CONFIG-001
+// @requirements HLR-SRV-CONFIG-014
 // @environment portable
 // @plan Change auto-framing through authenticated HTTP and fetch terminal configuration; assert default-off behavior, strict validation and persisted device delivery.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

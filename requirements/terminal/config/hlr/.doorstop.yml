@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-TERM-CONFIG
-      title: Local settings and synchronization — HLR
+      title: Configuration — HLR
   publish:
   - area
   - scope

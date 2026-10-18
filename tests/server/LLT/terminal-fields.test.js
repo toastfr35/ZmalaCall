@@ -1,5 +1,5 @@
 // @test S-LLT-010
-// @requirements LLR-SRV-UI-006, LLR-SRV-UI-007, LLR-SRV-UI-009, LLR-SRV-CONFIG-003, LLR-SRV-CONFIG-004, LLR-SRV-CONFIG-005, LLR-SRV-CONFIG-006, LLR-SRV-CONFIG-009
+// @requirements LLR-SRV-UI-016, LLR-SRV-UI-017, LLR-SRV-UI-019
 // @environment portable
 // @plan Render terminal field definitions with DOM/API doubles; assert controls attach to the intended sections, frame-rate choices are present and drafts/download errors retain ownership.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
@@ -7,9 +7,8 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
+const vm = require('../../../build_tools/coverage-js.cjs');
 const { defaultState } = require('../../../zmala_server/defaults');
 
 // A tree fixture checks that controls actually join the rendered form, not
@@ -48,8 +47,8 @@ test('every terminal setting is attached to its visible section, including frame
     el: (tag, text) => new Element(tag, text),
     HTMLInputElement: Element,
   };
-  const source = fs
-    .readFileSync(path.join(__dirname, '../../../zmala_server/web/admin-terminalfields.js'), 'utf8')
+  const source = vm
+    .source(path.join(__dirname, '../../../zmala_server/web/admin-terminalfields.js'), 'utf8')
     .replace(/^import[^;]+;\s*/gm, '')
     .replace(/^export /gm, '');
   vm.runInNewContext(source, context);
@@ -93,8 +92,8 @@ test('terminal drafts retain their original revision and setup downloads propaga
     },
   };
   for (const name of ['terminalfields', 'terminals']) {
-    const source = fs
-      .readFileSync(path.join(__dirname, `../../../zmala_server/web/admin-${name}.js`), 'utf8')
+    const source = vm
+      .source(path.join(__dirname, `../../../zmala_server/web/admin-${name}.js`), 'utf8')
       .replace(/^import[^;]+;\s*/gm, '')
       .replace(/^export /gm, '');
     vm.runInNewContext(source, context);

@@ -1,0 +1,622 @@
+{
+  "description": "Terminal-only rewrite from implementation. Successors preserve the stated behavior; links do not assert test execution.",
+  "replaced": {
+    "HLR-TERM-CALL-001": [
+      "HLR-TERM-CALL-009",
+      "HLR-TERM-CALL-010",
+      "HLR-TERM-NAV-002"
+    ],
+    "HLR-TERM-CONFIG-001": [
+      "HLR-TERM-CONFIG-016",
+      "HLR-TERM-CONFIG-017"
+    ],
+    "HLR-TERM-CONFIG-002": [
+      "HLR-TERM-COM-001",
+      "HLR-TERM-COM-002",
+      "HLR-TERM-CONFIG-017"
+    ],
+    "HLR-TERM-HISTORY-001": [
+      "HLR-TERM-HISTORY-013"
+    ],
+    "HLR-TERM-HISTORY-002": [
+      "HLR-TERM-HISTORY-014"
+    ],
+    "HLR-TERM-MAINT-001": [
+      "HLR-TERM-MAINT-011"
+    ],
+    "HLR-TERM-MAINT-002": [
+      "HLR-TERM-NET-002",
+      "HLR-TERM-MAINT-012"
+    ],
+    "HLR-TERM-MEDIA-001": [
+      "HLR-TERM-AUDIO-001",
+      "HLR-TERM-AUDIO-002",
+      "HLR-TERM-VIDEO-001",
+      "HLR-TERM-VIDEO-003",
+      "HLR-TERM-POWER-008"
+    ],
+    "HLR-TERM-MEDIA-002": [
+      "HLR-TERM-VIDEO-002"
+    ],
+    "HLR-TERM-POWER-001": [
+      "HLR-TERM-POWER-008",
+      "HLR-TERM-POWER-009"
+    ],
+    "HLR-TERM-REMOTE-001": [
+      "HLR-TERM-REMOTE-011",
+      "HLR-TERM-REMOTE-012",
+      "HLR-TERM-AUDIO-002"
+    ],
+    "HLR-TERM-SETUP-001": [
+      "HLR-TERM-SETUP-019"
+    ],
+    "HLR-TERM-SETUP-002": [
+      "HLR-TERM-SETUP-020",
+      "HLR-TERM-NET-001"
+    ],
+    "HLR-TERM-SETUP-003": [
+      "HLR-TERM-SETUP-021"
+    ],
+    "HLR-TERM-SYS-001": [
+      "HLR-TERM-START-001",
+      "HLR-TERM-START-002",
+      "HLR-TERM-UI-012",
+      "HLR-TERM-NET-007"
+    ],
+    "HLR-TERM-SYS-002": [
+      "HLR-TERM-START-002",
+      "HLR-TERM-UI-012",
+      "HLR-TERM-VIDEO-003",
+      "HLR-TERM-MAINT-012"
+    ],
+    "HLR-TERM-TV-001": [
+      "HLR-TERM-TV-017"
+    ],
+    "HLR-TERM-TV-002": [
+      "HLR-TERM-TV-018"
+    ],
+    "HLR-TERM-UI-001": [
+      "HLR-TERM-NAV-001",
+      "HLR-TERM-NAV-002",
+      "HLR-TERM-UI-012"
+    ],
+    "HLR-TERM-UI-002": [
+      "HLR-TERM-UI-013",
+      "HLR-TERM-UI-012"
+    ],
+    "LLR-TERM-CALL-002": [
+      "LLR-TERM-NAV-006"
+    ],
+    "LLR-TERM-CALL-003": [
+      "LLR-TERM-NAV-007"
+    ],
+    "LLR-TERM-CALL-004": [
+      "LLR-TERM-CALL-011"
+    ],
+    "LLR-TERM-CALL-005": [
+      "LLR-TERM-CALL-012"
+    ],
+    "LLR-TERM-CALL-006": [
+      "LLR-TERM-CALL-013"
+    ],
+    "LLR-TERM-CALL-007": [
+      "LLR-TERM-CALL-014"
+    ],
+    "LLR-TERM-CALL-008": [
+      "LLR-TERM-START-006"
+    ],
+    "LLR-TERM-CONFIG-003": [
+      "LLR-TERM-CONFIG-018"
+    ],
+    "LLR-TERM-CONFIG-004": [
+      "LLR-TERM-CONFIG-019"
+    ],
+    "LLR-TERM-CONFIG-005": [
+      "LLR-TERM-CONFIG-020"
+    ],
+    "LLR-TERM-CONFIG-006": [
+      "LLR-TERM-CONFIG-021"
+    ],
+    "LLR-TERM-CONFIG-007": [
+      "LLR-TERM-CONFIG-022"
+    ],
+    "LLR-TERM-CONFIG-008": [
+      "LLR-TERM-COM-003"
+    ],
+    "LLR-TERM-CONFIG-009": [
+      "LLR-TERM-COM-004"
+    ],
+    "LLR-TERM-CONFIG-010": [
+      "LLR-TERM-COM-005"
+    ],
+    "LLR-TERM-CONFIG-011": [
+      "LLR-TERM-COM-006"
+    ],
+    "LLR-TERM-CONFIG-012": [
+      "LLR-TERM-COM-007"
+    ],
+    "LLR-TERM-CONFIG-013": [
+      "LLR-TERM-CONFIG-023"
+    ],
+    "LLR-TERM-CONFIG-014": [
+      "LLR-TERM-CONFIG-024"
+    ],
+    "LLR-TERM-CONFIG-015": [
+      "LLR-TERM-COM-008"
+    ],
+    "LLR-TERM-HISTORY-003": [
+      "LLR-TERM-HISTORY-015"
+    ],
+    "LLR-TERM-HISTORY-004": [
+      "LLR-TERM-HISTORY-016"
+    ],
+    "LLR-TERM-HISTORY-005": [
+      "LLR-TERM-HISTORY-017"
+    ],
+    "LLR-TERM-HISTORY-006": [
+      "LLR-TERM-HISTORY-018"
+    ],
+    "LLR-TERM-HISTORY-007": [
+      "LLR-TERM-HISTORY-019"
+    ],
+    "LLR-TERM-HISTORY-008": [
+      "LLR-TERM-HISTORY-020"
+    ],
+    "LLR-TERM-HISTORY-009": [
+      "LLR-TERM-HISTORY-021"
+    ],
+    "LLR-TERM-HISTORY-010": [
+      "LLR-TERM-HISTORY-022"
+    ],
+    "LLR-TERM-HISTORY-011": [
+      "LLR-TERM-HISTORY-023"
+    ],
+    "LLR-TERM-HISTORY-012": [
+      "LLR-TERM-HISTORY-024"
+    ],
+    "LLR-TERM-MAINT-003": [
+      "LLR-TERM-MAINT-014"
+    ],
+    "LLR-TERM-MAINT-004": [
+      "LLR-TERM-MAINT-015"
+    ],
+    "LLR-TERM-MAINT-005": [
+      "LLR-TERM-MAINT-016"
+    ],
+    "LLR-TERM-MAINT-006": [
+      "LLR-TERM-MAINT-017"
+    ],
+    "LLR-TERM-MAINT-007": [
+      "LLR-TERM-NET-005"
+    ],
+    "LLR-TERM-MAINT-008": [
+      "LLR-TERM-MAINT-018"
+    ],
+    "LLR-TERM-MAINT-009": [
+      "LLR-TERM-MAINT-019"
+    ],
+    "LLR-TERM-MAINT-010": [
+      "LLR-TERM-MAINT-020"
+    ],
+    "LLR-TERM-MEDIA-003": [
+      "LLR-TERM-VIDEO-004"
+    ],
+    "LLR-TERM-MEDIA-004": [
+      "LLR-TERM-VIDEO-005"
+    ],
+    "LLR-TERM-MEDIA-005": [
+      "LLR-TERM-POWER-010"
+    ],
+    "LLR-TERM-MEDIA-006": [
+      "LLR-TERM-VIDEO-006"
+    ],
+    "LLR-TERM-MEDIA-007": [
+      "LLR-TERM-AUDIO-003"
+    ],
+    "LLR-TERM-MEDIA-008": [
+      "LLR-TERM-AUDIO-004"
+    ],
+    "LLR-TERM-MEDIA-009": [
+      "LLR-TERM-VIDEO-007"
+    ],
+    "LLR-TERM-MEDIA-010": [
+      "LLR-TERM-VIDEO-008",
+      "LLR-TERM-VIDEO-018"
+    ],
+    "LLR-TERM-MEDIA-011": [
+      "LLR-TERM-VIDEO-009"
+    ],
+    "LLR-TERM-MEDIA-012": [
+      "LLR-TERM-VIDEO-010"
+    ],
+    "LLR-TERM-MEDIA-013": [
+      "LLR-TERM-VIDEO-011"
+    ],
+    "LLR-TERM-MEDIA-014": [
+      "LLR-TERM-VIDEO-012"
+    ],
+    "LLR-TERM-MEDIA-015": [
+      "LLR-TERM-VIDEO-013"
+    ],
+    "LLR-TERM-MEDIA-016": [
+      "LLR-TERM-VIDEO-014"
+    ],
+    "LLR-TERM-MEDIA-017": [
+      "LLR-TERM-VIDEO-015"
+    ],
+    "LLR-TERM-MEDIA-018": [
+      "LLR-TERM-VIDEO-016"
+    ],
+    "LLR-TERM-MEDIA-019": [
+      "LLR-TERM-VIDEO-017"
+    ],
+    "LLR-TERM-MEDIA-020": [
+      "LLR-TERM-AUDIO-005"
+    ],
+    "LLR-TERM-POWER-002": [
+      "LLR-TERM-POWER-011"
+    ],
+    "LLR-TERM-POWER-003": [
+      "LLR-TERM-POWER-012"
+    ],
+    "LLR-TERM-POWER-004": [
+      "LLR-TERM-POWER-013",
+      "LLR-TERM-POWER-014"
+    ],
+    "LLR-TERM-POWER-005": [
+      "LLR-TERM-POWER-015"
+    ],
+    "LLR-TERM-POWER-006": [
+      "LLR-TERM-POWER-016"
+    ],
+    "LLR-TERM-POWER-007": [
+      "LLR-TERM-POWER-017"
+    ],
+    "LLR-TERM-REMOTE-002": [
+      "LLR-TERM-REMOTE-013"
+    ],
+    "LLR-TERM-REMOTE-003": [
+      "LLR-TERM-REMOTE-014"
+    ],
+    "LLR-TERM-REMOTE-004": [
+      "LLR-TERM-REMOTE-015"
+    ],
+    "LLR-TERM-REMOTE-005": [
+      "LLR-TERM-REMOTE-016"
+    ],
+    "LLR-TERM-REMOTE-006": [
+      "LLR-TERM-AUDIO-006",
+      "LLR-TERM-AUDIO-007"
+    ],
+    "LLR-TERM-REMOTE-007": [
+      "LLR-TERM-AUDIO-008"
+    ],
+    "LLR-TERM-REMOTE-008": [
+      "LLR-TERM-REMOTE-017",
+      "LLR-TERM-REMOTE-018"
+    ],
+    "LLR-TERM-REMOTE-009": [
+      "LLR-TERM-REMOTE-019"
+    ],
+    "LLR-TERM-REMOTE-010": [
+      "LLR-TERM-REMOTE-020"
+    ],
+    "LLR-TERM-SETUP-004": [
+      "LLR-TERM-SETUP-022"
+    ],
+    "LLR-TERM-SETUP-005": [
+      "LLR-TERM-SETUP-023"
+    ],
+    "LLR-TERM-SETUP-006": [
+      "LLR-TERM-SETUP-024"
+    ],
+    "LLR-TERM-SETUP-007": [
+      "LLR-TERM-SETUP-025"
+    ],
+    "LLR-TERM-SETUP-008": [
+      "LLR-TERM-SETUP-026"
+    ],
+    "LLR-TERM-SETUP-009": [
+      "LLR-TERM-SETUP-027"
+    ],
+    "LLR-TERM-SETUP-010": [
+      "LLR-TERM-SETUP-028"
+    ],
+    "LLR-TERM-SETUP-011": [
+      "LLR-TERM-NET-003"
+    ],
+    "LLR-TERM-SETUP-012": [
+      "LLR-TERM-SETUP-029"
+    ],
+    "LLR-TERM-SETUP-013": [
+      "LLR-TERM-NET-004"
+    ],
+    "LLR-TERM-SETUP-014": [
+      "LLR-TERM-SETUP-030"
+    ],
+    "LLR-TERM-SETUP-015": [
+      "LLR-TERM-SETUP-031"
+    ],
+    "LLR-TERM-SETUP-016": [
+      "LLR-TERM-SETUP-032"
+    ],
+    "LLR-TERM-SETUP-017": [
+      "LLR-TERM-SETUP-033",
+      "LLR-TERM-SETUP-034"
+    ],
+    "LLR-TERM-SETUP-018": [
+      "LLR-TERM-SETUP-035"
+    ],
+    "LLR-TERM-SYS-003": [
+      "LLR-TERM-START-003"
+    ],
+    "LLR-TERM-SYS-004": [
+      "LLR-TERM-UI-018"
+    ],
+    "LLR-TERM-SYS-005": [
+      "LLR-TERM-UI-019"
+    ],
+    "LLR-TERM-SYS-006": [
+      "LLR-TERM-START-004"
+    ],
+    "LLR-TERM-SYS-007": [
+      "LLR-TERM-START-005"
+    ],
+    "LLR-TERM-SYS-008": [
+      "LLR-TERM-UI-020"
+    ],
+    "LLR-TERM-SYS-009": [
+      "LLR-TERM-UI-021"
+    ],
+    "LLR-TERM-SYS-010": [
+      "LLR-TERM-UI-022"
+    ],
+    "LLR-TERM-SYS-011": [
+      "LLR-TERM-START-007"
+    ],
+    "LLR-TERM-SYS-012": [
+      "LLR-TERM-NET-006"
+    ],
+    "LLR-TERM-SYS-013": [
+      "LLR-TERM-MAINT-013"
+    ],
+    "LLR-TERM-TV-003": [
+      "LLR-TERM-TV-019"
+    ],
+    "LLR-TERM-TV-004": [
+      "LLR-TERM-TV-020"
+    ],
+    "LLR-TERM-TV-005": [
+      "LLR-TERM-TV-021"
+    ],
+    "LLR-TERM-TV-006": [
+      "LLR-TERM-TV-022"
+    ],
+    "LLR-TERM-TV-007": [
+      "LLR-TERM-TV-023"
+    ],
+    "LLR-TERM-TV-008": [
+      "LLR-TERM-TV-024"
+    ],
+    "LLR-TERM-TV-009": [
+      "LLR-TERM-TV-025"
+    ],
+    "LLR-TERM-TV-010": [
+      "LLR-TERM-TV-026"
+    ],
+    "LLR-TERM-TV-011": [
+      "LLR-TERM-TV-027"
+    ],
+    "LLR-TERM-TV-012": [
+      "LLR-TERM-TV-028"
+    ],
+    "LLR-TERM-TV-013": [
+      "LLR-TERM-TV-029"
+    ],
+    "LLR-TERM-TV-014": [
+      "LLR-TERM-TV-030"
+    ],
+    "LLR-TERM-TV-015": [
+      "LLR-TERM-TV-031"
+    ],
+    "LLR-TERM-TV-016": [
+      "LLR-TERM-TV-032"
+    ],
+    "LLR-TERM-UI-003": [
+      "LLR-TERM-NAV-003",
+      "LLR-TERM-UI-014"
+    ],
+    "LLR-TERM-UI-004": [
+      "LLR-TERM-UI-015"
+    ],
+    "LLR-TERM-UI-005": [
+      "LLR-TERM-NAV-004"
+    ],
+    "LLR-TERM-UI-006": [
+      "LLR-TERM-NAV-005"
+    ],
+    "LLR-TERM-UI-007": [
+      "LLR-TERM-UI-016"
+    ],
+    "LLR-TERM-UI-008": [
+      "LLR-TERM-UI-023"
+    ],
+    "LLR-TERM-UI-009": [
+      "LLR-TERM-UI-024"
+    ],
+    "LLR-TERM-UI-010": [
+      "LLR-TERM-UI-017"
+    ],
+    "LLR-TERM-UI-011": [
+      "LLR-TERM-UI-025"
+    ]
+  },
+  "keys": {
+    "start": "HLR-TERM-START-001",
+    "stop": "HLR-TERM-START-002",
+    "devicesetup": "HLR-TERM-SETUP-019",
+    "enroll": "HLR-TERM-SETUP-020",
+    "reset": "HLR-TERM-SETUP-021",
+    "network": "HLR-TERM-NET-001",
+    "netstate": "HLR-TERM-NET-002",
+    "exchange": "HLR-TERM-COM-001",
+    "sync": "HLR-TERM-COM-002",
+    "edit": "HLR-TERM-CONFIG-016",
+    "apply": "HLR-TERM-CONFIG-017",
+    "input": "HLR-TERM-REMOTE-011",
+    "remotehealth": "HLR-TERM-REMOTE-012",
+    "contacts": "HLR-TERM-NAV-001",
+    "navigation": "HLR-TERM-NAV-002",
+    "presentation": "HLR-TERM-UI-012",
+    "language": "HLR-TERM-UI-013",
+    "calls": "HLR-TERM-CALL-009",
+    "callaccess": "HLR-TERM-CALL-010",
+    "sound": "HLR-TERM-AUDIO-001",
+    "level": "HLR-TERM-AUDIO-002",
+    "video": "HLR-TERM-VIDEO-001",
+    "framing": "HLR-TERM-VIDEO-002",
+    "mediawork": "HLR-TERM-VIDEO-003",
+    "unread": "HLR-TERM-HISTORY-013",
+    "callback": "HLR-TERM-HISTORY-014",
+    "tvtest": "HLR-TERM-TV-017",
+    "tvuse": "HLR-TERM-TV-018",
+    "peripherals": "HLR-TERM-POWER-008",
+    "usb": "HLR-TERM-POWER-009",
+    "jobs": "HLR-TERM-MAINT-011",
+    "diagnostics": "HLR-TERM-MAINT-012",
+    "service": "LLR-TERM-START-003",
+    "bootart": "LLR-TERM-START-004",
+    "process": "LLR-TERM-START-005",
+    "callhandles": "LLR-TERM-START-006",
+    "savedstate": "LLR-TERM-START-007",
+    "cameragate": "LLR-TERM-SETUP-022",
+    "pairhelp": "LLR-TERM-SETUP-023",
+    "pairgate": "LLR-TERM-SETUP-024",
+    "buttontest": "LLR-TERM-SETUP-025",
+    "bondproof": "LLR-TERM-SETUP-026",
+    "qrcapture": "LLR-TERM-SETUP-027",
+    "qrvalidate": "LLR-TERM-SETUP-028",
+    "joinstage": "LLR-TERM-SETUP-029",
+    "identity": "LLR-TERM-SETUP-030",
+    "enrollpath": "LLR-TERM-SETUP-031",
+    "resetconfirm": "LLR-TERM-SETUP-032",
+    "resetdata": "LLR-TERM-SETUP-033",
+    "resetlanguage": "LLR-TERM-SETUP-034",
+    "resetwifi": "LLR-TERM-SETUP-035",
+    "wificodes": "LLR-TERM-NET-003",
+    "wifiprofile": "LLR-TERM-NET-004",
+    "networkstate": "LLR-TERM-NET-005",
+    "requestauth": "LLR-TERM-COM-003",
+    "envelope": "LLR-TERM-COM-004",
+    "contactschema": "LLR-TERM-COM-005",
+    "offline": "LLR-TERM-COM-006",
+    "poll": "LLR-TERM-COM-007",
+    "generation": "LLR-TERM-COM-008",
+    "settingsaccess": "LLR-TERM-CONFIG-018",
+    "settingsedit": "LLR-TERM-CONFIG-019",
+    "settingsidentity": "LLR-TERM-CONFIG-020",
+    "settingchoices": "LLR-TERM-CONFIG-021",
+    "settingscommit": "LLR-TERM-CONFIG-022",
+    "idleapply": "LLR-TERM-CONFIG-023",
+    "liveapply": "LLR-TERM-CONFIG-024",
+    "buttonnames": "LLR-TERM-REMOTE-013",
+    "hid": "LLR-TERM-REMOTE-014",
+    "inputrelease": "LLR-TERM-REMOTE-015",
+    "gesture": "LLR-TERM-REMOTE-016",
+    "remotehelp": "LLR-TERM-REMOTE-017",
+    "remoteunknown": "LLR-TERM-REMOTE-018",
+    "remotestatus": "LLR-TERM-REMOTE-019",
+    "batteryicon": "LLR-TERM-REMOTE-020",
+    "contactlist": "LLR-TERM-NAV-003",
+    "selection": "LLR-TERM-NAV-004",
+    "availability": "LLR-TERM-NAV-005",
+    "confirmcall": "LLR-TERM-NAV-006",
+    "callbackoffer": "LLR-TERM-NAV-007",
+    "portraitlayout": "LLR-TERM-UI-014",
+    "names": "LLR-TERM-UI-015",
+    "portraitfallback": "LLR-TERM-UI-016",
+    "confirmview": "LLR-TERM-UI-017",
+    "displaymode": "LLR-TERM-UI-018",
+    "animation": "LLR-TERM-UI-019",
+    "photobounds": "LLR-TERM-UI-020",
+    "photoretry": "LLR-TERM-UI-021",
+    "renderbounds": "LLR-TERM-UI-022",
+    "uilanguage": "LLR-TERM-UI-023",
+    "unicodetext": "LLR-TERM-UI-024",
+    "livelanguage": "LLR-TERM-UI-025",
+    "callerproof": "LLR-TERM-CALL-011",
+    "callpriority": "LLR-TERM-CALL-012",
+    "answer": "LLR-TERM-CALL-013",
+    "activecontrols": "LLR-TERM-CALL-014",
+    "processing": "LLR-TERM-AUDIO-003",
+    "tones": "LLR-TERM-AUDIO-004",
+    "missingmic": "LLR-TERM-AUDIO-005",
+    "volumeview": "LLR-TERM-AUDIO-006",
+    "volumewrites": "LLR-TERM-AUDIO-007",
+    "volumelife": "LLR-TERM-AUDIO-008",
+    "videotarget": "LLR-TERM-VIDEO-004",
+    "bandwidth": "LLR-TERM-VIDEO-005",
+    "codec": "LLR-TERM-VIDEO-006",
+    "jpegworker": "LLR-TERM-VIDEO-007",
+    "h264order": "LLR-TERM-VIDEO-008",
+    "videobuffers": "LLR-TERM-VIDEO-009",
+    "previewreduce": "LLR-TERM-VIDEO-010",
+    "displaylife": "LLR-TERM-VIDEO-011",
+    "videostale": "LLR-TERM-VIDEO-012",
+    "cropbounds": "LLR-TERM-VIDEO-013",
+    "detectworker": "LLR-TERM-VIDEO-014",
+    "croptransition": "LLR-TERM-VIDEO-015",
+    "cropfailure": "LLR-TERM-VIDEO-016",
+    "modelready": "LLR-TERM-VIDEO-017",
+    "missed": "LLR-TERM-HISTORY-015",
+    "unreadcounts": "LLR-TERM-HISTORY-016",
+    "acknowledge": "LLR-TERM-HISTORY-017",
+    "historysave": "LLR-TERM-HISTORY-018",
+    "messageproof": "LLR-TERM-HISTORY-019",
+    "messagededup": "LLR-TERM-HISTORY-020",
+    "callbackcreate": "LLR-TERM-HISTORY-021",
+    "callbacktag": "LLR-TERM-HISTORY-022",
+    "callbackcancel": "LLR-TERM-HISTORY-023",
+    "callbacknotice": "LLR-TERM-HISTORY-024",
+    "tvstage": "LLR-TERM-TV-019",
+    "tvpowercheck": "LLR-TERM-TV-020",
+    "tvanswers": "LLR-TERM-TV-021",
+    "tvinputcheck": "LLR-TERM-TV-022",
+    "tvhelp": "LLR-TERM-TV-023",
+    "tvsave": "LLR-TERM-TV-024",
+    "cecselect": "LLR-TERM-TV-025",
+    "tvfirstpress": "LLR-TERM-TV-026",
+    "tvunknown": "LLR-TERM-TV-027",
+    "tvrestore": "LLR-TERM-TV-028",
+    "tvidle": "LLR-TERM-TV-029",
+    "tvinhibit": "LLR-TERM-TV-030",
+    "samsung": "LLR-TERM-TV-031",
+    "tvaudio": "LLR-TERM-TV-032",
+    "c20identity": "LLR-TERM-POWER-010",
+    "fan": "LLR-TERM-POWER-011",
+    "usboptin": "LLR-TERM-POWER-012",
+    "usbidle": "LLR-TERM-POWER-013",
+    "usbwake": "LLR-TERM-POWER-014",
+    "usbdetach": "LLR-TERM-POWER-015",
+    "usbwork": "LLR-TERM-POWER-016",
+    "usbicon": "LLR-TERM-POWER-017",
+    "sshguard": "LLR-TERM-NET-006",
+    "lowwrite": "LLR-TERM-MAINT-013",
+    "joblease": "LLR-TERM-MAINT-014",
+    "jobstop": "LLR-TERM-MAINT-015",
+    "jobresult": "LLR-TERM-MAINT-016",
+    "jobreject": "LLR-TERM-MAINT-017",
+    "statusreport": "LLR-TERM-MAINT-018",
+    "debugtime": "LLR-TERM-MAINT-019",
+    "diagprivacy": "LLR-TERM-MAINT-020",
+    "captureowner": "LLR-TERM-VIDEO-018",
+    "shellaccess": "HLR-TERM-NET-007"
+  },
+  "changes": [
+    "Separate network, server exchange, navigation, audio, video and startup areas.",
+    "Split reset language, disconnection uncertainty, portrait geometry, volume feedback and USB wake from mixed items.",
+    "Document C20 identity selection on Pi; stale server device identifiers do not select another device.",
+    "State the implemented 500 ms speech echo window; automatic SDK delay is not an explicit application-controlled setting.",
+    "Keep hardware/visual qualification separate from unit assertions and structural trace validation."
+  ]
+}

@@ -1,0 +1,42 @@
+active: true
+area: Video
+derived: false
+header: |
+  Pi codec selection
+level: 73.0
+links:
+- HLR-TERM-VIDEO-001: zbWy8C5TtS0N-sUV1-bRZ0USwx1A9MbmT0v2_pHAY18=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-codec-boundaries.c
+  type: file
+- path: tests/terminal/LLT/test-video-filters.c
+  type: file
+- path: tests/terminal/LLT/test_engine_adapter.py
+  type: file
+- path: tests/terminal/LLT/test_video_settings.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/native_runtime.py
+  type: file
+- path: zmala_terminal/common/video_settings.py
+  type: file
+- path: zmala_terminal/linux/media.py
+  type: file
+- path: zmala_terminal/linux/media/video/codec.c
+  type: file
+- path: zmala_terminal/linux/media/video/filters.c
+  type: file
+- path: zmala_terminal/linux/native_runtime.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  C20 capture shall request MJPEG at the selected size. Outgoing video shall use the
+  Pi V4L2 H.264 encoder. Incoming H.264 video shall use software decoding with two
+  threads.
+verification: |
+  Inspect camera format requests, registered codecs and decoder thread configuration.
+  Exercise unavailable-plugin handling separately from successful codec operation.

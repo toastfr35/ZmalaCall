@@ -1,0 +1,35 @@
+active: true
+area: TV control
+derived: false
+header: |
+  Saved TV qualification
+level: 100.0
+links:
+- HLR-TERM-TV-017: S2nqx7v0OyXsBJ4cnyWr1LqdDB9WZmvN6aEWTWFqziA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_tv_check.py
+  type: file
+- path: tests/terminal/LLT/test_tv_setup_view.py
+  type: file
+- path: tests/terminal/LLT/test_tv_transport.py
+  type: file
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall save attempt counts, separate outcomes and TV identity and
+  physical-address bindings. Failed saving shall leave setup pending. Interrupted
+  setup shall resume. An incompatible binding change shall invalidate results. Missing
+  EDID during standby shall not alone identify a different TV.
+verification: |
+  Fail saving, restart mid-test and vary identity and address. Check retained
+  attempts, invalidation and the standby case.

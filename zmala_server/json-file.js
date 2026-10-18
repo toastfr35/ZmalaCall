@@ -12,7 +12,7 @@ function readJson(file, fallback) {
     return typeof fallback === 'function' ? /** @type {() => T} */ (fallback)() : fallback;
   }
 }
-// @llr LLR-SRV-DATA-007
+// @llr LLR-SRV-DATA-014, LLR-SRV-DATA-015
 /** Startup/setup tools use an immediate rename; HTTP configuration uses SnapshotFile.
  * @param {string} file @param {unknown} value */
 function writeJson(file, value) {

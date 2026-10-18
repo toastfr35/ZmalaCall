@@ -1,0 +1,31 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Authenticated calls and activity
+level: 83.0
+links:
+- HLR-SRV-MAINT-012: QfBVCHbWe-3uu-Qo8RMTv4QvNlTH4njv2t48zilKD50=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: tests/server/LLT/sip-identity.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administrator views shall show current calls, registrations, terminal reports and callbacks. Recent SIP activity shall retain at most 80 events. Live polling shall omit unchanged account configuration.
+verification: |
+  Create call and registration state, overflow events and compare full and live views. Check private route authentication.

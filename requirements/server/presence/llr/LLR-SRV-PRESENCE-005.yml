@@ -1,0 +1,25 @@
+active: true
+area: Registration and availability
+derived: false
+header: |
+  Live state without revision changes
+level: 49.0
+links:
+- HLR-SRV-PRESENCE-001: lzQ8x2LfimBdJ0H6qcdLShlijXMVNhEpDl6HgUdDEw4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/registrations.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Full configuration and same-revision delta responses shall include current contact availability and callback state. Availability checks shall apply current permission and reachability independently of the configuration revision.
+verification: |
+  Change only reachability or callbacks and poll with an unchanged version. Check permission-limited availability responses.

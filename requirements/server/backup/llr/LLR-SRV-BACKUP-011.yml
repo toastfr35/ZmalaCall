@@ -1,0 +1,21 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  No restored command replay
+level: 95.0
+links:
+- HLR-SRV-BACKUP-002: IFolSJN9Y715aTkpB7gvbpLtrP-V3gVekpN7XH7bXWk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/backups.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Restored queued jobs shall become cancelled and restored running jobs shall become lost. All saved execution leases shall be removed. Restart shall not execute these commands again.
+verification: |
+  Restore each job status and poll as its device. Check terminal history and absence of replay leases.

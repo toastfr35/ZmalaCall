@@ -1,0 +1,21 @@
+active: true
+area: Audio and video relay
+derived: false
+header: |
+  Reserved RTP and RTCP sockets
+level: 58.0
+links:
+- HLR-SRV-MEDIA-007: dD4eYzrZpZbTG5VyZRJ0sXf64k57sSSuQs6CrxM51uI=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/media-lifetime.test.js
+  type: file
+- path: zmala_server/media.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Each stream shall allocate separate RTP and RTCP sockets for each participant from UDP ports 20000 through 20199 by default. Ports shall be reserved before asynchronous bind. Failed partial allocation shall release all reserved sockets.
+verification: |
+  Overlap allocations, fail binds and exhaust a small range. Check four unique sockets per stream and complete release.

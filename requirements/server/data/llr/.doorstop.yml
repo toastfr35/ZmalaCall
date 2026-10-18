@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-SRV-DATA
-      title: Persistence, backup and restore — LLR
+      title: Saved state — LLR
   publish:
   - area
   - scope

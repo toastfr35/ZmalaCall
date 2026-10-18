@@ -1,0 +1,21 @@
+active: true
+area: Audio and video relay
+derived: false
+header: |
+  Signaling-peer packet source
+level: 60.0
+links:
+- HLR-SRV-MEDIA-007: dD4eYzrZpZbTG5VyZRJ0sXf64k57sSSuQs6CrxM51uI=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/media-source.test.js
+  type: file
+- path: zmala_server/media.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Only the authenticated signaling-peer IP shall update a leg's learned RTP or RTCP port or send forwarded packets. Packets shorter than four bytes and legs without both peers shall be ignored.
+verification: |
+  Send RTP and RTCP from permitted and unrelated sources, with tiny packets and incomplete negotiation. Check destination learning.

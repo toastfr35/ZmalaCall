@@ -1,0 +1,28 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Portrait retry ownership
+level: 56.0
+links:
+- HLR-TERM-UI-012: oGtUUTddZ_nmYzq5oqJRjVPaN4_KxriLlc03R9qaalI=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_reliability.py
+  type: file
+- path: zmala_terminal/common/json_storage.py
+  type: file
+- path: zmala_terminal/common/photo_cache.py
+  type: file
+- path: zmala_terminal/common/render_cache.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A failed portrait download shall wait sixty seconds before retry. A cancelled or
+  obsolete worker shall not publish into replaced profile state. Invalid existing
+  cache files shall be replaceable.
+verification: |
+  Fail a download, advance the clock and reset during a pending response. Check
+  retries, cache repair and stale-result rejection.

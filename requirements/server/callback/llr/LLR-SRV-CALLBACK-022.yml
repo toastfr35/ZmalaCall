@@ -1,0 +1,25 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Email retry and ownership
+level: 73.0
+links:
+- HLR-SRV-CALLBACK-014: uZf3ONOKmHR0QXEUn1rlEgvMzbSXZM8fdrJmVPey3iA=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-reminders.test.js
+  type: file
+- path: zmala_server/callback-emails.js
+  type: file
+- path: zmala_server/callback-mailer.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Failed email delivery shall not block other recipients. Retries shall be at least 60 seconds apart and stop after completion, cancellation or removal. Late results shall recheck current request ownership and eligibility.
+verification: |
+  Delay transport results across expiry, completion and permission changes. Check bounded retry timing and independent recipients.

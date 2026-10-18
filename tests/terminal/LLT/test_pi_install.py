@@ -1,14 +1,15 @@
 # @test T-LLT-026
-# @requirements LLR-TERM-SYS-004, LLR-TERM-SYS-006, LLR-TERM-SETUP-005, LLR-TERM-SETUP-008, LLR-TERM-SYS-012, LLR-TERM-SYS-013
+# @requirements LLR-TERM-SETUP-023, LLR-TERM-SETUP-026, LLR-TERM-UI-018, LLR-TERM-NET-006, LLR-TERM-MAINT-013
 # @environment portable
-# @plan Feed installer helpers synthetic boot/journal/network/Bluetooth data with mocked commands; assert display/boot preservation, effective low-write settings, wired guard rules and exclusive verified Presenter pairing status.
+# @plan Feed runtime display, firewall and Bluetooth helpers synthetic observations. Assert supported connected display selection, interface-scoped firewall rules, bounded RAM journal/zram policy and exclusive verified Presenter pairing. Exercise BlueZ initialization, discovery, asynchronous trust/connect, retry backoff and agent restart with fake D-Bus and temporary state files. Effective mounts and reboot persistence require HLT.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
-"""Safety boundaries of repeatable fresh-Pi deployment."""
+"""Pi runtime display, Bluetooth and host-policy boundaries."""
 import importlib.util
 import json
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
@@ -23,19 +24,102 @@ def module(name):
 
 
 guard = module('ssh-guard')
-boot = module('boot-branding')
 pair = module('pair-presenter')
 kiosk = module('kiosk-session')
-wear = module('check-low-wear')
 
 
 class PiInstallTests(unittest.TestCase):
-    def test_effective_journal_options_respect_later_vendor_overrides(self):
-        first = '[Journal]\nStorage=volatile\nForwardToSyslog=no\nRuntimeMaxUse=64M\n'
-        vendor = '# /usr/lib/systemd/journald.conf.d/syslog.conf\n[Journal]\nForwardToSyslog=yes\n'
-        self.assertEqual(wear.journal_options(first + vendor)['ForwardToSyslog'], 'yes')
-        self.assertEqual(wear.journal_options(first + vendor + first)['ForwardToSyslog'], 'no')
-        self.assertEqual(wear.journal_options(first + '[Other]\nStorage=persistent')['Storage'], 'volatile')
+    def test_runtime_storage_policy_uses_bounded_ram_journal_and_zram(self):
+        from tests.support.host_policy import assert_storage_policy
+        assert_storage_policy(self)
+
+    def pairing(self):
+        """Fake the D-Bus transport, retaining the actual pairing state machine."""
+        class BusError(Exception):
+            message = 'injected bus failure'
+        bus, loop = Mock(), Mock()
+        bus.call_sync.return_value.unpack.return_value = ()
+        glib = SimpleNamespace(Error=BusError, MainLoop=Mock(return_value=loop),
+                               Variant=Mock(side_effect=lambda signature, value: (signature, value)),
+                               timeout_add_seconds=Mock())
+        gio = SimpleNamespace(bus_get_sync=Mock(return_value=bus), BusType=SimpleNamespace(SYSTEM=1),
+                              DBusCallFlags=SimpleNamespace(NONE=0), DBusNodeInfo=Mock())
+        gio.DBusNodeInfo.new_for_xml.return_value.interfaces = ['agent-interface']
+        with patch.dict('sys.modules', {'gi.repository': SimpleNamespace(Gio=gio, GLib=glib)}):
+            agent = pair.Pairing()
+        bus.register_object.assert_called_once_with(pair.AGENT, 'agent-interface', agent.authorize, None, None)
+        self.assertEqual(bus.call_sync.call_args.args[3:5], ('RegisterAgent', ('(os)', (pair.AGENT, 'NoInputNoOutput'))))
+        bus.reset_mock()
+        return agent, bus, glib
+
+    def test_pairing_discovers_one_device_then_trusts_and_connects_asynchronously(self):
+        agent, bus, _ = self.pairing()
+        objects = {'/adapter': {'org.bluez.Adapter1': {'Powered': False}},
+                   '/remote': {'org.bluez.Device1': {'Name': pair.NAME, 'UUIDs': [pair.HID], 'RSSI': -35}}}
+        bus.call_sync.return_value.unpack.side_effect = lambda: (objects,)
+        with tempfile.TemporaryDirectory() as folder, patch.object(pair, 'STATUS', Path(folder)/'status.json'), \
+                patch.object(pair, 'BOND', Path(folder)/'bond.json'), patch.object(pair.time, 'monotonic', return_value=100):
+            agent.retry_at = 101
+            self.assertTrue(agent.tick())
+            bus.call.assert_not_called()
+            self.assertEqual(agent.discovery, '/adapter')
+            methods = [c.args[3] for c in bus.call_sync.call_args_list]
+            self.assertEqual(methods, ['GetManagedObjects', 'Set', 'SetDiscoveryFilter', 'StartDiscovery'])
+            agent.retry_at = 0
+            self.assertTrue(agent.tick())
+            self.assertEqual(agent.target, '/remote')
+            self.assertEqual(bus.call.call_args.args[1:4], ('/remote', 'org.bluez.Device1', 'Pair'))
+            self.assertEqual(bus.call.call_args.args[7], 45000)
+            self.assertTrue(agent.tick())
+            self.assertEqual(bus.call.call_count, 1)
+            agent.paired(bus, 'result', None)
+            bus.call_finish.assert_called_once_with('result')
+            self.assertIsNone(agent.target)
+            self.assertEqual(bus.call.call_args.args[3], 'Connect')
+            self.assertEqual(agent.state['state'], 'paired')
+            token = agent.state['bond']
+            objects['/remote']['org.bluez.Device1']['Paired'] = True
+            self.assertTrue(agent.tick())
+            self.assertIsNone(agent.discovery)
+            self.assertEqual(agent.state['bond'], token)
+            self.assertIn('StopDiscovery', [c.args[3] for c in bus.call_sync.call_args_list])
+
+    def test_pairing_bus_failure_restarts_agent_and_pair_failure_backs_off(self):
+        agent, bus, glib = self.pairing()
+        with tempfile.TemporaryDirectory() as folder, patch.object(pair, 'STATUS', Path(folder)/'status.json'), \
+                patch.object(pair.time, 'monotonic', return_value=20):
+            bus.call_sync.return_value.unpack.return_value = ({},)
+            self.assertTrue(agent.tick())
+            self.assertEqual(agent.state, {'state': 'bluetooth_unavailable'})
+            agent.target = '/remote'
+            bus.call_finish.side_effect = glib.Error()
+            agent.paired(bus, 'result', None)
+            self.assertIsNone(agent.target)
+            self.assertEqual(agent.retry_at, 30)
+            self.assertEqual(agent.state, {'state': 'unpaired'})
+            agent.connected(bus, 'result', None)
+            bus.call_finish.side_effect = None
+            agent.connected(bus, 'result', None)
+            bus.call_sync.side_effect = glib.Error()
+            self.assertFalse(agent.tick())
+            self.assertTrue(agent.failed)
+            agent.loop.quit.assert_called_once()
+
+    def test_pairing_main_exits_on_lost_agent_and_schedules_healthy_agent(self):
+        for initial, failed in [(False, False), (True, True), (True, False)]:
+            agent = Mock(failed=failed)
+            agent.tick.return_value = initial
+            with patch.object(pair, 'Pairing', return_value=agent):
+                if not initial or failed:
+                    with self.assertRaises(SystemExit) as error:
+                        pair.main()
+                    self.assertEqual(error.exception.code, 1)
+                else:
+                    pair.main()
+            self.assertEqual(agent.loop.run.called, initial)
+            if initial:
+                agent.GLib.timeout_add_seconds.assert_called_once_with(2, agent.tick)
+
 
     def test_boot_guard_prepares_sshd_directory_before_configuration_probe(self):
         events = []
@@ -75,15 +159,6 @@ class PiInstallTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             guard.rules('eth0', [65536])
 
-    def test_branding_preserves_disk_uart_country_and_video_mode(self):
-        old = 'console=serial0,115200 console=tty1 root=PARTUUID=abc rootwait cfg80211.ieee80211_regdom=GB video=HDMI-A-1:1280x720@60D\n'
-        new = boot.quiet_command_line(old)
-        self.assertNotIn('console=tty1', new)
-        for value in old.split():
-            if value != 'console=tty1':
-                self.assertIn(value, new.split())
-        self.assertEqual(boot.quiet_command_line(new), new)
-        self.assertEqual(new.count('\n'), 1)
 
     def test_pair_only_one_presenter_currently_advertising_hid(self):
         props = {'Name': pair.NAME, 'UUIDs': [pair.HID], 'RSSI': -40}

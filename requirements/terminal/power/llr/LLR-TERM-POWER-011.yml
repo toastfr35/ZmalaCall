@@ -1,0 +1,29 @@
+active: true
+area: Connected devices and power
+derived: false
+header: |
+  Call-only case fan
+level: 110.0
+links:
+- HLR-TERM-POWER-008: 35cBTKX3R_qHYmXB8VF639bs2vG63ISfQ1HlOVVGPVg=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: tests/terminal/LLT/test_argon_fan.py
+  type: file
+- path: zmala_terminal/linux/argon_fan.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Argon fan control shall run outside the UI thread through I2C bus 1 at address 0x1a.
+  During connected calls it shall request 55 percent duty, or 100 percent at 65
+  degrees Celsius. Outside calls and at shutdown it shall request stop. It shall not
+  write power-mode registers.
+verification: |
+  Vary call state and temperature across the threshold. Check I2C requests, worker
+  ownership and shutdown stop.

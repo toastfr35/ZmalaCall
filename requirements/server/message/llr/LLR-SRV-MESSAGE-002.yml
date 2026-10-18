@@ -1,0 +1,21 @@
+active: true
+area: Phone text notifications
+derived: false
+header: |
+  Authenticated message admission
+level: 63.0
+links:
+- HLR-SRV-MESSAGE-001: ZFIJ7wnAEffUosWXginl4cxes7Mc-BqmR6QMhPumwsw=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/messages.test.js
+  type: file
+- path: zmala_server/sip-messages.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  MESSAGE shall authenticate a phone sender and require shared-group permission to a reachable terminal. An unavailable terminal shall produce 480. The server shall not queue offline text delivery.
+verification: |
+  Use unauthenticated, terminal-originated, denied and offline recipients. Check response status and absence of deferred delivery.

@@ -11,6 +11,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 TERMINAL = ROOT / 'zmala_terminal/common/main.py'
 
 
@@ -19,12 +20,15 @@ def start_time(pid):
     return Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()[19]
 
 
-# @llr LLR-TERM-SYS-007
+# @llr LLR-TERM-START-005
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('action', choices=['start', 'stop', 'run'])
     parser.add_argument('--profile', default='terminal')
     args, forwarded = parser.parse_known_args()
+    if args.action == 'run':
+        from zmala_terminal.linux.turn_runtime import prepare
+        prepare()
     import re
     if not re.fullmatch(r'[a-z][a-z0-9_-]{0,40}', args.profile):
         parser.error('Invalid terminal profile')

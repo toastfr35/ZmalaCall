@@ -42,7 +42,7 @@ class QRScanner:
             for line in self.process.stdout:
                 try:
                     event = json.loads(line)
-                    if event.get('type') == 'qr' and isinstance(event.get('value'), str):
+                    if isinstance(event, dict) and event.get('type') == 'qr' and isinstance(event.get('value'), str):
                         self.messages.put(event['value'])
                 except (ValueError, TypeError):
                     pass

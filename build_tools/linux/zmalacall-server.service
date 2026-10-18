@@ -5,7 +5,7 @@ After=network-online.target
 StartLimitIntervalSec=0
 
 [Service]
-# @llr LLR-SRV-BOOT-002
+# @llr LLR-SRV-START-004
 User=zmalaserver
 Group=zmalaserver
 WorkingDirectory=/opt/zmalacall-server/current

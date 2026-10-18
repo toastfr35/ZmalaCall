@@ -1,0 +1,34 @@
+active: true
+area: Call history and callback requests
+derived: false
+header: |
+  Missed incoming calls
+level: 85.0
+links:
+- HLR-TERM-HISTORY-013: ZGQCIQhYH4LqhbQ02qnhpRh2v_QPnv8nCHSfJ1fj4iA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_call_orchestration.py
+  type: file
+- path: tests/terminal/LLT/test_missed_calls.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/missed_calls.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Caller cancellation of a permitted, still-ringing incoming call shall add one
+  missed-call notification. Answered, locally declined and outgoing calls shall not
+  add one. Cancellation shall stop ringtone and countdown and return to idle.
+verification: |
+  Exercise each call outcome and inspect the count and cleanup. Repeat cancellation
+  events to check that one call is counted once.

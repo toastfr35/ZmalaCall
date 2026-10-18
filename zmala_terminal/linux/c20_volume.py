@@ -11,7 +11,7 @@ _configured = None
 _failed = False
 
 
-# @llr LLR-TERM-REMOTE-007
+# @llr LLR-TERM-AUDIO-008
 def configure(percent):
     """Keep local adjustments across core rebuilds; a changed server default wins."""
     global _configured
@@ -51,7 +51,7 @@ def request(percent):
             _worker.start()
 
 
-# @llr LLR-TERM-REMOTE-006
+# @llr LLR-TERM-AUDIO-007
 def _run():
     global _worker, _applied, _failed
     while True:

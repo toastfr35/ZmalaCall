@@ -1,0 +1,22 @@
+active: true
+area: Audio
+derived: false
+header: |
+  Speaker level control
+level: 21.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_remote_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall let the user adjust speaker volume during operation. Volume
+  changes shall preserve microphone gain and TV volume.
+verification: |
+  Adjust the level from settings and remote motion. Check the speaker, visible level,
+  other audio controls and USB reconnection.

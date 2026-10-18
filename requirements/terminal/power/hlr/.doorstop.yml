@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-TERM-POWER
-      title: Case and USB power — HLR
+      title: Connected devices and power — HLR
   publish:
   - area
   - scope

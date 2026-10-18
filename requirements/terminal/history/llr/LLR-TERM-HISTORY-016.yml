@@ -1,0 +1,33 @@
+active: true
+area: Call history and callback requests
+derived: false
+header: |
+  Unread counts and badges
+level: 86.0
+links:
+- HLR-TERM-HISTORY-013: ZGQCIQhYH4LqhbQ02qnhpRh2v_QPnv8nCHSfJ1fj4iA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_missed_calls.py
+  type: file
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/missed_calls.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Each contact count shall combine missed calls and accepted phone notifications. The
+  terminal shall save the exact count and display a red handset badge capped at 99+.
+  Idle shall show the combined unread badge at top left when counts remain, otherwise
+  the Zmala logo. Badge transparency shall preserve the portrait edges.
+verification: |
+  Combine notification types and exceed 99. Check exact saved counts, capped labels,
+  idle icon choice and transparent badge edges.

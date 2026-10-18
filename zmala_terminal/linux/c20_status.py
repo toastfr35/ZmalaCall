@@ -5,6 +5,7 @@ import sys
 import time
 
 
+# @llr LLR-TERM-POWER-010, LLR-TERM-SETUP-022
 def c20_connected(devices=Path('/sys/bus/usb/devices')):
     try:
         entries = list(devices.iterdir())

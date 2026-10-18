@@ -1,0 +1,529 @@
+{
+  "description": "Server-only rewrite from implementation. Successor links describe retained or split behavior, not verification success.",
+  "replaced": {
+    "HLR-SRV-BOOT-001": [
+      "HLR-SRV-START-001",
+      "HLR-SRV-START-002"
+    ],
+    "HLR-SRV-AUTH-001": [
+      "HLR-SRV-AUTH-011",
+      "HLR-SRV-AUTH-012",
+      "HLR-SRV-AUTH-013"
+    ],
+    "HLR-SRV-DIR-001": [
+      "HLR-SRV-DIR-018"
+    ],
+    "HLR-SRV-DIR-002": [
+      "HLR-SRV-DIR-019"
+    ],
+    "HLR-SRV-DIR-003": [
+      "HLR-SRV-DIR-020"
+    ],
+    "HLR-SRV-CONFIG-001": [
+      "HLR-SRV-CONFIG-014",
+      "HLR-SRV-CONFIG-015"
+    ],
+    "HLR-SRV-CONFIG-002": [
+      "HLR-SRV-ENROLL-001"
+    ],
+    "HLR-SRV-SIP-001": [
+      "HLR-SRV-CALL-001",
+      "HLR-SRV-CALL-002"
+    ],
+    "HLR-SRV-SIP-002": [
+      "HLR-SRV-PRESENCE-001"
+    ],
+    "HLR-SRV-SIP-003": [
+      "HLR-SRV-MESSAGE-001"
+    ],
+    "HLR-SRV-MEDIA-001": [
+      "HLR-SRV-MEDIA-007",
+      "HLR-SRV-MEDIA-008"
+    ],
+    "HLR-SRV-CALLBACK-001": [
+      "HLR-SRV-CALLBACK-012",
+      "HLR-SRV-CALLBACK-013",
+      "HLR-SRV-CALLBACK-014"
+    ],
+    "HLR-SRV-MAINT-001": [
+      "HLR-SRV-MAINT-011"
+    ],
+    "HLR-SRV-MAINT-002": [
+      "HLR-SRV-MAINT-012"
+    ],
+    "HLR-SRV-DATA-001": [
+      "HLR-SRV-DATA-012",
+      "HLR-SRV-DATA-013",
+      "HLR-SRV-START-003"
+    ],
+    "HLR-SRV-DATA-002": [
+      "HLR-SRV-BACKUP-001",
+      "HLR-SRV-BACKUP-002"
+    ],
+    "HLR-SRV-UI-001": [
+      "HLR-SRV-UI-010",
+      "HLR-SRV-UI-011"
+    ],
+    "HLR-SRV-SYS-001": [
+      "HLR-SRV-HOST-001",
+      "HLR-SRV-HOST-002"
+    ],
+    "LLR-SRV-AUTH-002": [
+      "LLR-SRV-AUTH-014"
+    ],
+    "LLR-SRV-AUTH-003": [
+      "LLR-SRV-AUTH-015"
+    ],
+    "LLR-SRV-AUTH-004": [
+      "LLR-SRV-AUTH-016"
+    ],
+    "LLR-SRV-AUTH-005": [
+      "LLR-SRV-AUTH-017"
+    ],
+    "LLR-SRV-AUTH-006": [
+      "LLR-SRV-AUTH-018"
+    ],
+    "LLR-SRV-AUTH-007": [
+      "LLR-SRV-AUTH-021"
+    ],
+    "LLR-SRV-AUTH-008": [
+      "LLR-SRV-AUTH-019",
+      "LLR-SRV-AUTH-020"
+    ],
+    "LLR-SRV-AUTH-009": [
+      "LLR-SRV-AUTH-022"
+    ],
+    "LLR-SRV-AUTH-010": [
+      "LLR-SRV-AUTH-023",
+      "LLR-SRV-AUTH-024"
+    ],
+    "LLR-SRV-BOOT-002": [
+      "LLR-SRV-START-004"
+    ],
+    "LLR-SRV-BOOT-003": [
+      "LLR-SRV-START-005"
+    ],
+    "LLR-SRV-BOOT-004": [
+      "LLR-SRV-START-006"
+    ],
+    "LLR-SRV-BOOT-005": [
+      "LLR-SRV-START-009"
+    ],
+    "LLR-SRV-BOOT-006": [
+      "LLR-SRV-START-008"
+    ],
+    "LLR-SRV-BOOT-007": [
+      "LLR-SRV-START-007"
+    ],
+    "LLR-SRV-CALLBACK-002": [
+      "LLR-SRV-CALLBACK-015"
+    ],
+    "LLR-SRV-CALLBACK-003": [
+      "LLR-SRV-CALLBACK-016"
+    ],
+    "LLR-SRV-CALLBACK-004": [
+      "LLR-SRV-CALLBACK-017"
+    ],
+    "LLR-SRV-CALLBACK-005": [
+      "LLR-SRV-CALLBACK-018"
+    ],
+    "LLR-SRV-CALLBACK-006": [
+      "LLR-SRV-CALLBACK-019"
+    ],
+    "LLR-SRV-CALLBACK-007": [
+      "LLR-SRV-CALLBACK-020"
+    ],
+    "LLR-SRV-CALLBACK-008": [
+      "LLR-SRV-CALLBACK-021"
+    ],
+    "LLR-SRV-CALLBACK-009": [
+      "LLR-SRV-CALLBACK-022"
+    ],
+    "LLR-SRV-CALLBACK-010": [
+      "LLR-SRV-CALLBACK-023"
+    ],
+    "LLR-SRV-CALLBACK-011": [
+      "LLR-SRV-CALLBACK-024"
+    ],
+    "LLR-SRV-CONFIG-003": [
+      "LLR-SRV-CONFIG-016"
+    ],
+    "LLR-SRV-CONFIG-004": [
+      "LLR-SRV-CONFIG-017"
+    ],
+    "LLR-SRV-CONFIG-005": [
+      "LLR-SRV-CONFIG-018"
+    ],
+    "LLR-SRV-CONFIG-006": [
+      "LLR-SRV-CONFIG-019"
+    ],
+    "LLR-SRV-CONFIG-007": [
+      "LLR-SRV-CONFIG-021"
+    ],
+    "LLR-SRV-CONFIG-008": [
+      "LLR-SRV-CONFIG-022"
+    ],
+    "LLR-SRV-CONFIG-009": [
+      "LLR-SRV-CONFIG-020"
+    ],
+    "LLR-SRV-CONFIG-010": [
+      "LLR-SRV-ENROLL-002"
+    ],
+    "LLR-SRV-CONFIG-011": [
+      "LLR-SRV-ENROLL-003"
+    ],
+    "LLR-SRV-CONFIG-012": [
+      "LLR-SRV-ENROLL-004"
+    ],
+    "LLR-SRV-CONFIG-013": [
+      "LLR-SRV-ENROLL-005"
+    ],
+    "LLR-SRV-DATA-003": [
+      "LLR-SRV-DATA-014"
+    ],
+    "LLR-SRV-DATA-004": [
+      "LLR-SRV-DATA-015"
+    ],
+    "LLR-SRV-DATA-005": [
+      "LLR-SRV-START-010"
+    ],
+    "LLR-SRV-DATA-006": [
+      "LLR-SRV-DATA-016"
+    ],
+    "LLR-SRV-DATA-007": [
+      "LLR-SRV-DATA-014",
+      "LLR-SRV-DATA-015"
+    ],
+    "LLR-SRV-DATA-008": [
+      "LLR-SRV-BACKUP-003",
+      "LLR-SRV-BACKUP-004"
+    ],
+    "LLR-SRV-DATA-009": [
+      "LLR-SRV-BACKUP-004",
+      "LLR-SRV-BACKUP-005"
+    ],
+    "LLR-SRV-DATA-010": [
+      "LLR-SRV-BACKUP-006",
+      "LLR-SRV-BACKUP-007",
+      "LLR-SRV-BACKUP-008",
+      "LLR-SRV-BACKUP-009",
+      "LLR-SRV-BACKUP-010",
+      "LLR-SRV-BACKUP-011"
+    ],
+    "LLR-SRV-DATA-011": [
+      "LLR-SRV-BACKUP-006",
+      "LLR-SRV-BACKUP-012"
+    ],
+    "LLR-SRV-DIR-004": [
+      "LLR-SRV-DIR-021"
+    ],
+    "LLR-SRV-DIR-005": [
+      "LLR-SRV-DIR-022"
+    ],
+    "LLR-SRV-DIR-006": [
+      "LLR-SRV-DIR-023"
+    ],
+    "LLR-SRV-DIR-007": [
+      "LLR-SRV-DIR-024"
+    ],
+    "LLR-SRV-DIR-008": [
+      "LLR-SRV-DIR-025",
+      "LLR-SRV-DIR-026"
+    ],
+    "LLR-SRV-DIR-009": [
+      "LLR-SRV-DIR-026",
+      "LLR-SRV-DIR-027"
+    ],
+    "LLR-SRV-DIR-010": [
+      "LLR-SRV-DIR-028"
+    ],
+    "LLR-SRV-DIR-011": [
+      "LLR-SRV-DIR-029"
+    ],
+    "LLR-SRV-DIR-012": [
+      "LLR-SRV-DIR-030"
+    ],
+    "LLR-SRV-DIR-013": [
+      "LLR-SRV-DIR-031"
+    ],
+    "LLR-SRV-DIR-014": [
+      "LLR-SRV-DIR-032"
+    ],
+    "LLR-SRV-DIR-015": [
+      "LLR-SRV-DIR-033"
+    ],
+    "LLR-SRV-DIR-016": [
+      "LLR-SRV-DIR-034"
+    ],
+    "LLR-SRV-DIR-017": [
+      "LLR-SRV-DIR-035"
+    ],
+    "LLR-SRV-MAINT-003": [
+      "LLR-SRV-MAINT-013"
+    ],
+    "LLR-SRV-MAINT-004": [
+      "LLR-SRV-MAINT-014"
+    ],
+    "LLR-SRV-MAINT-005": [
+      "LLR-SRV-MAINT-015"
+    ],
+    "LLR-SRV-MAINT-006": [
+      "LLR-SRV-MAINT-016"
+    ],
+    "LLR-SRV-MAINT-007": [
+      "LLR-SRV-MAINT-017"
+    ],
+    "LLR-SRV-MAINT-008": [
+      "LLR-SRV-MAINT-018"
+    ],
+    "LLR-SRV-MAINT-009": [
+      "LLR-SRV-MAINT-019"
+    ],
+    "LLR-SRV-MAINT-010": [
+      "LLR-SRV-MAINT-020"
+    ],
+    "LLR-SRV-MEDIA-002": [
+      "LLR-SRV-MEDIA-009"
+    ],
+    "LLR-SRV-MEDIA-003": [
+      "LLR-SRV-MEDIA-010"
+    ],
+    "LLR-SRV-MEDIA-004": [
+      "LLR-SRV-MEDIA-011"
+    ],
+    "LLR-SRV-MEDIA-005": [
+      "LLR-SRV-MEDIA-012"
+    ],
+    "LLR-SRV-MEDIA-006": [
+      "LLR-SRV-MEDIA-013"
+    ],
+    "LLR-SRV-SIP-004": [
+      "LLR-SRV-CALL-003"
+    ],
+    "LLR-SRV-SIP-005": [
+      "LLR-SRV-PRESENCE-002"
+    ],
+    "LLR-SRV-SIP-006": [
+      "LLR-SRV-CALL-004"
+    ],
+    "LLR-SRV-SIP-007": [
+      "LLR-SRV-CALL-005"
+    ],
+    "LLR-SRV-SIP-008": [
+      "LLR-SRV-CALL-006"
+    ],
+    "LLR-SRV-SIP-009": [
+      "LLR-SRV-CALL-007"
+    ],
+    "LLR-SRV-SIP-010": [
+      "LLR-SRV-CALL-008"
+    ],
+    "LLR-SRV-SIP-011": [
+      "LLR-SRV-CALL-009"
+    ],
+    "LLR-SRV-SIP-012": [
+      "LLR-SRV-CALL-010"
+    ],
+    "LLR-SRV-SIP-013": [
+      "LLR-SRV-PRESENCE-003"
+    ],
+    "LLR-SRV-SIP-014": [
+      "LLR-SRV-PRESENCE-004"
+    ],
+    "LLR-SRV-SIP-015": [
+      "LLR-SRV-PRESENCE-005"
+    ],
+    "LLR-SRV-SIP-016": [
+      "LLR-SRV-MESSAGE-002"
+    ],
+    "LLR-SRV-SIP-017": [
+      "LLR-SRV-MESSAGE-003"
+    ],
+    "LLR-SRV-SIP-018": [
+      "LLR-SRV-MESSAGE-004"
+    ],
+    "LLR-SRV-SYS-002": [
+      "LLR-SRV-HOST-003"
+    ],
+    "LLR-SRV-SYS-003": [
+      "LLR-SRV-HOST-004"
+    ],
+    "LLR-SRV-SYS-004": [
+      "LLR-SRV-HOST-005"
+    ],
+    "LLR-SRV-UI-002": [
+      "LLR-SRV-UI-012"
+    ],
+    "LLR-SRV-UI-003": [
+      "LLR-SRV-UI-013"
+    ],
+    "LLR-SRV-UI-004": [
+      "LLR-SRV-UI-014"
+    ],
+    "LLR-SRV-UI-005": [
+      "LLR-SRV-UI-015"
+    ],
+    "LLR-SRV-UI-006": [
+      "LLR-SRV-CONFIG-023",
+      "LLR-SRV-UI-016"
+    ],
+    "LLR-SRV-UI-007": [
+      "LLR-SRV-UI-017"
+    ],
+    "LLR-SRV-UI-008": [
+      "LLR-SRV-UI-018"
+    ],
+    "LLR-SRV-UI-009": [
+      "LLR-SRV-UI-019"
+    ]
+  },
+  "keys": {
+    "service": "HLR-SRV-START-001",
+    "shutdown": "HLR-SRV-START-002",
+    "readiness": "HLR-SRV-START-003",
+    "password": "HLR-SRV-AUTH-011",
+    "sessions": "HLR-SRV-AUTH-012",
+    "httpboundary": "HLR-SRV-AUTH-013",
+    "accounts": "HLR-SRV-DIR-018",
+    "directory": "HLR-SRV-DIR-019",
+    "portraits": "HLR-SRV-DIR-020",
+    "settings": "HLR-SRV-CONFIG-014",
+    "sync": "HLR-SRV-CONFIG-015",
+    "enrollment": "HLR-SRV-ENROLL-001",
+    "availability": "HLR-SRV-PRESENCE-001",
+    "calladmit": "HLR-SRV-CALL-001",
+    "dialog": "HLR-SRV-CALL-002",
+    "relay": "HLR-SRV-MEDIA-007",
+    "mediaupdate": "HLR-SRV-MEDIA-008",
+    "messages": "HLR-SRV-MESSAGE-001",
+    "requests": "HLR-SRV-CALLBACK-012",
+    "notices": "HLR-SRV-CALLBACK-013",
+    "reminders": "HLR-SRV-CALLBACK-014",
+    "commands": "HLR-SRV-MAINT-011",
+    "diagnostics": "HLR-SRV-MAINT-012",
+    "persistence": "HLR-SRV-DATA-012",
+    "migration": "HLR-SRV-DATA-013",
+    "archive": "HLR-SRV-BACKUP-001",
+    "restore": "HLR-SRV-BACKUP-002",
+    "webui": "HLR-SRV-UI-010",
+    "editui": "HLR-SRV-UI-011",
+    "ssh": "HLR-SRV-HOST-001",
+    "storage": "HLR-SRV-HOST-002",
+    "serviceunit": "LLR-SRV-START-004",
+    "listeners": "LLR-SRV-START-005",
+    "https": "LLR-SRV-START-006",
+    "address": "LLR-SRV-START-007",
+    "partial": "LLR-SRV-START-008",
+    "stop": "LLR-SRV-START-009",
+    "ready": "LLR-SRV-START-010",
+    "initialpassword": "LLR-SRV-AUTH-014",
+    "badpasswordfile": "LLR-SRV-AUTH-015",
+    "changepassword": "LLR-SRV-AUTH-016",
+    "sessionpolicy": "LLR-SRV-AUTH-017",
+    "throttle": "LLR-SRV-AUTH-018",
+    "admincredential": "LLR-SRV-AUTH-019",
+    "devicecredential": "LLR-SRV-AUTH-020",
+    "origin": "LLR-SRV-AUTH-021",
+    "json": "LLR-SRV-AUTH-022",
+    "privateassets": "LLR-SRV-AUTH-023",
+    "headers": "LLR-SRV-AUTH-024",
+    "accountlimit": "LLR-SRV-DIR-021",
+    "accountfields": "LLR-SRV-DIR-022",
+    "emails": "LLR-SRV-DIR-023",
+    "identity": "LLR-SRV-DIR-024",
+    "accountchanges": "LLR-SRV-DIR-025",
+    "activeedits": "LLR-SRV-DIR-026",
+    "association": "LLR-SRV-DIR-027",
+    "firststate": "LLR-SRV-DIR-028",
+    "groupfields": "LLR-SRV-DIR-029",
+    "permission": "LLR-SRV-DIR-030",
+    "contacts": "LLR-SRV-DIR-031",
+    "viewcache": "LLR-SRV-DIR-032",
+    "photoinput": "LLR-SRV-DIR-033",
+    "photowork": "LLR-SRV-DIR-034",
+    "photopublish": "LLR-SRV-DIR-035",
+    "videotarget": "LLR-SRV-CONFIG-016",
+    "presentation": "LLR-SRV-CONFIG-017",
+    "audioselect": "LLR-SRV-CONFIG-018",
+    "answer": "LLR-SRV-CONFIG-019",
+    "shell": "LLR-SRV-CONFIG-020",
+    "localwrites": "LLR-SRV-CONFIG-021",
+    "privateconfig": "LLR-SRV-CONFIG-022",
+    "revision": "LLR-SRV-CONFIG-023",
+    "qrpdf": "LLR-SRV-ENROLL-002",
+    "wifiqr": "LLR-SRV-ENROLL-003",
+    "serverqr": "LLR-SRV-ENROLL-004",
+    "bootstrap": "LLR-SRV-ENROLL-005",
+    "register": "LLR-SRV-PRESENCE-002",
+    "probe": "LLR-SRV-PRESENCE-003",
+    "proberace": "LLR-SRV-PRESENCE-004",
+    "livepoll": "LLR-SRV-PRESENCE-005",
+    "digest": "LLR-SRV-CALL-003",
+    "admission": "LLR-SRV-CALL-004",
+    "callproof": "LLR-SRV-CALL-005",
+    "dialogowner": "LLR-SRV-CALL-006",
+    "cancelwire": "LLR-SRV-CALL-007",
+    "renegotiate": "LLR-SRV-CALL-008",
+    "calltimeout": "LLR-SRV-CALL-009",
+    "sipbounds": "LLR-SRV-CALL-010",
+    "ports": "LLR-SRV-MEDIA-009",
+    "sdprelay": "LLR-SRV-MEDIA-010",
+    "packetsource": "LLR-SRV-MEDIA-011",
+    "mediacommit": "LLR-SRV-MEDIA-012",
+    "mediarelease": "LLR-SRV-MEDIA-013",
+    "messageaccess": "LLR-SRV-MESSAGE-002",
+    "messagebounds": "LLR-SRV-MESSAGE-003",
+    "messageproof": "LLR-SRV-MESSAGE-004",
+    "requestcreate": "LLR-SRV-CALLBACK-015",
+    "requestend": "LLR-SRV-CALLBACK-016",
+    "deadlines": "LLR-SRV-CALLBACK-017",
+    "requesthistory": "LLR-SRV-CALLBACK-018",
+    "sipnotice": "LLR-SRV-CALLBACK-019",
+    "pollnotice": "LLR-SRV-CALLBACK-020",
+    "mailprogress": "LLR-SRV-CALLBACK-021",
+    "mailretry": "LLR-SRV-CALLBACK-022",
+    "smtp": "LLR-SRV-CALLBACK-023",
+    "smtpsecret": "LLR-SRV-CALLBACK-024",
+    "jobadmit": "LLR-SRV-MAINT-013",
+    "joblease": "LLR-SRV-MAINT-014",
+    "joblost": "LLR-SRV-MAINT-015",
+    "jobresult": "LLR-SRV-MAINT-016",
+    "jobhistory": "LLR-SRV-MAINT-017",
+    "statusinput": "LLR-SRV-MAINT-018",
+    "statustime": "LLR-SRV-MAINT-019",
+    "activity": "LLR-SRV-MAINT-020",
+    "snapshots": "LLR-SRV-DATA-014",
+    "barriers": "LLR-SRV-DATA-015",
+    "schemamigrate": "LLR-SRV-DATA-016",
+    "backupset": "LLR-SRV-BACKUP-003",
+    "backupformat": "LLR-SRV-BACKUP-004",
+    "backupvalidate": "LLR-SRV-BACKUP-005",
+    "backupgate": "LLR-SRV-BACKUP-006",
+    "restorestaging": "LLR-SRV-BACKUP-007",
+    "restorerecovery": "LLR-SRV-BACKUP-008",
+    "restorefiles": "LLR-SRV-BACKUP-009",
+    "restoreidentity": "LLR-SRV-BACKUP-010",
+    "restorecommands": "LLR-SRV-BACKUP-011",
+    "backupui": "LLR-SRV-BACKUP-012",
+    "pages": "LLR-SRV-UI-012",
+    "responsive": "LLR-SRV-UI-013",
+    "accessibility": "LLR-SRV-UI-014",
+    "editors": "LLR-SRV-UI-015",
+    "draftrevision": "LLR-SRV-UI-016",
+    "terminalcard": "LLR-SRV-UI-017",
+    "lateeditor": "LLR-SRV-UI-018",
+    "actionfeedback": "LLR-SRV-UI-019",
+    "sshguard": "LLR-SRV-HOST-003",
+    "sshcontrol": "LLR-SRV-HOST-004",
+    "lowwear": "LLR-SRV-HOST-005"
+  },
+  "changes": [
+    "Separate enrollment, registration, call control and phone messaging responsibilities.",
+    "Separate backup admission, durable staging, file application, recovery, revision identity and command non-replay.",
+    "Separate device credentials, administrator session behavior and browser response protections.",
+    "Move persistence liveness/readiness to service operation and revision checks to configuration synchronization.",
+    "Keep installer behavior outside the baseline and factory Windows labels as compatibility notes.",
+    "Remove frontend-only field checks as the sole evidence for backend setting validation.",
+    "Record UTF-16 message-content limits separately from byte-based HTTP and output limits."
+  ]
+}

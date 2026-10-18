@@ -1,13 +1,13 @@
 # @test T-LLT-013
-# @requirements LLR-TERM-TV-010, LLR-TERM-TV-013, LLR-TERM-TV-014
+# @requirements LLR-TERM-TV-026, LLR-TERM-TV-029, LLR-TERM-TV-030
 # @environment portable
-# @plan Advance a controlled clock and inject physical input, TV visibility, calls and pending writes; assert countdown reset, ten-second bar delay, inhibition and one expiry without saving a draft.
+# @plan Advance a controlled clock and inject physical input, TV visibility, calls and pending writes; assert countdown reset, ten-second bar delay, inhibition and one expiry without saving a draft. Record bottom progress-bar placement, proportional width, repaint caching, resize and hidden states.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from zmala_terminal.common.idle_return import IdleCountdown, IdleReturn
@@ -18,6 +18,25 @@ from zmala_terminal.common.configuration import validate
 
 
 class IdleTests(unittest.TestCase):
+    def test_bottom_bar_tracks_remaining_width_and_avoids_redundant_layout(self):
+        from zmala_terminal.common import idle_return
+        view = IdleReturn(); view.root = Mock()
+        view.root.winfo_width.return_value = 1280
+        with patch.object(idle_return.tk, 'Frame') as frame:
+            view.draw_tv_idle(None)
+            bar = frame.return_value
+            bar.place_forget.assert_called_once()
+            view.draw_tv_idle(.5)
+            bar.place.assert_called_once_with(x=0, rely=1, anchor='sw', width=640, height=3)
+            view.draw_tv_idle(.5)
+            self.assertEqual(bar.place.call_count, 1)
+            self.assertEqual(bar.lift.call_count, 2)
+            view.root.winfo_width.return_value = 1920
+            view.draw_tv_idle(.5)
+            self.assertEqual(bar.place.call_args.kwargs['width'], 960)
+            view.draw_tv_idle(0)
+            self.assertEqual(bar.place_forget.call_count, 2)
+
     def test_options_default_and_validation(self):
         draft = SettingsDraft()
         draft.row = FIELDS.index('tv_idle_seconds')

@@ -1,0 +1,22 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Controlled shutdown and recovery
+level: 2.0
+links:
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/linux_launcher.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall recover from an application failure. Shutdown shall stop work
+  owned by the terminal and preserve saved user state.
+verification: |
+  Inject an application failure and request shutdown. Check service recovery, owned
+  processes and saved state.

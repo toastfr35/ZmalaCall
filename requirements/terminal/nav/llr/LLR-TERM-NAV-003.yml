@@ -1,0 +1,28 @@
+active: true
+area: Contact selection and navigation
+derived: false
+header: |
+  Permitted carousel contacts
+level: 44.0
+links:
+- HLR-TERM-NAV-001: NnPrSvfaxidle5dZ_NhC4Qfe-L_j2wMb3vlGjZve01o=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/carousel.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The carousel shall show only contacts with can_call set to true. Offline permitted
+  contacts shall remain visible. The configured layout shall use three or five
+  portrait positions, with three positions when fewer than five contacts exist.
+verification: |
+  Vary permissions, availability, contact count and layout setting. Check visible
+  identities and position count.

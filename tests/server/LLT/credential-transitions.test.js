@@ -1,5 +1,5 @@
 // @test S-LLT-024
-// @requirements LLR-SRV-AUTH-003, LLR-SRV-AUTH-004, LLR-SRV-AUTH-008, LLR-SRV-CALLBACK-010, LLR-SRV-CALLBACK-011
+// @requirements LLR-SRV-AUTH-015, LLR-SRV-AUTH-016, LLR-SRV-AUTH-019, LLR-SRV-CALLBACK-023, LLR-SRV-CALLBACK-024
 // @environment portable
 // @plan Feed malformed credential files and password-change races into authentication units; assert fail-closed startup, current-password verification, durable replacement and session revocation. Inject SMTP transport to check secret retention, certificate-safe options and verify-only behavior.
 // @pass All failure cases must preserve credentials and sessions; successful changes revoke old sessions and transport tests never send email.

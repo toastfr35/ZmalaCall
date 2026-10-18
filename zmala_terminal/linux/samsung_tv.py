@@ -38,7 +38,7 @@ def save_config(path, value):
         temporary.unlink(missing_ok=True)
 
 
-# @llr LLR-TERM-TV-015
+# @llr LLR-TERM-TV-031
 def connect(host, token=None, fingerprint=None, timeout=8):
     """Pair explicitly, or authenticate the same TLS socket before sending a token.
 

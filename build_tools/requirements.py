@@ -26,8 +26,24 @@ SOURCE_ROOTS = (
     'zmala_server', 'zmala_terminal/common', 'zmala_terminal/linux',
     'build_tools/linux', 'build_tools/windows_installer', 'build_tools/server_installer',
 )
+# Runtime helpers outside the component trees still belong in trace and coverage.
+SOURCE_FILES = ('build_tools/convert-photo.py',)
 SOURCE_SUFFIXES = {'.py', '.js', '.ts', '.c', '.h', '.css', '.html', '.json', '.sh',
                    '.service', '.conf', '.rules', '.script', '.plymouth'}
+INSTALLER_HELPERS = {
+    'boot-branding.py', 'build-turn.py', 'build-media.sh', 'check-low-wear.py', 'check-server.py',
+    'download-framing-model.py', 'setup-auto-framing.sh',
+}
+
+
+def installer_source(name: str) -> bool:
+    """Deployment clients/build steps are outside the Pi runtime baseline."""
+    return (name.startswith(('build_tools/windows_installer/', 'build_tools/server_installer/'))
+            or (name.startswith('build_tools/linux/')
+                and (Path(name).name.startswith(('install-', 'package-'))
+                     or Path(name).name in INSTALLER_HELPERS)))
+
+
 EXCLUSIONS = {
     'zmala_server/web/admin.js': 'Generated bundle; authored admin modules are mapped.',
     'zmala_server/web/admin.css': 'Generated bundle; authored stylesheets are mapped.',
@@ -40,17 +56,20 @@ EXCLUSIONS = {
 
 
 def source_inventory(root: Path) -> tuple[list[str], dict[str, str]]:
-    """Inventory authored runtime, shared contracts and Pi deployment sources."""
+    """Inventory Pi runtime code/configuration, reporting deployment exclusions."""
     included, excluded = [], {}
-    for relative in SOURCE_ROOTS:
-        for path in sorted((root / relative).rglob('*')):
+    for relative in (*SOURCE_ROOTS, *SOURCE_FILES):
+        location = root / relative
+        for path in ([location] if location.is_file() else sorted(location.rglob('*'))):
             if not path.is_file() or path.suffix not in SOURCE_SUFFIXES:
                 continue
             parts = path.relative_to(root).parts
-            if any(part in {'node_modules', '__pycache__', 'data', 'framing-runtime', 'models'} for part in parts):
+            if any(part in {'node_modules', '__pycache__', 'data', 'framing-runtime', 'turn-runtime', 'models'} for part in parts):
                 continue  # Private, downloaded or generated runtime files are never inventoried.
             name = path.relative_to(root).as_posix()
             reason = EXCLUSIONS.get(name)
+            if installer_source(name):
+                reason = 'Installer, packaging or deployment verification; outside Pi runtime requirements.'
             if 'tests' in parts or path.name.startswith(('test-', 'probe-')):
                 reason = 'Verification/probe implementation; referenced checks do not imply a passed result.'
             elif 'vendor' in parts:
@@ -128,6 +147,8 @@ def audit(root: Path) -> dict:
                 errors.append(f'{uid}: missing/unsafe reference {name}')
             if name.startswith('zmala_terminal/windows/'):
                 errors.append(f'{uid}: Windows terminal is outside this baseline')
+            if installer_source(name):
+                errors.append(f'{uid}: installer source is outside this baseline: {name}')
             if prefix.startswith('LLR-'):
                 referenced[name].add(uid)
                 has_source |= not name.startswith('tests/') and '/tests/' not in name and '/test-' not in name
@@ -196,7 +217,7 @@ def write_coverage(output: Path, report: dict) -> None:
 <p>{len(rows)} authored source files mapped to LLRs · {counts}</p>
 <p><a href="tests.html">Requirement-based test plans and coverage gaps</a></p>
 <p class="notice">{escape(report['qualification'])} A mapped file can still contain behavior needing a more detailed requirement; review the code and verification instructions together.</p>
-<p>Scope: Linux server, shared/Pi terminal runtime and Pi deployment tools (including Windows installer front ends). Windows terminal runtime, repository development tooling and third-party internals are excluded.</p>
+<p>Scope: Linux server, shared/Pi terminal runtime and their host policies. Installers, packaging, deployment tools, Windows terminal runtime, repository development tooling and third-party internals are excluded.</p>
 <div class="filter"><label for="search">Find a file or requirement</label><input id="search" type="search" placeholder="Module path or LLR ID"><output id="match-count" aria-live="polite"></output><a href="coverage.json" download>Download inventory JSON</a></div>
 <h2>Code comment anchors</h2><p>{len(traces)} LLRs traced to standalone <code>@llr</code> comments. Line numbers refer to the source revision used for this build; shared behavior can have several anchors.</p>
 <div class="matrix" tabindex="0" aria-label="Scrollable code trace table"><table><thead><tr><th scope="col">LLR</th><th scope="col">Code location</th></tr></thead><tbody>{''.join(traces)}</tbody></table></div>

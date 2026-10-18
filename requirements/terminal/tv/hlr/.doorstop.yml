@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-TERM-TV
-      title: TV qualification and control — HLR
+      title: TV control — HLR
   publish:
   - area
   - scope

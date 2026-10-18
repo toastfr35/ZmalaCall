@@ -1,0 +1,29 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Bounded command admission
+level: 76.0
+links:
+- HLR-SRV-MAINT-011: sJW1dvGdS_-Gm5aD0PVVtKqWW8MUnT6xi1cG7zemBs0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/console-state.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Only administrators shall enqueue commands. A command shall contain 1 to 8000 characters, include nonspace text and exclude NUL. Timeout shall be an integer from 5 to 120 seconds, defaulting to 60. Each terminal shall have at most ten queued or running jobs.
+verification: |
+  Check request authentication, command boundaries, timeout types and per-device pending capacity. Verify the selected shell is captured.

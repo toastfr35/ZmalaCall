@@ -1,3 +1,4 @@
+// @llr LLR-TERM-VIDEO-018
 /* Strict C20 MJPEG capture. Some drivers clamp an unsupported raw HD request to
  * VGA while returning success; checking dimensions prevents silent fallback.
  * Camera I/O runs off the MediaStreamer ticker, with one latest-frame slot. */

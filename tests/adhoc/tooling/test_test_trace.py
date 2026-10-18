@@ -27,16 +27,28 @@ class TestPlanAuditTests(unittest.TestCase):
             '# @pass All parser assertions pass and original state remains unchanged after rejection.\n'
         )
         self.path.write_text(self.header + 'value = 1\n', encoding='utf-8')
+        self.hlt_path = self.root / 'tests/terminal/HLT/scenario.py'
+        self.hlt_path.parent.mkdir(parents=True)
+        self.hlt_path.write_text(self.header.replace('T-LLT-001', 'T-HLT-001')
+                                .replace('LLR-TERM-SYS-003', 'HLR-TERM-SYS-001'), encoding='utf-8')
         self.records = {
             'LLR-TERM-SYS-003': {'prefix': 'LLR-TERM-SYS', 'references': [{'path': 'tests/terminal/LLT/example.py'}]},
-            'HLR-TERM-SYS-001': {'prefix': 'HLR-TERM-SYS', 'references': []},
+            'HLR-TERM-SYS-001': {'prefix': 'HLR-TERM-SYS', 'references': [{'path': 'tests/terminal/HLT/scenario.py'}]},
         }
 
-    def test_valid_plan_and_unmapped_hlr_are_separate_from_execution(self):
+    def test_valid_plans_are_separate_from_execution(self):
         trace = audit_tests(self.root, self.records)
-        self.assertEqual(trace['requirements'], {'LLR-TERM-SYS-003': ['T-LLT-001']})
-        self.assertEqual(trace['unmapped']['HLR-TERM'], ['HLR-TERM-SYS-001'])
+        self.assertEqual(trace['requirements'], {'LLR-TERM-SYS-003': ['T-LLT-001'], 'HLR-TERM-SYS-001': ['T-HLT-001']})
+        self.assertFalse(any(trace['unmapped'].values()))
         self.assertNotIn('passed', trace['tests']['T-LLT-001'])
+        self.assertNotIn('passed', trace['tests']['T-HLT-001'])
+
+    def test_every_hlr_needs_a_direct_system_plan(self):
+        for uid in ('HLR-SRV-HOST-999', 'HLR-TERM-NET-999'):
+            with self.subTest(uid=uid):
+                records = self.records | {uid: {'prefix': uid.rsplit('-', 1)[0], 'references': []}}
+                with self.assertRaisesRegex(ValueError, f'{uid}: no mapped HLT'):
+                    audit_tests(self.root, records)
 
     def test_every_llr_needs_a_direct_unit_test(self):
         for uid, prefix in (('LLR-SRV-BOOT-999', 'LLR-SRV-BOOT'), ('LLR-TERM-SYS-004', 'LLR-TERM-SYS')):
@@ -96,7 +108,7 @@ class TestPlanAuditTests(unittest.TestCase):
         adhoc = self.root / 'tests/adhoc/test_experiment.py'
         adhoc.parent.mkdir()
         adhoc.write_text('assert True\n', encoding='utf-8')
-        self.assertEqual(len(audit_tests(self.root, self.records)['tests']), 1)
+        self.assertEqual(len(audit_tests(self.root, self.records)['tests']), 2)
         old = self.root / 'zmala_server/test_example.py'
         old.parent.mkdir()
         old.write_text('assert True\n', encoding='utf-8')
@@ -106,6 +118,8 @@ class TestPlanAuditTests(unittest.TestCase):
     def test_report_escapes_plan_and_shows_gaps_without_pass_claims(self):
         trace = audit_tests(self.root, self.records)
         trace['tests']['T-LLT-001']['plan'] += ' <script>unsafe</script>'
+        # The renderer also supports imported historical reports with gaps.
+        trace['unmapped']['HLR-TERM'] = ['HLR-TERM-SYS-999']
         write_test_report(self.root, trace)
         report = (self.root / 'tests.html').read_text(encoding='utf-8')
         self.assertIn('&lt;script&gt;unsafe&lt;/script&gt;', report)

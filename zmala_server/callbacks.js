@@ -48,7 +48,7 @@ class Callbacks {
   async flush() {
     await this.persistence?.flush();
   }
-  // @llr LLR-SRV-CALLBACK-004
+  // @llr LLR-SRV-CALLBACK-017
   /** @param {number} created */
   deadlines(created) {
     const settings = this.store.value.callback_settings;
@@ -90,7 +90,7 @@ class Callbacks {
   online(id) {
     return registrationOnline(this.sip.registrations.get(id));
   }
-  // @llr LLR-SRV-CALLBACK-002
+  // @llr LLR-SRV-CALLBACK-015
   /** @param {string} from @param {unknown} to */
   create(from, to) {
     this.store.requireTerminal(from);
@@ -136,7 +136,7 @@ class Callbacks {
       ready: r.status === 'pending' && this.online(r.from) && this.online(r.to),
     };
   }
-  // @llr LLR-SRV-CALLBACK-007
+  // @llr LLR-SRV-CALLBACK-020
   /** @param {string} [account] */
   list(account) {
     this.reconcile();
@@ -150,7 +150,7 @@ class Callbacks {
       .reverse()
       .map((r) => this.view(r, account === undefined));
   }
-  // @llr LLR-SRV-CALLBACK-003
+  // @llr LLR-SRV-CALLBACK-016
   /** @param {string} id @param {string} [account] */
   cancel(id, account) {
     this.reconcile();
@@ -165,7 +165,7 @@ class Callbacks {
       this.save();
     }
   }
-  // @llr LLR-SRV-CALLBACK-003
+  // @llr LLR-SRV-CALLBACK-016
   /** @param {string} a @param {string} b */
   connected(a, b) {
     this.reconcile();
@@ -192,7 +192,7 @@ class Callbacks {
         }
     if (changed) this.save();
   }
-  // @llr LLR-SRV-CALLBACK-006
+  // @llr LLR-SRV-CALLBACK-019
   /** @param {string} [account] */
   deliver(account) {
     if (this.paused) return;

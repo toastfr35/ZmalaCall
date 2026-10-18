@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-TERM-UI
-      title: Contact display and localization — HLR
+      title: User interface and language — HLR
   publish:
   - area
   - scope

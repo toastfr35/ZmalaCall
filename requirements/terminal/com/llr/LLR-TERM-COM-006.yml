@@ -1,0 +1,36 @@
+active: true
+area: Server communication
+derived: false
+header: |
+  Saved stable configuration
+level: 26.0
+links:
+- HLR-TERM-COM-002: wUJC3SC-xkWW6uYImtth5z9iNCm34rMDyV6CD1vOSck=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_configuration.py
+  type: file
+- path: tests/terminal/LLT/test_performance.py
+  type: file
+- path: tests/terminal/LLT/test_reliability.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall retain a validated configuration snapshot for offline restart.
+  Presence and callback refreshes alone shall not rewrite that snapshot. A lower
+  revision shall not replace a newer accepted configuration.
+verification: |
+  Restart offline, refresh live fields repeatedly and deliver an older revision. Check
+  saved-file writes and retained settings.

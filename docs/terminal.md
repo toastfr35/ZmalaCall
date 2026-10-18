@@ -7,11 +7,207 @@ and everyday operation are documented separately in `terminal_prep.docx`,
 See [general.md](general.md) for build/network conventions and [server.md](server.md)
 for the authenticated configuration and SIP services.
 
-Contents: [architecture](#architecture-and-thread-ownership), [deployment](#pi-deployment-pipeline),
+Contents: [purpose and functions](#terminal-purpose-and-functions),
+[architecture](#architecture-and-thread-ownership), [deployment](#pi-deployment-pipeline),
 [onboarding/reset](#onboarding-and-reset-state), [settings/input](#settings-and-controls),
 [remote](#remote-status-and-recovery), [TV/display](#tv-control-and-display),
 [media](#video-and-audio), [services](#appliance-services-storage-and-peripherals),
 [Windows/rendering](#windowssource-launch-and-architecture), [verification](#verification-and-troubleshooting).
+
+## Terminal purpose and functions
+
+ZmalaCall is a home audio and video call terminal. It connects a television,
+a Nuroum C20 camera with a microphone and speaker, and a Microsoft Presenter+
+remote to a Raspberry Pi. The television shows the people that the user can call.
+The remote lets the user select a person and control the call.
+
+The terminal is intended for people who need simple controls, including elderly
+users. It provides a small set of actions with clear visual feedback. The user
+does not need a keyboard, a mouse or a web browser for normal operation.
+
+The server supplies the terminal identity, permitted contacts and settings. The
+terminal controls its own display, devices and calls. It reports its state to the
+server and sends accepted local setting changes back to the server.
+
+This description covers the Pi terminal with its software already installed.
+Software packaging and installation are outside this description. Server functions
+are described only where they form an interface with the terminal.
+
+### 1. Startup and shutdown
+
+The terminal starts automatically when the Pi starts. It opens the application
+across the television screen. It resumes initial setup when setup is incomplete.
+Otherwise, it loads the saved identity and settings and starts normal operation.
+
+The terminal can start when the server is unavailable. It shows the available
+local state and tries to reconnect. A service supervisor restarts a failed
+application. Shutdown stops the work and devices owned by the application.
+
+### 2. Initial setup and reset
+
+Initial setup guides the user through camera connection and remote pairing. A
+button test confirms that the remote works before setup continues. The camera
+reads a Wi-Fi code and a server code. The server code supplies the terminal
+identity and access credentials.
+
+Setup shows an error when an operation fails. It continues only when that step
+has completed. TV tests follow server registration and use the selected language.
+The user can reset the terminal from Settings after a separate confirmation.
+Reset removes this terminal profile's setup data but does not delete server accounts.
+
+### 3. Network connection
+
+The terminal uses Ethernet or Wi-Fi to reach the server. Initial setup configures
+Wi-Fi from the scanned code. The terminal keeps that connection for later use.
+The Wi-Fi indicator shows wireless status even when server traffic uses Ethernet.
+
+A connection failure does not close the application. The terminal detects the
+failure, reports the available status and retries communication. Reset removes
+only the Wi-Fi profile that the terminal created.
+
+### 4. Server communication
+
+The terminal uses its assigned credentials to communicate with the server. It
+receives its permitted contacts, settings, contact availability and callback state.
+It sends its operating status and the results of user or maintenance actions.
+
+The terminal checks received data before it uses that data. Invalid or old data
+does not replace newer accepted settings. Background communication does not wait
+for portrait downloads. A late response cannot replace state from a newer operation.
+
+### 5. Configuration
+
+The server supplies the main terminal configuration. The local Settings page lets
+the user change language, automatic answer, framing, speaker volume, portrait count
+and the return-to-TV timeout. Each editor lets the user accept or cancel a change.
+
+The terminal confirms a saved change only after the server accepts it. A rejected
+or failed change produces visible feedback. Settings that require a new media
+configuration wait until the terminal is idle. Supported live changes do not end a call.
+
+### 6. Remote control
+
+The remote has left, right, green, red and middle controls. Green and red stickers
+identify the two action buttons. Button actions depend on the current page or call
+state. Holding the middle button permits relative speaker-volume adjustment by motion.
+
+The terminal detects remote connection, battery level and external charging power
+where the device reports them. It shows help when the remote is unavailable.
+A lost connection alone cannot show whether the remote is off, discharged or faulty.
+
+### 7. Contact selection and navigation
+
+The user moves left or right through the permitted contact list. Each contact has
+a portrait, name and availability indication. The selected contact remains selected
+when a compatible directory update arrives. Offline contacts remain available for
+callback requests.
+
+The same controls navigate settings and confirmation pages. Green selects or
+accepts an action. Red cancels or returns where the current page permits it.
+Incoming calls take priority over unfinished navigation and edits.
+
+### 8. User interface and language
+
+The display uses large portraits, clear text and consistent action colors. Names
+stay inside their portrait cards. Status symbols and words give information without
+relying on color alone. Confirmation pages make the proposed action clear.
+
+Normal operation uses the selected language. Early setup uses English before the
+server supplies that preference. Text rendering supports Unicode names and scripts.
+Missing pictures or translations use the defined fallback presentation.
+
+### 9. Call control
+
+The user confirms an outgoing call before the terminal starts it. The terminal
+checks contact availability and permission again at confirmation. Incoming calls
+require an authorized caller. The user can answer or decline them.
+The terminal handles one active call at a time and declines a second incoming call.
+
+Automatic answering is optional and includes a visible delay. The user can decline
+a call during that delay. Red ends a connected call. Cancellation, failure and
+normal call completion return the terminal to the appropriate idle state.
+
+### 10. Audio
+
+The terminal uses the C20 microphone and speaker for calls. It plays an incoming
+ringtone and an outgoing waiting tone on the selected speaker. Speaker volume can
+change without changing microphone gain or television volume.
+
+Audio processing provides the configured echo-control behavior. Missing microphone
+capture does not prevent available received audio and video. A device restart
+restores the requested speaker level before the terminal treats media as ready.
+
+### 11. Video
+
+The terminal sends camera video and displays received video. A small local preview
+lets the user see the outgoing camera view. The local preview shares the camera
+capture path with the outgoing stream.
+
+Video size and frame rate are configurable targets. Actual delivery depends on
+the camera, processing capacity and network. Missing received video produces
+feedback without stopping audio. Optional local people detection adjusts the frame
+within a two-times digital zoom limit. Detector failure restores the wide view.
+
+### 12. Call history and callback requests
+
+The terminal keeps unread counts for missed incoming calls and authorized phone
+text notifications. It shows these counts beside the relevant contacts and in a
+total indicator. It does not display or save the text bodies.
+
+The user can request a callback from an unavailable contact and cancel a pending
+request. A contact tag shows the pending request. When the contact becomes
+available, the terminal can notify the user. It does not dial automatically.
+
+### 13. TV control
+
+The terminal tests TV power and input switching during setup. The user confirms
+the observed result of each test. Confirmed capabilities control later automatic
+TV actions. Failed or skipped capabilities remain available through manual TV control.
+
+When the TV hides the terminal view, the first remote action can reveal that view.
+That action does not also operate the terminal page. The terminal remembers the
+observed previous TV state and restores it after the relevant call or idle timeout.
+A bottom progress bar shows the approaching idle return.
+
+### 14. Connected devices and power
+
+The terminal detects required media devices and uses their identities after
+reconnection. It controls the supported case fan during connected calls. Device
+work that can block runs separately from display updates.
+
+Optional USB power control can turn off the shared camera and charger supply
+when the terminal is inactive and the remote battery has sufficient charge.
+User activity or an incoming call requests power restoration. Unknown device or
+battery state favors retaining power. The webcam indicator reports confirmed hub power.
+
+### 15. Maintenance and diagnostics
+
+The terminal reports application, connection and media status to the server.
+Authorized maintenance jobs run with limited duration and output. Cancellation,
+reset and shutdown stop work that belongs to the terminal.
+
+Routine logs use volatile storage to limit microSD writes. Temporary detailed
+logging helps diagnose failures. Diagnostics protect credentials and distinguish
+reported device state from unverified sound or picture quality.
+
+### Qualities that apply to all functions
+
+The terminal favors simple, predictable interaction. User messages explain the
+current state and the next available action. The same terms and controls keep
+the same meaning throughout related pages.
+
+The terminal protects saved identity and settings and rejects invalid updates.
+It separates background work from display and call control. It limits retained
+queues, pictures and logs. Recovery behavior preserves newer state when old work
+finishes late.
+
+Access controls protect calls, server requests and maintenance actions. Stored
+credentials remain private. Camera images used for framing stay on the terminal.
+Automatic TV control and hardware performance require tests on the actual equipment.
+
+The HLRs below this description's functional structure define observable product
+responsibilities. The LLRs define settings, limits, state transitions and interface
+rules. Code and tests trace to those LLRs; test links alone do not establish a pass.
 
 ## Architecture and thread ownership
 
@@ -41,6 +237,8 @@ retained/released. Shutdown is idempotent, though SDK/QR waits can still block.
 
 Configuration polls and settings responses share validation, rollback rejection
 and stable-cache policy; presence/callback fields are not persisted every poll.
+Malformed contact photo values are rejected as configuration validation errors
+before path matching or image loading.
 Authenticated HTTP rejects redirects. Failed engine setup retains the newest
 desired configuration for idle retry after five seconds, without publishing it as
 successfully applied. QR capture is isolated from native decoder failure and
@@ -55,6 +253,8 @@ sudo access, boot mount, disk space and a physical Ethernet route. Factory
 hostname/account defaults are `zmala.local` and `zmala`, with the initial password
 matching the account name. The account/device identity is supplied later by QR.
 
+`windows_installer/ssh_transport.py` supplies the shared SSH transport and job
+monitor; the terminal backend owns its validation, upload and reboot checks.
 SSH host-key pinning and a retained Ethernet IP prevent mDNS changes from moving
 the deployment to another connection. A separate systemd install job survives a
 PC connection loss. The shell install runner serializes installation, records
@@ -143,6 +343,11 @@ framing runtime/model and fonts. Linux packages include shared/Linux source only
 `setup_flow.py` coordinates USB readiness, pairing/button verification, Wi-Fi QR,
 server QR and post-enrollment TV checks. `provisioning.py` persists accepted
 identity and owns reset cleanup; `qr_scanner.py` owns a separate camera process.
+The Linux preview releases partially acquired decoder, window and X11 resources
+if embedding or capture initialization fails; closing it is idempotent. The parent
+ignores malformed JSON and non-object pipe messages before dispatching QR strings.
+The application entry function keeps CLI parsing and final cleanup testable without
+starting a real kiosk.
 Each asynchronous completion is checked against the current setup generation.
 
 | Stage | Advancement condition and retained state |
@@ -196,6 +401,12 @@ Middle is Pointer. Horizontal motion is ignored for volume.
 Settings has a list and editor; only the active side shows button hints, status
 icons are hidden, and the terminal serial appears at the bottom. Confirmed edits
 go back to the server. Failed/conflicting saves retain visible error guidance.
+After reconciliation, retry expectations use the editor defaults for optional
+fields omitted by older valid configurations.
+The label renderer reduces the font to fit each settings region. If a long
+translation still wraps beyond the region, it uses an ellipsis and keeps
+combining marks with their preceding character. This also keeps the button hints
+inside the small-window layout.
 
 | Setting | Local choices |
 | --- | --- |
@@ -402,7 +613,7 @@ zoom adds no optical detail. People on a TV or in a photo can be detected too.
 No images are normally saved or sent to the server for inference.
 
 The installer prepares LiteRT 2.3.0 and a checksum-pinned SSD MobileNet V2 COCO
-quantized model (Apache-2.0, 300×300 input). A lower-priority process uses two
+quantized model (Apache-2.0, 300×300 input). A lower-priority worker thread uses two
 inference threads and one replaceable thumbnail slot; media never waits for it.
 Session/sample tokens reject old results after toggles, size changes or calls.
 The MJPEG worker crops YUV once for preview and encoder. With framing off/wide,
@@ -533,11 +744,35 @@ use one worker, a 40-path queue, atomic publication and one-minute failure backo
 Requirement-based unit tests live in `tests/terminal/LLT/`; system and integration
 scenarios live in `tests/terminal/HLT/`. Their leading comments identify the test,
 linked requirements, procedure and expected observations. Installer unit tests
-are included in `make test-llt`. They exercise release preparation with temporary
+are included in `make test-adhoc`, outside Pi runtime RBT coverage. They exercise release preparation with temporary
 state, including restoration of directory mode 0700 after archive copying so an
 imported directory cannot make enrollment credentials readable to other users. See `docs/general.md` for trace validation and
-the generated trace report. Every terminal LLR has direct unit-test links; validation
-rejects additions without a corresponding test.
+the generated trace report. Every terminal LLR has direct unit-test links and
+every HLR has a system-test plan; validation rejects additions without a
+corresponding test. This does not establish complete behavioral or hardware coverage.
+
+`xvfb-run -a make test-hlt test-hlt-display` runs controller/HTTP/Tk integration
+and the standalone display scenarios. The controller fixtures use real queues,
+worker threads, input file handlers and persistence, substituting native devices,
+CEC transport and privileged hardware writes. They cover stale replies, rejected
+settings, remote releases, relative volume, notification persistence, USB wake,
+fan transitions, TV restoration and framing cancellation. Inspect each plan's
+limits before treating a result as device acceptance.
+
+After a Pi reboot, run `sudo env ZMALA_INSTALLED_HOST_TESTS=terminal python3 -m
+unittest tests.terminal.HLT.test_installed_storage -v` from a prepared checkout
+to inspect effective storage policy. This is read-only and skips by default.
+For real network/reboot acceptance, `tests/terminal/HLT/network_restart.py`
+requires both Ethernet and a configured controlled Wi-Fi access point. Run it
+as root with `--before --provisioning <profile>/provisioning.json --evidence
+<private-path>/network.json`, reboot normally, then repeat with `--after`.
+It binds authenticated requests separately to both interfaces and compares the
+Wi-Fi UUID, terminal identity and boot ID. It neither reboots nor changes network
+settings, and it does not retain credentials. Record the two results together.
+
+The terminal requirements rewrite has a local [verification report](../tests/coverage/terminal-rebaseline/index.html).
+It separates measured LLT coverage, executed HLTs and unverified scenarios. The
+report is generated output, not part of the requirement baseline.
 
 Portable tests do not operate the TV or prove native SDK compatibility. For real
 rendering use `tests/terminal/HLT/render_cache_ui.py` (Linux under Xvfb);
@@ -574,3 +809,38 @@ Long idle/repeated calls, USB reconnect/power faults, network loss, CEC across T
 models, echo/listening and intended-user readability still need physical acceptance.
 Keep failures distinct from old tests on different hardware. Remaining engineering
 work is in [astra.md](../astra.md).
+
+
+## Secure relay transport
+
+A server can select `secure_calls.mode = tls-relay` in its authenticated HTTPS
+configuration. The terminal disables SIP UDP/plain TCP, enables SIP TLS, verifies
+the server certificate and name against the local CA bundle, and requires SRTP
+for outgoing and incoming media. ICE gathers TURN candidates through TLS on port
+443 and forces relay selection. Network failure does not trigger plaintext fallback.
+The installed trust store is authoritative; a server response cannot supply a CA.
+For a private deployment, install its CA in the OS trust store before enrollment.
+`SSL_CERT_FILE` can select a locally administered CA bundle for both HTTPS and SIP.
+
+Configuration validation rejects incomplete or expired TURN credentials and secure
+configuration received through an HTTP enrollment. Re-enroll using the server's
+new HTTPS QR code when changing deployment mode. Hourly credential changes rebuild
+the core only while idle, preserving active calls. An offline cache with expired
+credentials cannot start a secure call; reconnect to the configuration server.
+The normal user call and answer controls do not change.
+
+Debian Trixie mediastreamer2 5.3.105 has a fragmented TURN ChannelData padding bug
+which breaks SRTP authentication. `build_tools/linux/build-turn.py` fetches pinned,
+SHA-256-checked upstream source, applies `linux/native/turn-framing.patch`, and builds
+a process-local interposition library under `linux/turn-runtime/`. The original
+parser must reproduce the defect; the corrected parser must pass 3,804 chunk sizes.
+The installer runs this build on the target architecture and retains upstream source
+and test evidence. It does not replace the system SDK library. Upstream source is
+AGPL-3.0-or-later, with its original notices retained in the downloaded files.
+
+The Linux launcher checks the exact installed Debian SDK package version before
+loading this library with `LD_PRELOAD`. A version mismatch stops startup and requires
+rebuilding/requalifying the correction. Secure mode refuses to run without the loaded
+correction. Ordinary LAN-only source launches can run without it. No ARM binary or
+local SDK source download is committed. See the server guide for endpoint routing,
+certificates, coturn configuration and network limitations.

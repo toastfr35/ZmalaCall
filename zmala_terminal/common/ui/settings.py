@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import tkinter as tk
+import unicodedata
 from zmala_terminal.common.local_settings import FIELDS, SettingsDraft
 from zmala_terminal.common.localization import LANGUAGES, font_family
 from zmala_terminal.common.theme import BG, FG, MUTED, PANEL, ACCENT, BUTTON_GREEN, BUTTON_RED, RED
@@ -46,6 +47,7 @@ class SettingsView:
             self.settings_signature = None
         return active
 
+    # @llr LLR-TERM-UI-024
     def settings_label(self, text, x, y, width, size=22, color=FG, background=BG,
                        bold=False, anchor='nw', language=None, max_height=None, tags=()):
         if not text:
@@ -56,6 +58,15 @@ class SettingsView:
             if not max_height or picture.height() <= max_height or size <= 11:
                 break
             size -= 1
+        # A long translated hint can still wrap at the minimum font size.
+        # Keep trailing combining marks with their base while eliding, instead
+        # of shrinking to unreadable glyphs or overlapping adjacent controls.
+        shortened = text
+        while max_height and picture.height() > max_height and len(shortened) > 1:
+            while shortened and unicodedata.category(shortened[-1]).startswith('M'):
+                shortened = shortened[:-1]
+            shortened = shortened[:-1].rstrip()
+            picture = self.text_renderer.photo(shortened+'…', family, size, background, color, int(width), bold)
         self.settings_images.append(picture)
         self.settings_canvas.create_image(x, y, image=picture, anchor=anchor, tags=tags)
 
@@ -69,7 +80,7 @@ class SettingsView:
         self.settings_images.append(image)
         self.settings_canvas.create_image(x, y, image=image, anchor='nw', tags=tags)
 
-    # @llr LLR-TERM-CONFIG-005
+    # @llr LLR-TERM-CONFIG-020
     def draw_settings(self):
         if not (self.settings_open or self.settings_hold.capturing):
             return

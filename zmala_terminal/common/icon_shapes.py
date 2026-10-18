@@ -3,7 +3,7 @@ import math
 
 
 class IconShapes:
-    # @llr LLR-TERM-POWER-007
+    # @llr LLR-TERM-POWER-017
     def usb_power(self, powered, background):
         """Webcam silhouette for shared USB power; a slash also distinguishes off."""
         color = '#71ddba' if powered is True else '#8d9db5'

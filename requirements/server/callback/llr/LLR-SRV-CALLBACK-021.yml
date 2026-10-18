@@ -1,0 +1,29 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Per-recipient saved email progress
+level: 72.0
+links:
+- HLR-SRV-CALLBACK-014: uZf3ONOKmHR0QXEUn1rlEgvMzbSXZM8fdrJmVPey3iA=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-editor.test.js
+  type: file
+- path: tests/server/LLT/callback-reminders.test.js
+  type: file
+- path: zmala_server/callback-emails.js
+  type: file
+- path: zmala_server/callback-mailer.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/web/admin-callbacks.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  After the email deadline, reminders shall attempt each current recipient address independently of SIP notification and online state. Accepted addresses shall be saved before proceeding. Retry and restart shall skip addresses already recorded as accepted.
+verification: |
+  Use several recipients with partial success. Restart and edit recipients, then verify accepted addresses are skipped. SMTP acceptance does not prove inbox delivery.

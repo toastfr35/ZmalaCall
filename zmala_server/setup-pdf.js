@@ -3,7 +3,7 @@
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 
-// @llr LLR-SRV-CONFIG-011
+// @llr LLR-SRV-ENROLL-003
 /** @param {import('./types/contracts').JsonObject} update @returns {string} */
 function wifiPayload({ ssid, password = '', security = 'WPA', hidden = false }) {
   if (
@@ -43,12 +43,12 @@ function wifiPayload({ ssid, password = '', security = 'WPA', hidden = false }) 
     ]).toString('base64url')
   );
 }
-// @llr LLR-SRV-CONFIG-012
+// @llr LLR-SRV-ENROLL-004
 /** @param {import('./types/contracts').Enrollment} bootstrap */
 function serverPayload(bootstrap) {
   return JSON.stringify({ type: 'family-call-server', version: 1, ...bootstrap });
 }
-// @llr LLR-SRV-CONFIG-010
+// @llr LLR-SRV-ENROLL-002
 /** @param {{kind: 'wifi' | 'server', label: string, payload: string, serverUrl?: string}} options
  * @returns {Promise<Buffer>} */
 async function setupPdf({ kind, label, payload, serverUrl }) {
@@ -93,8 +93,8 @@ async function setupPdf({ kind, label, payload, serverUrl }) {
     .fontSize(11)
     .text(
       kind === 'wifi'
-        ? 'Use when the screen says "wifi QR code ?".'
-        : 'Use after Wi-Fi setup, when the screen says "server QR code?".',
+        ? 'Use when the screen says "Scan the Wi-Fi QR code".'
+        : 'Use after Wi-Fi setup, when the screen says "Scan the server QR code".',
       48,
       630,
       { width, align: 'center' },

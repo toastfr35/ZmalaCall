@@ -1,0 +1,31 @@
+active: true
+area: Terminal enrollment
+derived: false
+header: |
+  Authenticated bootstrap compatibility
+level: 45.0
+links:
+- HLR-SRV-ENROLL-001: pDfvXbbFZBKdNpCDts3hIS4Rdyar3pDSWuoB7m7VaiQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: tests/server/LLT/store-views.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administrator bootstrap requests shall return the selected terminal's LAN enrollment data. Relevant account or association changes shall update the private local bootstrap artifact. No selected account shall produce an unassigned identity with an empty token.
+verification: |
+  Change and remove the selected terminal, rename and reassign it, and check private bootstrap writes and failures. QR enrollment remains the Pi setup interface.

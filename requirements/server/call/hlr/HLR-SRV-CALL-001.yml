@@ -1,0 +1,22 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Authorized call admission
+level: 14.0
+links:
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/network_lab.py
+  type: file
+- path: tests/server/HLT/sip-cancel-wire.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall establish calls only between authenticated, permitted and available accounts. It shall permit at most one current call for each account.
+verification: |
+  Attempt valid, forged, unauthorized, offline and busy calls. Check terminal caller proofs and resource allocation.

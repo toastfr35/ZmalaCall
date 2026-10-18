@@ -1,0 +1,32 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Initials fallback
+level: 51.0
+links:
+- HLR-TERM-UI-012: oGtUUTddZ_nmYzq5oqJRjVPaN4_KxriLlc03R9qaalI=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_image_bounds.py
+  type: file
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+- path: zmala_terminal/common/carousel.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/photo_cache.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A missing, invalid or pending portrait shall show contact initials. A validated
+  downloaded portrait shall replace the fallback. Portrait work shall not block
+  contact navigation.
+verification: |
+  Supply missing, corrupt and delayed images. Check initials, replacement and
+  continued selection changes.

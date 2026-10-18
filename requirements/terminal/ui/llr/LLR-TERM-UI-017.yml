@@ -1,0 +1,32 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Visible confirmation choices
+level: 52.0
+links:
+- HLR-TERM-UI-012: oGtUUTddZ_nmYzq5oqJRjVPaN4_KxriLlc03R9qaalI=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+- path: zmala_terminal/common/localization.py
+  type: file
+- path: zmala_terminal/common/text_renderer.py
+  type: file
+- path: zmala_terminal/common/theme.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Call, callback and reset confirmations shall use rounded green affirmative and red
+  negative controls with localized labels. Portraits shall retain surrounding margins.
+  The supported small-window layout shall keep the choices visible.
+verification: |
+  Render each confirmation at regression viewport sizes. Check control shape, labels,
+  margins and bounds.

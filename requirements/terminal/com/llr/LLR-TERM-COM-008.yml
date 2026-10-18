@@ -1,0 +1,38 @@
+active: true
+area: Server communication
+derived: false
+header: |
+  Obsolete response rejection
+level: 28.0
+links:
+- HLR-TERM-COM-002: wUJC3SC-xkWW6uYImtth5z9iNCm34rMDyV6CD1vOSck=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_configuration.py
+  type: file
+- path: tests/terminal/LLT/test_management.py
+  type: file
+- path: tests/terminal/LLT/test_management_loop.py
+  type: file
+- path: tests/terminal/LLT/test_reliability.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall reject responses from an obsolete configuration, reset or worker
+  generation. A failed state-changing request shall not be retried automatically as a
+  read.
+verification: |
+  Delay requests across reset and configuration changes. Check that late results do
+  not publish state or repeat mutations.

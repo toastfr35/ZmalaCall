@@ -80,7 +80,7 @@ export function renderGroups() {
     );
   setView(intro, grid);
 }
-// @llr LLR-SRV-UI-005
+// @llr LLR-SRV-UI-015
 export function openGroup(id = '') {
   state.editingGroupId = id;
   state.groupVersion = state.model.configuration_version;

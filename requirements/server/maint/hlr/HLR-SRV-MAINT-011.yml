@@ -1,0 +1,26 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Device-owned remote commands
+level: 22.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/console.test.js
+  type: file
+- path: tests/server/HLT/performance.test.js
+  type: file
+- path: tests/server/HLT/reliability.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall let an administrator queue bounded maintenance commands for a specific terminal. It shall record owned execution results without automatically replaying an uncertain command.
+verification: |
+  Create, claim, complete, cancel and time out jobs across restart and account changes. Check lease isolation and retained output.

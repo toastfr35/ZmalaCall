@@ -88,7 +88,7 @@ class PresenterInput:
             return 'connected' if self.raw_fds and len(self.devices) > len(self.raw_fds) else 'input_unavailable'
         return self.health.state
 
-    # @llr LLR-TERM-REMOTE-003
+    # @llr LLR-TERM-REMOTE-014
     def discover(self):
         if self.closed:
             return
@@ -125,7 +125,7 @@ class PresenterInput:
         except OSError:
             pass  # Permission may be pending, or the device disconnected.
 
-    # @llr LLR-TERM-REMOTE-004
+    # @llr LLR-TERM-REMOTE-015
     def read(self, fd, _mask):
         try:
             data = os.read(fd, EVENT.size*64)

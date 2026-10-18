@@ -1,0 +1,21 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Confirmed and recoverable replacement
+level: 27.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/backups.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall require explicit confirmation before replacing application state. It shall complete restore or recovery before serving clients and shall not replay saved commands.
+verification: |
+  Restore from an idle service and interrupt each durable phase. Check rollback, restart, local network settings, revisions and command non-replay.

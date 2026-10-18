@@ -1,5 +1,5 @@
 # @test T-LLT-042
-# @requirements LLR-TERM-MAINT-007
+# @requirements LLR-TERM-NET-005
 # @environment portable
 # @plan Supply wireless status independent of Ethernet and unreadable files; assert connected/disconnected/unknown Wi-Fi states cannot be replaced by wired connectivity.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,0 +1,25 @@
+active: true
+area: Terminal enrollment
+derived: false
+header: |
+  Versioned server identity code
+level: 44.0
+links:
+- HLR-SRV-ENROLL-001: pDfvXbbFZBKdNpCDts3hIS4Rdyar3pDSWuoB7m7VaiQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/setup-payload.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/setup-pdf.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A server code shall encode type family-call-server and version 1, plus the selected terminal's reachable server URL, device serial and device token. Nonterminal account selections shall be rejected.
+verification: |
+  Decode codes for two terminals and compare their identity and credentials. Reject phone and unknown selections.

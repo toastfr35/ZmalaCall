@@ -8,7 +8,7 @@ const accountId = (id) =>
   typeof id === 'string' &&
   /^[a-z][a-z0-9_-]{0,30}$/.test(id) &&
   !['constructor', 'prototype', '__proto__'].includes(id);
-// @llr LLR-SRV-DIR-011
+// @llr LLR-SRV-DIR-029
 /** @param {import('./types/contracts').JsonObject} update
  * @param {import('./types/contracts').ServerState['users']} users
  * @returns {import('./types/contracts').Group} */
@@ -65,7 +65,7 @@ function accountFields(update) {
     throw Error('Auto-answer is available for terminal accounts only.');
   return Object.assign(fields, autoAnswerFields(update));
 }
-// @llr LLR-SRV-CONFIG-006
+// @llr LLR-SRV-CONFIG-019
 /** Shared validation keeps terminal settings and legacy account API consistent.
  * @param {import('./types/contracts').JsonObject} update
  * @returns {import('./types/contracts').AutoAnswerSettings} */
@@ -88,7 +88,7 @@ function autoAnswerFields(update) {
   }
   return fields;
 }
-// @llr LLR-SRV-DIR-006
+// @llr LLR-SRV-DIR-023
 /** Accept plain mailbox addresses only; never SMTP headers or display-name syntax.
  * @param {unknown} values @returns {string[]} */
 function validateEmails(values) {
@@ -130,12 +130,12 @@ module.exports = {
   terminalStatus,
 };
 
-// @llr LLR-SRV-MAINT-008
+// @llr LLR-SRV-MAINT-018
 /** Reject malformed device diagnostics before they can break the administration UI.
  * @param {import('./types/contracts').JsonObject} update
  * @returns {import('./types/contracts').TerminalStatus} */
 function terminalStatus(update) {
-  // @llr LLR-SRV-MAINT-009
+  // @llr LLR-SRV-MAINT-019
   /** @type {import('./types/contracts').TerminalStatus} */
   const status = { last_seen: new Date().toISOString() };
   for (const key of /** @type {const} */ ([

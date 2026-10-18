@@ -1,0 +1,31 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Optional HTTPS listener
+level: 3.0
+links:
+- HLR-SRV-START-001: tlqAlEiBhnE4rUwFiA26CSP98TW2Ryi4UrcbTLNiNFo=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: build_tools/linux/zmalacall-server.service
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/shutdown.js
+  type: file
+reviewed: null
+scope: Optional
+text: |
+  HTTPS administration shall require both a certificate and key and a valid port different from HTTP. Its default port shall be 8443. Remote plaintext administration shall be rejected when HTTPS is configured; authenticated terminal HTTP traffic shall remain available.
+verification: |
+  Test missing TLS inputs, invalid or conflicting ports, all-interface binding and remote HTTP administrator/device requests.

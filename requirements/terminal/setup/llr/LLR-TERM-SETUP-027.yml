@@ -1,0 +1,44 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Isolated QR capture
+level: 11.0
+links:
+- HLR-TERM-SETUP-020: n16z3NirFS4w0WbLBhfHMkQER-cGRtR6Jzk0rS4bo1A=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_enrollment_lifecycle.py
+  type: file
+- path: tests/terminal/LLT/test_qr_capture.py
+  type: file
+- path: tests/terminal/LLT/test_qr_protocol.py
+  type: file
+- path: tests/terminal/LLT/test_setup_ownership.py
+  type: file
+- path: zmala_terminal/common/native_qr.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/qr_scanner.py
+  type: file
+- path: zmala_terminal/common/qr_worker.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+- path: zmala_terminal/linux/qr.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  QR capture shall use a separate process and an unmirrored preview within the setup
+  viewport. Capture failure shall show an error and delay retry for five seconds.
+  Cancellation shall release the camera before the call engine starts.
+verification: |
+  Inject capture errors, malformed worker output and cancellation. Resize the viewport
+  and check preview bounds and worker termination.

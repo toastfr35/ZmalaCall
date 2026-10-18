@@ -1,0 +1,21 @@
+active: true
+area: Audio and video relay
+derived: false
+header: |
+  Safe media changes and release
+level: 17.0
+links:
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/server.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall activate media changes only after accepted negotiation. A rejected change shall preserve the established path. Call closure shall release all owned relay resources.
+verification: |
+  Accept and reject media changes, disable a stream and close during asynchronous allocation. Check destinations and socket ownership.

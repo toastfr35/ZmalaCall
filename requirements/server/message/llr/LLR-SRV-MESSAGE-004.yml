@@ -1,0 +1,21 @@
+active: true
+area: Phone text notifications
+derived: false
+header: |
+  Notification proof and privacy
+level: 65.0
+links:
+- HLR-SRV-MESSAGE-001: ZFIJ7wnAEffUosWXginl4cxes7Mc-BqmR6QMhPumwsw=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/messages.test.js
+  type: file
+- path: zmala_server/sip-messages.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Forwarded text shall use the recipient's current registration flow. A token-derived proof shall replace supplied sender proof and bind sender and message identity. Activity records shall omit text bodies.
+verification: |
+  Inspect forwarded flow, stripped authentication headers, independently calculated proof and retained activity content.

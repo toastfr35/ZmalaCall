@@ -1,0 +1,22 @@
+active: true
+area: Network connection
+derived: false
+header: |
+  Network status and recovery
+level: 7.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_server_exchange_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall show wireless and server reachability as separate states. Loss of
+  either connection shall not close the application.
+verification: |
+  Remove wireless and server connectivity independently. Check displayed states and
+  recovery after connectivity returns.

@@ -1,0 +1,37 @@
+active: true
+area: TV control
+derived: false
+header: |
+  CEC adapter ownership
+level: 101.0
+links:
+- HLR-TERM-TV-018: ZYWJZfxPFY-U2Faag_owNyuH0jhoHw1LvN3GtcRGSgo=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/zmalacall-cec.service
+  type: file
+- path: tests/terminal/LLT/test_cec_device.py
+  type: file
+- path: zmala_terminal/common/idle_return.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/linux/cec_device.py
+  type: file
+- path: zmala_terminal/linux/cec_observer.py
+  type: file
+- path: zmala_terminal/linux/samsung_tv.py
+  type: file
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  CEC selection shall prefer a connected connector with EDID and honor an explicitly
+  fixed adapter. It shall retain that adapter through standby. A saved restoration
+  shall keep its adapter during a call. Passive routing observation shall not announce
+  the terminal as active source.
+verification: |
+  Vary connector state, fixed selection and standby. Inspect adapter stability and
+  messages sent by passive observation.

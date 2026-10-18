@@ -1,0 +1,39 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Opening revision retained by drafts
+level: 101.0
+links:
+- HLR-SRV-UI-011: LPHJUJznAKObB5O3At_q4lceri2jKB5KEIO0WY4T5CQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/account-workflows.test.js
+  type: file
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/callback-editor.test.js
+  type: file
+- path: tests/server/LLT/terminal-fields.test.js
+  type: file
+- path: zmala_server/web/admin-accounts.js
+  type: file
+- path: zmala_server/web/admin-callbacks.js
+  type: file
+- path: zmala_server/web/admin-console.js
+  type: file
+- path: zmala_server/web/admin-groups.js
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-state.js
+  type: file
+- path: zmala_server/web/admin-terminals.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Account, group, terminal, shell, deadline and SMTP editors shall submit their opening revision. Background polling shall not advance that revision. A stale-save response shall show guidance to reopen the editor.
+verification: |
+  Open each draft, poll a newer revision and submit. Check submitted version and visible conflict feedback.

@@ -1,0 +1,34 @@
+active: true
+area: Configuration
+derived: false
+header: |
+  Deferred media configuration
+level: 34.0
+links:
+- HLR-TERM-CONFIG-017: uZSyhrSat5ls4qT4zxAKIh_MOcpkFhw80u6tLM3GRZE=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_local_settings.py
+  type: file
+- path: tests/terminal/LLT/test_reliability.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Changes that require media-engine replacement shall wait until idle. The applied
+  revision shall change only after engine setup succeeds. Failed setup shall release
+  the engine and retry the latest desired configuration after five idle seconds.
+verification: |
+  Fail and delay replacement during a call and at idle. Check retry timing, released
+  resources and reported revision.

@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-TERM-CONFIG
-      title: Local settings and synchronization — LLR
+      title: Configuration — LLR
   publish:
   - area
   - scope

@@ -1,0 +1,30 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Persistent private state
+level: 5.0
+links:
+- HLR-TERM-START-002: bsR3IZBSDdhaSgxeSmDTPiNnYlEv497rd_UbYvIjVaA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_runtime_contracts.py
+  type: file
+- path: zmala_terminal/common/json_storage.py
+  type: file
+- path: zmala_terminal/common/paths.py
+  type: file
+- path: zmala_terminal/common/photo_cache.py
+  type: file
+- path: zmala_terminal/common/render_cache.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall keep enrollment, settings, portraits, notifications and SDK
+  security data outside replaceable source releases. JSON updates shall replace the
+  individual saved file atomically.
+verification: |
+  Change the source path and restart a profile. Check persistent paths and replacement
+  of each JSON file. Multi-file power-loss transactions are not established.

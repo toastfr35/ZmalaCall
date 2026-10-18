@@ -4,6 +4,7 @@ const sip = require('sip');
 const proxy = require('sip/proxy');
 const crypto = require('node:crypto');
 const { MediaRelay } = require('./media');
+const { IceMedia } = require('./secure-calls');
 /** @param {import('sip').Remote} a @param {import('sip').Remote} b */
 const samePeer = (a, b) =>
   a.address === b.address && a.port === b.port && a.protocol === b.protocol;
@@ -31,9 +32,11 @@ class SipServer extends SipMessages {
     this.sendWithCancelHeaders = sip.send;
     this.presence = new RegistrationMonitor(this);
     this.probes = this.presence.probes;
-    this.media = new MediaRelay(store.value.host);
+    this.media = store.secureCalls
+      ? new IceMedia(store.value.host)
+      : new MediaRelay(store.value.host);
   }
-  // @llr LLR-SRV-MAINT-010
+  // @llr LLR-SRV-MAINT-020
   /** @param {string} message */
   log(message) {
     this.events.push({ time: new Date().toISOString(), message });
@@ -49,6 +52,7 @@ class SipServer extends SipMessages {
         port: v.sip_port,
         tcp: true,
         udp: true,
+        ...this.store.secureCalls?.listener(),
         logger: {
           error: (e) => this.log(`SIP error: ${e.message}`),
           recv: (m, r) => {
@@ -79,7 +83,7 @@ class SipServer extends SipMessages {
       return this.originalSend.call(sip, message, ...args);
     };
     sip.send = this.sendWithCancelHeaders;
-    // @llr LLR-SRV-SIP-011
+    // @llr LLR-SRV-CALL-009
     this.sweep = setInterval(() => {
       for (const [u, r] of this.registrations)
         if (r.expires < Date.now()) {
@@ -93,7 +97,11 @@ class SipServer extends SipMessages {
       this.callbacks?.deliver();
       this.probeRegistrations();
     }, 5000);
-    this.log(`SIP listening on ${v.host}:${v.sip_port} (UDP/TCP)`);
+    this.log(
+      this.store.secureCalls
+        ? `SIP TLS listener ${this.store.secureCalls.listenPort}; public ${this.store.secureCalls.sipHost}:443; ICE/SRTP media`
+        : `SIP listening on ${v.host}:${v.sip_port} (UDP/TCP)`,
+    );
   }
   /** @param {string} user */
   cancelProbe(user) {
@@ -105,7 +113,7 @@ class SipServer extends SipMessages {
 
   /** CANCEL authenticates against the original INVITE's exact transport, From
    * tag, CSeq and Via branch. It must not consume another Digest nonce count. */
-  // @llr LLR-SRV-SIP-009
+  // @llr LLR-SRV-CALL-007
   /** @param {import('sip').Message} rq @param {import('sip').Remote} remote */
   cancelStatus(rq, remote) {
     if (!validRequest(rq)) return 400;
@@ -122,7 +130,7 @@ class SipServer extends SipMessages {
     return 0;
   }
 
-  // @llr LLR-SRV-SIP-005
+  // @llr LLR-SRV-PRESENCE-002
   /** @param {import('sip').ValidRequest} rq @param {import('sip').Remote} remote */
   register(rq, remote) {
     const v = this.store.value;
@@ -178,7 +186,8 @@ class SipServer extends SipMessages {
       this.reply(rq, 400, 'Malformed Request');
       return;
     }
-    // @llr LLR-SRV-DATA-010
+
+    // @llr LLR-SRV-BACKUP-007
     if (this.maintenance) {
       this.reply(rq, 503, 'Server Restoring');
       return;
@@ -205,7 +214,7 @@ class SipServer extends SipMessages {
     let dialog = this.dialogs.get(id);
     let side;
     if (dialog) {
-      // @llr LLR-SRV-SIP-008
+      // @llr LLR-SRV-CALL-006
       side = dialog.peers.findIndex(
         (p) => samePeer(p.remote, remote) && p.tag === rq.headers.from.params?.tag,
       );
@@ -222,7 +231,7 @@ class SipServer extends SipMessages {
         this.reply(rq, 481, 'Call Does Not Exist');
         return;
       }
-      // @llr LLR-SRV-SIP-006
+      // @llr LLR-SRV-CALL-004
       const user = this.auth.verify(rq, v.users, true);
       if (!user) {
         proxy.send(this.auth.challenge(rq, true));
@@ -285,7 +294,7 @@ class SipServer extends SipMessages {
       id = rq.headers['call-id'];
     dialog.touched = Date.now();
     const initial = rq.method === 'INVITE' && !rq.headers.to.params?.tag;
-    // @llr LLR-SRV-SIP-010
+    // @llr LLR-SRV-CALL-008
     const negotiates = dialog.connected && ['INVITE', 'UPDATE'].includes(rq.method);
     // Delayed offers require staging an answer from ACK, which this relay does
     // not implement. Reject them without changing the established media graph.
@@ -325,7 +334,7 @@ class SipServer extends SipMessages {
     forward.headers.route = [{ uri: sip.encodeFlowUri(target.remote) }];
     delete forward.headers['proxy-authorization'];
     delete forward.headers.authorization;
-    // @llr LLR-SRV-SIP-007
+    // @llr LLR-SRV-CALL-005
     delete forward.headers['x-family-auth'];
     const terminal = this.store.terminalAccount(target.user);
     if (terminal)
@@ -344,7 +353,14 @@ class SipServer extends SipMessages {
       return;
     }
     forward.headers['max-forwards'] = hops - 1;
-    if (initial) forward.headers['record-route'] = [{ uri: `sip:${v.host}:${v.sip_port};lr` }];
+    if (initial)
+      forward.headers['record-route'] = [
+        {
+          uri: this.store.secureCalls
+            ? `${this.store.secureCalls.proxy()};lr`
+            : `sip:${v.host}:${v.sip_port};lr`,
+        },
+      ];
     if (forward.headers['content-type']?.toLowerCase() === 'application/sdp') {
       try {
         if (typeof forward.content !== 'string') throw Error('Missing SDP body.');
@@ -430,7 +446,7 @@ class SipServer extends SipMessages {
         });
     });
   }
-  // @llr LLR-SRV-SIP-011
+  // @llr LLR-SRV-CALL-009
   /** @param {string} id */
   closeDialog(id) {
     const update = this.dialogs.get(id)?.mediaUpdate;

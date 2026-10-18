@@ -1,0 +1,38 @@
+active: true
+area: Network connection
+derived: false
+header: |
+  Wi-Fi code formats
+level: 20.0
+links:
+- HLR-TERM-NET-001: UWwshkJHMcsabTfg4Q8gQq_rdoIr3SpBbJkTtD4UASs=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_provisioning.py
+  type: file
+- path: zmala_terminal/common/native_qr.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/qr_scanner.py
+  type: file
+- path: zmala_terminal/common/qr_worker.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/wifi.py
+  type: file
+- path: zmala_terminal/linux/qr.py
+  type: file
+- path: zmala_terminal/linux/wifi.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Wi-Fi setup shall accept escaped WIFI codes and compact FAMILY-WIFI:1 codes,
+  including Unicode network names. It shall validate the supported security mode and
+  password before starting a join.
+verification: |
+  Decode escaped and compact codes, Unicode names and invalid security fields. Check
+  exact decoded values and rejection before joining.

@@ -56,6 +56,7 @@ function callbackFooter(form, dialog, text) {
   );
   form.append(footer);
 }
+// @llr LLR-SRV-CALLBACK-017, LLR-SRV-UI-016
 export function openCallbackDeadlines() {
   const { dialog, form } = callbackDialog('Callback deadlines', 'deadline-error');
   const settings = state.model.callback_settings,
@@ -108,6 +109,7 @@ export function openCallbackDeadlines() {
   };
   dialog.showModal();
 }
+// @llr LLR-SRV-CALLBACK-023, LLR-SRV-CALLBACK-024, LLR-SRV-UI-016
 export function openCallbackSmtp() {
   const { dialog, form } = callbackDialog('Email server', 'smtp-error');
   const settings = state.model.smtp,
@@ -194,6 +196,7 @@ export function openCallbackSmtp() {
   dialog.showModal();
 }
 /** @param {import('../types/contracts').CallbackView} request */
+// @llr LLR-SRV-CALLBACK-021
 function callbackEmailStatus(request) {
   if (request.status !== 'pending') return '';
   const addresses = state.model.users[request.to]?.emails || [],
@@ -210,6 +213,7 @@ function callbackEmailStatus(request) {
     return 'Email reminders are disabled. Configure the email server to send them.';
   return `Email reminder ${new Date(request.email_due_at).toLocaleString()}.`;
 }
+// @llr LLR-SRV-CALLBACK-016
 export function renderCallbacks() {
   $('page-actions').replaceChildren();
   const settings = state.model.callback_settings,

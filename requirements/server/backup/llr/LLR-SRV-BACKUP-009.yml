@@ -1,0 +1,21 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Restricted durable file replacement
+level: 93.0
+links:
+- HLR-SRV-BACKUP-002: IFolSJN9Y715aTkpB7gvbpLtrP-V3gVekpN7XH7bXWk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/backup-storage.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Restore shall write only allowed application files and permitted portraits. The password destination shall come from local configuration. Each replacement shall use a private temporary file, file fsync, rename and directory sync. Obsolete restored portraits shall be removed.
+verification: |
+  Use external credential paths, unsafe destinations and fsync failure. Check destination ownership, cleanup and durable write order.

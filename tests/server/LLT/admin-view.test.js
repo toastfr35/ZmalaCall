@@ -1,5 +1,5 @@
 // @test S-LLT-027
-// @requirements LLR-SRV-UI-002, LLR-SRV-UI-003, LLR-SRV-UI-004, LLR-SRV-UI-005
+// @requirements LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015
 // @environment display
 // @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation.
 // @pass All computed layout and interaction assertions must pass against the mocked API; no live service or account is changed.
@@ -7,7 +7,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
+const coverage = require('../../../build_tools/coverage-js.cjs');
 const path = require('node:path');
 const { chromium } = require('playwright');
 const { storeFixture } = require('../../support/server/unit-fixture');
@@ -15,8 +15,16 @@ const { storeFixture } = require('../../support/server/unit-fixture');
 test('admin component fits phones and desktop and preserves modal drafts', async (t) => {
   const s = storeFixture(t),
     browser = await chromium.launch({ headless: true });
-  t.after(() => browser.close());
   const page = await browser.newPage();
+  const navigate = page.goto.bind(page);
+  page.goto = async (...args) => {
+    await coverage.collectPage(page);
+    return navigate(...args);
+  };
+  t.after(async () => {
+    await coverage.collectPage(page);
+    await browser.close();
+  });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   const model = {
@@ -65,7 +73,7 @@ test('admin component fits phones and desktop and preserves modal drafts', async
         : file.endsWith('.svg')
           ? 'image/svg+xml'
           : 'text/html';
-    await route.fulfill({ status: 200, contentType, body: fs.readFileSync(file) });
+    await route.fulfill({ status: 200, contentType, body: coverage.browserSource(file) });
   });
   for (const width of [320, 390, 700, 1920]) {
     await page.setViewportSize({ width, height: 800 });

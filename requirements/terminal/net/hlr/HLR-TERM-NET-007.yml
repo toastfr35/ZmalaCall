@@ -1,0 +1,21 @@
+active: true
+area: Network connection
+derived: false
+header: |
+  Restricted shell access
+level: 8.5
+links:
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_ssh_guard_linux.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall restrict SSH access to physical Ethernet. This restriction shall
+  leave normal terminal communication available through Wi-Fi.
+verification: |
+  Attempt SSH through each network interface and address family. Check permitted
+  Ethernet access, denied Wi-Fi access and continued terminal server communication.

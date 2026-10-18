@@ -1,0 +1,21 @@
+active: true
+area: Server communication
+derived: false
+header: Calls through UDP-blocking networks
+level: 150.0
+links:
+- PROD005: null
+- PROD012: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/secure_network_lab.py
+  type: file
+reviewed: null
+scope: Core
+text: When secure relay mode is configured, the terminal shall establish audio and video calls through
+  a network that blocks forwarded UDP but permits direct TLS connections to the configured TCP port
+  443 endpoints. It shall authenticate these endpoints and shall not fall back to an unencrypted
+  connection.
+verification: Run the isolated two-home network matrix with UDP blocked at either or both homes.
+  Check decoded media in both directions and TLS authentication.

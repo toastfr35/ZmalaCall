@@ -1,0 +1,27 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Account identity and capacity
+level: 19.0
+links:
+- HLR-SRV-DIR-018: 3FwHcV_bZoMa3n3BHEtxN-ucUFWdkDK29qi_hycUoA4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/directory-policy.test.js
+  type: file
+- path: tests/server/LLT/store-auth.test.js
+  type: file
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall support terminal and phone accounts, with at most 40 accounts. Usernames shall start with a lowercase letter and contain at most 31 lowercase letters, digits, underscores or hyphens. Duplicate and reserved prototype names shall be rejected.
+verification: |
+  Create accounts at capacity and submit duplicate, malformed and reserved identifiers. Check that failures do not mutate state.

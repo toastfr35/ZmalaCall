@@ -20,7 +20,7 @@ class TVSetupView:
         self.tv_check_signature = None
         self.tv_check_images = []
 
-    # @llr LLR-TERM-TV-003
+    # @llr LLR-TERM-TV-019
     def begin_tv_setup(self, config):
         if self.tv_setup_checked:
             return False

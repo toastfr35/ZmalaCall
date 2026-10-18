@@ -1,0 +1,25 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Revision-bound contact cache
+level: 30.0
+links:
+- HLR-SRV-DIR-019: IcDUkI-RpZ7F_aYw43oK9f9t-Tdba8xsxU7Kj5aQQu4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/store-views.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall reuse stable permission and contact derivations within a configuration revision. A changed revision shall invalidate them. Live presence shall be added separately without altering cached contacts.
+verification: |
+  Count derivations across repeated reads, mutate returned live fields, then change configuration and check invalidation.

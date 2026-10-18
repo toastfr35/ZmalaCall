@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-SRV-DIR
-      title: Accounts, directory and portraits — HLR
+      title: Accounts, groups and portraits — HLR
   publish:
   - area
   - scope

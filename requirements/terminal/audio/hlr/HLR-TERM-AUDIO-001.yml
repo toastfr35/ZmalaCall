@@ -1,0 +1,21 @@
+active: true
+area: Audio
+derived: false
+header: |
+  Call sound and tones
+level: 20.0
+links:
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/camera_feed_live.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall use the supported microphone and speaker for call sound. It shall
+  play call-progress tones and stop them when their purpose ends.
+verification: |
+  Place and receive calls using the C20. Check speech direction, tone routing and tone
+  termination for each call outcome.

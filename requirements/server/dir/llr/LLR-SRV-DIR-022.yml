@@ -1,0 +1,27 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Atomic account field validation
+level: 20.0
+links:
+- HLR-SRV-DIR-018: 3FwHcV_bZoMa3n3BHEtxN-ucUFWdkDK29qi_hycUoA4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/directory-policy.test.js
+  type: file
+- path: tests/server/LLT/store-auth.test.js
+  type: file
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Account edits shall validate name, type, SIP password, picture and supplied email fields before mutation. Names shall contain 1 to 80 characters. Passwords shall contain at most 128 characters and exclude line breaks and NUL.
+verification: |
+  Supply valid and invalid combinations. Check rejected edits preserve credentials and all accepted fields.

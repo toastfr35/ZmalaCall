@@ -163,7 +163,7 @@ function actionButton(text, action, cls = 'secondary', glyph) {
   b.onclick = () => run(action);
   return b;
 }
-// @llr LLR-SRV-UI-004
+// @llr LLR-SRV-UI-014
 /** @param {string} label @param {string} glyph @param {import('../types/admin').Action} action */
 function iconButton(label, glyph, action) {
   const b = actionButton('', action, 'icon-button', glyph);
@@ -384,6 +384,9 @@ function passwordField(text, fresh = false) {
   return { input, label };
 }
 
+// @llr LLR-SRV-AUTH-014
+// @llr LLR-SRV-AUTH-018
+// @llr LLR-SRV-AUTH-019
 async function signIn() {
   if (document.querySelector('.signin-card')) return;
   const status = await api('/api/auth/status');
@@ -436,6 +439,7 @@ async function signIn() {
   setView(form);
 }
 
+// @llr LLR-SRV-AUTH-016
 function authControls() {
   if (document.getElementById('admin-auth-controls')) return;
   const controls = el('div', null, 'admin-auth-controls');
@@ -504,7 +508,7 @@ function authControls() {
 
 // admin-setup.js
 // Authenticated provisioning downloads and local test enrollment actions.
-// @llr LLR-SRV-UI-009
+// @llr LLR-SRV-UI-019
 /** @param {string} route @param {string} filename @param {import('../types/contracts').JsonObject} [value] */
 async function downloadPdf(route, filename, value) {
   /** @type {Record<string, string>} */
@@ -568,7 +572,7 @@ $('wifi-form').onsubmit = (e) => {
 // admin-clipboard.js
 // The installed server is also used over plain LAN HTTP, where Clipboard API
 // access is unavailable. Keep the fallback inside the open dialog's focus scope.
-// @llr LLR-SRV-UI-009
+// @llr LLR-SRV-UI-019
 /** @param {string} value @param {HTMLElement} owner @returns {Promise<boolean>} */
 async function writeClipboard(value, owner) {
   try {
@@ -736,7 +740,7 @@ function renderAccounts() {
   setView(p);
   accountRows();
 }
-// @llr LLR-SRV-UI-005
+// @llr LLR-SRV-UI-015
 function openAccount(id = '') {
   accountVersion = state.model.configuration_version;
   accountGeneration++;
@@ -835,6 +839,7 @@ function deleteAccount(id) {
   );
 }
 /** @param {string} value @param {HTMLButtonElement} b @param {HTMLElement} feedback */
+// @llr LLR-SRV-UI-019
 async function copyValue(value, b, feedback) {
   const copied = await writeClipboard(value, b);
   feedback.textContent = copied
@@ -889,8 +894,8 @@ function renderConnection() {
   for (const [name, value, secret] of /** @type {const} */ ([
     ['Username', id],
     ['Password', u.password, true],
-    ['Domain', `${state.model.host}:${state.model.sip_port}`],
-    ['SIP server', `sip:${state.model.host}:${state.model.sip_port};transport=udp`],
+    ['Domain', state.model.host],
+    ['SIP server', state.model.sip_proxy],
     ['SIP address', `sip:${id}@${state.model.host}`],
   ]))
     list.append(credential(name, value, secret));
@@ -899,7 +904,9 @@ function renderConnection() {
     container.append(
       el(
         'p',
-        'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
+        state.model.sip_proxy.includes('transport=tls')
+          ? 'This deployment uses TLS and TURN. Use a Zmala terminal enrolled with an HTTPS QR code. Manual phone provisioning is not supported in secure relay mode.'
+          : 'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
         'info-box',
       ),
     );
@@ -973,7 +980,7 @@ $('console-dialog').addEventListener('close', () => {
   consoleGeneration++;
   state.consoleId = '';
 });
-// @llr LLR-SRV-UI-008
+// @llr LLR-SRV-UI-018
 async function refreshConsole() {
   if (!state.consoleId || !$('console-dialog').open || state.consoleFetching) return;
   const id = state.consoleId,
@@ -1181,7 +1188,7 @@ function renderGroups() {
     );
   setView(intro, grid);
 }
-// @llr LLR-SRV-UI-005
+// @llr LLR-SRV-UI-015
 function openGroup(id = '') {
   state.editingGroupId = id;
   state.groupVersion = state.model.configuration_version;
@@ -1688,7 +1695,7 @@ function buildTerminalCard(id) {
   terminalCardState(card, id);
   return card;
 }
-// @llr LLR-SRV-UI-007
+// @llr LLR-SRV-UI-017
 function renderTerminals() {
   $('page-actions').replaceChildren();
   const ids = Object.keys(state.model.profiles);
@@ -1786,6 +1793,7 @@ function callbackFooter(form, dialog, text) {
   );
   form.append(footer);
 }
+// @llr LLR-SRV-CALLBACK-017, LLR-SRV-UI-016
 function openCallbackDeadlines() {
   const { dialog, form } = callbackDialog('Callback deadlines', 'deadline-error');
   const settings = state.model.callback_settings,
@@ -1838,6 +1846,7 @@ function openCallbackDeadlines() {
   };
   dialog.showModal();
 }
+// @llr LLR-SRV-CALLBACK-023, LLR-SRV-CALLBACK-024, LLR-SRV-UI-016
 function openCallbackSmtp() {
   const { dialog, form } = callbackDialog('Email server', 'smtp-error');
   const settings = state.model.smtp,
@@ -1924,6 +1933,7 @@ function openCallbackSmtp() {
   dialog.showModal();
 }
 /** @param {import('../types/contracts').CallbackView} request */
+// @llr LLR-SRV-CALLBACK-021
 function callbackEmailStatus(request) {
   if (request.status !== 'pending') return '';
   const addresses = state.model.users[request.to]?.emails || [],
@@ -1940,6 +1950,7 @@ function callbackEmailStatus(request) {
     return 'Email reminders are disabled. Configure the email server to send them.';
   return `Email reminder ${new Date(request.email_due_at).toLocaleString()}.`;
 }
+// @llr LLR-SRV-CALLBACK-016
 function renderCallbacks() {
   $('page-actions').replaceChildren();
   const settings = state.model.callback_settings,
@@ -2043,7 +2054,7 @@ function callbackHours(hours) {
 }
 
 // admin-backups.js
-// @llr LLR-SRV-DATA-011
+// @llr LLR-SRV-BACKUP-012
 function backupPanel() {
   const section = panel(
     'Backup and restore',
@@ -2080,7 +2091,7 @@ async function backupRequest(url, options) {
   return response;
 }
 
-// @llr LLR-SRV-DATA-011
+// @llr LLR-SRV-BACKUP-012
 function openBackups() {
   const dialog = el('dialog', null, 'backup-dialog');
   dialog.setAttribute('aria-labelledby', 'backup-title');
@@ -2278,8 +2289,9 @@ function renderOverview() {
     server = panel('Shared SIP server', 'The same domain and server for every account.'),
     details = el('dl', null, 'server-details');
   for (const [name, value] of [
-    ['Domain', `${state.model.host}:${state.model.sip_port}`],
-    ['Proxy', `sip:${state.model.host}:${state.model.sip_port};transport=udp`],
+    ['Domain', state.model.host],
+    ['Proxy', state.model.sip_proxy],
+    ['Call transport', state.model.call_transport],
   ]) {
     const row = el('div');
     row.append(el('dt', name), el('dd', value));
@@ -2397,7 +2409,7 @@ function renderActivity() {
 
 // admin-main.js
 // Admin entry point: route rendering and polling share state without overwriting active edits.
-// @llr LLR-SRV-UI-002
+// @llr LLR-SRV-UI-012
 function render() {
   const renderers = /** @type {Record<string, () => void>} */ ({
     '/': renderOverview,
@@ -2422,7 +2434,7 @@ function refresh(force = false) {
   });
   return inFlight;
 }
-// @llr LLR-SRV-UI-006
+// @llr LLR-SRV-UI-016
 /** @param {boolean} force */
 async function performRefresh(force) {
   if (state.restoring) return;

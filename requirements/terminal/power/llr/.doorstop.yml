@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-TERM-POWER
-      title: Case and USB power — LLR
+      title: Connected devices and power — LLR
   publish:
   - area
   - scope

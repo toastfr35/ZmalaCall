@@ -45,10 +45,11 @@ async function readPhotos(directory, files) {
     files.set('photos/' + name, await fs.promises.readFile(file));
   }
 }
-// @llr LLR-SRV-DATA-010
+
 /** Replace only known application data. The external password destination comes
  * from local configuration, never from the uploaded archive.
  * @param {string} directory @param {string} passwordFile @param {Map<string, Buffer>} files */
+// @llr LLR-SRV-BACKUP-009
 function applyFiles(directory, passwordFile, files) {
   const photos = path.join(directory, 'photos');
   fs.mkdirSync(photos, { recursive: true });
@@ -67,9 +68,9 @@ function applyFiles(directory, passwordFile, files) {
   syncDirectory(photos);
 }
 
-// @llr LLR-SRV-DATA-010
 /** Commit a durable journal last. Before that point the live data is untouched.
  * @param {string} directory @param {Map<string, Buffer>} previous @param {Map<string, Buffer>} next */
+// @llr LLR-SRV-BACKUP-007
 async function stageRestore(directory, previous, next) {
   const recovery = path.join(directory, 'restore-recovery');
   fs.mkdirSync(recovery, { recursive: true, mode: 0o700 });
@@ -82,11 +83,11 @@ async function stageRestore(directory, previous, next) {
   syncDirectory(directory);
 }
 
-// @llr LLR-SRV-DATA-010
 /** Idempotent across power loss in either phase. Failed rollback leaves the journal
  * and fails startup, preserving the recovery backup instead of serving mixed data.
  * @param {string} directory @param {string} passwordFile
  * @param {typeof applyFiles} [apply] */
+// @llr LLR-SRV-BACKUP-008
 async function recoverRestore(directory, passwordFile, apply = applyFiles) {
   const recovery = path.join(directory, 'restore-recovery'),
     journal = path.join(recovery, 'pending.json');

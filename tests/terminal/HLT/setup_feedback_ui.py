@@ -1,5 +1,5 @@
 # @test T-HLT-021
-# @requirements HLR-TERM-SETUP-002, HLR-TERM-UI-002
+# @requirements HLR-TERM-SETUP-020, HLR-TERM-UI-012, HLR-TERM-UI-013
 # @environment display
 # @plan Render setup failures at two viewport sizes in every supported language; assert error text remains visible above a usable camera area and disappears after the failure state is cleared.
 # @pass Every named assertion must pass; record platform and native prerequisites with the result.

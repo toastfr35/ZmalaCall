@@ -1,7 +1,7 @@
 // @test S-LLT-022
-// @requirements LLR-SRV-CONFIG-010, LLR-SRV-CONFIG-011, LLR-SRV-CONFIG-012
+// @requirements LLR-SRV-ENROLL-002, LLR-SRV-ENROLL-003, LLR-SRV-ENROLL-004
 // @environment portable
-// @plan Generate setup payloads and PDF bytes directly; reject invalid Wi-Fi input, decode compact UTF-8 identity and inspect one A4 page, text and QR module geometry with its four-module quiet border.
+// @plan Generate setup payloads and PDF bytes directly; reject invalid Wi-Fi input, decode compact UTF-8 identity and inspect current setup instruction/privacy text, one A4 page and QR module geometry with its four-module quiet border.
 // @pass All payload fields, validation cases and PDF structure assertions must pass; physical print readability remains a system check.
 
 'use strict';
@@ -10,6 +10,34 @@ const test = require('node:test'),
 const { wifiPayload, serverPayload, setupPdf } = require('../../../zmala_server/setup-pdf');
 const { inflateSync } = require('node:zlib');
 const QRCode = require('../../../zmala_server/node_modules/qrcode');
+
+test('printed instructions match current English setup screens and explain privacy', async (t) => {
+  const PDFDocument = require('node:module').createRequire(
+    require.resolve('../../../zmala_server/setup-pdf'),
+  )('pdfkit');
+  const original = PDFDocument.prototype.text;
+  const text = [];
+  t.mock.method(PDFDocument.prototype, 'text', function (...args) {
+    text.push(args[0]);
+    return original.apply(this, args);
+  });
+  for (const [kind, prompt, privacy] of [
+    ['wifi', 'Scan the Wi-Fi QR code', 'This code contains the Wi-Fi password.'],
+    ['server', 'Scan the server QR code', 'This code grants access to this terminal account.'],
+  ]) {
+    text.length = 0;
+    const pdf = await setupPdf({ kind, label: 'Fixture', payload: 'fixture' });
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(
+      text.some((line) => line.includes(`"${prompt}"`)),
+      kind,
+    );
+    assert.ok(
+      text.some((line) => line.includes(privacy) && line.includes('Keep this page private.')),
+    );
+    assert.ok(text.some((line) => line.includes('Print at actual size (100%).')));
+  }
+});
 
 test('Wi-Fi QR escaping, validation and printable PDF', async () => {
   const input = { ssid: 'Cafe;Wi:Fi\\"', password: 'Secret;:\\,"', hidden: true };

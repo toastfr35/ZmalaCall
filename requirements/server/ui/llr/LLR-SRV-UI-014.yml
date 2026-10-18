@@ -1,0 +1,35 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Touch controls and focus
+level: 99.0
+links:
+- HLR-SRV-UI-010: MlEJf_-NKL2j0CSwG3cxFR64ABJCLXrvy9ljngju91U=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/admin-view.test.js
+  type: file
+- path: zmala_server/types/admin-dom.ts
+  type: file
+- path: zmala_server/types/admin.ts
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin.html
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Touch controls shall provide targets of at least 44 CSS pixels and readable form inputs. Navigation shall support keyboard use. Background refresh shall not detach the focused input.
+verification: |
+  Inspect computed hit areas and input sizes, navigate by keyboard and refresh during focused editing.

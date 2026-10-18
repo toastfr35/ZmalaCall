@@ -1,0 +1,35 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Live label changes
+level: 60.0
+links:
+- HLR-TERM-UI-013: DOfVscBFggXhItStZWu3_lqUPTHFo5oO6VjKqqe4LcQ=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_runtime_contracts.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/localization.py
+  type: file
+- path: zmala_terminal/common/text_renderer.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A supported live language change shall update displayed labels without replacing or
+  ending the active call.
+verification: |
+  Change language during a call and inspect updated labels, engine identity and call
+  state.

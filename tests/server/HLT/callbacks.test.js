@@ -1,5 +1,5 @@
 // @test S-HLT-008
-// @requirements HLR-SRV-CALLBACK-001
+// @requirements HLR-SRV-CALLBACK-012, HLR-SRV-CALLBACK-013
 // @environment portable
 // @plan Exercise callback create/list/cancel endpoints through an isolated HTTP application with multiple device identities; assert device ownership, group permissions and authenticated administrator cancellation.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

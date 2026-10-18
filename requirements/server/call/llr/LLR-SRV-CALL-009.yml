@@ -1,0 +1,25 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Call timeout and late-work isolation
+level: 56.0
+links:
+- HLR-SRV-CALL-002: vKvKSfN3xgoiMdmf7TxIlFx-u6Ua_ZZAMvsLNKfPvA0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/sip-guards.test.js
+  type: file
+- path: zmala_server/auth.js
+  type: file
+- path: zmala_server/sip-guards.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Unconnected calls shall expire after the destination ringing budget plus 30 seconds. Connected dialogs shall expire after four hours without signaling activity. Closure shall release relay resources and prevent late work from reviving the dialog.
+verification: |
+  Advance both timers and close during asynchronous offer or answer processing. Check that late work cannot forward or reconnect the call.

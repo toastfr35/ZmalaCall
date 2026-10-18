@@ -1,0 +1,31 @@
+active: true
+area: Contact selection and navigation
+derived: false
+header: |
+  Deliberate outgoing confirmation
+level: 47.0
+links:
+- HLR-TERM-NAV-002: xzZj9SiKHpzrvhN3YlA-zh-OJAiwG5Vcr3Ymm_13OSM=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Green on an available contact shall open its picture and name for confirmation. A
+  second distinct green press shall recheck permission and availability before
+  dialing. Any other key shall cancel and retain contact selection. A held green
+  button shall not confirm twice.
+verification: |
+  Confirm, cancel, repeat a held key and change permissions between presses. Check
+  that only a fresh valid confirmation dials.

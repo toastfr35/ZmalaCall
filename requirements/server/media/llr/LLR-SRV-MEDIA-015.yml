@@ -1,0 +1,33 @@
+active: true
+area: Audio and video relay
+derived: false
+header: Secure transport and temporary TURN credentials
+level: 153.0
+links:
+- HLR-SRV-MEDIA-014: null
+normative: true
+ref: ''
+references:
+- path: zmala_server/secure-calls.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: tests/server/LLT/secure-calls.test.js
+  type: file
+reviewed: null
+scope: Core
+text: When a secure deployment policy is present, the server shall accept SIP over TLS only and require
+  HTTPS for configuration. It shall advertise the public TLS SIP endpoint, preserve ICE SDP, reject
+  active media sections without ICE credentials or supported SRTP keys, and allocate no legacy UDP
+  relay sockets. It shall issue per-account TURN credentials with an eight-hour expiry from the current
+  hour. It shall refresh these credentials in configuration responses and shall not expose the shared
+  signing secret. Invalid deployment settings shall prevent startup.
+verification: Use fixed-clock unit tests for credentials, expiry and account separation. Reject malformed
+  deployment settings and insecure SDP; verify unchanged secure SDP without UDP socket allocation.
+  Test the HTTPS boundary and advertised routing in the network HLT.

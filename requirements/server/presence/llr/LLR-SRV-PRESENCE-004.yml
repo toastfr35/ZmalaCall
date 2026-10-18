@@ -1,0 +1,25 @@
+active: true
+area: Registration and availability
+derived: false
+header: |
+  Registration replacement isolation
+level: 48.0
+links:
+- HLR-SRV-PRESENCE-001: lzQ8x2LfimBdJ0H6qcdLShlijXMVNhEpDl6HgUdDEw4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/presence.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/registrations.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A probe result shall update only the registration object that it tested. A late result for an older flow shall not change a replacement registration.
+verification: |
+  Replace a registration while its probe is pending. Deliver old failure and success responses and inspect the replacement.

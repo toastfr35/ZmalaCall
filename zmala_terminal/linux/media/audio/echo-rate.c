@@ -86,6 +86,7 @@ static MSFilterDesc descriptor = {
     .category = MS_FILTER_OTHER, .ninputs = 2, .noutputs = 2, .methods = methods
 };
 
+// @llr LLR-TERM-AUDIO-003
 int zmala_speech_audio_register(MSFactory *factory, int rate) {
     if (!factory || (rate != 16000 && rate != 48000)) return -1;
     original = ms_factory_lookup_filter_by_name(factory, "MSSpeexEC");

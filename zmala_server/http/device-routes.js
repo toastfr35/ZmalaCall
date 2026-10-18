@@ -4,7 +4,7 @@
 const { terminalStatus } = require('../validation');
 const { registrationOnline } = require('../registrations');
 const { send, readJson, requireDevice } = require('./responses');
-// @llr LLR-SRV-CONFIG-008
+// @llr LLR-SRV-CONFIG-022
 /** Full snapshots after reads and writes must expose the same live fields.
  * @param {string} id @param {import('../types/http').DeviceContext} context */
 function liveConfiguration(id, { store, sipServer, callbacks }) {
@@ -27,7 +27,8 @@ async function deviceRoutes(req, res, url, context) {
   if (url.pathname === '/api/config' && req.method === 'GET') {
     deviceId = requireDevice(deviceId);
     if (
-      // @llr LLR-SRV-SIP-015
+      // @llr LLR-SRV-PRESENCE-005
+      !store.secureCalls &&
       url.searchParams.get('delta') === '1' &&
       url.searchParams.get('version') === String(store.value.configuration_version)
     )

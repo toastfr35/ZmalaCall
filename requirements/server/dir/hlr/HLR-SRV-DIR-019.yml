@@ -1,0 +1,23 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Group-controlled communication directory
+level: 8.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/admin.test.js
+  type: file
+- path: tests/server/HLT/performance.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall derive communication permission from shared group membership. It shall provide each terminal with account names, pictures and current permission flags.
+verification: |
+  Change overlapping groups and account details. Check symmetric permission, nontransitive membership and derived contact lists.

@@ -1,0 +1,29 @@
+active: true
+area: Saved state
+derived: false
+header: |
+  Ordered per-file replacement
+level: 84.0
+links:
+- HLR-SRV-DATA-012: lDZLOJEkyH9qDeBNPNGuPdGLsV68ZRaDJGN20zEJpK4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/snapshot-file.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: zmala_server/json-file.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/snapshot-file.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Configuration, callback and console snapshots shall replace their individual JSON files atomically. Each writer shall retain at most one active write and one latest queued snapshot. Ordinary snapshots shall remain independent per-file operations.
+verification: |
+  Hold writes, queue multiple complete revisions and inspect order, coalescing and atomic replacement. Ordinary writes do not fsync or form a cross-file transaction.

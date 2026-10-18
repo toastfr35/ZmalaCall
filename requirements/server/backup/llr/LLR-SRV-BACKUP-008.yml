@@ -1,0 +1,25 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Startup apply and rollback
+level: 92.0
+links:
+- HLR-SRV-BACKUP-002: IFolSJN9Y715aTkpB7gvbpLtrP-V3gVekpN7XH7bXWk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: zmala_server/backup-storage.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Startup shall finish a pending restore before constructing live stores or opening listeners. Apply failure shall commit a rollback phase and restore previous files. Failed rollback shall stop startup and retain the journal. Successful recovery shall save its outcome and remove the pending journal.
+verification: |
+  Interrupt apply and rollback, restart repeatedly and inject recovery errors. Check no partial state is served.

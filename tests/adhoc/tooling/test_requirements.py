@@ -50,6 +50,15 @@ class BaselineAuditTests(unittest.TestCase):
                 '# @pass The fixture assertion must succeed without changing any external state or files.\n', encoding='utf-8')
             self.change(uid, references=[{'path':'zmala_terminal/common/example.py','type':'file'},
                 {'path':test.relative_to(self.root).as_posix(),'type':'file'}])
+        for component, prefix, uid in (('server','S','HLR-SRV-BOOT-001'),('terminal','T','HLR-TERM-SYS-001')):
+            test = self.root / f'tests/{component}/HLT/example.py'
+            test.parent.mkdir(parents=True)
+            test.write_text(
+                f'# @test {prefix}-HLT-001\n# @requirements {uid}\n'
+                '# @environment portable\n'
+                '# @plan Drive the assembled fixture and inspect its externally observable response.\n'
+                '# @pass The complete exchange matches the expected response and leaves no resources open.\n', encoding='utf-8')
+            self.change(uid, references=[{'path':test.relative_to(self.root).as_posix(),'type':'file'}])
 
     def write(self, path, data):
         path.write_text(self.yaml.safe_dump(data), encoding='utf-8')
@@ -67,6 +76,22 @@ class BaselineAuditTests(unittest.TestCase):
                          ['LLR-SRV-BOOT-002', 'LLR-TERM-SYS-003'])
         self.assertEqual(report['code_traces']['LLR-TERM-SYS-003'],
                          [{'path': 'zmala_terminal/common/example.py', 'line': 1}])
+
+    def test_report_scope_excludes_installers(self):
+        baseline.write_coverage(self.root, baseline.audit(self.root))
+        report = (self.root/'coverage.html').read_text()
+        self.assertIn('Installers, packaging, deployment tools', report)
+        self.assertNotIn('including Windows installer front ends', report)
+
+    def test_standalone_runtime_converter_is_included_in_trace_and_coverage_inventory(self):
+        source = self.root / 'build_tools/convert-photo.py'
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text('def convert(): pass\n', encoding='utf-8')
+        included, excluded = baseline.source_inventory(self.root)
+        self.assertIn('build_tools/convert-photo.py', included)
+        self.assertNotIn('build_tools/convert-photo.py', excluded)
+        with self.assertRaisesRegex(ValueError, 'convert-photo.py'):
+            baseline.audit(self.root)
 
     def test_numbers_are_shared_between_hlr_and_llr_in_each_theme(self):
         folder = self.root/'requirements/terminal/sys/hlr'
@@ -152,6 +177,31 @@ class BaselineAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'outside this baseline'):
             baseline.audit(self.root)
 
+    def test_installers_are_excluded_and_cannot_be_requirement_references(self):
+        for name in ('build_tools/windows_installer/backend.py',
+                     'build_tools/server_installer/backend.py',
+                     'build_tools/linux/install-server.sh',
+                     'build_tools/linux/package-terminal.py',
+                     'build_tools/linux/check-low-wear.py'):
+            with self.subTest(name=name):
+                path = self.root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('# Deployment fixture\n', encoding='utf-8')
+                report = baseline.audit(self.root)
+                self.assertIn('outside Pi runtime', report['exclusions'][name])
+                self.assertNotIn(name, report['source_coverage'])
+        self.change('LLR-TERM-SYS-003', references=[
+            {'path': 'build_tools/linux/install-server.sh', 'type': 'file'}])
+        with self.assertRaisesRegex(ValueError, 'installer source is outside this baseline'):
+            baseline.audit(self.root)
+
+    def test_runtime_host_helpers_still_require_traceability(self):
+        path = self.root / 'build_tools/linux/ssh-guard.py'
+        path.parent.mkdir(parents=True)
+        path.write_text('# Runtime policy fixture\n', encoding='utf-8')
+        with self.assertRaisesRegex(ValueError, 'Unmapped.*ssh-guard'):
+            baseline.audit(self.root)
+
     def test_exclusion_reason_is_visible(self):
         vendor = self.root / 'zmala_server/vendor/sip/sip.js'
         vendor.parent.mkdir(parents=True)
@@ -187,8 +237,8 @@ value = 1  # @llr LLR-TERM-SYS-003
 '''), [(6, ['LLR-SRV-BOOT-002'])])
 
     def test_multiple_ids_on_shared_implementation(self):
-        self.assertEqual(self.parse('.py', '# @llr LLR-SRV-INSTALL-011, LLR-TERM-SYS-012\n'),
-                         [(1, ['LLR-SRV-INSTALL-011', 'LLR-TERM-SYS-012'])])
+        self.assertEqual(self.parse('.py', '# @llr LLR-SRV-SYS-002, LLR-TERM-SYS-012\n'),
+                         [(1, ['LLR-SRV-SYS-002', 'LLR-TERM-SYS-012'])])
 
     def test_malformed_markers_are_not_silently_ignored(self):
         for marker in ('@llr', '@llr: LLR-TERM-SYS-003', '@llr LLR-TERM-SYS-003 LLR-SRV-BOOT-002',

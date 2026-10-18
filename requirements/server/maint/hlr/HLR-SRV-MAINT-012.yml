@@ -1,0 +1,23 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Current operational information
+level: 23.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/performance.test.js
+  type: file
+- path: tests/server/HLT/terminal-status.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall provide authenticated views of calls, registrations, terminal reports and recent activity. It shall distinguish received terminal reports from server-observed availability.
+verification: |
+  Submit valid and malformed reports and change live calls and registrations. Check timestamps, access boundaries and retained event limits.

@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-SRV-CALLBACK
-      title: Callbacks and reminders — HLR
+      title: Callback requests and reminders — HLR
   publish:
   - area
   - scope

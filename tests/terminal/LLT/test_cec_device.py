@@ -1,7 +1,7 @@
 # @test T-LLT-010
-# @requirements LLR-TERM-TV-009
+# @requirements LLR-TERM-TV-025
 # @environment portable
-# @plan Supply synthetic DRM connectors and hotplug layouts; assert selection follows the active HDMI connector and preserves explicit adapter/restore choices.
+# @plan Supply synthetic DRM connectors and hotplug layouts; assert selection follows the active HDMI connector and preserves explicit adapter/restore choices. Inject the Linux connector-info ioctl response and verify DRM union decoding, unknown types, exact request arguments and file closure on errors.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Dual-HDMI selection follows kernel connector identity, not device numbering."""
@@ -9,14 +9,36 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from zmala_terminal.linux.cec_device import select_device
+from zmala_terminal.linux.cec_device import connector, select_device
 from zmala_terminal.linux.tv_control import TVControl
 
 
 class CecDeviceTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'Kernel ioctl adapter requires Linux')
+    def test_connector_decodes_drm_identity_and_closes_on_failed_ioctl(self):
+        import struct
+        opened = mock_open()
+        def ioctl(stream, operation, data, mutate):
+            self.assertIs(stream, opened.return_value.__enter__.return_value)
+            self.assertEqual(operation, 0x8044610a)
+            self.assertEqual(len(data), 68)
+            self.assertTrue(mutate)
+            struct.pack_into('=III', data, 0, 1, 7, 44)
+        with patch('builtins.open', opened), patch('fcntl.ioctl', side_effect=ioctl):
+            self.assertEqual(connector('/dev/cec1'), (7, 44))
+        opened.assert_called_once_with('/dev/cec1', 'rb', buffering=0)
+        opened.return_value.__exit__.assert_called_once()
+        with patch('builtins.open', mock_open()), patch('fcntl.ioctl'):
+            self.assertIsNone(connector('/dev/cec1'))
+        opened = mock_open()
+        with patch('builtins.open', opened), patch('fcntl.ioctl', side_effect=OSError('unplugged')):
+            with self.assertRaisesRegex(OSError, 'unplugged'):
+                connector('/dev/cec1')
+        opened.return_value.__exit__.assert_called_once()
+
     def test_second_hdmi_and_hotplug_with_different_card_number(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

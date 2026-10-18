@@ -1,5 +1,5 @@
 # @test T-HLT-011
-# @requirements HLR-TERM-UI-002, HLR-TERM-SYS-002
+# @requirements HLR-TERM-UI-012, HLR-TERM-UI-013
 # @environment display
 # @plan Render actual platform text, portraits and icons under deliberately tiny cache budgets; assert retained pixels survive eviction, oversized images are rejected and cache bytes remain bounded.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

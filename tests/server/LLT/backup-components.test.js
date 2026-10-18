@@ -1,7 +1,7 @@
 // @test S-LLT-023
-// @requirements LLR-SRV-DATA-008, LLR-SRV-DATA-009, LLR-SRV-DATA-010
+// @requirements LLR-SRV-BACKUP-003, LLR-SRV-BACKUP-004, LLR-SRV-BACKUP-005, LLR-SRV-BACKUP-006, LLR-SRV-BACKUP-007, LLR-SRV-BACKUP-008, LLR-SRV-BACKUP-009, LLR-SRV-BACKUP-010, LLR-SRV-BACKUP-011, LLR-SRV-BACKUP-012
 // @environment portable
-// @plan Use isolated backup maps with fake live services; corrupt versions, schemas, hashes and sizes before decoding, then inject apply/rollback failures into journal recovery. Check snapshot isolation, restore exclusion gates and revision/network preservation.
+// @plan Use isolated backup maps with fake live services; corrupt versions, schemas, hashes and sizes before decoding, then inject apply/rollback failures into journal recovery. Check unsafe photo types and exact byte/count limits before reading, preserve destinations on failed durable writes, and reject corrupt recovery journals. Check snapshot isolation, restore exclusion gates and revision/network preservation. Dispatch backup routes using bounded byte streams; verify busy gates, archive metadata, explicit restore confirmation, revision forwarding, durable stage before delayed restart and lock release on failure.
 // @pass Rejections must leave live files unchanged; accepted snapshots and recovered transactions must match expected state without replaying commands.
 
 'use strict';
@@ -21,10 +21,94 @@ const {
 } = require('../../../zmala_server/backup-format');
 const {
   recoverRestore,
+  atomicWrite,
+  readPhotos,
   applyFiles,
   stageRestore,
 } = require('../../../zmala_server/backup-storage');
 const { Store } = require('../../../zmala_server/store');
+const { Readable } = require('node:stream');
+const { backupRoutes } = require('../../../zmala_server/http/backup-routes');
+
+test('backup HTTP routes serialize work, validate confirmation and restart after durable staging', async (t) => {
+  const app = await fixture(t),
+    archive = await app.backups.download();
+  const service = {
+    busy: false,
+    status: () => ({ state: 'ready' }),
+    download: async () => archive,
+    stage: t.mock.fn(async () => {}),
+    restart: t.mock.fn(),
+  };
+  const context = { backups: service, store: app.store };
+  const run = async (method, pathname, bytes = Buffer.alloc(0), headers = {}) => {
+    const req = Readable.from([bytes]);
+    req.method = method;
+    req.headers = headers;
+    const res = {
+      headers: {},
+      setHeader(key, value) {
+        this.headers[key] = value;
+      },
+      writeHead(code, fields) {
+        this.code = code;
+        Object.assign(this.headers, fields);
+      },
+      end(value) {
+        this.body = value;
+      },
+    };
+    const handled = await backupRoutes(req, res, new URL(pathname, 'http://server'), context);
+    return { res, handled };
+  };
+  assert.equal((await run('GET', '/other')).handled, false);
+  context.backups = null;
+  await assert.rejects(run('GET', '/api/server/backup'), { status: 503 });
+  context.backups = service;
+  assert.equal((await run('DELETE', '/api/server/backup')).handled, false);
+  service.busy = true;
+  assert.equal((await run('GET', '/api/server/backup/status')).res.code, 200);
+  await assert.rejects(run('GET', '/api/server/backup'), { status: 409 });
+  service.busy = false;
+  const download = (await run('GET', '/api/server/backup')).res;
+  assert.equal(download.body, archive);
+  assert.match(
+    download.headers['Content-Disposition'],
+    /attachment; filename="zmala-server-.*\.zmala-backup"/,
+  );
+  assert.equal(download.headers['Content-Type'], 'application/octet-stream');
+  const summary = JSON.parse((await run('POST', '/api/server/backup/check', archive)).res.body);
+  assert.equal(summary.accounts, Object.keys(app.store.value.users).length);
+  assert.equal(summary.pictures, 1);
+  await assert.rejects(run('POST', '/api/server/backup/restore', archive), { status: 400 });
+  service.stage.mock.resetCalls();
+  assert.equal(service.busy, false);
+  await assert.rejects(run('POST', '/api/server/backup/check', Buffer.from('corrupt')));
+  assert.equal(service.busy, false);
+  const headers = { 'x-zmala-confirm-restore': 'replace', 'x-zmala-configuration-version': '77' };
+  let restart;
+  t.mock.method(global, 'setTimeout', (callback, delay) => {
+    assert.equal(delay, 250);
+    restart = callback;
+    return { unref() {} };
+  });
+  const restored = await run('POST', '/api/server/backup/restore', archive, headers);
+  assert.equal(restored.res.code, 202);
+  assert.equal(service.stage.mock.calls[0].arguments[1], 77);
+  assert.equal(service.stage.mock.calls[0].arguments[0].files.size, 5);
+  assert.equal(service.restart.mock.calls.length, 0);
+  restart();
+  assert.equal(service.restart.mock.calls.length, 1);
+  assert.equal(service.busy, false);
+  service.stage = async () => {
+    throw Error('journal failure');
+  };
+  await assert.rejects(
+    run('POST', '/api/server/backup/restore', archive, headers),
+    /journal failure/,
+  );
+  assert.equal(service.busy, false);
+});
 
 test('snapshot freezes all in-memory records and excludes operational files', async (t) => {
   const app = await fixture(t);
@@ -232,4 +316,93 @@ test('staging advances revisions, preserves this server address and prevents sav
     ['cancelled', 'lost', 'completed'],
   );
   assert.ok(jobs.every((job) => !Object.hasOwn(job, 'lease')));
+});
+
+test('photo snapshot checks regular-file type and size/count bounds before reading bytes', async (t) => {
+  const directory = storeFixture(t).dir;
+  const files = new Map();
+  await assert.doesNotReject(readPhotos(directory, files));
+  assert.equal(files.size, 0);
+  fs.mkdirSync(path.join(directory, 'photos'));
+  const name = 'a'.repeat(64) + '.png';
+  const read = t.mock.method(fs.promises, 'readFile', async () => Buffer.from('photo'));
+  t.mock.method(fs.promises, 'readdir', async () => ['notes.txt', name]);
+  const stat = t.mock.method(fs.promises, 'lstat', async () => ({ isFile: () => false, size: 1 }));
+  await assert.rejects(readPhotos(directory, files), /Pictures must be regular files/);
+  assert.equal(read.mock.calls.length, 0);
+  stat.mock.mockImplementation(async () => ({ isFile: () => true, size: 47 * 1024 * 1024 + 1 }));
+  await assert.rejects(readPhotos(directory, files), /Backup is too large/);
+  assert.equal(read.mock.calls.length, 0);
+  stat.mock.mockImplementation(async () => ({ isFile: () => true, size: 47 * 1024 * 1024 }));
+  await assert.doesNotReject(readPhotos(directory, files));
+  assert.deepEqual(files.get('photos/' + name), Buffer.from('photo'));
+  assert.equal(read.mock.calls.length, 1);
+  files.clear();
+  for (let index = 0; index < 1004; index++) files.set('item' + index, Buffer.alloc(0));
+  stat.mock.mockImplementation(async () => ({ isFile: () => true, size: 0 }));
+  await assert.rejects(readPhotos(directory, files), /Backup is too large/);
+  assert.equal(read.mock.calls.length, 1);
+  files.delete('item0');
+  await assert.doesNotReject(readPhotos(directory, files));
+  assert.equal(files.size, 1004);
+  assert.equal(read.mock.calls.length, 2);
+});
+
+test('failed fsync closes the temporary file and never replaces the live destination', (t) => {
+  const file = path.join(storeFixture(t).dir, 'server.json');
+  const previous = fs.readFileSync(file);
+  const close = t.mock.method(fs, 'closeSync');
+  t.mock.method(fs, 'fsyncSync', () => {
+    throw Error('simulated full disk');
+  });
+  assert.throws(() => atomicWrite(file, 'replacement'), /simulated full disk/);
+  assert.equal(close.mock.calls.length, 1);
+  assert.deepEqual(fs.readFileSync(file), previous);
+});
+
+test('restore rejects unknown destinations and journals, and removes only obsolete photos', async (t) => {
+  const app = await fixture(t);
+  const original = fs.readFileSync(path.join(app.directory, 'server.json'));
+  assert.throws(
+    () =>
+      applyFiles(
+        app.directory,
+        app.store.adminPassword.file,
+        new Map([['../escape', Buffer.from('no')]]),
+      ),
+    /Invalid restore filename/,
+  );
+  assert.deepEqual(fs.readFileSync(path.join(app.directory, 'server.json')), original);
+  const current = 'photos/' + digest(PNG) + '.png';
+  const unrelated = path.join(app.directory, 'photos', 'notes.txt');
+  fs.writeFileSync(unrelated, 'keep me');
+  applyFiles(app.directory, app.store.adminPassword.file, new Map());
+  assert.equal(fs.existsSync(path.join(app.directory, current)), false);
+  assert.equal(fs.readFileSync(unrelated, 'utf8'), 'keep me');
+  fs.mkdirSync(path.join(app.directory, 'callbacks.json'));
+  assert.throws(
+    () =>
+      applyFiles(
+        app.directory,
+        app.store.adminPassword.file,
+        new Map([['callbacks.json', Buffer.from('[]')]]),
+      ),
+    /Invalid restore destination/,
+  );
+  const recovery = path.join(app.directory, 'restore-recovery');
+  fs.mkdirSync(recovery);
+  const journal = path.join(recovery, 'pending.json');
+  fs.writeFileSync(journal, JSON.stringify({ phase: 'unexpected' }));
+  const apply = t.mock.fn();
+  await assert.rejects(
+    recoverRestore(app.directory, app.store.adminPassword.file, apply),
+    /Invalid restore recovery journal/,
+  );
+  assert.equal(apply.mock.calls.length, 0);
+  assert.equal(fs.existsSync(journal), true);
+  await assert.rejects(
+    stageRestore(app.directory, new Map(), new Map()),
+    /restore is already pending/,
+  );
+  assert.deepEqual(fs.readFileSync(path.join(app.directory, 'server.json')), original);
 });

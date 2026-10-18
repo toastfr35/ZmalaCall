@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { readJson } = require('./json-file');
 
-// @llr LLR-SRV-AUTH-003
+// @llr LLR-SRV-AUTH-015
 /** Detect hardware rather than CPU architecture: ordinary ARM Linux hosts
  * must keep the normal data path. Injectable reads keep tests off real boot files.
  * @param {string} directory

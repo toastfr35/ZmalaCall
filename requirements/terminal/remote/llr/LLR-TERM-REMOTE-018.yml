@@ -1,0 +1,36 @@
+active: true
+area: Remote control
+derived: false
+header: |
+  Unknown disconnection cause
+level: 41.0
+links:
+- HLR-TERM-REMOTE-012: YpIevwSbHyRNBT3Si4S4bDtDnbS0qygkNuJhhG3oPeY=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_remote_health.py
+  type: file
+- path: tests/terminal/LLT/test_setup_views.py
+  type: file
+- path: zmala_terminal/common/icon_shapes.py
+  type: file
+- path: zmala_terminal/common/icons.py
+  type: file
+- path: zmala_terminal/common/ui/remote_help.py
+  type: file
+- path: zmala_terminal/linux/icons.py
+  type: file
+- path: zmala_terminal/linux/remote_health.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Remote help shall not claim that disconnection proves an empty battery, an off
+  switch or a device fault. It shall explain switching on and charging as possible
+  recovery actions.
+verification: |
+  Render disconnection without battery evidence. Check that help offers recovery
+  without asserting an unobserved cause.

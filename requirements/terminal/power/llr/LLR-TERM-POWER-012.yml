@@ -1,0 +1,28 @@
+active: true
+area: Connected devices and power
+derived: false
+header: |
+  Explicit shared USB switching
+level: 111.0
+links:
+- HLR-TERM-POWER-009: oGYlIu6lXZLPntVWKgFFQbHA7ACQo9BqHMVeUOPF1TI=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: tests/terminal/LLT/test_usb_power.py
+  type: file
+- path: zmala_terminal/linux/argon_fan.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+reviewed: null
+scope: Experimental
+text: |
+  Shared USB power control shall be off by default and require explicit enablement.
+  Supported external camera and charger ports shall form one power domain. Power
+  removal shall not be used with USB storage.
+verification: |
+  Start with default and enabled profiles. Check topology and rejection of storage.
+  Equipment on unpowered ports cannot be discovered until power returns.

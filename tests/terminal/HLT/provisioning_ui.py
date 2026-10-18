@@ -1,7 +1,7 @@
 # @test T-HLT-010
-# @requirements HLR-TERM-SETUP-002
+# @requirements HLR-TERM-SETUP-020, HLR-TERM-SETUP-021, HLR-TERM-MAINT-011
 # @environment display
-# @plan Connect the real setup controller and UI to an isolated HTTP service; scan valid/invalid enrollment payloads, resize views and assert errors, canonical enrollment and camera cleanup.
+# @plan Connect the real setup controller and UI to an isolated HTTP service. Scan valid/invalid enrollment payloads over the existing test network; assert English setup prompts, the Wi-Fi success interval, canonical enrollment and camera cleanup. Execute a leased shell job, then cancel and confirm reset and reopen the profile to check persistent scoped cleanup. This does not test an actual Wi-Fi join.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Isolated setup/reset UI and real outbound maintenance polling integration."""
@@ -79,6 +79,12 @@ with http_server_fixture() as server:
     try:
         api('/api/users', 'POST', {'id': account, 'name': 'Onboarding verification', 'type': 'terminal', 'emails': ['onboarding@example.test']})
         created = True
+        state = api('/api/admin')
+        profile = state['profiles'][account]
+        api('/api/settings', 'PUT', {
+            **profile, **profile['terminal_settings'], 'terminal_id': account,
+            'configuration_version': state['configuration_version'], 'command_shell': 'sh',
+        })
         bootstrap = api('/api/terminal-bootstrap?id='+account)
         bootstrap['server_url'] = base  # The isolated service listens on loopback only.
         app = main.Terminal(profile='onboard-verification', unconfigured=True)
@@ -90,7 +96,7 @@ with http_server_fixture() as server:
                 time.sleep(.02)
             assert condition(), 'Setup/maintenance operation did not finish'
 
-        assert app.title.cget('text') == 'wifi QR code ?'
+        assert app.title.cget('text') == 'Scan the Wi-Fi QR code'
         # Stable preview must not receive a background-erasing configure call on
         # every 20 ms tick while the native camera renderer draws into it.
         with patch.object(app.root, 'after', return_value=None), patch.object(app.video, 'configure', wraps=app.video.configure) as repaint:
@@ -119,13 +125,13 @@ with http_server_fixture() as server:
         app.font_family = font_family('en', app.available_fonts)
         wait(lambda: app.setup_stage == 'server', 12)
         assert app.scanner is not None and app.setup_continue_at is None
-        assert app.title.cget('text') == 'server QR code?'
+        assert app.title.cget('text') == 'Scan the server QR code'
         app.qr_found(json.dumps({'type': 'family-call-server', 'version': 1, **bootstrap}))
         wait(lambda: app.setup_stage is None)
         assert app.model.config['sip']['username'] == account and app.engine
 
         route = '/api/terminals/'+account+'/console'
-        command = api(route, 'POST', {'command': ("Write-Output 'ZmalaCall maintenance verified'" if sys.platform == 'win32' else "printf 'ZmalaCall maintenance verified\n'"), 'timeout_seconds': 5})
+        command = api(route, 'POST', {'command': "printf 'ZmalaCall maintenance verified\n'", 'timeout_seconds': 5})
         result = []
         def completed():
             jobs = api(route)['jobs']
@@ -153,7 +159,9 @@ with http_server_fixture() as server:
         for i in range(15):
             app.keypress('red')
         assert app.setup_stage is None and app.settings_hold.started is not None
-        app.tick_settings_access(app.settings_hold.started+10)
+        # One tick beyond the threshold avoids floating-point cancellation in
+        # (started + 10) - started when the monotonic value crosses a power of two.
+        app.tick_settings_access(app.settings_hold.started+10.02)
         app.keyrelease('red')
         assert app.settings_open and app.setup_stage is None
         app.settings_draft.row = FIELDS.index('reset')
@@ -174,7 +182,7 @@ with http_server_fixture() as server:
         assert app.settings_open and app.settings_draft.key == 'reset'
         app.press('green')  # Open reset again.
         app.press('green')  # Confirm only in this isolated test profile.
-        assert app.setup_stage=='wifi' and app.title.cget('text')=='wifi QR code ?'
+        assert app.setup_stage=='wifi' and app.title.cget('text')=='Scan the Wi-Fi QR code'
         assert app.engine is None and app.configuration is None and app.maintenance is None
         assert not app.cache_path.exists()
         assert not app.missed_calls_store.path.exists() and not app.model.missed_calls

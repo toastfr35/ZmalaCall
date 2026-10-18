@@ -1,0 +1,21 @@
+active: true
+area: Audio and video relay
+derived: false
+header: |
+  Transactional media targets
+level: 61.0
+links:
+- HLR-SRV-MEDIA-008: 5uCWTTaRH4AQoptIHD7EgydMCTLzTcZfhc1kW97UIm0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/media-lifetime.test.js
+  type: file
+- path: zmala_server/media.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Media destination updates shall remain staged until negotiation is accepted. Rejection shall discard staged changes. An accepted zero media port shall close the corresponding stream.
+verification: |
+  Compare active targets before and after accepted and rejected changes. Disable a stream and inspect socket release.

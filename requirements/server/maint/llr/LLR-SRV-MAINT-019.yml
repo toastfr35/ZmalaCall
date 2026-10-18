@@ -1,0 +1,27 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Server receipt timestamp
+level: 82.0
+links:
+- HLR-SRV-MAINT-012: QfBVCHbWe-3uu-Qo8RMTv4QvNlTH4njv2t48zilKD50=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall timestamp accepted terminal reports when received. Client-supplied last-seen values shall not replace that timestamp. Reported registration state shall remain separate from observed SIP reachability.
+verification: |
+  Forge client timestamps and registration claims, then compare stored reports and the live SIP view.

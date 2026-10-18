@@ -1,0 +1,29 @@
+active: true
+area: Connected devices and power
+derived: false
+header: |
+  Safe USB detach and recovery
+level: 114.0
+links:
+- HLR-TERM-POWER-009: oGYlIu6lXZLPntVWKgFFQbHA7ACQo9BqHMVeUOPF1TI=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: tests/terminal/LLT/test_usb_power.py
+  type: file
+- path: zmala_terminal/linux/argon_fan.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+reviewed: null
+scope: Experimental
+text: |
+  The power helper shall reject power-off while another peripheral or open media
+  handle is present. It shall deauthorize C20 interfaces before switching off. Wake
+  shall wait for audio and video enumeration. The SDK owner thread shall refresh
+  devices and restore volume before media readiness.
+verification: |
+  Supply foreign peripherals and open handles. Trace deauthorization, power changes,
+  enumeration, SDK refresh and volume ordering.

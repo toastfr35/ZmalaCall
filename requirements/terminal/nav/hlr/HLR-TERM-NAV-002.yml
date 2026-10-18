@@ -1,0 +1,23 @@
+active: true
+area: Contact selection and navigation
+derived: false
+header: |
+  Predictable navigation
+level: 15.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_remote_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall provide consistent selection, acceptance and cancellation
+  actions. It shall require deliberate confirmation before an outgoing call or
+  callback request.
+verification: |
+  Navigate contacts and editors. Hold action buttons and interrupt confirmation. Check
+  that no unintended call or request starts.

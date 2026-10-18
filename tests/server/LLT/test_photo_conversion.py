@@ -1,20 +1,39 @@
 # @test S-LLT-011
-# @requirements LLR-SRV-DIR-015, LLR-SRV-DIR-017
+# @requirements LLR-SRV-DIR-033, LLR-SRV-DIR-035
 # @environment portable
-# @plan Convert synthetic portraits using the image conversion function; inspect bounded valid PNG output and assert excessive decoded dimensions are rejected.
+# @plan Convert synthetic portraits using the real function and command entrypoint. Inspect bounded PNG dimensions, preserved aspect ratio, EXIF orientation and RGBA output. Assert excessive decoded dimensions are rejected before output.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Exercise the Linux converter with fixture images; no live account assets."""
 import importlib.util
 from pathlib import Path
+import runpy
+import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
 @unittest.skipUnless(importlib.util.find_spec('PIL'), 'Pillow is required for the Linux converter')
 class PhotoConversionTests(unittest.TestCase):
+    def test_command_entrypoint_applies_orientation_and_produces_rgba_png(self):
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as directory:
+            source, output = Path(directory) / 'input.jpg', Path(directory) / 'output.png'
+            exif = Image.Exif()
+            exif[274] = 6  # Clockwise quarter-turn: a landscape image becomes portrait.
+            Image.new('RGB', (120, 60), 'red').save(source, exif=exif)
+            command = ROOT / 'build_tools/convert-photo.py'
+            with patch.object(sys, 'argv', [str(command), '-Source', str(source), '-Destination', str(output)]):
+                runpy.run_path(str(command), run_name='__main__')
+            with Image.open(output) as result:
+                result.load()
+                self.assertEqual(result.size, (60, 120))
+                self.assertEqual(result.format, 'PNG')
+                self.assertEqual(result.mode, 'RGBA')
+
     def test_converts_portrait_to_bounded_valid_png_and_rejects_excessive_dimensions(self):
         from PIL import Image
         spec = importlib.util.spec_from_file_location('photo_conversion', ROOT / 'build_tools/convert-photo.py')

@@ -1,5 +1,5 @@
 # @test T-HLT-020
-# @requirements HLR-TERM-SETUP-002
+# @requirements HLR-TERM-SETUP-020
 # @environment native-display
 # @plan With a supplied synthetic QR image manifest, decode each payload twice through the real worker, close it and verify termination; inject a worker crash and assert the setup UI survives and schedules a retry.
 # @pass Every named assertion must pass; record platform and native prerequisites with the result.

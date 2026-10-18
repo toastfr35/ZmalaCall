@@ -10,6 +10,7 @@ const { AccountStore } = require('./accounts');
 const { migrate } = require('./migrations');
 const { readJson, writeJson } = require('./json-file');
 const { SnapshotFile } = require('./snapshot-file');
+const { loadSecureCalls } = require('./secure-calls');
 const { AdminPassword, passwordFile } = require('./admin-password');
 const { validateCallbackSettings, validateSmtpSettings, smtpView } = require('./callback-settings');
 const DATA = path.resolve(__dirname, 'data');
@@ -21,6 +22,7 @@ class Store extends AccountStore {
     fs.mkdirSync(dataDir, { recursive: true });
     const file = path.join(dataDir, 'server.json');
     super(readJson(file, defaultState));
+    this.secureCalls = loadSecureCalls();
     /** @type {InstanceType<typeof import('./snapshot-file').SnapshotFile> | undefined} */
     this.persistence = undefined;
     // Stable derived views never contain reachability or callback state.
@@ -49,7 +51,7 @@ class Store extends AccountStore {
   enableAsyncPersistence() {
     this.persistence ??= new SnapshotFile(this.file);
   }
-  // @llr LLR-SRV-DATA-004
+  // @llr LLR-SRV-DATA-015
   async flush() {
     await this.persistence?.flush();
   }
@@ -70,12 +72,13 @@ class Store extends AccountStore {
     return account.type === 'terminal' ? account : null;
   }
   /** @param {string | undefined} token */
+  // @llr LLR-SRV-AUTH-020
   deviceAccount(token) {
     return token
       ? Object.keys(this.value.users).find((id) => this.terminalAccount(id)?.device_token === token)
       : undefined;
   }
-  // @llr LLR-SRV-DIR-012
+  // @llr LLR-SRV-DIR-030
   /** @param {unknown} from @param {unknown} to */
   permitted(from, to) {
     const v = this.value;
@@ -88,7 +91,7 @@ class Store extends AccountStore {
       this.derivedPermissions().get(from)?.has(to) === true
     );
   }
-  // @llr LLR-SRV-DIR-014
+  // @llr LLR-SRV-DIR-032
   derivedPermissions() {
     if (this.viewVersion !== this.value.configuration_version) {
       this.permissions.clear();
@@ -151,7 +154,7 @@ class Store extends AccountStore {
     // Callers add live fields; never let them modify the shared stable view.
     return contacts.map((contact) => ({ ...contact }));
   }
-  // @llr LLR-SRV-DIR-013
+  // @llr LLR-SRV-DIR-031
   /** @param {string} id */
   buildContacts(id) {
     const v = this.value,
@@ -173,7 +176,7 @@ class Store extends AccountStore {
         };
       });
   }
-  // @llr LLR-SRV-CONFIG-008
+  // @llr LLR-SRV-CONFIG-022
   /** @param {string | null} [id] @returns {import('./types/contracts').TerminalConfiguration} */
   config(id = this.value.local_terminal_id) {
     const p = this.requireTerminal(id),
@@ -204,19 +207,22 @@ class Store extends AccountStore {
         username: id,
         password: u.password,
         domain: v.host,
-        proxy: `sip:${v.host}:${v.sip_port};transport=udp`,
+        proxy: this.secureCalls?.proxy() || `sip:${v.host}:${v.sip_port};transport=udp`,
       },
+      ...(this.secureCalls ? { secure_calls: this.secureCalls.configuration(id) } : {}),
       contacts: this.contacts(id).map((c) => ({ ...c, sip_uri: `sip:${c.id}@${v.host}` })),
       terminal_settings: p.terminal_settings,
     };
   }
-  // @llr LLR-SRV-CONFIG-013
+  // @llr LLR-SRV-ENROLL-005
   /** @param {string | null} [id] @param {boolean} [lan]
    * @returns {import('./types/contracts').Enrollment} */
   bootstrap(id = this.value.local_terminal_id, lan = false) {
     const u = this.terminalAccount(id);
     return {
-      server_url: `http://${lan ? this.value.host : '127.0.0.1'}:${this.value.http_port}`,
+      server_url:
+        this.secureCalls?.httpsUrl ||
+        `http://${lan ? this.value.host : '127.0.0.1'}:${this.value.http_port}`,
       device_id: u?.device_id || 'unassigned',
       device_token: u?.device_token || '',
     };
@@ -235,11 +241,12 @@ class Store extends AccountStore {
     this.changed();
   }
   /** @param {string} id */
+  // @llr LLR-SRV-CONFIG-019
   ringTimeout(id) {
     const account = this.terminalAccount(id);
     return account?.auto_answer ? Math.max(60, (account.auto_answer_seconds || 5) + 30) : 60;
   }
-  // @llr LLR-SRV-CONFIG-007
+  // @llr LLR-SRV-CONFIG-021
   /** Device-scoped, field-level compare-and-set; never accepts account/media credentials.
    * @param {string} id @param {import('./types/contracts').JsonObject} changes
    * @param {import('./types/contracts').JsonObject} expected */
@@ -271,7 +278,7 @@ class Store extends AccountStore {
     const p = this.requireTerminal(id);
     this.setSettings(id, { display_name: p.display_name, ...p.terminal_settings, ...changes });
   }
-  // @llr LLR-SRV-DIR-009
+  // @llr LLR-SRV-DIR-027
   /** @param {unknown} serial @param {string} accountId */
   associateTerminal(serial, accountId) {
     const v = this.value;
@@ -316,6 +323,8 @@ class Store extends AccountStore {
     const v = this.value;
     return {
       ...v,
+      sip_proxy: this.secureCalls?.proxy() || `sip:${v.host}:${v.sip_port};transport=udp`,
+      call_transport: this.secureCalls ? 'TLS with encrypted TURN relay' : 'LAN UDP relay',
       // Administrative views include account provisioning credentials, but
       // never the admin password hash or the retired shortcut credential.
       admin_token: undefined,

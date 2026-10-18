@@ -1,0 +1,40 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Supervised kiosk
+level: 1.0
+links:
+- HLR-TERM-START-001: 5v-Cf82XELFAE-WnzQ0nNxqE2DlnDv6PpyBL7uYcwJo=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/21-zmalacall-pi4.conf
+  type: file
+- path: build_tools/linux/kiosk-session.py
+  type: file
+- path: build_tools/linux/picom.conf
+  type: file
+- path: build_tools/linux/prepare-display.py
+  type: file
+- path: build_tools/linux/zmalacall-compositor.service
+  type: file
+- path: build_tools/linux/zmalacall-display.service
+  type: file
+- path: build_tools/linux/zmalacall-terminal.service
+  type: file
+- path: tests/terminal/LLT/test_application_lifetime.py
+  type: file
+- path: tests/terminal/LLT/test_linux_lifecycle.py
+  type: file
+- path: zmala_terminal/common/main.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall run as the unprivileged appliance user in a fullscreen Xorg and
+  Openbox session. Systemd shall supervise the display and terminal services. Server
+  unavailability shall not stop the kiosk.
+verification: |
+  Inspect service ownership and restart policy. Start the application with incomplete
+  setup and with an unavailable server.

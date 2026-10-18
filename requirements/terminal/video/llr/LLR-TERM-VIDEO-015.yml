@@ -1,0 +1,30 @@
+active: true
+area: Video
+derived: false
+header: |
+  Stable framing movement
+level: 82.0
+links:
+- HLR-TERM-VIDEO-002: ilNONDH5vone7Toahq_M3aw-xudbyAigWd9tHX75S84=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-auto-framing.c
+  type: file
+- path: tests/terminal/LLT/test_auto_framing.py
+  type: file
+- path: tests/terminal/LLT/test_framing_worker.py
+  type: file
+- path: zmala_terminal/linux/auto_framing.py
+  type: file
+- path: zmala_terminal/linux/media/video/auto-framing.c
+  type: file
+reviewed: null
+scope: Optional
+text: |
+  Stable detections shall permit a tighter crop. A new person outside the crop shall
+  cause widening. Crop changes shall ease over approximately two seconds. Missing
+  detections shall retain the last crop for about six seconds before widening.
+verification: |
+  Use a controlled clock with stable detections, outliers and missing samples. Check
+  transition and retention boundaries.

@@ -1,0 +1,32 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Bounded command lifetime
+level: 120.0
+links:
+- HLR-TERM-MAINT-011: 99a2S4ByS6aFNDfkZ4HdHD-WV5hSRGrcT0AYaDRgcTg=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_maintenance_ownership.py
+  type: file
+- path: zmala_terminal/common/maintenance.py
+  type: file
+- path: zmala_terminal/common/process_job.py
+  type: file
+- path: zmala_terminal/linux/commands.py
+  type: file
+- path: zmala_terminal/linux/process_job.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Each job shall enforce its configured timeout from 5 to 120 seconds. Cancellation,
+  reset and shutdown shall terminate owned process groups. Job environment and
+  directory changes shall not affect later jobs. The installed service shall clean its
+  control group.
+verification: |
+  Run timed and cancelled isolated jobs with children. Check cleanup and independent
+  subsequent execution. Standalone cleanup does not supervise children that detach
+  into new sessions.

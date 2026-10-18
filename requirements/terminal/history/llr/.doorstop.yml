@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-TERM-HISTORY
-      title: Unread history and callbacks — LLR
+      title: Call history and callback requests — LLR
   publish:
   - area
   - scope

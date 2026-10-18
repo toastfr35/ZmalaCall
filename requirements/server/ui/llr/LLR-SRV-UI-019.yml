@@ -1,0 +1,45 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Copy and download feedback
+level: 104.0
+links:
+- HLR-SRV-UI-011: LPHJUJznAKObB5O3At_q4lceri2jKB5KEIO0WY4T5CQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/account-workflows.test.js
+  type: file
+- path: tests/server/LLT/admin-auth-setup.test.js
+  type: file
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/terminal-fields.test.js
+  type: file
+- path: zmala_server/web/admin-accounts.js
+  type: file
+- path: zmala_server/web/admin-auth.js
+  type: file
+- path: zmala_server/web/admin-callbacks.js
+  type: file
+- path: zmala_server/web/admin-clipboard.js
+  type: file
+- path: zmala_server/web/admin-main.js
+  type: file
+- path: zmala_server/web/admin-pages.js
+  type: file
+- path: zmala_server/web/admin-setup.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: zmala_server/web/admin.css
+  type: file
+- path: zmala_server/web/admin.html
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Credential copying shall report failure with manual-copy guidance in the dialog, including on plaintext LAN HTTP. Setup download failures shall remain visible to the administrator. Temporary secret-bearing copy elements and download URLs shall be released.
+verification: |
+  Exercise Clipboard API and fallback success/failure, PDF failures and dialog cancellation. Check feedback and temporary-resource cleanup.

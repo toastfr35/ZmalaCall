@@ -1,0 +1,31 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Configurable callback deadlines
+level: 68.0
+links:
+- HLR-SRV-CALLBACK-012: vFmH4gPjiuWqXjcLt3ra4thtjuHcDm2q0NO50dmc1yo=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-editor.test.js
+  type: file
+- path: tests/server/LLT/callback-reminders.test.js
+  type: file
+- path: tests/server/LLT/callback-state.test.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+- path: zmala_server/web/admin-callbacks.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Email delay shall default to one hour and removal to four hours from creation. Email delay shall be at least 0.01 hours; removal shall be later and at most 720 hours. Policy changes shall recalculate pending deadlines from original creation time.
+verification: |
+  Apply fractional and invalid values, change policy for existing requests and restart. Check immediate expiry when the new deadline passed.

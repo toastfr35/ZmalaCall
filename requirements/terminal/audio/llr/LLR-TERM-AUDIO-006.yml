@@ -1,0 +1,24 @@
+active: true
+area: Audio
+derived: false
+header: |
+  Volume feedback
+level: 68.0
+links:
+- HLR-TERM-AUDIO-002: A69x0CsfzYjDNxw8FZwaEFTPhXvX7WpCQtXBNs5HKJc=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_volume_control.py
+  type: file
+- path: zmala_terminal/common/volume_control.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Held-middle volume adjustment shall show a vertical bar on the right with the
+  current percentage. The bar shall remain for two seconds after release. A mixer
+  failure shall show a failure indication.
+verification: |
+  Drive hold, motion, release and a failed mixer result with a controlled clock.
+  Inspect percentage, visibility and failure state.

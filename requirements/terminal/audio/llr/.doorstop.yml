@@ -1,0 +1,19 @@
+settings:
+  digits: 3
+  itemformat: yaml
+  prefix: LLR-TERM-AUDIO
+  sep: '-'
+  parent: HLR-TERM-AUDIO
+attributes:
+  defaults:
+    doc:
+      name: LLR-TERM-AUDIO
+      title: Audio — LLR
+  publish:
+  - area
+  - scope
+  - verification
+  reviewed:
+  - area
+  - scope
+  - verification

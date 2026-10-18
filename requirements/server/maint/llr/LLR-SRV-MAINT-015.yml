@@ -1,0 +1,25 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Unknown outcome without replay
+level: 78.0
+links:
+- HLR-SRV-MAINT-011: sJW1dvGdS_-Gm5aD0PVVtKqWW8MUnT6xi1cG7zemBs0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/console-state.test.js
+  type: file
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A running job without completion shall become lost after its timeout plus 45 seconds. Retired-device queued jobs shall become cancelled and running jobs lost. Lost work shall not return to the execution queue.
+verification: |
+  Advance time, restart and retire or recreate device accounts. Check no automatic replay and retained diagnostic outcomes.

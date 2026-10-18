@@ -1,0 +1,29 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  SMTP secret and transport handling
+level: 75.0
+links:
+- HLR-SRV-CALLBACK-014: uZf3ONOKmHR0QXEUn1rlEgvMzbSXZM8fdrJmVPey3iA=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-editor.test.js
+  type: file
+- path: tests/server/LLT/credential-transitions.test.js
+  type: file
+- path: zmala_server/callback-emails.js
+  type: file
+- path: zmala_server/callback-mailer.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/web/admin-callbacks.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  SMTP views shall omit the saved password. Blank input shall retain it; explicit clearing shall remove it. TLS and STARTTLS shall validate certificates. User-visible failures shall use stable diagnoses without raw provider secrets.
+verification: |
+  Exercise retained, replaced and cleared secrets, TLS options and mapped provider failures. Inspect all public SMTP views.

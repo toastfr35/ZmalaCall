@@ -1,0 +1,32 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Temporary detailed logs
+level: 124.0
+links:
+- HLR-TERM-MAINT-012: BYCtRD3d-Wx2oRuznD6OcNT7x-_eCUfqXGpQHUJiAyk=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/diagnostics.py
+  type: file
+- path: tests/terminal/LLT/test_runtime_logging.py
+  type: file
+- path: zmala_terminal/common/connectivity.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/runtime_logging.py
+  type: file
+- path: zmala_terminal/linux/connectivity.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Routine installed logs shall use the volatile journal. Detailed logs shall require
+  explicit activation for at most 60 minutes and expire on time or restart. Runtime
+  status and lock files shall use RAM-backed locations.
+verification: |
+  Enable detailed logs at valid and excessive durations. Advance time and restart.
+  Check expiry and file locations.

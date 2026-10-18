@@ -8,8 +8,6 @@ URL = ('https://raw.githubusercontent.com/google-coral/test_data/master/'
        'ssd_mobilenet_v2_coco_quant_postprocess.tflite')
 SHA256 = '42fb3d70ffb7bb37dd518f730f7be784b831c2078f30c497d0019cc2e987fa26'
 
-
-# @llr LLR-TERM-MEDIA-019
 def download(destination):
     destination = Path(destination)
     if destination.is_file() and hashlib.sha256(destination.read_bytes()).hexdigest() == SHA256:

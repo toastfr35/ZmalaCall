@@ -75,6 +75,8 @@ export interface Options {
   port: number;
   tcp?: boolean;
   udp?: boolean;
+  tls_port?: number;
+  tls?: { cert: Buffer; key: Buffer; minVersion: string };
   requestGuard?(message: Message, remote: Remote): number;
   logger?: {
     error(error: Error): void;

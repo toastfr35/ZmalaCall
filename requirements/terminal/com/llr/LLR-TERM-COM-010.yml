@@ -1,0 +1,33 @@
+active: true
+area: Server communication
+derived: false
+header: Verified TLS and encrypted relay media
+level: 151.0
+links:
+- HLR-TERM-COM-009: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/secure_calls.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/linux/turn_runtime.py
+  type: file
+- path: zmala_terminal/linux/native/turn-framing.patch
+  type: file
+- path: tests/terminal/LLT/test_secure_calls.py
+  type: file
+- path: tests/terminal/LLT/turn_parser.cpp
+  type: file
+reviewed: null
+scope: Core
+text: In secure relay mode, the terminal shall use SIP TLS and TURN TLS on port 443, local trusted
+  CA certificates, certificate name checks, ICE relay selection and mandatory SRTP. It shall reject
+  invalid or expired relay credentials and require HTTPS enrollment. It shall apply changed credentials
+  only while idle. The TURN stream parser shall retain incomplete frames and remove ChannelData padding
+  before delivering each complete frame. The Pi shall load the parser correction only with the matching
+  installed SDK version.
+verification: Unit-test configuration rejection, native policy calls, encryption and resource cleanup.
+  Feed fragmented and coalesced TURN frames at every byte boundary; compare exact payload bytes and
+  lengths.

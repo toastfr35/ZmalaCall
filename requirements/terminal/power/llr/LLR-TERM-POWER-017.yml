@@ -1,0 +1,42 @@
+active: true
+area: Connected devices and power
+derived: false
+header: |
+  Confirmed USB power indication
+level: 116.0
+links:
+- HLR-TERM-POWER-009: oGYlIu6lXZLPntVWKgFFQbHA7ACQo9BqHMVeUOPF1TI=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_linux_renderers.py
+  type: file
+- path: tests/terminal/LLT/test_usb_power.py
+  type: file
+- path: zmala_terminal/common/icon_shapes.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+- path: zmala_terminal/linux/icons.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+reviewed: null
+scope: Experimental
+text: |
+  With shared USB control enabled, a webcam symbol shall appear left of the battery
+  icon. Its spacing shall match the gap right of Bluetooth. Confirmed on shall use
+  mint. Confirmed off shall use a grey slash.
+
+  Unknown or changing power shall use a grey question mark. Hub port status shall
+  determine confirmation independently of camera enumeration. Settings shall hide the
+  strip. Disabled USB control shall omit this icon.
+verification: |
+  Provide each hub status independently of camera and SDK state. Inspect icon color,
+  mark, spacing and visibility.

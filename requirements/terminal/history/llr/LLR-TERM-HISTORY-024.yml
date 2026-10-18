@@ -1,0 +1,33 @@
+active: true
+area: Call history and callback requests
+derived: false
+header: |
+  Availability notice
+level: 94.0
+links:
+- HLR-TERM-HISTORY-014: rYJPkKsSwXCDvKbjdyI6Mcjd9kFi4LqMv_P0XP9RrWs=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_call_orchestration.py
+  type: file
+- path: tests/terminal/LLT/test_runtime_contracts.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An available requested contact shall trigger one ten-second notice per request when
+  both sides can call. The idle terminal shall wait for five seconds without input
+  before selecting that contact. The notice shall neither dial nor interrupt ringing,
+  a call or confirmation.
+verification: |
+  Change availability and input time across each page state. Check selection delay,
+  notice duration, duplicate suppression and no dial.

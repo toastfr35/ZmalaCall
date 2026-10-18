@@ -1,0 +1,36 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Operational remote gate
+level: 8.0
+links:
+- HLR-TERM-SETUP-019: CHEZt2g7ZxzJa7GZyJoZyIghXVyPbmQ1qd2QTgVYrA0=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/pair-presenter.py
+  type: file
+- path: tests/terminal/LLT/test_pairing_setup.py
+  type: file
+- path: tests/terminal/LLT/test_remote_test.py
+  type: file
+- path: tests/terminal/LLT/test_setup_views.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/remote_help.py
+  type: file
+- path: zmala_terminal/common/ui/usb_setup.py
+  type: file
+- path: zmala_terminal/linux/pairing_status.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A saved Bluetooth bond shall not complete remote setup. The input device shall
+  become available and the physical button test shall pass. Recoverable bond failures
+  shall leave setup active with retry guidance.
+verification: |
+  Supply a bond without input, a stale bond and a working device. Check that only
+  verified operation permits progress.

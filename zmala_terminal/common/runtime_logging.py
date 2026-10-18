@@ -17,7 +17,7 @@ class DiagnosticFilter(logging.Filter):
         self.next_check = 0
         self.until = 0
 
-    # @llr LLR-TERM-MAINT-009, LLR-TERM-MAINT-010
+    # @llr LLR-TERM-MAINT-019, LLR-TERM-MAINT-020
     def filter(self, record):
         now = time.monotonic()
         if now >= self.next_check:

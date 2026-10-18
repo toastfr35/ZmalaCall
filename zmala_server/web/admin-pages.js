@@ -47,8 +47,9 @@ export function renderOverview() {
     server = panel('Shared SIP server', 'The same domain and server for every account.'),
     details = el('dl', null, 'server-details');
   for (const [name, value] of [
-    ['Domain', `${state.model.host}:${state.model.sip_port}`],
-    ['Proxy', `sip:${state.model.host}:${state.model.sip_port};transport=udp`],
+    ['Domain', state.model.host],
+    ['Proxy', state.model.sip_proxy],
+    ['Call transport', state.model.call_transport],
   ]) {
     const row = el('div');
     row.append(el('dt', name), el('dd', value));

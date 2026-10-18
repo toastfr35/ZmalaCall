@@ -1,0 +1,33 @@
+active: true
+area: Contact selection and navigation
+derived: false
+header: |
+  Unavailable-contact confirmation
+level: 48.0
+links:
+- HLR-TERM-NAV-002: xzZj9SiKHpzrvhN3YlA-zh-OJAiwG5Vcr3Ymm_13OSM=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_call_orchestration.py
+  type: file
+- path: tests/terminal/LLT/test_input_dispatch.py
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Selecting an unavailable contact shall offer a callback request. If availability
+  changes during call confirmation, the terminal shall require a fresh affirmative
+  press for the callback. It shall not create the request from the earlier call
+  confirmation.
+verification: |
+  Change availability before and during confirmation. Check the new prompt and absence
+  of a request before a fresh green press.

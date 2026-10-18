@@ -104,7 +104,6 @@ fi
 if [ -n "$data_from" ] && [ ! -d "$data_from" ]; then
     echo 'Migration data directory does not exist' >&2; exit 1
 fi
-# @llr LLR-TERM-INSTALL-005
 task_step 'Downloading and installing dependencies (Internet required)'
 apt-get -o APT::Update::Error-Mode=any update
 xargs apt-get install -y --no-install-recommends < "$task_root/build_tools/linux/dependencies.txt"
@@ -148,7 +147,7 @@ mkdir -p /etc/udev/rules.d
 install -m 644 "$task_root/build_tools/linux/70-zmalacall-presenter.rules" /etc/udev/rules.d/
 udevadm control --reload-rules
 udevadm trigger --subsystem-match=hidraw
-# @llr LLR-TERM-INSTALL-006
+# Prepare release and persistent appliance state.
 mkdir -p /opt/zmalacall/releases /var/lib/zmalacall /etc/zmalacall
 if [ -n "$data_from" ]; then
     # Existing installed state wins when upgrading or retrying installation.
@@ -166,6 +165,9 @@ chmod 755 "$release"
 mkdir -p "$release/build_tools"
 cp -a "$task_root/zmala_terminal" "$release/"
 cp -a "$task_root/build_tools/linux" "$release/build_tools/"
+mkdir -p "$release/tests/terminal/LLT"
+cp "$task_root/tests/terminal/LLT/turn_parser.cpp" "$release/tests/terminal/LLT/"
+python3 "$release/build_tools/linux/build-turn.py"
 if [ -e "$release/zmala_terminal/data" ]; then
     echo 'Package unexpectedly contains runtime data; refusing installation' >&2; exit 1
 fi

@@ -1,0 +1,31 @@
+active: true
+area: Host access and storage
+derived: false
+header: |
+  Persistent wired SSH state
+level: 106.0
+links:
+- HLR-SRV-HOST-001: vR9hI3ssh6ugNMcQqL8p0oCDw9vpH0tIaPy56GJRwhw=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/server-ssh.py
+  type: file
+- path: build_tools/linux/ssh-guard.py
+  type: file
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/test_server_platform.py
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/server-ssh.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Authenticated administration shall report and persistently change wired SSH through a fixed-action helper. Unavailable helper or status shall return an error. Disable shall be refused while the host deployment lock is active. HTTP, SIP and media shall remain running.
+verification: |
+  Test allowed actions, missing or malformed status, concurrent changes, deployment lock and privileged-helper failure.

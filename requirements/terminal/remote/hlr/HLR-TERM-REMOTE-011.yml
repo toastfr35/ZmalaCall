@@ -1,0 +1,22 @@
+active: true
+area: Remote control
+derived: false
+header: |
+  Physical remote operation
+level: 12.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD006: 2sjm1b2_Q_Jv_p06bviz-a-392AWlzkTtedgJlXNvLc=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_remote_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall interpret the supported remote buttons and motion. Device
+  disconnection and repeated reports shall not produce unintended actions.
+verification: |
+  Feed real or recorded remote reports, holds and disconnects. Check one intended
+  action for each deliberate input.

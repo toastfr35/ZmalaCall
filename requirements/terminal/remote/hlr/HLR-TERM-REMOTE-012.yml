@@ -1,0 +1,22 @@
+active: true
+area: Remote control
+derived: false
+header: |
+  Remote condition and assistance
+level: 13.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD006: 2sjm1b2_Q_Jv_p06bviz-a-392AWlzkTtedgJlXNvLc=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_remote_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall show available remote connection, battery and charging
+  information. It shall guide the user when the remote cannot control the terminal.
+verification: |
+  Change each reported remote condition. Check indicators, assistance and recovery
+  without an unsupported fault diagnosis.

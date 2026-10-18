@@ -1,0 +1,24 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Administrator and device access
+level: 5.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/admin-auth.test.js
+  type: file
+- path: tests/server/HLT/admin.test.js
+  type: file
+- path: tests/server/HLT/lan-device.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall separate administrator sessions from terminal device credentials. Each credential shall grant only its intended access. Administrator sessions shall expire and support sign-out.
+verification: |
+  Use each credential type against public, administrator and device operations. Check expiry, sign-out and password-change revocation.

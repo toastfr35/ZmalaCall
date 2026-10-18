@@ -1,5 +1,5 @@
 // @test S-HLT-020
-// @requirements HLR-SRV-DIR-001
+// @requirements HLR-SRV-DIR-018
 // @environment portable
 // @plan Reassign a serial through HTTP and reload device state; assert enrollment, device settings and maintenance job ownership follow the physical terminal.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

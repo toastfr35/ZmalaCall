@@ -1,0 +1,57 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Language selection and fallback
+level: 58.0
+links:
+- HLR-TERM-UI-013: DOfVscBFggXhItStZWu3_lqUPTHFo5oO6VjKqqe4LcQ=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_setup_views.py
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: tests/terminal/LLT/test_usb_setup.py
+  type: file
+- path: zmala_terminal/common/localization.py
+  type: file
+- path: zmala_terminal/common/shared/call-questions.json
+  type: file
+- path: zmala_terminal/common/shared/confirmation-prompts.json
+  type: file
+- path: zmala_terminal/common/shared/remote-messages.json
+  type: file
+- path: zmala_terminal/common/shared/remote-orientation.json
+  type: file
+- path: zmala_terminal/common/shared/settings-messages.json
+  type: file
+- path: zmala_terminal/common/shared/setup-translations.json
+  type: file
+- path: zmala_terminal/common/shared/terminal-languages.json
+  type: file
+- path: zmala_terminal/common/shared/video-messages.json
+  type: file
+- path: zmala_terminal/common/shared/wifi-confirmation.json
+  type: file
+- path: zmala_terminal/common/text_renderer.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+- path: zmala_terminal/linux/text_renderer.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Normal pages and Settings shall use the selected language from the supplied
+  catalogs. Early setup shall use English. A help text without a selected-language
+  translation shall use English. Core prompts shall support the 95 supplied language
+  catalogs.
+verification: |
+  Render all core catalogs and the available help translations. Check English fallback
+  without claiming every diagnostic is translated.

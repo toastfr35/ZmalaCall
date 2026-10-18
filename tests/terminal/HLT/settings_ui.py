@@ -1,5 +1,5 @@
 # @test T-HLT-012
-# @requirements HLR-TERM-CONFIG-001
+# @requirements HLR-TERM-CONFIG-016
 # @environment display
 # @plan Render settings on the real Tk UI and drive selection/draft transitions; assert only the active pane shows controls and cancellation preserves configuration.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
@@ -45,6 +45,7 @@ try:
     app.keyrelease('red')
     assert app.settings_open and not app.actions, app.actions
     for size in ('900x620', '1280x720'):
+        print(f'Settings layout: {size}, {len(LANGUAGES)} languages', flush=True)
         app.root.geometry(size)
         app.root.update()
         for language in LANGUAGES:

@@ -1,0 +1,31 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  LAN service listeners
+level: 2.0
+links:
+- HLR-SRV-START-001: tlqAlEiBhnE4rUwFiA26CSP98TW2Ryi4UrcbTLNiNFo=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: build_tools/linux/zmalacall-server.service
+  type: file
+- path: tests/server/LLT/sip-identity.test.js
+  type: file
+- path: tests/server/LLT/startup-policy.test.js
+  type: file
+- path: zmala_server/defaults.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/shutdown.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  HTTP shall listen on all IPv4 interfaces at port 8080 by default. SIP shall listen on UDP and TCP port 5060 by default. Configured ports shall replace these defaults.
+verification: |
+  Capture listener options and connect to isolated configured listeners. Check both SIP transports.

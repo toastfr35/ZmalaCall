@@ -1,0 +1,32 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Ordered button test
+level: 9.0
+links:
+- HLR-TERM-SETUP-019: CHEZt2g7ZxzJa7GZyJoZyIghXVyPbmQ1qd2QTgVYrA0=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_remote_test.py
+  type: file
+- path: tests/terminal/LLT/test_setup_views.py
+  type: file
+- path: zmala_terminal/common/remote_test.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/remote_test.py
+  type: file
+- path: zmala_terminal/common/ui/usb_setup.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The remote test shall request left, right, green, red and middle in that order. Each
+  step shall require a distinct physical press and release. Only the next button shall
+  be highlighted. Keyboard events shall not satisfy the test.
+verification: |
+  Send wrong buttons, repeats, keyboard events and the correct physical sequence.
+  Check highlighted and completed steps.

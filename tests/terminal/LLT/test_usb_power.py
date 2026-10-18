@@ -1,7 +1,7 @@
 # @test T-LLT-037
-# @requirements LLR-TERM-POWER-003, LLR-TERM-POWER-004, LLR-TERM-POWER-005, LLR-TERM-POWER-006, LLR-TERM-POWER-007
+# @requirements LLR-TERM-POWER-012, LLR-TERM-POWER-013, LLR-TERM-POWER-014, LLR-TERM-POWER-015, LLR-TERM-POWER-016, LLR-TERM-POWER-017
 # @environment portable
-# @plan Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication.
+# @plan Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication. Inject applied-volume status and worker time to verify ringing only after nonzero mixer convergence, atomic power telemetry, ringer termination escalation and unconditional shutdown power restoration.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Boundary, wake-race, stale-input and cancellation tests without powering USB."""
@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from zmala_terminal.linux.usb_power import UsbPower, should_power_off
@@ -22,6 +23,79 @@ from zmala_terminal.common.management import ManagementLoop
 
 
 class UsbPowerTests(unittest.TestCase):
+    def test_power_worker_status_and_ringer_wait_for_applied_nonzero_volume(self):
+        import zmala_terminal.linux.usb_power as module
+        power = self.controller()
+        power.state, power.powered, power.ringing = 'on', True, True
+        power.revision = power.refreshed = 2
+        power.command = Mock()
+        samples = iter([(50, 20, False), (0, 0, False), (40, 40, False), (40, 40, True)])
+        clock = [1000]
+        snapshots = []
+        with tempfile.TemporaryDirectory() as folder, patch.dict('os.environ', {'ZMALA_RUNTIME_DIR': folder}), \
+                patch.object(module.time, 'monotonic', side_effect=lambda: clock[0]), \
+                patch('zmala_terminal.linux.c20_volume.status', side_effect=lambda: next(samples)), \
+                patch.object(module.subprocess, 'Popen') as popen:
+            process = popen.return_value
+            process.poll.return_value = None
+            def wait(_):
+                snapshots.append(popen.call_count)
+                clock[0] += 5
+                if len(snapshots) == 4:
+                    power.stopped = True
+            power.changed = Mock(wait=Mock(side_effect=wait))
+            power.run()
+            self.assertEqual(snapshots, [0, 0, 1, 1])
+            self.assertIn('plughw:C20,0', popen.call_args.args[0])
+            self.assertEqual(process.terminate.call_count, 1)
+            import json
+            state = json.loads((Path(folder)/'usb-power.json').read_text())
+            self.assertEqual((state['state'], state['powered']), ('on', True))
+            self.assertFalse((Path(folder)/'usb-power.tmp').exists())
+        power.command.assert_called_once_with('on')
+
+    def test_ringer_stop_timeout_kills_and_worker_shutdown_restores_power(self):
+        import zmala_terminal.linux.usb_power as module
+        power = self.controller()
+        process = Mock()
+        process.poll.return_value = None
+        process.wait.side_effect = module.subprocess.TimeoutExpired('aplay', .3)
+        power.ringer = process
+        power.close()
+        process.terminate.assert_called_once()
+        process.kill.assert_called_once()
+        self.assertIsNone(power.ringer)
+        self.assertTrue(power.changed.is_set())
+        with patch.object(power, 'command', side_effect=OSError('hub gone')) as command, \
+                patch.object(module.logging, 'exception') as logged:
+            power.run()
+        command.assert_called_once_with('on')
+        logged.assert_called_once()
+        with patch.object(module.subprocess, 'run') as run:
+            power.command('on')
+        self.assertEqual(run.call_args.args[0], ['sudo', '-n', module.HELPER, 'on'])
+        self.assertEqual(run.call_args.kwargs['timeout'], 30)
+
+    def test_media_reenumeration_requires_c20_video_and_alsa_and_handles_disconnect(self):
+        import zmala_terminal.linux.usb_power as module
+        video = Mock()
+        video.resolve.return_value = '/sys/devices/usb1/1-1.2/video4linux/video0'
+        video.__truediv__ = Mock(return_value=SimpleNamespace(read_text=lambda: 'Nuroum C20'))
+        audio = Mock()
+        audio.read_text.return_value = 'C20\n'
+        with patch.object(module, 'Path') as path:
+            path.side_effect = lambda name: SimpleNamespace(glob=lambda pattern: [video] if 'video' in name else [audio])
+            self.assertTrue(module.media_present())
+            audio.read_text.return_value = 'HDMI'
+            self.assertFalse(module.media_present())
+            audio.read_text.side_effect = OSError('gone')
+            self.assertFalse(module.media_present())
+        with patch.object(module.sys, 'platform', 'linux'), patch.dict('os.environ', {'ZMALA_USB_POWER': '1'}), \
+                patch.object(module.threading, 'Thread') as thread:
+            enabled = module.UsbPower(Path('.'))
+        self.assertEqual(enabled.state, 'starting')
+        thread.return_value.start.assert_called_once()
+
     def test_exact_idle_and_battery_boundaries(self):
         self.assertFalse(should_power_off(299.9, 0, False, 100))
         self.assertTrue(should_power_off(300, 0, False, 25))
@@ -205,6 +279,47 @@ class HelperSafetyTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('usb_helper', path)
         cls.helper = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.helper)
+
+    def test_helper_inventory_checks_board_hub_topology_and_excludes_usb_hubs(self):
+        h = self.helper
+        with tempfile.TemporaryDirectory() as directory, patch.object(h, 'USB', Path(directory)), \
+                patch.object(h.Path, 'read_bytes', return_value=b'Raspberry Pi 4 Model B Rev 1.5'):
+            root = Path(directory)
+            for name, vendor, product, kind in [('1-1','2109','3431','09'), ('usb2','1d6b','0003','09'), ('1-1.2','0525','a4ad','ef')]:
+                device = root/name; device.mkdir()
+                for field, value in [('idVendor',vendor),('idProduct',product),('bDeviceClass',kind)]:
+                    (device/field).write_text(value)
+            (root/'interface').mkdir()
+            h.validate_board()
+            self.assertEqual(h.devices(), [(root/'1-1.2', ('0525','a4ad'))])
+            (root/'usb2/idProduct').write_text('other')
+            with self.assertRaisesRegex(RuntimeError, 'topology'):
+                h.validate_board()
+        with patch.object(h.Path, 'read_bytes', return_value=b'Raspberry Pi 3 Model B'):
+            with self.assertRaisesRegex(RuntimeError, 'Pi 4'):
+                h.validate_board()
+        with patch.object(h.subprocess, 'run', return_value='ok') as run:
+            self.assertEqual(h.run('unit-command'), 'ok')
+            run.assert_called_once_with(('unit-command',), check=True, capture_output=True, text=True, timeout=12)
+
+    def test_helper_on_needs_no_camera_and_off_requires_exactly_one_idle_camera(self):
+        h = self.helper
+        with patch.object(h, 'validate_board'), patch.object(h, 'devices', return_value=[]), patch.object(h, 'switch') as switch:
+            h.power('on'); switch.assert_called_once_with('on')
+            with self.assertRaisesRegex(RuntimeError, 'exactly one'):
+                h.power('off')
+        with tempfile.TemporaryDirectory() as directory, patch.object(h, 'validate_board'), \
+                patch.object(h.Path, 'glob', return_value=[Path('/dev/video0')]), \
+                patch.object(h.subprocess, 'run', return_value=Mock(returncode=1)) as opened, patch.object(h, 'switch') as switch:
+            camera = Path(directory); (camera/'authorized').write_text('1')
+            def check_off(action):
+                self.assertEqual(action, 'off')
+                self.assertEqual((camera/'authorized').read_text(), '0')
+            switch.side_effect = check_off
+            with patch.object(h, 'devices', return_value=[(camera, ('0525','a4ad'))]):
+                h.power('off')
+            switch.assert_called_once_with('off')
+            self.assertEqual(opened.call_args.kwargs['timeout'], 5)
 
     def test_successful_command_with_unchanged_ports_is_rejected(self):
         output = '\n'.join(f'  Port {i}: 0000 off' for i in range(1, 5))

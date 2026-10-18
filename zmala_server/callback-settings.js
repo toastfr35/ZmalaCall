@@ -32,7 +32,7 @@ function validateCallbackSettings(update) {
   return { email_after_hours: emailDelay, remove_after_hours: removalDelay };
 }
 
-// @llr LLR-SRV-CALLBACK-011
+// @llr LLR-SRV-CALLBACK-024
 /** @param {import('./types/contracts').JsonObject} update
  * @param {import('./types/contracts').ServerState['smtp']} current
  * @returns {import('./types/contracts').ServerState['smtp']} */

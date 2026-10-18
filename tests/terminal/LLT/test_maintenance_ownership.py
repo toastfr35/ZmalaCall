@@ -1,7 +1,7 @@
 # @test T-LLT-047
-# @requirements LLR-TERM-MAINT-003, LLR-TERM-MAINT-004
+# @requirements LLR-TERM-MAINT-014, LLR-TERM-MAINT-015, LLR-TERM-MAINT-016
 # @environment portable
-# @plan Feed bounded leased jobs through a stopped-thread polling agent and fake subprocesses; assert three-second polling, single execution and lease reporting, supported POSIX shells, noninteractive working directory, timeout/cancellation cleanup and process-group ownership checks.
+# @plan Feed bounded leased jobs through a stopped-thread polling agent and fake subprocesses; assert three-second polling, single execution and lease reporting, supported POSIX shells, noninteractive working directory, timeout/cancellation cleanup and process-group ownership checks. Stop the agent and check its shared cancellation signal prevents new polling. Drive real bounded output readers with fake child pipes and process-group assignment failure; assert truncation, exit status, ownership and cleanup.
 # @pass Assertions must reject invalid jobs and foreign process groups, terminate owned groups exactly once and never launch real shell commands.
 
 import io
@@ -16,6 +16,43 @@ from zmala_terminal.linux.process_job import ProcessJob
 
 
 class MaintenanceOwnershipTests(unittest.TestCase):
+    def test_stop_signals_job_cancellation_and_prevents_further_polling(self):
+        configuration = Mock()
+        with patch.object(maintenance.threading, 'Thread'):
+            agent = maintenance.MaintenanceAgent(configuration)
+        cancellation = agent.cancelled
+        self.assertFalse(cancellation.is_set())
+        agent.stop()
+        agent.stop()
+        self.assertIs(agent.cancelled, cancellation)
+        self.assertTrue(cancellation.is_set())
+        agent.loop()
+        configuration.request.assert_not_called()
+
+    def test_completed_failed_and_unowned_child_results_remain_bounded(self):
+        for exit_code in (0, 23):
+            process = Mock(stdout=io.BytesIO(b'x'*70000), stderr=io.BytesIO(b'error'), returncode=exit_code)
+            process.poll.side_effect = [None, exit_code, exit_code]
+            event = Mock(); event.is_set.return_value = False
+            with patch.object(maintenance, 'WINDOWS', False), patch('zmala_terminal.linux.commands.shutil.which', return_value='/bin/sh'), \
+                    patch.object(maintenance.subprocess, 'Popen', return_value=process), patch.object(maintenance, 'ProcessJob') as job:
+                result = maintenance.run_command('unit', 5, event, 'sh')
+            self.assertEqual(result['status'], 'completed' if exit_code == 0 else 'failed')
+            self.assertEqual(result['exit_code'], exit_code)
+            self.assertTrue(result['truncated'])
+            self.assertLessEqual(len(result['stdout'])+len(result['stderr']), 65536)
+            event.wait.assert_called_once_with(.1)
+            job.return_value.close.assert_called()
+        process = Mock(); process.poll.return_value = None
+        with patch.object(maintenance, 'command_arguments', return_value=['unit']), \
+                patch.object(maintenance.subprocess, 'Popen', return_value=process), patch.object(maintenance, 'ProcessJob') as job:
+            job.return_value.assign.side_effect = RuntimeError('not our group')
+            result = maintenance.run_command('unit', 5, threading.Event(), 'sh')
+        process.kill.assert_called_once()
+        self.assertEqual(result['status'], 'failed')
+        self.assertIn('not our group', result['stderr'])
+        self.assertTrue(job.return_value.close.called)
+
     def test_shell_arguments_are_explicit_and_unsupported_shells_fail(self):
         with patch('zmala_terminal.linux.commands.shutil.which', side_effect=lambda name: '/bin/'+name):
             for shell in ('sh', 'bash'):

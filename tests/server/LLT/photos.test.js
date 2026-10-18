@@ -1,7 +1,7 @@
 // @test S-LLT-005
-// @requirements LLR-SRV-DIR-015, LLR-SRV-DIR-016, LLR-SRV-DIR-017
+// @requirements LLR-SRV-DIR-033, LLR-SRV-DIR-034, LLR-SRV-DIR-035
 // @environment portable
-// @plan Inject delayed converters and malformed/oversized image input into PhotoStore; assert concurrency and queue limits, deduplicated atomic output and temporary-file cleanup.
+// @plan Inject delayed converters and malformed/oversized image input into PhotoStore; assert concurrency and queue limits, deduplicated atomic output and temporary-file cleanup. Probe JPEG marker lengths, standalone markers, truncated frames and excessive dimensions; assert access failures propagate and pending publication state clears.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -12,10 +12,52 @@ const os = require('node:os');
 const path = require('node:path');
 const { Readable } = require('node:stream');
 const { PhotoStore } = require('../../../zmala_server/photos');
+const { checkDimensions } = require('../../../zmala_server/photos');
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a/A8AAAAASUVORK5CYII=',
   'base64',
 );
+
+test('JPEG marker parsing accepts frame dimensions and rejects truncated, missing or excessive frames', async () => {
+  const frame = (width, height) => {
+    const bytes = Buffer.from([255, 192, 0, 8, 8, 0, 0, 0, 0, 0]);
+    bytes.writeUInt16BE(height, 5);
+    bytes.writeUInt16BE(width, 7);
+    return bytes;
+  };
+  const jpeg = (...segments) => Buffer.concat([Buffer.from([255, 216]), ...segments]);
+  const valid = jpeg(Buffer.from([255, 224, 0, 4, 0, 0, 255, 1, 255, 208]), frame(1920, 1080));
+  checkDimensions(valid, 'jpg');
+  checkDimensions(jpeg(Buffer.from([255]), frame(640, 480)), 'jpg');
+  for (const bytes of [
+    jpeg(Buffer.from([255, 218, 0, 2])),
+    jpeg(Buffer.from([255, 217, 0, 2])),
+    jpeg(Buffer.from([255, 224, 0, 1])),
+    jpeg(Buffer.from([255, 224, 0, 8])),
+    jpeg(Buffer.from([255, 255, 255, 224, 0])),
+    jpeg(frame(0, 480)),
+    jpeg(frame(8193, 10)),
+    jpeg(frame(4096, 4096)),
+    Buffer.from([255, 216]),
+  ])
+    assert.throws(() => checkDimensions(bytes, 'jpg'), /16 megapixels/);
+  const store = new PhotoStore('unused', async () =>
+    assert.fail('invalid input reached converter'),
+  );
+  await assert.rejects(store.upload(Readable.from([Buffer.from('not an image')])), /PNG or JPEG/);
+  assert.equal(store.uploads, 0);
+});
+
+test('photo publication propagates access errors and clears the pending commit', async (t) => {
+  const store = new PhotoStore('unused');
+  t.mock.method(fs, 'access', async () => {
+    throw Object.assign(Error('read denied'), { code: 'EACCES' });
+  });
+  const rename = t.mock.method(fs, 'rename', async () => {});
+  await assert.rejects(store.publish('temporary.png', 'target.png'), /read denied/);
+  assert.equal(rename.mock.callCount(), 0);
+  assert.equal(store.publishing.size, 0);
+});
 
 test('concurrent photo conversion yields to other work, deduplicates output and cleans temporary files', async () => {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'zmala-photo-'));

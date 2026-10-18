@@ -1,0 +1,33 @@
+active: true
+area: TV control
+derived: false
+header: |
+  TV setup ordering
+level: 95.0
+links:
+- HLR-TERM-TV-017: S2nqx7v0OyXsBJ4cnyWr1LqdDB9WZmvN6aEWTWFqziA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_tv_check.py
+  type: file
+- path: tests/terminal/LLT/test_tv_setup_view.py
+  type: file
+- path: tests/terminal/LLT/test_tv_transport.py
+  type: file
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  TV checks shall follow server enrollment and use the selected language. Pending
+  checks shall prevent ordinary use, native media startup and idle TV restoration.
+verification: |
+  Complete enrollment and interrupt TV checks. Check page language and inhibited media
+  and idle actions.

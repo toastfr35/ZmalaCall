@@ -1,5 +1,5 @@
 # @test T-HLT-006
-# @requirements HLR-TERM-SYS-001
+# @requirements HLR-TERM-START-001, HLR-TERM-START-002
 # @environment native-display
 # @plan Start configured and unconfigured Linux profiles, attempt duplicate startup, then stop them; assert one owned process, duplicate rejection and removal of PID records.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

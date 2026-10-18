@@ -24,7 +24,6 @@ class Parser(argparse.ArgumentParser):
         raise UsageError(message)
 
 
-# @llr LLR-TERM-INSTALL-003
 def main(argv=None):
     parser = Parser(description=__doc__)
     parser.add_argument('--headless', action='store_true', required=True)

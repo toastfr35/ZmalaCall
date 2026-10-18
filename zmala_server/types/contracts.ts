@@ -118,6 +118,14 @@ export interface TerminalConfiguration {
   auto_answer_seconds: number;
   call_auth_key: string;
   sip: { username: string; password: string; domain: string; proxy: string };
+  secure_calls?: {
+    mode: string;
+    turn_server: string;
+    turn_realm: string;
+    turn_username: string;
+    turn_password: string;
+    expires: number;
+  };
   contacts: TerminalContact[];
   terminal_settings: TerminalSettings;
   callbacks?: CallbackView[];

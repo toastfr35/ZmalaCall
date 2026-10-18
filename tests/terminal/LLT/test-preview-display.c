@@ -1,5 +1,5 @@
 // @test T-LLT-003
-// @requirements LLR-TERM-MEDIA-012, LLR-TERM-MEDIA-013
+// @requirements LLR-TERM-VIDEO-010, LLR-TERM-VIDEO-011
 // @environment native-sdk
 // @plan Compare synthetic preview pixels against a scalar box-average oracle and count display draws with a fake child; assert anti-aliased resize including SIMD tails and no idle redraw at capture frequency.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 
+# @llr LLR-SRV-START-007
 adapters = json.loads(subprocess.check_output(['ip', '-j', '-4', 'address'], text=True))
 choices = [(a['ifname'], v['local']) for a in adapters if a.get('operstate') == 'UP'
            for v in a.get('addr_info', []) if v.get('scope') == 'global']

@@ -1,5 +1,5 @@
 # @test T-HLT-017
-# @requirements HLR-TERM-TV-001
+# @requirements HLR-TERM-TV-017
 # @environment display
 # @plan Render TV-check prompts using the real UI with controlled state transitions; assert localized controls and current test outcome. Physical TV power/input behavior requires a separate device run.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
@@ -48,6 +48,7 @@ with tempfile.TemporaryDirectory() as folder:
         for width, height in ((900, 620), (1280, 720), (1920, 1080)):
             app.root.geometry(f'{width}x{height}')
             app.root.update()
+            print(f'TV setup layout: {width}x{height}, {len(MESSAGES)} languages', flush=True)
             for language in MESSAGES:
                 app.language = language
                 app.font_family = font_family(language, app.available_fonts)

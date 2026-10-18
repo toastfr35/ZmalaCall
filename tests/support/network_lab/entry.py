@@ -65,11 +65,11 @@ def main():
             import shutil
             shutil.copytree('/lab/server', '/app/zmala_server/data', dirs_exist_ok=True)
             os.environ['VIDEOCALL_HOST'] = '10.231.100.13'
-            script = '/app/tests/support/network_lab/tls_server.cjs' if os.environ.get('ZMALA_LAB_TLS') == '1' else '/app/zmala_server/main.js'
+            script = '/app/zmala_server/main.js'
             os.execvp('node', ['node', script])
         elif role == 'terminal':
             if os.environ.get('ZMALA_LAB_TLS') == '1':
-                os.environ['LD_PRELOAD'] = '/opt/zmala-lab/turn-fix.so'
+                os.environ['LD_PRELOAD'] = '/app/zmala_terminal/linux/turn-runtime/turn-fix.so'
             os.execvp('xvfb-run', ['xvfb-run', '-a', 'python3', '/app/tests/support/network_lab/terminal.py', args[1]])
         else:
             raise ValueError('Unknown lab role')

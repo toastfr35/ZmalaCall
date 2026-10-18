@@ -1,0 +1,22 @@
+active: true
+area: Call history and callback requests
+derived: false
+header: |
+  User-controlled callbacks
+level: 26.0
+links:
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+- PROD010: CH0z8p296_lCSujO-jWk_j36hz5ah55zBlfEYDgM1eU=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/callbacks_live.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall let the user request and cancel callbacks. A pending request or
+  availability notice shall not start a call automatically.
+verification: |
+  Create, reject and cancel requests. Change contact availability and check tags,
+  notices and absence of automatic dialing.

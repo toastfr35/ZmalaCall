@@ -78,7 +78,7 @@ class Engine(LinphoneAPI):
         if not self.core:
             raise RuntimeError('Liblinphone could not create the call engine')
 
-    # @llr LLR-TERM-MEDIA-008
+    # @llr LLR-TERM-AUDIO-004
     def configure_media(self, video_window, preview_window=0):
         cfg = self.core_get_config(self.core)
         for section, key, value in [('sip', 'sip_port', -1), ('sip', 'sip_tcp_port', 0),
@@ -151,14 +151,18 @@ class Engine(LinphoneAPI):
         self.core_set_native_preview_window_id(self.core, C.addressof(self.preview_ogl) if preview_window else None)
         self.core_use_preview_window(self.core, int(bool(preview_window)))
 
+    # @llr LLR-TERM-COM-010
     def configure_transports(self):
+        from zmala_terminal.common.secure_calls import validate, configure
+        secure = validate(self.config) is not None
         transports = self.transports_new()
-        self.transports_set_udp_port(transports, -1)
+        self.transports_set_udp_port(transports, 0 if secure else -1)
         self.transports_set_tcp_port(transports, 0)
-        self.transports_set_tls_port(transports, 0)
+        self.transports_set_tls_port(transports, -1 if secure else 0)
         self.transports_set_dtls_port(transports, 0)
         self.core_set_transports(self.core, transports)
         self.transports_unref(transports)
+        configure(self)
 
     def install_callbacks(self):
         # ctypes callbacks must stay strongly referenced for the lifetime of the core.
@@ -196,7 +200,7 @@ class Engine(LinphoneAPI):
         logging.info('Registration %s: %s', state, message.decode(errors='replace') if message else '')
         self.on_registration(self.registered)
 
-    # @llr LLR-TERM-CALL-004
+    # @llr LLR-TERM-CALL-011
     def _call_event(self, core, call, state, message):
         try:
             address = self.call_get_remote_address(call)
@@ -217,7 +221,7 @@ class Engine(LinphoneAPI):
         except Exception:
             logging.exception('Call callback failed')
 
-    # @llr LLR-TERM-HISTORY-007
+    # @llr LLR-TERM-HISTORY-019
     def _message_event(self, core, room, message):
         if not self.on_message or self.config.get('account_type', 'terminal') != 'terminal':
             return
@@ -236,7 +240,7 @@ class Engine(LinphoneAPI):
             expected = hmac.new(encoded(self.config['call_auth_key']), encoded(f'message:{identifier}:{user}'), hashlib.sha256).hexdigest()
             if not hmac.compare_digest(proof, expected) or identifier in self._seen_messages:
                 return
-            # @llr LLR-TERM-HISTORY-008
+            # @llr LLR-TERM-HISTORY-020
             if len(self._seen_messages) >= 256:
                 self._seen_messages.pop()
             self._seen_messages.add(identifier)
@@ -244,7 +248,7 @@ class Engine(LinphoneAPI):
         except Exception:
             logging.exception('Text notification callback failed')
 
-    # @llr LLR-TERM-CALL-008
+    # @llr LLR-TERM-START-006
     def hold_call(self, call):
         # Borrowed callback pointers need an owned reference until the UI releases the call.
         if self.call != call:
@@ -265,7 +269,7 @@ class Engine(LinphoneAPI):
         if call == self.call:
             self._last_video_frame = time.monotonic()
 
-    # @llr LLR-TERM-MEDIA-014
+    # @llr LLR-TERM-VIDEO-012
     def incoming_video_active(self):
         """Show video only after a decoded frame, with tolerance for brief gaps."""
         if not self.call:
@@ -288,7 +292,7 @@ class Engine(LinphoneAPI):
         params = self.core_create_call_params(self.core, None)
         self.configure_call_audio(params)
         self.call_params_enable_video(params, 1)
-        self.call_params_set_media_encryption(params, 0)
+        self.call_params_set_media_encryption(params, 1 if self.config.get('secure_calls') else 0)
         call = self.core_invite_address_with_params(self.core, address, params)
         self.call_params_unref(params)
         self.address_unref(address)
@@ -307,7 +311,7 @@ class Engine(LinphoneAPI):
         if result:
             raise RuntimeError('The call could not be answered')
 
-    # @llr LLR-TERM-MEDIA-020
+    # @llr LLR-TERM-AUDIO-005
     def configure_call_audio(self, params):
         """Without capture hardware, receive speech instead of opening a dummy input.
 

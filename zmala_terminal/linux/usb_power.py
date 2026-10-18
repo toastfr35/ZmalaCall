@@ -12,7 +12,7 @@ IDLE_SECONDS = 300
 HELPER = '/usr/local/libexec/zmala-usb-power'
 
 
-# @llr LLR-TERM-POWER-004
+# @llr LLR-TERM-POWER-013, LLR-TERM-POWER-014
 def should_power_off(now, last_use, active, battery):
     return (not active and type(battery) is int and 25 <= battery <= 100
             and now - last_use >= IDLE_SECONDS)
@@ -31,7 +31,7 @@ def media_present():
 
 
 class UsbPower:
-    # @llr LLR-TERM-POWER-003
+    # @llr LLR-TERM-POWER-012
     def __init__(self, root):
         self.enabled = sys.platform == 'linux' and os.environ.get('ZMALA_USB_POWER') == '1'
         self.root = root
@@ -57,7 +57,7 @@ class UsbPower:
         with self.lock:
             return not self.enabled or self.state == 'on' and self.revision == self.refreshed
 
-    # @llr LLR-TERM-POWER-007
+    # @llr LLR-TERM-POWER-017
     @property
     def power_state(self):
         with self.lock:
@@ -76,7 +76,7 @@ class UsbPower:
         if changed:
             self.changed.set()
 
-    # @llr LLR-TERM-POWER-004
+    # @llr LLR-TERM-POWER-013, LLR-TERM-POWER-014
     def require(self, urgent=False):
         """Record activity and wake the worker; never perform USB I/O on the caller."""
         if self.enabled:
@@ -99,7 +99,7 @@ class UsbPower:
                     self.ringer.kill()
             self.ringer = None
 
-    # @llr LLR-TERM-POWER-005
+    # @llr LLR-TERM-POWER-015
     def refresh(self, engine):
         """Run native device-list refresh only on the thread owning the core."""
         if not self.enabled:
@@ -126,7 +126,7 @@ class UsbPower:
         subprocess.run(['sudo', '-n', HELPER, action], check=True,
                        capture_output=True, timeout=30, text=True)
 
-    # @llr LLR-TERM-POWER-006
+    # @llr LLR-TERM-POWER-016
     def run(self):
         next_attempt = 0
         next_status = 0

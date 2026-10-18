@@ -1,5 +1,5 @@
 # @test T-LLT-019
-# @requirements LLR-TERM-SETUP-016, LLR-TERM-CONFIG-003, LLR-TERM-CONFIG-004, LLR-TERM-CONFIG-006, LLR-TERM-CONFIG-007, LLR-TERM-CONFIG-013
+# @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-018, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022, LLR-TERM-CONFIG-023
 # @environment portable
 # @plan Drive timed red holds, setting drafts, incoming calls and delayed server acknowledgements with fake controllers; assert access timing, cancel/accept behavior, allowed values, revision ownership and deferred media changes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

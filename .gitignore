@@ -39,3 +39,9 @@ build_tools/dist/
 
 # Personal portrait drafts are local account assets, not application source.
 /zmala_server/assets/account-pictures/
+
+# Generated requirement-based execution coverage.
+/tests/coverage/
+
+# Native TURN correction and retained upstream build sources
+zmala_terminal/linux/turn-runtime/

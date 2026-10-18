@@ -1,0 +1,22 @@
+active: true
+area: Configuration
+derived: false
+header: |
+  Local settings
+level: 10.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/settings_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall let the user edit the supported local settings with the remote.
+  Each edit shall permit acceptance or cancellation.
+verification: |
+  Open each setting, change its value and accept or cancel. Check the resulting saved
+  value and visible feedback.

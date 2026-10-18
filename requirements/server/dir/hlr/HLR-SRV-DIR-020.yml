@@ -1,0 +1,20 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Controlled portrait processing
+level: 9.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/photos-http.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall accept supported contact pictures and publish complete display images. It shall reject invalid inputs and limit simultaneous conversion work.
+verification: |
+  Upload valid, malformed, excessive and duplicate images. Check bounds, concurrency, resulting pixels and publication failures.

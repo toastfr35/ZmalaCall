@@ -1,5 +1,5 @@
 // @test S-LLT-025
-// @requirements LLR-SRV-BOOT-003, LLR-SRV-SIP-005, LLR-SRV-SIP-007, LLR-SRV-MAINT-010
+// @requirements LLR-SRV-START-005, LLR-SRV-PRESENCE-002, LLR-SRV-CALL-005, LLR-SRV-MAINT-020
 // @environment portable
 // @plan Replace SIP transport with a capture double; check default/configured UDP/TCP binding options, destination-specific HMAC replacement, authenticated registration identity, expiry/query/deregistration transitions and bounded recent activity history.
 // @pass All signaling assertions must pass without binding sockets or sending packets to real devices.
@@ -18,7 +18,7 @@ const proxy = require('../../../zmala_server/node_modules/sip/proxy');
 const crypto = require('node:crypto');
 const { storeFixture } = require('../../support/server/unit-fixture');
 
-test('registration clamps lifetime, binds actual flow and rejects identity/expiry errors', (t) => {
+test('registration clamps lifetime, binds actual flow and rejects identity/expiry errors', async (t) => {
   const s = new SipServer(storeFixture(t)),
     sent = [];
   s.auth.verify = () => 'term1';
@@ -38,7 +38,15 @@ test('registration clamps lifetime, binds actual flow and rejects identity/expir
       contact: [{ uri: 'sip:term1@fake-address', params: { expires: 900 } }],
     },
   };
+  s.callbacks = { deliver: t.mock.fn() };
+  s.auth.verify = () => null;
+  s.auth.challenge = () => ({ status: 401 });
+  await s.request(req, peer);
+  assert.equal(sent.at(-1).status, 401);
+  s.auth.verify = () => 'term1';
   s.register(req, peer);
+  await new Promise(setImmediate);
+  assert.equal(s.callbacks.deliver.mock.calls[0].arguments[0], 'term1');
   assert.equal(sent.at(-1).status, 200);
   assert.equal(sent.at(-1).headers.expires, 600);
   assert.equal(s.registrations.get('term1').remote, peer);

@@ -1,0 +1,27 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Unique permitted requests
+level: 66.0
+links:
+- HLR-SRV-CALLBACK-012: vFmH4gPjiuWqXjcLt3ra4thtjuHcDm2q0NO50dmc1yo=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/callback-state.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An authenticated terminal shall create requests only as itself to another permitted account. Repeated submissions shall return one pending request per pair across restart. The server shall admit at most 400 pending requests.
+verification: |
+  Create duplicates, foreign-identity requests and a full queue. Restart and check identity, limits and uniqueness.

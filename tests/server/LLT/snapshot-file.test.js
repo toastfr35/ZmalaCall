@@ -1,5 +1,5 @@
 // @test S-LLT-018
-// @requirements LLR-SRV-DATA-003, LLR-SRV-DATA-004
+// @requirements LLR-SRV-DATA-014, LLR-SRV-DATA-015
 // @environment portable
 // @plan Delay and fail snapshot-file writes using temporary files and controlled promises; assert ordered atomic replacement, bounded latest pending snapshot, commit barriers and recovery on the next save.
 // @pass Every named assertion must pass; failures or skips do not establish requirement verification.

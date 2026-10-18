@@ -1,0 +1,26 @@
+active: true
+area: Remote control
+derived: false
+header: |
+  Presenter input identity
+level: 37.0
+links:
+- HLR-TERM-REMOTE-011: O6uSfKbsdDtz3OTEy6qhQAzoa0jG0VZ6sXMcJjVgKcY=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_presenter_input.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/linux/presenter_input.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Linux input adapter shall accept supported Microsoft Presenter+ HID reports,
+  including red-button reports. It shall not treat an unrelated HID device as the
+  terminal remote.
+verification: |
+  Replay supported and unrelated device reports. Check identity filters and decoded
+  buttons.

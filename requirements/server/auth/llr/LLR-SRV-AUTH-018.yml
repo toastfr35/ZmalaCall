@@ -1,0 +1,31 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Bounded login attempts
+level: 12.0
+links:
+- HLR-SRV-AUTH-012: MOCfbUqJnGtS0uCylJvif3sDDS0Y39Bq9Dw79detQzk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-auth-setup.test.js
+  type: file
+- path: tests/server/LLT/admin-sessions.test.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/web/admin-auth.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A one-minute login window shall allow at most five attempts per address and thirty attempts globally. Excess attempts shall receive an explicit retry response. Expired address counters shall be removed.
+verification: |
+  Exercise both limits, many addresses and window expiry. Confirm rejected attempts do not perform password hashing.

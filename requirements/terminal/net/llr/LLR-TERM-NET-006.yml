@@ -1,0 +1,26 @@
+active: true
+area: Network connection
+derived: false
+header: |
+  Wired-only SSH ingress
+level: 117.0
+links:
+- HLR-TERM-NET-007: -7WdxNZcvAkdx_Ur6EEXQrecgjkUycU_u0UGFJ5O1qw=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/ssh-guard.py
+  type: file
+- path: build_tools/linux/zmalacall-ssh-guard.service
+  type: file
+- path: tests/terminal/LLT/test_pi_install.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  SSH ports shall accept traffic only through physical Ethernet. The guard shall cover
+  IPv4, IPv6 and Wi-Fi traffic addressed to an Ethernet IP. It shall be established
+  before SSH exposure and leave Wi-Fi enrollment and server access available.
+verification: |
+  Inspect interface-bound rules and service ordering. Test allowed Ethernet and denied
+  wireless ingress for each address family.

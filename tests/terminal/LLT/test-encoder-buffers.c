@@ -1,5 +1,5 @@
 // @test T-LLT-051
-// @requirements LLR-TERM-MEDIA-011
+// @requirements LLR-TERM-VIDEO-009
 // @environment native-sdk
 // @plan Replace only FFmpeg frame submission with a deterministic EAGAIN boundary; feed equal-size and resized YUV pictures through the actual encoder preparation path. Check raw buffer and scaler reuse, no scaler on exact-size input and preservation of input pixels.
 // @pass Pointer reuse, shape and pixel assertions must all pass without opening a hardware encoder or camera.

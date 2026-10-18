@@ -1,0 +1,25 @@
+active: true
+area: Callback requests and reminders
+derived: false
+header: |
+  Terminal callback view
+level: 71.0
+links:
+- HLR-SRV-CALLBACK-013: aU7IT7AvEwNAfKAJQ4zrT2oQO1PSbRzCjtDd_0BsSR0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/callback-settings.js
+  type: file
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/history.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Authenticated terminal polling shall return only pending requests involving that terminal. It shall omit email addresses and delivery errors. Callback delivery shall not cause an automatic server-originated call.
+verification: |
+  Poll as different terminals with unchanged configuration revisions. Check private fields and that no INVITE is created.

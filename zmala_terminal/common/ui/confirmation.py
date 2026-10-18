@@ -4,7 +4,7 @@ from zmala_terminal.common.theme import BG, FG, RED, PANEL, ACCENT, BUTTON_GREEN
 
 
 class ConfirmationView:
-    # @llr LLR-TERM-UI-010
+    # @llr LLR-TERM-UI-017
     def draw_confirmation(self):
         contact = self.model.contact
         if self.model.state not in (State.CONFIRMING, State.CONFIRM_CALLBACK, State.REQUESTING_CALLBACK) or not contact:

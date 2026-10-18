@@ -1,0 +1,23 @@
+active: true
+area: Terminal enrollment
+derived: false
+header: |
+  Wi-Fi payload validation
+level: 43.0
+links:
+- HLR-SRV-ENROLL-001: pDfvXbbFZBKdNpCDts3hIS4Rdyar3pDSWuoB7m7VaiQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/setup-payload.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/setup-pdf.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Wi-Fi codes shall validate SSID, WPA or open security, password and hidden status. SSIDs shall contain 1 to 32 UTF-8 bytes without control characters. Standard codes shall escape reserved characters. Non-ASCII or excessive standard payloads shall use the versioned compact encoding. Submitted Wi-Fi secrets shall not be saved.
+verification: |
+  Exercise Unicode, escaped characters, open networks, password limits and hidden status. Compare server files before and after PDF generation.

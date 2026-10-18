@@ -1,0 +1,25 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Authorized and current calls
+level: 19.0
+links:
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/network_lab.py
+  type: file
+- path: tests/terminal/HLT/accounts_live.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall accept incoming calls only from authorized callers. Events from
+  an earlier call shall not change a later call.
+verification: |
+  Attempt unauthorized calls and deliver delayed native events. Check ringing
+  admission and the active call identity.

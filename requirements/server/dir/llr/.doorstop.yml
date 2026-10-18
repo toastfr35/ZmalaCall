@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-SRV-DIR
-      title: Accounts, directory and portraits — LLR
+      title: Accounts, groups and portraits — LLR
   publish:
   - area
   - scope

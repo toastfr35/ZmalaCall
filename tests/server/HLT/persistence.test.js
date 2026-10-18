@@ -1,7 +1,7 @@
 // @test S-HLT-014
-// @requirements HLR-SRV-DATA-001
+// @requirements HLR-SRV-DATA-012, HLR-SRV-START-003
 // @environment portable
-// @plan Delay and fail real snapshot writes while issuing HTTP reads and updates; assert ordered atomic commits, bounded pending snapshots, acknowledgement barriers and recovery after disk failure.
+// @plan Delay and fail real snapshot writes while issuing HTTP reads and updates; assert ordered atomic commits, bounded pending snapshots and acknowledgement barriers. After disk failure, liveness must remain 200 while readiness becomes 503; readiness must recover to 200 after a successful write.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -99,8 +99,11 @@ test('a disk failure returns HTTP 500 and the next full snapshot can recover', a
     const failed = await create('Failed save');
     assert.equal(failed.status, 500);
     assert.equal((await failed.json()).error, 'Could not save configuration snapshot.');
+    assert.equal((await fetch(fixture.base + '/health')).status, 200);
+    assert.equal((await fetch(fixture.base + '/ready')).status, 503);
     const recovered = await create('Recovered save');
     assert.equal(recovered.status, 201);
+    assert.equal((await fetch(fixture.base + '/ready')).status, 200);
     const { id } = await recovered.json();
     assert.equal(
       JSON.parse(await fs.readFile(fixture.store.file, 'utf8')).groups[id].name,

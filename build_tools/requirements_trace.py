@@ -59,7 +59,7 @@ def read_markers(path: Path) -> list[tuple[int, list[str]]]:
             body = body[:-len(closing)].rstrip()
         payload = body.removeprefix('@llr ')
         if not IDS.fullmatch(payload) or len(set(payload.split(', '))) != len(payload.split(', ')):
-            raise ValueError(f'{path}:{number}: malformed @llr directive; use @llr LLR-TERM-SYS-003, LLR-SRV-BOOT-002')
+            raise ValueError(f'{path}:{number}: malformed @llr directive; use @llr LLR-TERM-START-003, LLR-SRV-BOOT-002')
         result.append((number, payload.split(', ')))
     return result
 

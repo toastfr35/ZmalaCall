@@ -115,17 +115,37 @@ do not establish those results for every supported setup.
 
 ## Lower priority
 
-### Close requirement-based verification gaps
+### Extend external-network qualification
 
-Every server and Pi terminal LLR now has direct LLT verification plans; the
-validator rejects unmapped LLRs. Use `requirements/output/tests.html` to
-prioritize the remaining unmapped HLR system scenarios and review partial
-assertions against the full requirements. Unit links and passing component
-checks do not replace physical qualification. In
-particular, qualify startup/deployment failure recovery and TV/USB behavior on
-physical devices. Record the test ID, revision, platform, outcome and skipped or
-manual observations; do not treat a plan, portable pass or skip as hardware
-acceptance. Keep the matrix generated from comments and Doorstop references.
+The opt-in [Docker lab](docs/general.md#three-network-docker-lab) now provides
+separate NAT/firewall paths for two terminal engines and the server. Extend it
+with forced NAT mapping expiry/rebinding, SIP ALG interference and sustained
+moving-video loads. The UDP-denied matrix reproduces registration/call failure
+when either home's UDP is blocked, and connected-but-silent/video-free calls when
+only media is blocked. Secure SIP/TURN TLS mode now provides a tested alternative;
+unblocking and restarting restored decoded calls in the fixture. Its static synthetic source cannot
+qualify 1080p performance or institutional firewall compatibility. Investigate
+the SDK's malformed-RTCP-size warnings seen during initial synthetic video startup;
+decoded media succeeding does not establish that feedback recovery is correct.
+Qualify long secure calls, TLS inspection/HTTP proxy restrictions, public DNS/certificate
+renewal and ARM camera performance before a broad Internet rollout. The new secure
+mode is explicit; automatic network-mode switching is not implemented.
+
+### Complete physical requirement qualification
+
+Every server and Pi terminal HLR/LLR has a direct HLT/LLT plan; the validator
+rejects missing links at either level. Automated controller, protocol and
+namespace tests cover the former system-plan gaps, with explicit substitutions
+and partial scope in their headers. The installed-storage assertions
+(`S-HLT-028`, `T-HLT-030`) passed on both running Pis on 18 October 2026; a
+paired reboot-and-check run remains unverified. Qualify that persistence and the
+Wi-Fi restart test (`T-HLT-031`) on the actual Pis.
+Physical C20 capture after wake, TV firmware behavior, Bluetooth telemetry,
+detector accuracy and sustained call quality still need device evidence. Review
+partial assertions against the full requirements, and record ID, revision,
+platform, outcome and skipped/manual observations. A linked plan or fixture pass
+does not close hardware acceptance. Keep the matrix generated from comments and
+Doorstop references.
 
 ### Refine administration conflicts and controller interfaces
 

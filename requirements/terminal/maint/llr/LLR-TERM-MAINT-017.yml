@@ -1,0 +1,29 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Permanent result rejection
+level: 122.0
+links:
+- HLR-TERM-MAINT-011: 99a2S4ByS6aFNDfkZ4HdHD-WV5hSRGrcT0AYaDRgcTg=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_reliability.py
+  type: file
+- path: zmala_terminal/common/maintenance.py
+  type: file
+- path: zmala_terminal/common/process_job.py
+  type: file
+- path: zmala_terminal/linux/commands.py
+  type: file
+- path: zmala_terminal/linux/process_job.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Permanent result or ownership rejection shall stop result retries. The worker shall
+  retain bounded diagnostics and resume polling for later work.
+verification: |
+  Return permanent rejection and transient failure separately. Check retry policy,
+  diagnostics and subsequent polling.

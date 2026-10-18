@@ -1,0 +1,21 @@
+active: true
+area: Administration interface
+derived: false
+header: |
+  Explicit edits and action feedback
+level: 29.0
+links:
+- PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/browser-admin.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The administration interface shall preserve active edits until acceptance or cancellation. It shall show action failures and conflicts without applying a late response to another editor.
+verification: |
+  Edit while polling, reject saves, close dialogs during requests and use keyboard actions. Check drafts, focus and visible errors.

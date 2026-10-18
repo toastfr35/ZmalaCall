@@ -1,0 +1,29 @@
+active: true
+area: Video
+derived: false
+header: |
+  Video exchange and local preview
+level: 22.0
+links:
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/call_feedback_ui.py
+  type: file
+- path: tests/terminal/HLT/camera_feed_live.py
+  type: file
+- path: tests/terminal/HLT/terminal_ui_call.py
+  type: file
+- path: tests/terminal/HLT/test-video-resize.c
+  type: file
+- path: tests/terminal/HLT/video_settings_native.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall send camera video and display received video. It shall show a
+  local preview and apply the configured video targets.
+verification: |
+  Place a two-way call at each supported target. Measure capture and decoded frames
+  and inspect the local preview.

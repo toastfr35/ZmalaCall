@@ -1,0 +1,29 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Bounded object-shaped JSON
+level: 16.0
+links:
+- HLR-SRV-AUTH-013: eZZKb2Z8txA9h8r8PE8NhnyDHG_K8qTxv2WPWZqUdTQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/http/responses.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  JSON routes shall enforce their byte limit and accept only an object. Malformed JSON, arrays, null and excessive bodies shall fail before mutation. Errors shall use structured JSON responses.
+verification: |
+  Send malformed and excessive bodies to routes with different limits. Verify no change to accepted state.

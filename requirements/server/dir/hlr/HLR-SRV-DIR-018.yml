@@ -1,0 +1,27 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Managed accounts and terminal identity
+level: 7.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/account-types.test.js
+  type: file
+- path: tests/server/HLT/admin-settings-conflicts.test.js
+  type: file
+- path: tests/server/HLT/admin.test.js
+  type: file
+- path: tests/server/HLT/terminal-association.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall let an administrator manage phone and terminal accounts. A physical terminal shall retain its device identity when reassigned between accounts.
+verification: |
+  Create, edit, rename, convert, delete and reassign accounts. Check dependent records, credentials and active-call restrictions.

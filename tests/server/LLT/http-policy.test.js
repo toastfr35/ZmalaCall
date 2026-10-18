@@ -1,7 +1,7 @@
 // @test S-LLT-021
-// @requirements LLR-SRV-BOOT-004, LLR-SRV-DIR-009, LLR-SRV-AUTH-007, LLR-SRV-AUTH-008, LLR-SRV-AUTH-009, LLR-SRV-AUTH-010, LLR-SRV-SIP-015, LLR-SRV-CALLBACK-007, LLR-SRV-CONFIG-007, LLR-SRV-CONFIG-008, LLR-SRV-MAINT-003, LLR-SRV-MAINT-006, LLR-SRV-DATA-005, LLR-SRV-MAINT-008, LLR-SRV-MAINT-009, LLR-SRV-MAINT-010, LLR-SRV-CONFIG-013
+// @requirements LLR-SRV-START-006, LLR-SRV-START-010, LLR-SRV-AUTH-019, LLR-SRV-AUTH-020, LLR-SRV-AUTH-021, LLR-SRV-AUTH-022, LLR-SRV-AUTH-023, LLR-SRV-AUTH-024, LLR-SRV-DIR-026, LLR-SRV-DIR-027, LLR-SRV-CONFIG-021, LLR-SRV-CONFIG-022, LLR-SRV-ENROLL-005, LLR-SRV-PRESENCE-005, LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-020, LLR-SRV-MAINT-013, LLR-SRV-MAINT-016, LLR-SRV-MAINT-018, LLR-SRV-MAINT-019, LLR-SRV-MAINT-020
 // @environment portable
-// @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection.
+// @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, authenticated callback creation/cancellation and enrollment identity persistence, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection.
 // @pass Every allowed and denied request must produce the expected status and state; no sockets, actual commands or remote devices are used.
 
 'use strict';
@@ -25,6 +25,63 @@ function fixture(t) {
   const admin = { authorization: `Bearer ${ctx.adminSessions.create()}` };
   return { store, ctx, call, device, admin };
 }
+
+test('device callback, availability and command routes bind identity and await durable mutations', async (t) => {
+  const { store, ctx, call, device } = fixture(t);
+  const events = [];
+  const id = '11111111-1111-1111-1111-111111111111';
+  ctx.callbacks.create = (from, to) => {
+    events.push(['create', from, to]);
+    return { id, from, to };
+  };
+  ctx.callbacks.cancel = (job, owner) => events.push(['cancel', job, owner]);
+  ctx.callbacks.flush = async () => events.push(['callback.flush']);
+  ctx.consoleJobs.claim = (owner) => {
+    events.push(['claim', owner]);
+    return { id, command: 'true' };
+  };
+  ctx.consoleJobs.flush = async () => events.push(['console.flush']);
+  const created = await call('/api/callbacks', {
+    method: 'POST',
+    headers: device,
+    value: { to: 'phone1', from: 'forged' },
+  });
+  assert.equal(created.status, 201);
+  assert.equal(created.json().from, 'term1');
+  assert.deepEqual(events, [['create', 'term1', 'phone1'], ['callback.flush']]);
+  assert.equal(
+    (await call(`/api/callbacks/${id}/cancel`, { method: 'POST', headers: device })).status,
+    200,
+  );
+  assert.deepEqual(events.slice(-2), [['cancel', id, 'term1'], ['callback.flush']]);
+  assert.equal(
+    (await call('/api/console/next', { method: 'POST', headers: device })).json().job.id,
+    id,
+  );
+  assert.deepEqual(events.slice(-2), [['claim', 'term1'], ['console.flush']]);
+  ctx.consoleJobs.flush = async () => {
+    throw Error('disk unavailable');
+  };
+  assert.equal((await call('/api/console/next', { method: 'POST', headers: device })).status, 400);
+  ctx.sipServer.registrations.set('phone1', { expires: Date.now() + 60000 });
+  const allowed = (await call('/api/contacts/phone1/availability', { headers: device })).json();
+  assert.equal(allowed.online, true);
+  assert.equal(allowed.can_call, true);
+  assert.equal(allowed.ring_timeout, store.ringTimeout('phone1'));
+  store.deleteGroup('family');
+  const denied = (await call('/api/contacts/phone1/availability', { headers: device })).json();
+  assert.deepEqual(denied, { id: 'phone1', online: false, can_call: false, ring_timeout: 60 });
+  for (const value of [
+    {},
+    { settings: [], expected: {} },
+    { settings: {}, expected: [] },
+    { settings: {}, expected: {}, terminal_id: 'forged' },
+  ])
+    assert.equal(
+      (await call('/api/device/settings', { method: 'POST', headers: device, value })).status,
+      400,
+    );
+});
 
 test('Host, Origin, cookie mutations and HTTPS policy reject before dispatch', async (t) => {
   const { ctx, call, device } = fixture(t);

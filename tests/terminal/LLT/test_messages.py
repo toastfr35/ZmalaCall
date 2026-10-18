@@ -1,5 +1,5 @@
 # @test T-LLT-021
-# @requirements LLR-TERM-HISTORY-007, LLR-TERM-HISTORY-008
+# @requirements LLR-TERM-HISTORY-019, LLR-TERM-HISTORY-020
 # @environment portable
 # @plan Deliver signed, forged, repeated and excessive messages to a fake SIP receiver; assert only authorized proofs increment counts, duplicates are acknowledged once and retained history is bounded.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,0 +1,23 @@
+active: true
+area: Backup and restore
+derived: false
+header: |
+  Confirmed idle restore
+level: 90.0
+links:
+- HLR-SRV-BACKUP-002: IFolSJN9Y715aTkpB7gvbpLtrP-V3gVekpN7XH7bXWk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+- path: zmala_server/backups.js
+  type: file
+- path: zmala_server/http/backup-routes.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Restore shall require administrator access, explicit replacement confirmation and the checked current revision. It shall reject active calls, running commands, pending callback delivery or overlapping HTTP work. Only one backup operation shall run at a time.
+verification: |
+  Omit confirmation, use stale revisions and hold each busy condition. Check rejection before replacement.

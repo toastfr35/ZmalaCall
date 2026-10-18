@@ -1,7 +1,7 @@
 # @test T-LLT-014
-# @requirements LLR-TERM-UI-007, LLR-TERM-SYS-008
+# @requirements LLR-TERM-UI-016, LLR-TERM-UI-020
 # @environment portable
-# @plan Construct valid and malformed PNG/JPEG headers including oversized dimensions; assert preflight bounds allocations and invalid optional portraits fall back before reaching native rendering.
+# @plan Construct valid and malformed PNG/JPEG headers including oversized dimensions; assert preflight bounds allocations and invalid optional portraits fall back before reaching native rendering. Exercise standalone JPEG markers and malformed PNG chunks/checksums, duplicate headers, missing end chunks and mismatched file formats.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Reject excessive declared pixels before decoding network or old cached portraits."""
@@ -33,6 +33,22 @@ def jpeg(width, height, marker=0xc0):
 
 
 class ImageBoundsTests(unittest.TestCase):
+    def test_marker_and_chunk_integrity_rejects_ambiguous_or_incomplete_portraits(self):
+        source = jpeg(640, 480)
+        self.assertEqual(image_size(source[:2]+b'\xff\x01\xff\xd0'+source[2:]), (640, 480))
+        self.assertTrue(valid_photo(source, 'portrait.jpg'))
+        self.assertFalse(valid_photo(source, 'portrait.png'))
+        for data in [b'\xff\xd8x\xff\xd9', b'\xff\xd8\xff\xc0\0\2\xff\xd9',
+                     source.replace(b'\x08\x01\xe0', b'\x10\x01\xe0')]:
+            with self.assertRaises(ValueError):
+                image_size(data)
+        image = png(1, 1)
+        def chunk(kind, payload):
+            return struct.pack('>I', len(payload))+kind+payload+struct.pack('>I', zlib.crc32(kind+payload))
+        for broken in [image[:-12], image[:33]+chunk(b'IHDR', image[16:29])+image[33:],
+                       image[:33]+b'\0\0\0\xffIDATxxxx', image[:33]+chunk(b'IDAT', b'x')[:-1]+b'\0'+image[-12:]]:
+            self.assertFalse(valid_photo(broken, 'portrait.png'))
+
     def test_png_and_common_jpeg_headers_have_bounded_dimensions(self):
         self.assertEqual(image_size(png(480, 320)), (480, 320))
         for marker in (0xc0, 0xc1, 0xc2):

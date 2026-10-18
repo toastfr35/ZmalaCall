@@ -1,0 +1,34 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Answer and decline
+level: 63.0
+links:
+- HLR-TERM-CALL-009: fXQS1fCYPbcw7cqC7rLu_dz3aqdZd2rXOMWKXRq34m0=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Incoming ringing shall show the caller portrait and animated call feedback. Green
+  shall answer and red shall decline immediately. Automatic answer shall show its
+  configured countdown and remain cancellable until answer starts.
+verification: |
+  Exercise manual answer, decline and automatic countdown, including a red press
+  before expiry.

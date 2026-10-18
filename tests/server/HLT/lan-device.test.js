@@ -1,5 +1,5 @@
 // @test S-HLT-012
-// @requirements HLR-SRV-AUTH-001
+// @requirements HLR-SRV-AUTH-012
 // @environment portable
 // @plan Request device configuration and admin endpoints from LAN-like peers; assert enrollment credentials work while administration still requires a valid admin session.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -1,0 +1,20 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Controlled server shutdown
+level: 2.0
+links:
+- PROD001: 4fW6PPWrP16gAqSCbhixs6pGUTY3fOkFmKN-9QSRxFM=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/lifecycle.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall stop accepting new work, release call resources and complete required state writes during shutdown. Concurrent stop requests shall share one shutdown operation.
+verification: |
+  Stop during requests and state writes. Check listener closure, resource release and final persistence, including repeated stop requests.

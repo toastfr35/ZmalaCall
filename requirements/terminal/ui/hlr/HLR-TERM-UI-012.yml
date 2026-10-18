@@ -1,0 +1,29 @@
+active: true
+area: User interface and language
+derived: false
+header: |
+  Clear visual feedback
+level: 16.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/call_feedback_ui.py
+  type: file
+- path: tests/terminal/HLT/linux_qr_embedding.py
+  type: file
+- path: tests/terminal/HLT/render_cache_ui.py
+  type: file
+- path: tests/terminal/HLT/setup_feedback_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall present readable contacts, actions and status on the TV. It shall
+  provide visible feedback when information or a required device is unavailable.
+  Rendering shall remain responsive with bounded retained images.
+verification: |
+  Inspect the supported display sizes and fallback states. Check portrait, text,
+  control and status visibility.

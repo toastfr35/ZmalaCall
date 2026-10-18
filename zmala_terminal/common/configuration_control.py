@@ -6,7 +6,7 @@ from zmala_terminal.common.model import State
 
 
 class ConfigurationControl:
-    # @llr LLR-TERM-CONFIG-014
+    # @llr LLR-TERM-CONFIG-024
     def apply_config(self, config):
         """Apply UI changes now; defer native graph/credential changes until the terminal is idle."""
         if self.setup_stage:
@@ -19,7 +19,7 @@ class ConfigurationControl:
         if self.engine and getattr(self.engine, 'auto_framing', None):
             self.engine.auto_framing.configure(config.get('auto_framing', False))
         # Language changes apply even while a call is active; device changes wait.
-        # @llr LLR-TERM-UI-011
+        # @llr LLR-TERM-UI-025
         self.language = config.get('language', 'en')
         self.font_family = font_family(self.language, self.available_fonts)
         self.root.title(f"ZmalaCall · ← → {self.text('select')} · Enter {self.text('call')}/{self.text('answer')} · Esc {self.text('end')}")
@@ -72,9 +72,10 @@ class ConfigurationControl:
         self.diagnostics = self.engine.diagnostics()
         self.render()
 
-    # @llr LLR-TERM-CONFIG-013
+    # @llr LLR-TERM-CONFIG-023
     def configure_engine(self, config, old_sip, audio_profile):
         if (not self.engine or old_sip != config['sip'] or
+                getattr(self.engine, 'config', {}).get('secure_calls') != config.get('secure_calls') or
                 ('video_resolution' in config and self.engine.video_settings.resolution != config['video_resolution']) or
                 getattr(self.engine.video_settings, 'fps', 15) != config.get('video_fps', 15) or
                 getattr(self.engine, 'audio_profile', 'normal') != audio_profile):

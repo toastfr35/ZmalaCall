@@ -1,0 +1,22 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Guided device preparation
+level: 3.0
+links:
+- PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
+- PROD006: 2sjm1b2_Q_Jv_p06bviz-a-392AWlzkTtedgJlXNvLc=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/pairing_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall guide the user through camera connection and remote pairing.
+  Setup shall require a successful physical remote test before it continues.
+verification: |
+  Start with absent devices and an unverified remote. Complete each stage and check
+  that failed stages prevent progress.

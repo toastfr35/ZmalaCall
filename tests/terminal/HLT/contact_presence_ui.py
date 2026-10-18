@@ -1,5 +1,5 @@
 # @test T-HLT-005
-# @requirements HLR-TERM-UI-001
+# @requirements HLR-TERM-NAV-001
 # @environment hardware
 # @plan With a disposable configured server profile and display prepared, Render the real carousel with changing reachability and selected contacts; assert visible availability and stable selection during updates.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

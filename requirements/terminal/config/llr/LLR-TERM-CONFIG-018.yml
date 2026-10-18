@@ -1,0 +1,31 @@
+active: true
+area: Configuration
+derived: false
+header: |
+  Settings entry gesture
+level: 29.0
+links:
+- HLR-TERM-CONFIG-016: tF6jWzImg7gepg3fagqe56SUaj2ierhVysKpWA6YeEU=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_local_settings.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/local_settings.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/ui/settings.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  A continuous ten-second red hold on the carousel shall open Settings. Progress shall
+  appear after two seconds. Release, another button, focus loss, remote disconnection
+  or an incoming call shall cancel the hold. Repeated down reports shall not restart
+  its timer.
+verification: |
+  Exercise exact hold thresholds and each cancellation event. Check that call decline
+  and hangup still act immediately.

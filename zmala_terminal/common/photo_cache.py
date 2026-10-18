@@ -58,7 +58,7 @@ class PhotoCache:
         self.cancelled = False
         self.worker = None
 
-    # @llr LLR-TERM-SYS-008
+    # @llr LLR-TERM-UI-020
     def schedule(self, contacts):
         paths = {c['photo'] for c in contacts if c.get('photo')}
         with self.condition:
@@ -93,7 +93,7 @@ class PhotoCache:
             except queue.Empty:
                 return changed and not self.cancelled
 
-    # @llr LLR-TERM-SYS-009
+    # @llr LLR-TERM-UI-021
     def run(self):
         while True:
             with self.condition:

@@ -1,0 +1,40 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Confirmed Wi-Fi stage
+level: 13.0
+links:
+- HLR-TERM-SETUP-020: n16z3NirFS4w0WbLBhfHMkQER-cGRtR6Jzk0rS4bo1A=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_setup_ownership.py
+  type: file
+- path: zmala_terminal/common/native_qr.py
+  type: file
+- path: zmala_terminal/common/provisioning.py
+  type: file
+- path: zmala_terminal/common/qr_scanner.py
+  type: file
+- path: zmala_terminal/common/qr_worker.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+- path: zmala_terminal/linux/qr.py
+  type: file
+- path: zmala_terminal/linux/wifi.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Normal setup shall complete a Wi-Fi join before showing a ten-second success page.
+  It shall not skip that page. Ethernet connectivity alone shall not complete this
+  stage.
+verification: |
+  Supply Ethernet alone, a failed Wi-Fi join and a successful join. Check that server
+  enrollment follows the full success interval.

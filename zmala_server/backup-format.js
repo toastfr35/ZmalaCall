@@ -41,7 +41,7 @@ const text = (value, limit = 256) => typeof value === 'string' && value.length <
 /** @param {unknown} value */
 const date = (value) => text(value, 40) && Number.isFinite(Date.parse(String(value)));
 
-// @llr LLR-SRV-DATA-009
+// @llr LLR-SRV-BACKUP-004, LLR-SRV-BACKUP-005
 /** Validate every field consumed at startup or by a terminal before staging.
  * @param {Map<string, Buffer>} files */
 function validateFiles(files) {
@@ -166,7 +166,7 @@ function validateFiles(files) {
   return state;
 }
 
-// @llr LLR-SRV-DATA-009
+// @llr LLR-SRV-BACKUP-004, LLR-SRV-BACKUP-005
 /** @param {Buffer} bytes */
 async function decodeBackup(bytes) {
   requireValue(bytes.length <= MAX_BACKUP, 'Backup exceeds 64 MB.');
@@ -210,7 +210,7 @@ async function decodeBackup(bytes) {
   return { files, state, created_at: String(archive.created_at) };
 }
 
-// @llr LLR-SRV-DATA-008
+// @llr LLR-SRV-BACKUP-004
 /** @param {Map<string, Buffer>} files */
 async function encodeBackup(files) {
   const archive = {

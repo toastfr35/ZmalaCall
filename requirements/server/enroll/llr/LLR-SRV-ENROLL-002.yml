@@ -1,0 +1,23 @@
+active: true
+area: Terminal enrollment
+derived: false
+header: |
+  Printable setup document
+level: 42.0
+links:
+- HLR-SRV-ENROLL-001: pDfvXbbFZBKdNpCDts3hIS4Rdyar3pDSWuoB7m7VaiQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/setup-payload.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/setup-pdf.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Authenticated setup downloads shall produce one-page A4 PDFs with a QR code and a four-module white border. English instructions shall identify the corresponding terminal scan step and warn that the page contains private access data.
+verification: |
+  Generate both PDFs, inspect page size and QR geometry, capture instruction text and verify payload decoding.

@@ -1,5 +1,5 @@
 // @test S-HLT-015
-// @requirements HLR-SRV-MAINT-001, HLR-SRV-DATA-001
+// @requirements HLR-SRV-MAINT-011, HLR-SRV-DATA-012
 // @environment portable
 // @plan Reassign accounts during maintenance jobs and inject storage errors through the assembled HTTP application; assert execution ownership never follows a recycled name and result retries remain durable without blocking reads.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

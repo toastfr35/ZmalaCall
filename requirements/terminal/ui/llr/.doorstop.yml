@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-TERM-UI
-      title: Contact display and localization — LLR
+      title: User interface and language — LLR
   publish:
   - area
   - scope

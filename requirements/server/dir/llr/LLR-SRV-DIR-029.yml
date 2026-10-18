@@ -1,0 +1,29 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Group editing and limits
+level: 27.0
+links:
+- HLR-SRV-DIR-019: IcDUkI-RpZ7F_aYw43oK9f9t-Tdba8xsxU7Kj5aQQu4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-routing.test.js
+  type: file
+- path: tests/server/LLT/directory-policy.test.js
+  type: file
+- path: tests/server/LLT/store-auth.test.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/validation.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Group edits shall accept at most 40 distinct existing members. Names shall contain 1 to 80 characters and be unique without case distinction. Descriptions shall contain at most 240 characters. The store shall contain at most 1000 groups.
+verification: |
+  Create, edit and delete groups at each boundary. Reject nonexistent or duplicate members without partial changes.

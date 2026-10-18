@@ -1,0 +1,25 @@
+active: true
+area: Accounts, groups and portraits
+derived: false
+header: |
+  Independent device credentials
+level: 22.0
+links:
+- HLR-SRV-DIR-018: 3FwHcV_bZoMa3n3BHEtxN-ucUFWdkDK29qi_hycUoA4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/store-views.test.js
+  type: file
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Each new terminal shall receive a generated device serial and token separate from its editable SIP username and password. Device configuration shall omit all contact email addresses.
+verification: |
+  Create independent terminals, rename one and compare credentials and device-visible fields.

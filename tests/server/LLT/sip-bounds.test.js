@@ -1,5 +1,5 @@
 // @test S-LLT-008
-// @requirements LLR-SRV-SIP-012
+// @requirements LLR-SRV-CALL-010
 // @environment portable
 // @plan Feed fragmented, pipelined and malformed stream frames and fake proxy traffic; assert byte/deadline/context bounds, CRLF keepalives and quota cleanup.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

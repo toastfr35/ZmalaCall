@@ -1,0 +1,21 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Browser response protections
+level: 18.0
+links:
+- HLR-SRV-AUTH-013: eZZKb2Z8txA9h8r8PE8NhnyDHG_K8qTxv2WPWZqUdTQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/http/responses.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Responses shall set no-sniff, no-referrer and same-origin content policy headers. Private API responses shall disable caching. Authenticated immutable portraits may use private long-lived caching.
+verification: |
+  Inspect JSON, HTML, script and portrait response headers, including authenticated immutable photo responses.

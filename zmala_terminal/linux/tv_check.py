@@ -69,7 +69,7 @@ class CheckTransport:
         if self.run(cancel, '--logical-address').strip() not in ('4', '8', '11'):
             self.run(cancel, '--playback', '--cec-version-1.4', '--osd-name', 'ZmalaCall')
 
-    # @llr LLR-TERM-TV-004
+    # @llr LLR-TERM-TV-020
     def power(self, cancel):
         with self.tv._lock:
             self.prepare(cancel)
@@ -117,7 +117,7 @@ class CheckTransport:
         if error and not network:
             raise error
 
-    # @llr LLR-TERM-TV-006
+    # @llr LLR-TERM-TV-022
     def source(self, cancel):
         # Do not announce our source while waiting for the user to change it.
         deadline = time.monotonic() + 30

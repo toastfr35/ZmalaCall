@@ -1,0 +1,21 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Administrator password lifecycle
+level: 4.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/admin-auth.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall require an administrator password after first setup. It shall protect the saved password and support authenticated replacement and deliberate local recovery.
+verification: |
+  Set and replace the password, restart and recover it locally. Check invalid input, simultaneous changes and damaged saved credentials.

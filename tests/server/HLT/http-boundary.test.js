@@ -1,5 +1,5 @@
 // @test S-HLT-011
-// @requirements HLR-SRV-AUTH-001
+// @requirements HLR-SRV-AUTH-013
 // @environment portable
 // @plan Send foreign-Origin, invalid-object and oversized HTTP requests to an isolated application; assert rejection before any store mutation.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

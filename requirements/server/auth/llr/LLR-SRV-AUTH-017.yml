@@ -1,0 +1,27 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Bounded session lifetime
+level: 11.0
+links:
+- HLR-SRV-AUTH-012: MOCfbUqJnGtS0uCylJvif3sDDS0Y39Bq9Dw79detQzk=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/admin-sessions.test.js
+  type: file
+- path: zmala_server/admin-password.js
+  type: file
+- path: zmala_server/admin-sessions.js
+  type: file
+- path: zmala_server/http/auth-routes.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Administrator sessions shall expire after eight hours and after server restart. The server shall retain at most 100 sessions, removing the oldest when necessary. Cookies shall use HttpOnly and SameSite=Strict, with Secure for HTTPS.
+verification: |
+  Create excess sessions, advance time, restart session state and inspect HTTP/HTTPS cookie attributes.

@@ -1,5 +1,5 @@
 // @test T-LLT-002
-// @requirements LLR-TERM-MEDIA-009
+// @requirements LLR-TERM-VIDEO-007
 // @environment native-sdk
 // @plan Block a fake JPEG decoder while ticking the filter; assert bounded latest-frame queues, asynchronous progress, capture metadata retention and clean worker shutdown; also decode a real generated JPEG.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-SRV-CONFIG
-      title: Settings and enrollment — LLR
+      title: Terminal configuration — LLR
   publish:
   - area
   - scope

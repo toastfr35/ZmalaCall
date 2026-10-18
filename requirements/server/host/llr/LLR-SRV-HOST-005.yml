@@ -1,0 +1,23 @@
+active: true
+area: Host access and storage
+derived: false
+header: |
+  Volatile working storage
+level: 107.0
+links:
+- HLR-SRV-HOST-002: rvhuKXXVLtGGr2yFlaY_EkWeeS4xUUQKVJMADIFci2c=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/low-wear-journal.conf
+  type: file
+- path: build_tools/linux/low-wear-swap.conf
+  type: file
+- path: tests/server/LLT/test_server_platform.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Installed host policy shall use a volatile journal capped at 64 MiB, RAM-backed temporary storage, RAM-only zram swap and noatime on root. Application data and administrator credentials shall remain on persistent storage.
+verification: |
+  Inspect journal, swap, mount and service-state paths. Host configuration checks do not simulate physical power-loss durability.

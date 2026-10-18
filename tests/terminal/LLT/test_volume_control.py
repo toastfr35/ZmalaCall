@@ -1,7 +1,7 @@
 # @test T-LLT-041
-# @requirements LLR-TERM-REMOTE-005, LLR-TERM-REMOTE-006, LLR-TERM-REMOTE-007, LLR-TERM-CONFIG-014
+# @requirements LLR-TERM-CONFIG-024, LLR-TERM-REMOTE-016, LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007, LLR-TERM-AUDIO-008
 # @environment portable
-# @plan Feed signed motion around deadband and limits while holding/releasing middle; assert relative volume increments, throttled mixer writes, overlay lifetime, default changes and retry after failed writes.
+# @plan Feed signed motion around deadband and limits while holding/releasing middle; assert relative volume increments, throttled mixer writes, overlay lifetime, default changes retry after failed writes and reapplication after USB wake. Reject invalid API levels before spawning workers; ignore pointer input before mixer state is known.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Held-pointer volume has bounded motion, throttled writes and no call actions."""
@@ -12,10 +12,24 @@ from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from zmala_terminal.common.volume_control import VolumeControl, VolumeGesture
+from zmala_terminal.common import volume_control
+from zmala_terminal.common.theme import GREEN, RED
 from zmala_terminal.linux import c20_volume as c20_volume
 
 
 class VolumeTests(unittest.TestCase):
+    def test_overlay_geometry_status_and_shutdown_flush(self):
+        root=Mock(); canvas=Mock(); control=VolumeControl(root,lambda:True,Mock())
+        with patch.object(volume_control.tk,'Canvas',return_value=canvas) as create,patch.object(volume_control.tk.Misc,'lift') as lift,patch.object(c20_volume,'status',return_value=(50,50,False)) as status,patch.object(c20_volume,'request') as request:
+            control.draw(); create.assert_called_once(); lift.assert_called_with(canvas)
+            self.assertEqual(canvas.create_text.call_args.kwargs['text'],'50%'); self.assertEqual(canvas.create_text.call_args.kwargs['fill'],GREEN)
+            self.assertEqual(canvas.create_rectangle.call_args.args,(33,157,51,249))
+            control.gesture.percent=0; canvas.reset_mock(); control.draw(); canvas.create_arc.assert_not_called(); self.assertEqual(canvas.create_line.call_count,2)
+            status.return_value=(50,None,True); control.draw(); self.assertEqual(canvas.create_text.call_args.kwargs['text'],'!'); self.assertEqual(canvas.create_text.call_args.kwargs['fill'],RED)
+            control.timer='pending'; control.sent=50; control.gesture.percent=54; control.close()
+            root.after_cancel.assert_called_once_with('pending'); request.assert_called_once_with(54); canvas.destroy.assert_called_once()
+            control.pointer(True); control.motion(-100); control.refresh(); self.assertEqual(control.gesture.percent,54)
+
     def test_motion_sign_jitter_release_and_limits(self):
         gesture = VolumeGesture(50)
         gesture.move(-640)
@@ -101,3 +115,28 @@ class VolumeTests(unittest.TestCase):
             if worker:
                 worker.join(2)
             self.assertEqual(c20_volume.status(), (80, 80, False))
+
+    def test_usb_wake_reapplies_level_and_unknown_volume_does_not_start_worker(self):
+        with patch.multiple(c20_volume, _desired=36, _applied=36, _worker=None), \
+                patch.object(c20_volume, 'request') as request:
+            c20_volume.reapply()
+            self.assertEqual(c20_volume.status()[:2], (36, None))
+            request.assert_called_once_with(36)
+            request.reset_mock()
+            c20_volume._desired = None
+            c20_volume.reapply()
+            request.assert_not_called()
+        with patch.object(c20_volume.threading, 'Thread') as worker:
+            for value in (-1, 101, 2.5, True, '50', None):
+                for action in (c20_volume.configure, c20_volume.request):
+                    with self.subTest(value=value, action=action.__name__), self.assertRaises(ValueError):
+                        action(value)
+            worker.assert_not_called()
+        activity = Mock()
+        control = VolumeControl(Mock(), lambda: True, activity)
+        with patch.object(c20_volume, 'status', return_value=(None, None, False)):
+            control.pointer(True)
+        activity.assert_not_called()
+        self.assertFalse(control.gesture.held)
+        self.assertIsNone(control.timer)
+        self.assertIsNone(control.canvas)

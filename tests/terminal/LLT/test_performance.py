@@ -1,5 +1,5 @@
 # @test T-LLT-025
-# @requirements LLR-TERM-CONFIG-011, LLR-TERM-CONFIG-012, LLR-TERM-SYS-010
+# @requirements LLR-TERM-COM-006, LLR-TERM-COM-007, LLR-TERM-UI-022
 # @environment portable
 # @plan Repeat stable and changed polls and render requests with fake widgets and small caches; assert live updates avoid cache rewrites, stable identity is protected and redundant rendering is suppressed.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.

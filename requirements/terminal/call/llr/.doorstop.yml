@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: LLR-TERM-CALL
-      title: Calling and authorization — LLR
+      title: Call control — LLR
   publish:
   - area
   - scope

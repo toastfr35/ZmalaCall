@@ -1,0 +1,30 @@
+active: true
+area: Video
+derived: false
+header: |
+  Group crop limits
+level: 80.0
+links:
+- HLR-TERM-VIDEO-002: ilNONDH5vone7Toahq_M3aw-xudbyAigWd9tHX75S84=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test-auto-framing.c
+  type: file
+- path: tests/terminal/LLT/test_auto_framing.py
+  type: file
+- path: tests/terminal/LLT/test_framing_worker.py
+  type: file
+- path: zmala_terminal/linux/auto_framing.py
+  type: file
+- path: zmala_terminal/linux/media/video/auto-framing.c
+  type: file
+reviewed: null
+scope: Optional
+text: |
+  Automatic framing shall be off by default. When enabled, it shall include the
+  detected group with a margin and limit digital zoom to two times. Outgoing video and
+  local preview shall use the same crop.
+verification: |
+  Supply single and multiple-person detections at image edges. Check default, margin,
+  maximum zoom and equal crop coordinates.

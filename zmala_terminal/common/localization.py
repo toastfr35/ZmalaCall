@@ -26,7 +26,7 @@ for language, values in REMOTE_ORIENTATION.items():
     REMOTE_MESSAGES.setdefault(language, {}).update(zip(REMOTE_ORIENTATION_KEYS, values))
 
 
-# @llr LLR-TERM-UI-008
+# @llr LLR-TERM-UI-023
 def translate(language, key, **values):
     # Picture labels and turn-over instructions cover every selectable language.
     # The more detailed Bluetooth diagnostic copy still has an English fallback.

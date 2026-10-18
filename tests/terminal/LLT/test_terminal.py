@@ -1,7 +1,7 @@
 # @test T-LLT-034
-# @requirements LLR-TERM-UI-003, LLR-TERM-UI-005, LLR-TERM-UI-006, LLR-TERM-UI-008, LLR-TERM-CALL-002, LLR-TERM-CALL-003, LLR-TERM-CALL-004, LLR-TERM-CALL-005, LLR-TERM-CALL-006, LLR-TERM-CALL-007, LLR-TERM-CONFIG-009
+# @requirements LLR-TERM-COM-004, LLR-TERM-COM-005, LLR-TERM-NAV-003, LLR-TERM-NAV-004, LLR-TERM-NAV-005, LLR-TERM-NAV-006, LLR-TERM-NAV-007, LLR-TERM-UI-014, LLR-TERM-UI-023, LLR-TERM-CALL-011, LLR-TERM-CALL-012, LLR-TERM-CALL-013, LLR-TERM-CALL-014
 # @environment portable
-# @plan Drive model call states, availability changes, configuration validation, localization and carousel geometry with deterministic inputs; assert two-step calling, caller permission checks, cancellation, stable selection and three/five-contact layout.
+# @plan Drive model call states, availability changes, configuration validation, localization and carousel geometry with deterministic inputs; assert two-step calling, caller permission checks, cancellation, stable selection and three/five-contact layout. Reject malformed configuration types, including non-string photos, and verify script-specific font selection and installed-font fallback.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 import copy
@@ -11,7 +11,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from zmala_terminal.common.model import TerminalModel, State
 from zmala_terminal.common.configuration import validate
-from zmala_terminal.common.localization import LANGUAGES, translate
+from zmala_terminal.common.localization import LANGUAGES, translate, font_family
 from zmala_terminal.common.carousel import CarouselMotion, CarouselLayout, carousel_contacts
 
 
@@ -25,6 +25,29 @@ def config():
 
 
 class BehaviourTests(unittest.TestCase):
+    def test_script_font_selection_prefers_installed_matches_and_has_safe_fallback(self):
+        for language, family in [('zh-Hans','Microsoft YaHei UI'), ('zh-Hant','Microsoft JhengHei UI'),
+                                 ('ja','Yu Gothic UI'), ('ko','Malgun Gothic'), ('hi','Nirmala UI'),
+                                 ('th','Leelawadee UI'), ('my','Myanmar Text'), ('bo','Microsoft Himalaya'),
+                                 ('dv','MV Boli')]:
+            self.assertEqual(font_family(language, {family, 'Arial'}), family)
+            self.assertEqual(font_family(language, {'Noto Sans'}), 'Noto Sans')
+            self.assertEqual(font_family(language, set()), 'TkDefaultFont')
+
+    def test_malformed_config_fields_are_rejected_before_model_application(self):
+        changes = [dict(configuration_version=0), dict(configuration_version=True), dict(video_resolution='4k'),
+                   dict(video_fps=True), dict(display_name=42), dict(display_name='x'*81), dict(sip=[]),
+                   dict(sip={}), dict(call_auth_key='short'), dict(contacts={}), dict(contacts=[None]),
+                   dict(contacts=config()['contacts']*41), dict(callbacks={}), dict(callbacks=[{}]),
+                   dict(callbacks=[dict(id='a'*36, status='pending', ready=False, **{'from':'other', 'to':'alice'})])]
+        for key, value in [('id', 'bad/id'), ('id', 1), ('name', ' '), ('name', 'x'*81), ('sip_uri', 'sip:alice@other'),
+                           ('can_call', 'yes'), ('online', 1), ('can_receive', False), ('photo', '/tmp/private'), ('photo', True)]:
+            changes.append({'contacts':[dict(config()['contacts'][0], **{key:value})]})
+        changes.append({'contacts':config()['contacts']*2})
+        for change in changes:
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                validate(config() | change, 'test')
+
     def model(self):
         m = TerminalModel()
         m.configure(config())

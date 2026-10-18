@@ -1,0 +1,22 @@
+active: true
+area: Host access and storage
+derived: false
+header: |
+  Controlled wired SSH access
+level: 30.0
+links:
+- PROD011: sR_MgyYhF3-jyW2WGv4DmWfiyO34GvkyZ1xy9ll-KvM=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/server-ssh.test.js
+  type: file
+- path: tests/server/HLT/test_ssh_guard_linux.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall restrict installed SSH access to physical Ethernet. Authenticated administration shall control wired SSH without stopping the HTTP, SIP or media services.
+verification: |
+  Check IPv4 and IPv6 ingress by interface and exercise enabled, disabled, unavailable and protected host states.

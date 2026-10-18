@@ -5,7 +5,7 @@ from zmala_terminal.common.local_settings import TV_IDLE_DELAYS
 from zmala_terminal.common.video_settings import FRAME_RATES
 
 
-# @llr LLR-TERM-CONFIG-009
+# @llr LLR-TERM-COM-004
 def validate(config, device_id):
     if not isinstance(config, dict):
         raise ValueError('Configuration must be an object')
@@ -49,11 +49,13 @@ def validate(config, device_id):
         if not isinstance(sip.get(key), str) or not sip[key]:
             raise ValueError('Invalid SIP account')
     validate_contacts(config.get('contacts'), sip)
+    from zmala_terminal.common.secure_calls import validate as validate_secure_calls
+    validate_secure_calls(config)
     validate_callbacks(config.get('callbacks', []), sip['username'])
     return config
 
 
-# @llr LLR-TERM-CONFIG-010
+# @llr LLR-TERM-COM-005
 def validate_contacts(contacts, sip):
     if not isinstance(contacts, list) or len(contacts) > 40:
         raise ValueError('Invalid contacts')
@@ -75,11 +77,12 @@ def validate_contacts(contacts, sip):
             raise ValueError('Invalid contact availability')
         if c['auto_answer'] and not c['can_receive']:
             raise ValueError('Invalid auto-answer permission')
-        if c.get('photo') and not re.fullmatch(r'/photos/[a-f0-9]+\.(png|jpg)', c['photo']):
+        if c.get('photo') and (not isinstance(c['photo'], str) or
+                              not re.fullmatch(r'/photos/[a-f0-9]+\.(png|jpg)', c['photo'])):
             raise ValueError('Invalid photo path')
 
 
-# @llr LLR-TERM-CONFIG-010
+# @llr LLR-TERM-COM-005
 def validate_callbacks(callbacks, username):
     if not isinstance(callbacks, list) or len(callbacks) > 80:
         raise ValueError('Invalid callback requests')

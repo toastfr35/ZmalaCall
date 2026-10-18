@@ -1,7 +1,7 @@
 # @test T-LLT-036
-# @requirements LLR-TERM-TV-010, LLR-TERM-TV-011, LLR-TERM-TV-012, LLR-TERM-TV-015, LLR-TERM-TV-016
+# @requirements LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032
 # @environment portable
-# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted.
+# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Check CEC routing, cancellation and failures without changing a real TV."""
@@ -26,6 +26,47 @@ from zmala_terminal.linux.cec_observer import RoutingState
 
 
 class TVControlTests(unittest.TestCase):
+    def test_observer_assembles_reports_publishes_atomic_heartbeat_and_closes_dead_monitor(self):
+        import zmala_terminal.linux.cec_observer as observer
+        process = Mock()
+        process.poll.side_effect = [None, None, 1]
+        selector = Mock()
+        selector.select.return_value = [(SimpleNamespace(fd=12), 1)]
+        chunks = [b'Received from Playback Device 1 to all (4 to 15): ACTIVE_SOURCE (0x82)\n  phys-addr: 1.',
+                  b'0.0.0\nReceived from TV to all (0 to 15): STANDBY (0x36)\n']
+        with tempfile.TemporaryDirectory() as temporary, patch.object(observer.subprocess, 'Popen', return_value=process), \
+                patch.object(observer.subprocess, 'run', side_effect=subprocess.TimeoutExpired('cec', 3)) as query, \
+                patch.object(observer.selectors, 'DefaultSelector') as selectors, \
+                patch.object(observer.os, 'read', side_effect=chunks), \
+                patch.object(observer.time, 'monotonic', return_value=100), patch.object(observer.time, 'time', return_value=123):
+            selectors.return_value.__enter__.return_value = selector
+            destination = Path(temporary)/'state.json'
+            with self.assertRaisesRegex(RuntimeError, 'monitor stopped'):
+                observer.observe('/dev/cec0', destination)
+            state = json.loads(destination.read_text())
+            self.assertEqual(state, {'device':'/dev/cec0', 'active_source':'1.0.0.0', 'off':True, 'updated_at':123})
+            self.assertFalse(destination.with_suffix('.tmp').exists())
+            self.assertEqual(query.call_count, 1)
+            self.assertIn('--request-active-source', query.call_args.args[0])
+        process.terminate.assert_called_once()
+        process.wait.assert_called_once_with(timeout=5)
+
+    def test_observer_reopens_changed_hdmi_adapter_without_inventing_routing(self):
+        import zmala_terminal.linux.cec_observer as observer
+        process = Mock()
+        process.poll.return_value = None
+        with patch.object(observer.subprocess, 'Popen', return_value=process), \
+                patch.object(observer.selectors, 'DefaultSelector'), \
+                patch.object(observer, 'select_device', return_value='/dev/cec1'), \
+                patch.object(observer.os, 'replace') as replace:
+            observer.observe('/dev/cec0', Path('unused'), automatic=True)
+        replace.assert_not_called()
+        process.terminate.assert_called_once()
+        state = RoutingState()
+        state.consume('Transmitted by Playback Device 1 to TV (4 to 0): IMAGE_VIEW_ON (0x04)')
+        self.assertFalse(state.off)
+        self.assertIsNone(state.source)
+
     def test_answer_waits_for_tv_but_has_a_bounded_wait(self):
         model = TerminalModel()
         model.configure(config() | {'auto_answer': True})

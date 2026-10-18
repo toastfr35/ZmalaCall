@@ -1,0 +1,28 @@
+active: true
+area: Initial setup and reset
+derived: false
+header: |
+  Camera-based enrollment
+level: 4.0
+links:
+- PROD007: CVFnBhIEqG3Rok_D6npspt2MsVV8o9N_NM64q2fSo0U=
+- PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/linux_qr_embedding.py
+  type: file
+- path: tests/terminal/HLT/provisioning_ui.py
+  type: file
+- path: tests/terminal/HLT/qr_camera_process.py
+  type: file
+- path: tests/terminal/HLT/setup_feedback_ui.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall obtain network access and its server identity from camera-
+  readable codes. It shall explain rejected codes and incomplete operations.
+verification: |
+  Scan valid and invalid codes through the setup interface. Check accepted identity,
+  error feedback and progression.

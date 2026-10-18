@@ -8,7 +8,7 @@ attributes:
   defaults:
     doc:
       name: HLR-TERM-SETUP
-      title: First-run setup and reset — HLR
+      title: Initial setup and reset — HLR
   publish:
   - area
   - scope

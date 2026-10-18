@@ -1,0 +1,22 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Validated terminal settings
+level: 10.0
+links:
+- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+- PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/auto-framing.test.js
+  type: file
+- path: tests/server/HLT/device-settings.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall store and supply each terminal's call, media, language and presentation settings. It shall reject invalid changes before altering the accepted configuration.
+verification: |
+  Exercise each setting and its invalid boundaries, then restart and fetch the terminal configuration.

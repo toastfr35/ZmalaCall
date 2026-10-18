@@ -1,0 +1,43 @@
+active: true
+area: Video
+derived: false
+header: |
+  Missing received video
+level: 79.0
+links:
+- HLR-TERM-VIDEO-001: zbWy8C5TtS0N-sUV1-bRZ0USwx1A9MbmT0v2_pHAY18=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_display_states.py
+  type: file
+- path: tests/terminal/LLT/test_engine_adapter.py
+  type: file
+- path: tests/terminal/LLT/test_video_feedback.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
+- path: zmala_terminal/linux/media/video/codec.c
+  type: file
+- path: zmala_terminal/linux/media/video/codec.h
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-filter.c
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-stream.c
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-stream.h
+  type: file
+- path: zmala_terminal/linux/media/video/preview-display.c
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Four seconds without a decoded remote frame shall show missing-video feedback.
+  Negotiated receive-video disablement shall show the same feedback. Audio and
+  outgoing media shall continue. A new decoded frame or call shall clear the stale
+  condition.
+verification: |
+  Control frame times and negotiated reception. Check the four-second boundary,
+  feedback and continued audio and send state.

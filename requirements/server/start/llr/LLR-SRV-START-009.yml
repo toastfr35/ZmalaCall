@@ -1,0 +1,27 @@
+active: true
+area: Startup and shutdown
+derived: false
+header: |
+  Single coordinated shutdown
+level: 6.0
+links:
+- HLR-SRV-START-002: hqLqMVS4RK7rufIUDcIUqjSsn4ugiWiAF-QXLmkWplk=
+normative: true
+ref: ''
+references:
+- path: build_tools/linux/server-launch.py
+  type: file
+- path: build_tools/linux/zmalacall-server.service
+  type: file
+- path: tests/server/LLT/shutdown.test.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/shutdown.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Signals and listener failures shall use one shutdown promise. Shutdown shall close HTTP and HTTPS listeners, stop SIP, drain accepted requests and then flush required state.
+verification: |
+  Hold an accepted request and a write. Trigger concurrent close paths and check order and one SIP close. No finite drain deadline is assumed.

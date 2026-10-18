@@ -1,0 +1,29 @@
+active: true
+area: Maintenance and diagnostics
+derived: false
+header: |
+  Bounded idempotent command result
+level: 79.0
+links:
+- HLR-SRV-MAINT-011: sJW1dvGdS_-Gm5aD0PVVtKqWW8MUnT6xi1cG7zemBs0=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/console-state.test.js
+  type: file
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/console-jobs.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/types/http.ts
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Results shall validate status, exit code, output strings and truncation state. Combined stdout and stderr shall not exceed 65536 UTF-8 bytes; result JSON shall not exceed 400000 bytes. A repeated completed lease shall retry persistence without changing its recorded result.
+verification: |
+  Use multibyte and escaped output at bounds. Submit invalid results and repeat a completed lease after a failed write.

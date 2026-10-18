@@ -1,0 +1,21 @@
+active: true
+area: Administration and access control
+derived: false
+header: |
+  Private data and portrait access
+level: 17.0
+links:
+- HLR-SRV-AUTH-013: eZZKb2Z8txA9h8r8PE8NhnyDHG_K8qTxv2WPWZqUdTQ=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Public liveness and static assets shall omit credentials. Portrait reads shall require an administrator session or device token. Private configuration and diagnostics shall require their designated credential.
+verification: |
+  Fetch assets and private routes anonymously and with each credential class. Inspect response fields and unauthorized status.

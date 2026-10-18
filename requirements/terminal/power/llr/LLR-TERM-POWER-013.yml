@@ -1,0 +1,29 @@
+active: true
+area: Connected devices and power
+derived: false
+header: |
+  USB idle eligibility
+level: 112.0
+links:
+- HLR-TERM-POWER-009: oGYlIu6lXZLPntVWKgFFQbHA7ACQo9BqHMVeUOPF1TI=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_management_loop.py
+  type: file
+- path: tests/terminal/LLT/test_usb_power.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+reviewed: null
+scope: Experimental
+text: |
+  USB power removal shall require five continuous minutes without terminal activity
+  and a fresh remote battery level of at least 25 percent. Calls, ringing, setup,
+  Settings, held buttons, stale application state and low or unknown battery shall
+  retain or restore power. The idle interval shall start when ongoing activity ends.
+verification: |
+  Exercise the five-minute and battery boundaries and each inhibitor with a controlled
+  clock. Check that stale and unknown data cannot permit power-off.

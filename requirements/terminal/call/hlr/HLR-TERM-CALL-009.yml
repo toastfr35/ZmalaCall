@@ -1,0 +1,29 @@
+active: true
+area: Call control
+derived: false
+header: |
+  Call lifecycle
+level: 18.0
+links:
+- PROD004: nu6PwERldfEJ8cxbibpKF0o60YrX3D8mm-EjbnFARW4=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/network_lab.py
+  type: file
+- path: tests/terminal/HLT/accounts_live.py
+  type: file
+- path: tests/terminal/HLT/call_feedback_ui.py
+  type: file
+- path: tests/terminal/HLT/linux_smoke.py
+  type: file
+- path: tests/terminal/HLT/terminal_ui_call.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The terminal shall let the user start, answer, decline and end calls. It shall
+  support optional delayed answering with a visible opportunity to decline.
+verification: |
+  Exercise outgoing and incoming call outcomes, including timeout and cancellation.
+  Check controls and return to idle.

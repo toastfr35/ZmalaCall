@@ -1,0 +1,35 @@
+active: true
+area: TV control
+derived: false
+header: |
+  Observed input-switching test
+level: 98.0
+links:
+- HLR-TERM-TV-017: S2nqx7v0OyXsBJ4cnyWr1LqdDB9WZmvN6aEWTWFqziA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_tv_check.py
+  type: file
+- path: tests/terminal/LLT/test_tv_setup_view.py
+  type: file
+- path: tests/terminal/LLT/test_tv_transport.py
+  type: file
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The input test shall explain manual recovery and wait up to 30 seconds to observe a
+  different input. It shall select Zmala for three seconds, restore that observed
+  input for three seconds, then select Zmala again. It shall ask the user whether
+  switching occurred.
+verification: |
+  Supply no alternate input and then an observed input. Check timeout, exact command
+  order, intervals and the final question.

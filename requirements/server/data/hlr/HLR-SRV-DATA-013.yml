@@ -1,0 +1,21 @@
+active: true
+area: Saved state
+derived: false
+header: |
+  Compatible saved-state migration
+level: 25.0
+links:
+- PROD002: uZlZn0lWC2R21AbeCrmJCeTaDrIjigUn5bw5aSlltOo=
+- PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
+- PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/state-migration.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The server shall migrate supported older state to the current representation while preserving identities and credentials. Migration shall not invent personal contact data or new communication permission.
+verification: |
+  Load representative older state, migrate twice and compare credentials, identities, settings and direct group permission.

@@ -1,0 +1,21 @@
+active: true
+area: Audio and video relay
+derived: false
+header: |
+  SDP rewrite and unchanged packets
+level: 59.0
+links:
+- HLR-SRV-MEDIA-007: dD4eYzrZpZbTG5VyZRJ0sXf64k57sSSuQs6CrxM51uI=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/media-lifetime.test.js
+  type: file
+- path: zmala_server/media.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  In LAN mode, the relay shall replace supported SDP endpoints with its own IPv4 address and ports. It shall forward encoded RTP and RTCP bytes unchanged. Unsupported media sections shall be disabled; BUNDLE shall be rejected and ICE attributes removed.
+verification: |
+  Rewrite audio/video and unsupported sections. Check explicit RTCP, invalid ports, unsupported bundling and bidirectional packet identity.

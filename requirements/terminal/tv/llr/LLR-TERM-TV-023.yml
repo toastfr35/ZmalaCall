@@ -1,0 +1,34 @@
+active: true
+area: TV control
+derived: false
+header: |
+  TV-specific failure help
+level: 99.0
+links:
+- HLR-TERM-TV-017: S2nqx7v0OyXsBJ4cnyWr1LqdDB9WZmvN6aEWTWFqziA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_tv_check.py
+  type: file
+- path: tests/terminal/LLT/test_tv_setup_view.py
+  type: file
+- path: tests/terminal/LLT/test_tv_transport.py
+  type: file
+- path: zmala_terminal/common/tv_check.py
+  type: file
+- path: zmala_terminal/common/tv_check_messages.py
+  type: file
+- path: zmala_terminal/common/ui/tv_setup.py
+  type: file
+- path: zmala_terminal/linux/tv_check.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Failed input switching shall offer Samsung network-control permission and verified-
+  input guidance. It shall also offer Sony BRAVIA Sync guidance. Sony control shall
+  use standard CEC.
+verification: |
+  Select each manufacturer after failure. Check the help path and standard CEC path.
+  Physical Sony behavior requires separate hardware evidence.

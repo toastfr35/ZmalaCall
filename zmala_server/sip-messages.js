@@ -67,7 +67,7 @@ class SipMessages {
       }
     });
   }
-  // @llr LLR-SRV-SIP-016
+  // @llr LLR-SRV-MESSAGE-002
   /** @param {import('sip').ValidRequest} rq */
   message(rq) {
     const v = this.store.value,
@@ -88,7 +88,7 @@ class SipMessages {
       this.reply(rq, 403, 'Messaging Not Permitted');
       return;
     }
-    // @llr LLR-SRV-SIP-017
+    // @llr LLR-SRV-MESSAGE-003
     const type = (rq.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
     if (!['text/plain', 'message/cpim'].includes(type)) {
       this.reply(rq, 415, 'Unsupported Media Type');
@@ -138,7 +138,7 @@ class SipMessages {
       this.reply(rq, 403, 'Messaging Not Permitted');
       return;
     }
-    // @llr LLR-SRV-SIP-018
+    // @llr LLR-SRV-MESSAGE-004
     forward.headers['x-family-auth'] = crypto
       .createHmac('sha256', terminal.device_token)
       .update(`message:${messageId}:${from}`)
