@@ -55,7 +55,7 @@ lint-powershell:
 	$(POWERSHELL) -NoProfile -File build_tools/lint-powershell.ps1
 
 lint-format:
-	$(NODE) node_modules/prettier/bin/prettier.cjs --check "zmala_server/**/*.{js,cjs,ts,css,html}" "tests/**/*.{js,cjs}" "build_tools/*.js" "build_tools/*.cjs" "requirements/product/template/*.{js,css}" eslint.config.cjs "zmala_server/tsconfig*.json"
+	$(NODE) node_modules/prettier/bin/prettier.cjs --check "zmala_server/**/*.{js,cjs,ts,css,html}" "tests/**/*.{js,cjs}" "build_tools/*.{js,cjs}" "requirements/product/template/*.{js,css}" eslint.config.cjs "zmala_server/tsconfig*.json"
 
 lint-generated:
 	$(NODE) build_tools/build-admin.cjs --check

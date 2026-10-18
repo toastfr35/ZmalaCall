@@ -8,8 +8,8 @@
     "pretest": "node build_tools/build-admin.cjs",
     "start": "npm --prefix zmala_server start",
     "test": "npm --prefix zmala_server test",
-    "format": "prettier --write \"zmala_server/**/*.{js,cjs,ts,css,html}\" \"tests/**/*.{js,cjs}\" \"build_tools/*.js\" \"build_tools/*.cjs\" \"zmala_server/tsconfig*.json\" && npm run build:admin",
-    "format:check": "prettier --check \"zmala_server/**/*.{js,cjs,ts,css,html}\" \"tests/**/*.{js,cjs}\" \"build_tools/*.js\" \"build_tools/*.cjs\" \"zmala_server/tsconfig*.json\""
+    "format": "prettier --write \"zmala_server/**/*.{js,cjs,ts,css,html}\" \"tests/**/*.{js,cjs}\" \"build_tools/*.{js,cjs}\" \"zmala_server/tsconfig*.json\" && npm run build:admin",
+    "format:check": "prettier --check \"zmala_server/**/*.{js,cjs,ts,css,html}\" \"tests/**/*.{js,cjs}\" \"build_tools/*.{js,cjs}\" \"zmala_server/tsconfig*.json\""
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
