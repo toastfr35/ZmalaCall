@@ -5,7 +5,7 @@ header: |
   Confirmed callback creation
 level: 69.0
 links:
-- THLR012: eepbUhntkWOe5aqlxD1pNEBygPUtwSbVl-B7mpmdkRw=
+- THLR012: 0M8raNKrxMIohovA418QsTZXp03D4ushfZgepMemeVw=
 normative: true
 ref: ''
 references:
@@ -17,9 +17,7 @@ references:
   type: file
 - path: zmala_terminal/common/ui/carousel.py
   type: file
-- path: zmala_terminal/common/tests/test_callbacks.py
-  type: file
-- path: zmala_terminal/common/tests/callbacks_live.py
+- path: tests/terminal/LLT/test_callbacks.py
   type: file
 reviewed: null
 scope: Core

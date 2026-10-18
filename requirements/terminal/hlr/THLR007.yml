@@ -8,7 +8,17 @@ links:
 - PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/call_feedback_ui.py
+  type: file
+- path: tests/terminal/HLT/linux_smoke.py
+  type: file
+- path: tests/terminal/HLT/render_cache_ui.py
+  type: file
+- path: tests/terminal/HLT/setup_feedback_ui.py
+  type: file
+- path: tests/terminal/HLT/terminal_languages_ui.py
+  type: file
 reviewed: null
 scope: Core
 text: |

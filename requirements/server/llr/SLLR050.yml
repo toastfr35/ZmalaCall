@@ -5,7 +5,7 @@ header: |
   Reminder retries and termination
 level: 50.0
 links:
-- SHLR008: q2nTMNf9X8KWjIFNTDddzS9rUi2Jo-D5B7vlrd_t7sQ=
+- SHLR008: mWbA6yic_0feT_a23E45T6MVikOLfPBhcoWk2eVBIkU=
 normative: true
 ref: ''
 references:
@@ -15,7 +15,7 @@ references:
   type: file
 - path: zmala_server/callback-settings.js
   type: file
-- path: zmala_server/tests/callback-emails.test.js
+- path: tests/server/LLT/callback-reminders.test.js
   type: file
 reviewed: null
 scope: Core

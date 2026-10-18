@@ -530,19 +530,31 @@ use one worker, a 40-path queue, atomic publication and one-minute failure backo
 
 ## Verification and troubleshooting
 
+Requirement-based unit tests live in `tests/terminal/LLT/`; system and integration
+scenarios live in `tests/terminal/HLT/`. Their leading comments identify the test,
+linked requirements, procedure and expected observations. Installer unit tests
+are included in `make test-llt`. See `docs/general.md` for trace validation and
+the generated coverage-gap report.
+
 Portable tests do not operate the TV or prove native SDK compatibility. For real
-rendering use `zmala_terminal/common/tests/render_cache_ui.py` (Linux under Xvfb);
+rendering use `tests/terminal/HLT/render_cache_ui.py` (Linux under Xvfb);
 `--benchmark` measures synthetic cache pressure. UI probes such as `settings_ui.py`,
 `tv_setup_ui.py` and `terminal_languages_ui.py` exercise layouts without CEC.
-`build_tools/linux/test-video-workers.sh` checks JPEG workers, preview pixels,
-framing, stale tokens and UBSan paths; a Pi run additionally covers ARM NEON.
-Hardware encoder/decoder probes in `build_tools/linux/test-video-*.c` and Windows
-`build_tools/tests/h264_decoder_native.py` need their respective native SDKs.
+`tests/support/terminal/run-native.sh` checks JPEG workers, preview pixels,
+framing, stale tokens, camera-failure size retention, coalesced recovery and UBSan
+paths; a Pi run additionally covers ARM NEON. The opt-in hardware resize scenario
+is `tests/terminal/HLT/test-video-resize.c`; its header gives the build command
+and idle-device prerequisite. Native size readback and QR-worker lifecycle checks
+also live under HLT and require the installed SDK.
+Exploratory encoder/decoder probes in `tests/adhoc/native/` and Windows
+`tests/adhoc/tooling/h264_decoder_native.py` need their respective native SDKs.
 
-Live fixtures under `common/tests/` can use real cameras/accounts: read their
+Live HLTs and shared fixtures under `tests/support/terminal/` can use real cameras/accounts: read their
 entry points first, use disposable accounts, and stop any normal terminal whose
 registration/camera would conflict. Launcher integration tests start/stop actual
-Windows terminal windows. Restore normal services and volume after tests.
+terminal processes. Windows-specific launcher checks live under `tests/adhoc/`.
+Restore normal services and volume after tests. Run hardware HLTs separately and
+record their IDs/platform/results; a portable pass does not qualify them.
 
 | Symptom | First checks |
 | --- | --- |

@@ -40,7 +40,9 @@ credentials are excluded from packages.
 ## Develop
 
 See [development setup and checks](docs/general.md#development-tools-and-checks).
-`make lint` checks sources, `make test` runs server/terminal tests, and
+`make lint` checks sources, `make test` runs requirement-based server/terminal
+LLT and HLT suites from `tests/`, `make requirements` publishes test traceability
+and coverage gaps, and
 `make clean CLEAN_FLAGS=--dry-run` previews disposable-file cleanup.
 Use the root **Start ZmalaCall Terminal.cmd** and **Stop ZmalaCall Terminal.cmd**
 for managed Windows terminal instances; server hosting is Linux-only.

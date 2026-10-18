@@ -5,7 +5,7 @@ header: |
   Count and byte bounded rendering caches
 level: 122.0
 links:
-- THLR021: VykhIjh0-RuDwV9veCo4DQEd5cXAdvTExi0S8P89-9o=
+- THLR021: xtQGjIcxk9fFgdiEcpBFr7wBk2Jes7zHlNb-O68tEMo=
 normative: true
 ref: ''
 references:
@@ -19,13 +19,9 @@ references:
   type: file
 - path: zmala_terminal/common/paths.py
   type: file
-- path: zmala_terminal/common/tests/test_render_cache.py
+- path: tests/terminal/LLT/test_performance.py
   type: file
-- path: zmala_terminal/common/tests/test_image_bounds.py
-  type: file
-- path: zmala_terminal/common/tests/test_performance.py
-  type: file
-- path: zmala_terminal/common/tests/render_cache_ui.py
+- path: tests/terminal/LLT/test_render_cache.py
   type: file
 reviewed: null
 scope: Core

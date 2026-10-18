@@ -5,7 +5,7 @@ header: |
   Bounded UTF-8 results
 level: 102.0
 links:
-- THLR017: -d9gXx0ERHkpZVknOT737dZq33cq8hPvunr5XvMDw_M=
+- THLR017: LAuH0AstyAzFG0wx6xf3844-l7bzVugCUH76YdSv0RM=
 normative: true
 ref: ''
 references:
@@ -17,9 +17,7 @@ references:
   type: file
 - path: zmala_terminal/linux/commands.py
   type: file
-- path: zmala_terminal/common/tests/test_management.py
-  type: file
-- path: zmala_terminal/common/tests/test_reliability.py
+- path: tests/terminal/LLT/test_reliability.py
   type: file
 reviewed: null
 scope: Core

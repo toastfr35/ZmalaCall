@@ -9,7 +9,15 @@ links:
 - PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/accounts_live.py
+  type: file
+- path: tests/terminal/HLT/call_feedback_ui.py
+  type: file
+- path: tests/terminal/HLT/linux_smoke.py
+  type: file
+- path: tests/terminal/HLT/terminal_ui_call.py
+  type: file
 reviewed: null
 scope: Core
 text: |

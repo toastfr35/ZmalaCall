@@ -5,7 +5,7 @@ header: |
   Private response and asset boundaries
 level: 25.0
 links:
-- SHLR004: VNVEjzWb79hEutsv7PkV-vLouMcskk7gjNUifStO2fA=
+- SHLR004: INBRLeZyDQCiGOxkRauV900RqhF3_Nevyr-Nq1rq0NU=
 normative: true
 ref: ''
 references:
@@ -16,10 +16,6 @@ references:
 - path: zmala_server/http/auth-routes.js
   type: file
 - path: zmala_server/http/handler.js
-  type: file
-- path: zmala_server/tests/admin-auth.test.js
-  type: file
-- path: zmala_server/tests/http-boundary.test.js
   type: file
 reviewed: null
 scope: Core

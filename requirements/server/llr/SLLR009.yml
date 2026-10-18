@@ -5,7 +5,7 @@ header: |
   Private generated credentials
 level: 9.0
 links:
-- SHLR002: c8cK3Oc41TrO-nRN9xmkzGEVU2KXqgPIT_MtDLb7bjs=
+- SHLR002: wNJcWAQYjZi0wMubITfkykfGF-LoySKliO4lhpxAdME=
 normative: true
 ref: ''
 references:
@@ -14,10 +14,6 @@ references:
 - path: zmala_server/store.js
   type: file
 - path: zmala_server/migrations.js
-  type: file
-- path: zmala_server/tests/admin.test.js
-  type: file
-- path: zmala_server/tests/server.test.js
   type: file
 reviewed: null
 scope: Core

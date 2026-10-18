@@ -3,7 +3,9 @@ area: Server backup and restore
 derived: false
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/backups.test.js
+  type: file
 reviewed: null
 scope: Core
 header: Server backup and restore

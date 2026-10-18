@@ -5,7 +5,7 @@ header: |
   Job history and cancellation
 level: 78.0
 links:
-- SHLR013: vLgGSvI3BzkbsIZxCne5Gt5tQJQ3Xb3jAv2rfqqLhCQ=
+- SHLR013: ShI2eq2E2JdndNZ8kqGnBQjKp1ixlh5Z1iduySrblRw=
 normative: true
 ref: ''
 references:
@@ -14,10 +14,6 @@ references:
 - path: zmala_server/http/admin-routes.js
   type: file
 - path: zmala_server/http/device-routes.js
-  type: file
-- path: zmala_server/tests/console.test.js
-  type: file
-- path: zmala_server/tests/reliability.test.js
   type: file
 reviewed: null
 scope: Core

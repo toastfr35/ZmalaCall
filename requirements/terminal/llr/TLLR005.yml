@@ -5,7 +5,7 @@ header: |
   One source-profile process
 level: 5.0
 links:
-- THLR001: t-mTJChg7dYE-9m7QhGDcE76Kh7alTgSFxzo3KLYP2c=
+- THLR001: Rf6F0GHMPxYxcMhUHolXWjSljS4Ru6HR61hdaTTBnhA=
 normative: true
 ref: ''
 references:
@@ -22,8 +22,6 @@ references:
 - path: build_tools/linux/picom.conf
   type: file
 - path: build_tools/linux/21-zmalacall-pi4.conf
-  type: file
-- path: zmala_terminal/common/tests/test_linux_platform.py
   type: file
 - path: build_tools/linux/launcher.py
   type: file

@@ -5,7 +5,7 @@ header: |
   Verified bond persistence
 level: 24.0
 links:
-- THLR004: x__vSeyZF05_eoG1hq4uT9OldRarKWvUDpAF-SvbNuk=
+- THLR004: Pfv7L76PtEwVj_8xLL2q3pgcw6USeOBs7RvjBPwPvaU=
 normative: true
 ref: ''
 references:
@@ -15,13 +15,13 @@ references:
   type: file
 - path: zmala_terminal/linux/c20_status.py
   type: file
-- path: zmala_terminal/common/tests/test_usb_setup.py
-  type: file
-- path: zmala_terminal/common/tests/test_pairing_setup.py
-  type: file
 - path: zmala_terminal/common/remote_test.py
   type: file
-- path: zmala_terminal/common/tests/test_remote_test.py
+- path: tests/terminal/LLT/test_pairing_setup.py
+  type: file
+- path: tests/terminal/LLT/test_pi_install.py
+  type: file
+- path: tests/terminal/LLT/test_remote_test.py
   type: file
 reviewed: null
 scope: Core

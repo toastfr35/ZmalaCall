@@ -5,7 +5,7 @@ header: |
   Configured language and fallback
 level: 35.0
 links:
-- THLR007: 4WGNSfNgDxkp4q9qWbk72ZGffxl7kQCJTFMoThGz_P8=
+- THLR007: BHCQ28nBF2p304cz_Qbp081XVTVy11OnZ-wtBrBlDFg=
 normative: true
 ref: ''
 references:
@@ -18,10 +18,6 @@ references:
 - path: zmala_terminal/common/ui/confirmation.py
   type: file
 - path: zmala_terminal/common/theme.py
-  type: file
-- path: zmala_terminal/common/tests/terminal_languages_ui.py
-  type: file
-- path: zmala_terminal/common/tests/call_feedback_ui.py
   type: file
 - path: zmala_terminal/common/shared/call-questions.json
   type: file
@@ -40,6 +36,10 @@ references:
 - path: zmala_terminal/common/shared/video-messages.json
   type: file
 - path: zmala_terminal/common/shared/wifi-confirmation.json
+  type: file
+- path: tests/terminal/LLT/test_terminal.py
+  type: file
+- path: tests/terminal/LLT/test_usb_setup.py
   type: file
 reviewed: null
 scope: Core

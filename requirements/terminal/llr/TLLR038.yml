@@ -5,7 +5,7 @@ header: |
   Language changes without call restart
 level: 38.0
 links:
-- THLR007: 4WGNSfNgDxkp4q9qWbk72ZGffxl7kQCJTFMoThGz_P8=
+- THLR007: BHCQ28nBF2p304cz_Qbp081XVTVy11OnZ-wtBrBlDFg=
 normative: true
 ref: ''
 references:
@@ -18,10 +18,6 @@ references:
 - path: zmala_terminal/common/ui/confirmation.py
   type: file
 - path: zmala_terminal/common/theme.py
-  type: file
-- path: zmala_terminal/common/tests/terminal_languages_ui.py
-  type: file
-- path: zmala_terminal/common/tests/call_feedback_ui.py
   type: file
 - path: zmala_terminal/common/configuration_control.py
   type: file

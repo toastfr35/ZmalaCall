@@ -8,7 +8,9 @@ links:
 - PROD010: CH0z8p296_lCSujO-jWk_j36hz5ah55zBlfEYDgM1eU=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/callbacks_live.py
+  type: file
 reviewed: null
 scope: Core
 text: |

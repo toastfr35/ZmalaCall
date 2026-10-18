@@ -353,9 +353,14 @@ identical in-flight inputs and publishes by content hash. Inputs are capped at
 16 megapixels/8192 per side before conversion and outputs at 480 per side.
 PDFKit uses built-in fonts. Disk portrait garbage collection remains outstanding.
 
-Run `make test`, `make lint` and installer tests as described in
-[general.md](general.md#development-tools-and-checks). For browser changes use
-`zmala_server/tests/http-fixture.js` with disposable data. Check all six pages
+Run `make test`, `make lint` and `make requirements` as described in
+[general.md](general.md#development-tools-and-checks). Unit scenarios under
+`tests/server/LLT/` trace directly to SLLRs; HTTP/SIP/system scenarios under
+`tests/server/HLT/` trace to SHLRs. Each file starts with its stable test ID,
+requirement links, procedure and pass criteria. The generated Tests report shows
+coverage gaps separately from planned tests; it does not claim execution success.
+For browser changes use
+`tests/support/server/http-fixture.js` with disposable data. Check all six pages
 at 320, 390, 768, 1024 and 1920 CSS pixels, 700/850 breakpoints and short landscape
 height. Check modal scrolling, long names, keyboard focus across polling,
 Escape/Enter behavior, plain-LAN-HTTP copying, conflict messages, console reopening

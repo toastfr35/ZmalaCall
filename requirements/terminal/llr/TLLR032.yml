@@ -5,7 +5,7 @@ header: |
   Deliberate reset confirmation
 level: 32.0
 links:
-- THLR006: XGCAxBoIKOSoiG24qmLWFRYm9dr0GT0rRKFDCuV8Q8w=
+- THLR006: ZBARnQNsxZTkAw9pC4S_9vfvcFwK5CZ7er7oTPFB8GY=
 normative: true
 ref: ''
 references:
@@ -17,7 +17,7 @@ references:
   type: file
 - path: zmala_terminal/linux/wifi.py
   type: file
-- path: zmala_terminal/common/tests/test_provisioning.py
+- path: tests/terminal/LLT/test_local_settings.py
   type: file
 reviewed: null
 scope: Core

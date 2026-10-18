@@ -5,7 +5,7 @@ header: |
   Server-owned receipt time
 level: 85.0
 links:
-- SHLR015: gQ92LYRTrzadvz6OKzyyouPvsuD-t0kwP9gKXy7A_VQ=
+- SHLR015: TzQeMFdgs_XJATsu3njgebtKpIepq9BMXmKmAO7xQjA=
 normative: true
 ref: ''
 references:
@@ -16,8 +16,6 @@ references:
 - path: zmala_server/sip-server.js
   type: file
 - path: zmala_server/http/admin-routes.js
-  type: file
-- path: zmala_server/tests/terminal-status.test.js
   type: file
 reviewed: null
 scope: Core

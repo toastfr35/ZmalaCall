@@ -5,7 +5,7 @@ header: |
   Ringing answer and decline
 level: 43.0
 links:
-- THLR008: f_wKMa6RJdMeA56MVAjgm8cTZbFpA8vbxeC1ilP-F7w=
+- THLR008: aEkpTk7iJYk_Z--WN5KZatR3BoY_rEN7lqkem32vV-c=
 normative: true
 ref: ''
 references:
@@ -17,9 +17,7 @@ references:
   type: file
 - path: zmala_terminal/common/linphone_api.py
   type: file
-- path: zmala_terminal/common/tests/test_terminal.py
-  type: file
-- path: zmala_terminal/common/tests/terminal_ui_call.py
+- path: tests/terminal/LLT/test_terminal.py
   type: file
 reviewed: null
 scope: Core

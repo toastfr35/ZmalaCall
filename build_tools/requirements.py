@@ -17,6 +17,7 @@ import sys
 from urllib.parse import unquote, urlsplit
 
 from requirements_trace import audit_traces
+from test_trace import audit_tests, write_test_report
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = {
@@ -126,7 +127,7 @@ def audit(root: Path) -> dict:
                 errors.append(f'{uid}: Windows terminal is outside this baseline')
             if prefix in ('SLLR', 'TLLR'):
                 referenced[name].add(uid)
-                has_source |= '/tests/' not in name and '/test-' not in name
+                has_source |= not name.startswith('tests/') and '/tests/' not in name and '/test-' not in name
         if prefix in ('SLLR', 'TLLR') and not has_source:
             errors.append(f'{uid}: tests alone do not identify implementation')
     for uid, item in records.items():
@@ -138,10 +139,14 @@ def audit(root: Path) -> dict:
     # Also inspect explicitly referenced local patches/helpers outside the normal
     # inventory. Test evidence and generated bundles cannot satisfy code tracing.
     trace_files = set(included) | {name for name in referenced
-        if '/tests/' not in name and not Path(name).name.startswith(('test-', 'probe-'))
+        if not name.startswith('tests/') and '/tests/' not in name and not Path(name).name.startswith(('test-', 'probe-'))
         and not name.startswith('zmala_terminal/windows/') and name not in EXCLUSIONS}
     try:
         traces = audit_traces(root, records, sorted(trace_files), referenced)
+    except ValueError as error:
+        errors.append(str(error))
+    try:
+        test_trace = audit_tests(root, records)
     except ValueError as error:
         errors.append(str(error))
     if errors:
@@ -150,6 +155,7 @@ def audit(root: Path) -> dict:
         'counts': dict(Counter(item['prefix'] for item in records.values())),
         'source_coverage': {name: sorted(referenced[name]) for name in included},
         'code_traces': traces,
+        'test_trace': test_trace,
         'exclusions': excluded,
         'qualification': 'Source mapping and structural validation are not test results or human approval.',
     }
@@ -181,6 +187,7 @@ def write_coverage(output: Path, report: dict) -> None:
 <a class="skip" href="#main">Skip to content</a><header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">Z</span> ZmalaCall <span class="brand-label">Engineering</span></a><nav aria-label="Report"><a href="index.html">Overview</a><a href="traceability.html">Traceability</a><a href="coverage.html" aria-current="page">Source coverage</a></nav></header>
 <main id="main" style="margin:auto"><p class="eyebrow">Implementation inventory</p><h1>Source coverage</h1>
 <p>{len(rows)} authored source files mapped to LLRs · {counts}</p>
+<p><a href="tests.html">Requirement-based test plans and coverage gaps</a></p>
 <p class="notice">{escape(report['qualification'])} A mapped file can still contain behavior needing a more detailed requirement; review the code and verification instructions together.</p>
 <p>Scope: Linux server, shared/Pi terminal runtime and Pi deployment tools (including Windows installer front ends). Windows terminal runtime, repository development tooling and third-party internals are excluded.</p>
 <div class="filter"><label for="search">Find a file or requirement</label><input id="search" type="search" placeholder="Module path or LLR ID"><output id="match-count" aria-live="polite"></output><a href="coverage.json" download>Download inventory JSON</a></div>
@@ -218,7 +225,7 @@ class ReportPage(HTMLParser):
 def check_report(output: Path, counts: dict) -> None:
     """Reject broken navigation, missing items and external asset dependencies."""
     pages = {p.resolve(): ReportPage(p.read_text(encoding='utf-8'))
-             for p in [output / 'index.html', output / 'traceability.html', output / 'coverage.html',
+             for p in [output / 'index.html', output / 'traceability.html', output / 'coverage.html', output / 'tests.html',
                        *(output / 'documents' / (prefix + '.html') for prefix in DOCUMENTS)]}
     for path, page in pages.items():
         if page.duplicates:
@@ -247,6 +254,9 @@ def main() -> int:
         run_doorstop(ROOT, '--no-reformat', '--error-all', '--no-review-check')
         print(f"Baseline: {report['counts']}; {len(report['source_coverage'])} source files mapped; "
               f"{len(report['code_traces'])} LLRs anchored in code.")
+        test_trace = report['test_trace']
+        print(f"Test plans: {len(test_trace['tests'])}; unmapped requirements: "
+              + ', '.join(f'{prefix} {len(ids)}' for prefix, ids in test_trace['unmapped'].items()))
         if not args.check:
             output = ROOT / 'requirements' / 'output'
             # Only obsolete generated document pages are removed. No recursive workspace deletion.
@@ -255,6 +265,7 @@ def main() -> int:
                     page.unlink()
             run_doorstop(ROOT, 'publish', 'all', str(output), '--html', '--template', 'zmala')
             write_coverage(output, report)
+            write_test_report(output, report['test_trace'])
             check_report(output, report['counts'])
             print(f"Report: {output / 'index.html'}")
         return 0

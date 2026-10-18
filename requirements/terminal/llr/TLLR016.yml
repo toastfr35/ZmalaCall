@@ -15,13 +15,11 @@ references:
   type: file
 - path: zmala_terminal/common/input_control.py
   type: file
-- path: zmala_terminal/common/tests/test_presenter_input.py
-  type: file
-- path: zmala_terminal/common/tests/test_terminal.py
-  type: file
 - path: zmala_terminal/common/engine.py
   type: file
 - path: zmala_terminal/common/volume_control.py
+  type: file
+- path: tests/terminal/LLT/test_volume_control.py
   type: file
 reviewed: null
 scope: Core

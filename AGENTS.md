@@ -24,3 +24,16 @@ Keep code, documentation and requirements synchronized in every change.
 
 Review impact even for refactoring and documentation-only changes. Artifacts that
 remain accurate need no gratuitous edits. Report any unresolved inconsistency.
+
+Tests belong in the top-level `tests/` tree. Product verification is requirement
+based: `tests/server/LLT/` and `tests/terminal/LLT/` contain unit tests linked to
+SLLRs/TLLRs; `HLT/` contains system/integration scenarios linked to SHLRs/THLRs.
+Every LLT/HLT scenario starts with the stable `@test`, `@requirements`,
+`@environment`, `@plan` and `@pass` comments documented in `docs/general.md`.
+Keep reciprocal Doorstop references synchronized. Plans explain the inputs,
+procedure and expected behavior actually checked; do not claim whole-requirement
+coverage from a partial assertion or count skipped/manual checks as passed.
+Shared fixtures belong in `tests/support/`. Non-RBT experiments, development-tool
+regressions and Windows-terminal compatibility checks belong in `tests/adhoc/`.
+New regression tests for product behavior must use LLT/HLT, not the ad-hoc escape
+hatch. Run `make requirements` after changing test plans or links.

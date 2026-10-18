@@ -9,7 +9,11 @@ links:
 - PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/callback-emails.test.js
+  type: file
+- path: tests/server/HLT/callbacks.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

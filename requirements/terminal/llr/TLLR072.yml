@@ -5,7 +5,7 @@ header: |
   Availability notice without automatic dialing
 level: 72.0
 links:
-- THLR012: eepbUhntkWOe5aqlxD1pNEBygPUtwSbVl-B7mpmdkRw=
+- THLR012: 0M8raNKrxMIohovA418QsTZXp03D4ushfZgepMemeVw=
 normative: true
 ref: ''
 references:
@@ -16,8 +16,6 @@ references:
 - path: zmala_terminal/common/configuration_control.py
   type: file
 - path: zmala_terminal/common/ui/carousel.py
-  type: file
-- path: zmala_terminal/common/tests/test_callbacks.py
   type: file
 reviewed: null
 scope: Core

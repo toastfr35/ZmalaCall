@@ -19,11 +19,11 @@ references:
   type: file
 - path: zmala_terminal/common/model.py
   type: file
-- path: zmala_terminal/common/tests/test_configuration.py
+- path: tests/terminal/LLT/test_configuration.py
   type: file
-- path: zmala_terminal/common/tests/test_management.py
+- path: tests/terminal/LLT/test_performance.py
   type: file
-- path: zmala_terminal/common/tests/test_reliability.py
+- path: tests/terminal/LLT/test_reliability.py
   type: file
 reviewed: null
 scope: Core

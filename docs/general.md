@@ -68,8 +68,12 @@ code or models.
 
 | Path | Purpose |
 | --- | --- |
-| `zmala_server/` | Node server, administration source, SIP transport and tests |
-| `zmala_terminal/common/` | Shared Python controllers, UI, assets, translations and tests |
+| `zmala_server/` | Node server, administration source and SIP transport |
+| `zmala_terminal/common/` | Shared Python controllers, UI, assets and translations |
+| `tests/server/{LLT,HLT}/` | Server unit and system/integration test plans and implementations |
+| `tests/terminal/{LLT,HLT}/` | Pi terminal unit and system/integration test plans and implementations |
+| `tests/support/` | Shared fixtures and runners; no independent requirement coverage |
+| `tests/adhoc/` | Exploratory probes, tooling regressions and Windows compatibility checks |
 | `zmala_terminal/windows/` | Windows native loading, rendering, WLAN and process adapters |
 | `zmala_terminal/linux/` | Pi adapters, native media, Bluetooth, CEC and peripheral control |
 | `build_tools/` | Packaging, installers, launchers, source checks and hardware probes |
@@ -110,11 +114,15 @@ shell syntax, formatting and generated administration assets. On Windows it also
 parses PowerShell scripts. Elsewhere use `make lint-powershell POWERSHELL=pwsh`
 when PowerShell is installed. Syntax/static checks do not replace native builds.
 
-`make test` runs the server and portable terminal suites without starting real
-terminals. Packaging/installer tests run separately:
+`make test` runs both levels of portable requirement-based tests, including
+installer unit tests. It does not start deployed terminals, operate a TV or place
+live calls. Run levels independently or check development tooling with:
 
 ```sh
-python -m unittest discover -s build_tools/tests -p 'test_*.py'
+make test-llt
+make test-hlt
+make test-adhoc
+make requirements
 ```
 
 Install `build_tools/windows_installer/requirements.txt` for full installer
@@ -123,6 +131,57 @@ on Windows/Linux, Doorstop validation and Linux native video worker tests agains
 the Trixie SDK. Live camera, audio, TV and user acceptance remain separate checks.
 Run destructive reset/enrollment scenarios with disposable profiles/accounts;
 never replace an in-use terminal's SIP registration with a test instance.
+
+### Requirement-based test plans and traces
+
+Each LLT/HLT file is a stable, named verification scenario or suite. Its named
+assertion cases implement the plan at the top of the file; unrelated scenarios
+belong in separate files. LLTs isolate units/components using controlled inputs,
+temporary storage and doubles for external dependencies. HLTs exercise assembled
+behavior through HTTP, SIP, processes, the actual UI renderer or physical devices.
+Mixed files are split when the assertion cases belong at different levels.
+
+Python/shell test headers use `#`; JavaScript/C use `//`. Headers precede imports,
+docstrings and executable code (a shebang may precede them). Example:
+
+```python
+# @test T-LLT-041
+# @requirements TLLR014, TLLR015, TLLR016
+# @environment portable
+# @plan Feed signed motion around deadband and limits while holding/releasing middle; assert relative volume increments, throttled mixer writes, overlay lifetime, default changes and retry after failed writes.
+# @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
+```
+
+Test IDs use `S-LLT-NNN`, `S-HLT-NNN`, `T-LLT-NNN` or `T-HLT-NNN`; retain IDs
+when renaming files and never reuse retired IDs. Assign the next unused number
+for a new scenario. LLTs link directly to one or more component LLRs; HLTs link
+directly to component HLRs. Multiple independent test plans can exercise different
+parts of a requirement. Add the test file to each linked Doorstop item's
+`references`, alongside implementation references for LLRs. Do not infer a test
+link merely because it imports a source file or exercises a child requirement.
+
+The plan states the setup/input, actions and expected observations actually
+checked. Keep the scope narrower than the requirement when the test is partial.
+The environment is one of `portable`, `display`, `native-sdk`, `native-display`,
+`hardware` or `linux-root`. Nonportable scenarios are explicit entry points; read
+their arguments and setup instructions before running. A header is a plan, not
+proof that the scenario ran. Record the revision, test ID, command, platform,
+result and any skipped cases or manual observations with execution evidence.
+
+`build_tools/test_trace.py`, called by `make requirements`, rejects missing plans,
+malformed or duplicate IDs, unknown requirements, wrong levels/components,
+nonreciprocal links and tests that drift outside `tests/`. The report's **Tests**
+page (`requirements/output/tests.html`, with `tests.json`) shows the requirement
+to test matrix, full plans and requirements with no mapped test. A linked test
+does not imply complete requirement coverage; a skip is not a pass. Existing gaps
+remain visible until a suitable test is implemented and executed.
+
+New product regressions belong in LLT/HLT. `tests/adhoc/` is for non-RBT work,
+including development-tool self-tests and Windows-only terminal compatibility
+outside the Pi baseline. Its maintained `test_*.py` and `*.test.js` checks run via
+`make test-adhoc`; manual/live probes never run automatically. Keep private local
+experiments and evidence in ignored `tests/adhoc/tmp/`, removed by `make clean`.
+Shared fixtures in `tests/support/` have no test IDs or independent coverage.
 
 Edit `zmala_server/web/admin-*.js` and `web/styles/*.css`, then run
 `npm run build:admin`. Do not edit generated `admin.js`/`admin.css` directly.
@@ -194,7 +253,8 @@ LLR. Do not satisfy coverage with an unrelated reference.
 
 Open `requirements/output/index.html`. The offline report includes searchable
 requirement cards, document navigation, parent/child links, verification guidance,
-a traceability table/CSV and source coverage HTML/JSON with code file/line anchors.
+a traceability table/CSV, source coverage HTML/JSON with code file/line anchors,
+and a bidirectional test-plan matrix with explicit coverage gaps.
 It works without a web
 server or external CDN. JavaScript only adds search. The native Doorstop template
 lives in `requirements/product/template/`; `build_tools/requirements.py` adds the

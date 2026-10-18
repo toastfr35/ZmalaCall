@@ -5,15 +5,13 @@ header: |
   SDP endpoint rewriting
 level: 36.0
 links:
-- SHLR006: aSq0UEmoNIdT_qlPgvQmMZQBJVuebP7eQCs3fuzx2kI=
+- SHLR006: JDi4-2rZq9XeEjOGPGY_qpd5a9qeUHM9B3RjVCkWxMA=
 normative: true
 ref: ''
 references:
 - path: zmala_server/media.js
   type: file
-- path: zmala_server/tests/media-lifetime.test.js
-  type: file
-- path: zmala_server/tests/server.test.js
+- path: tests/server/LLT/media-lifetime.test.js
   type: file
 reviewed: null
 scope: Core

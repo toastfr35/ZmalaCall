@@ -21,13 +21,7 @@ references:
   type: file
 - path: zmala_terminal/common/input_control.py
   type: file
-- path: zmala_terminal/common/tests/test_tv_control.py
-  type: file
-- path: zmala_terminal/common/tests/test_cec_device.py
-  type: file
-- path: zmala_terminal/common/tests/test_samsung_tv.py
-  type: file
-- path: zmala_terminal/common/tests/test_idle_return.py
+- path: tests/terminal/LLT/test_tv_control.py
   type: file
 reviewed: null
 scope: Core

@@ -9,7 +9,9 @@ links:
 - PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/setup.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

@@ -10,7 +10,13 @@ links:
 - PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/admin-settings-conflicts.test.js
+  type: file
+- path: tests/server/HLT/auto-framing.test.js
+  type: file
+- path: tests/server/HLT/device-settings.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

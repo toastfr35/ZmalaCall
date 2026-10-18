@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node main.js",
     "pretest": "node ../build_tools/build-admin.cjs",
-    "test": "node --test tests/*.test.js"
+    "test": "node ../build_tools/run-tests.cjs"
   },
   "dependencies": {
     "nodemailer": "10.0.14",

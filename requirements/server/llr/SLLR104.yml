@@ -5,15 +5,13 @@ header: |
   Backup validation before replacement
 level: 104.0
 links:
-- SHLR019: rYc7ehnwISfV0XK0rnqBhrAxHrZamzOw4bDZIBq9X9Y=
+- SHLR019: bIJSVsNAD4ndmDcaGwUNGsiyJp35zU1tYiESMAIEVnQ=
 normative: true
 ref: ''
 references:
 - path: zmala_server/backup-format.js
   type: file
 - path: zmala_server/photos.js
-  type: file
-- path: zmala_server/tests/backups.test.js
   type: file
 reviewed: null
 scope: Core

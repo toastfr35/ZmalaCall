@@ -21,7 +21,7 @@ references:
   type: file
 - path: build_tools/linux/install-server.sh
   type: file
-- path: build_tools/tests/test_server_installer.py
+- path: tests/server/LLT/test_server_installer.py
   type: file
 reviewed: null
 scope: Core

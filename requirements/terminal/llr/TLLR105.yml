@@ -19,10 +19,6 @@ references:
   type: file
 - path: build_tools/linux/diagnostics.py
   type: file
-- path: zmala_terminal/common/tests/test_wifi_status.py
-  type: file
-- path: zmala_terminal/common/tests/test_runtime_logging.py
-  type: file
 - path: zmala_terminal/common/engine.py
   type: file
 - path: zmala_terminal/linux/media.py

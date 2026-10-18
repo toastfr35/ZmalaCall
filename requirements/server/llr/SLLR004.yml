@@ -17,7 +17,7 @@ references:
   type: file
 - path: build_tools/linux/server-launch.py
   type: file
-- path: zmala_server/tests/shutdown.test.js
+- path: tests/server/LLT/shutdown.test.js
   type: file
 reviewed: null
 scope: Core

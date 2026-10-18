@@ -5,7 +5,7 @@ header: |
   Camera connection gate
 level: 20.0
 links:
-- THLR004: x__vSeyZF05_eoG1hq4uT9OldRarKWvUDpAF-SvbNuk=
+- THLR004: Pfv7L76PtEwVj_8xLL2q3pgcw6USeOBs7RvjBPwPvaU=
 normative: true
 ref: ''
 references:
@@ -15,9 +15,9 @@ references:
   type: file
 - path: zmala_terminal/linux/c20_status.py
   type: file
-- path: zmala_terminal/common/tests/test_usb_setup.py
+- path: tests/terminal/LLT/test_pairing_setup.py
   type: file
-- path: zmala_terminal/common/tests/test_pairing_setup.py
+- path: tests/terminal/LLT/test_usb_setup.py
   type: file
 reviewed: null
 scope: Core

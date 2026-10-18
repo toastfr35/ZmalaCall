@@ -5,7 +5,7 @@ header: |
   Local setting options
 level: 76.0
 links:
-- THLR013: faJqVnpecmX1pv0iYDXQOMJ6q5RLHSzGfQWIfxYhvIo=
+- THLR013: phJtM01JobPZ05RTy1QAqyBCGNXcJqNj_yFw1nWIJtk=
 normative: true
 ref: ''
 references:
@@ -17,9 +17,7 @@ references:
   type: file
 - path: zmala_terminal/common/ui/settings.py
   type: file
-- path: zmala_terminal/common/tests/test_local_settings.py
-  type: file
-- path: zmala_terminal/common/tests/settings_ui.py
+- path: tests/terminal/LLT/test_local_settings.py
   type: file
 reviewed: null
 scope: Core

@@ -10,7 +10,9 @@ links:
 - PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/server.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

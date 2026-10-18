@@ -25,11 +25,7 @@ references:
   type: file
 - path: build_tools/linux/package-terminal.py
   type: file
-- path: build_tools/tests/test_pi_install.py
-  type: file
-- path: build_tools/tests/test_headless_installer.py
-  type: file
-- path: build_tools/tests/test_install_runner.py
+- path: tests/terminal/LLT/test_windows_installer.py
   type: file
 reviewed: null
 scope: Core

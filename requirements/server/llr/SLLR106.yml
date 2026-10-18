@@ -5,7 +5,7 @@ header: |
   Administrator backup workflow
 level: 106.0
 links:
-- SHLR019: rYc7ehnwISfV0XK0rnqBhrAxHrZamzOw4bDZIBq9X9Y=
+- SHLR019: bIJSVsNAD4ndmDcaGwUNGsiyJp35zU1tYiESMAIEVnQ=
 normative: true
 ref: ''
 references:
@@ -27,9 +27,7 @@ references:
   type: file
 - path: zmala_server/types/admin.ts
   type: file
-- path: zmala_server/tests/backups.test.js
-  type: file
-- path: zmala_server/tests/admin-interactions.test.js
+- path: tests/server/LLT/admin-interactions.test.js
   type: file
 reviewed: null
 scope: Core

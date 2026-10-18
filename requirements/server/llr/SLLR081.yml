@@ -5,7 +5,7 @@ header: |
   Readiness versus liveness
 level: 81.0
 links:
-- SHLR014: aD_PVDrUEzhgrScSa9DCydE-3fISTaFd6TW7Y8edKHU=
+- SHLR014: EO7rLe1xwZFkk3xRdRL6fjY50G5y3AlzRrDsg0XEOYQ=
 normative: true
 ref: ''
 references:
@@ -16,12 +16,6 @@ references:
 - path: zmala_server/store.js
   type: file
 - path: zmala_server/migrations.js
-  type: file
-- path: zmala_server/tests/persistence.test.js
-  type: file
-- path: zmala_server/tests/reliability.test.js
-  type: file
-- path: zmala_server/tests/performance.test.js
   type: file
 - path: zmala_server/http/handler.js
   type: file

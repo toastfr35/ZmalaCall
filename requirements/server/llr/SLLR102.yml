@@ -13,8 +13,6 @@ references:
   type: file
 - path: zmala_server/defaults.js
   type: file
-- path: zmala_server/tests/server.test.js
-  type: file
 reviewed: null
 scope: Core
 text: |

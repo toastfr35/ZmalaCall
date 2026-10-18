@@ -19,13 +19,11 @@ references:
   type: file
 - path: zmala_server/web/admin-shared.js
   type: file
-- path: zmala_server/tests/admin.test.js
-  type: file
-- path: zmala_server/tests/admin-interactions.test.js
-  type: file
 - path: zmala_server/web/admin-accounts.js
   type: file
 - path: zmala_server/web/admin-console.js
+  type: file
+- path: tests/server/LLT/admin-interactions.test.js
   type: file
 reviewed: null
 scope: Core

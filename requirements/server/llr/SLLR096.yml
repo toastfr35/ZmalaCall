@@ -21,8 +21,6 @@ references:
   type: file
 - path: build_tools/linux/install-server.sh
   type: file
-- path: build_tools/tests/test_server_installer.py
-  type: file
 - path: build_tools/linux/check-server.py
   type: file
 reviewed: null

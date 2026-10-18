@@ -5,7 +5,7 @@ header: |
   Symmetric shared-group permission
 level: 14.0
 links:
-- SHLR003: xsPE64ruWuer4IsGGDJFGNKo1UV-1YkWY4U63GnXWxU=
+- SHLR003: m0uJqEE6sv_D4BiXj8hwaPmM1rUFycENgt2NXqsjsMk=
 normative: true
 ref: ''
 references:
@@ -15,7 +15,7 @@ references:
   type: file
 - path: zmala_server/http/admin-routes.js
   type: file
-- path: zmala_server/tests/server.test.js
+- path: tests/server/LLT/store-auth.test.js
   type: file
 reviewed: null
 scope: Core

@@ -5,7 +5,7 @@ header: |
   Configuration privacy and live consistency
 level: 69.0
 links:
-- SHLR011: sy6ARF7udlkej2Y_Wfd_PCEN2glcf-sun7ghdh_UtlI=
+- SHLR011: KnhDgcm_NwGRj3PdzQYgdwUp1khG0zY_S43_G8oGeM4=
 normative: true
 ref: ''
 references:
@@ -16,10 +16,6 @@ references:
 - path: zmala_server/http/device-routes.js
   type: file
 - path: zmala_server/validation.js
-  type: file
-- path: zmala_server/tests/terminal-fields.test.js
-  type: file
-- path: zmala_server/tests/device-settings.test.js
   type: file
 reviewed: null
 scope: Core

@@ -5,7 +5,7 @@ header: |
   Portrait fallback and replacement
 level: 10.0
 links:
-- THLR002: RDTpfur30Cspbj7ptzHd4tiQxP-HWrYGQu1-Mc2YKYA=
+- THLR002: QvHm6EbbtM2UQF-FZumB7qJhOu0fJvQvH8rRYiNWeRA=
 normative: true
 ref: ''
 references:
@@ -15,11 +15,9 @@ references:
   type: file
 - path: zmala_terminal/common/model.py
   type: file
-- path: zmala_terminal/common/tests/test_terminal.py
-  type: file
-- path: zmala_terminal/common/tests/contact_presence_ui.py
-  type: file
 - path: zmala_terminal/common/photo_cache.py
+  type: file
+- path: tests/terminal/LLT/test_image_bounds.py
   type: file
 reviewed: null
 scope: Core

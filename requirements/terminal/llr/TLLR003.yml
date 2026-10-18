@@ -5,7 +5,7 @@ header: |
   Synchronized Pi presentation
 level: 3.0
 links:
-- THLR001: t-mTJChg7dYE-9m7QhGDcE76Kh7alTgSFxzo3KLYP2c=
+- THLR001: Rf6F0GHMPxYxcMhUHolXWjSljS4Ru6HR61hdaTTBnhA=
 normative: true
 ref: ''
 references:
@@ -23,11 +23,7 @@ references:
   type: file
 - path: build_tools/linux/21-zmalacall-pi4.conf
   type: file
-- path: zmala_terminal/common/tests/test_linux_platform.py
-  type: file
 - path: zmala_terminal/common/carousel.py
-  type: file
-- path: zmala_terminal/common/tests/test_performance.py
   type: file
 reviewed: null
 scope: Core

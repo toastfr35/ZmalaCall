@@ -5,7 +5,7 @@ header: |
   Session lifetime and cookie policy
 level: 20.0
 links:
-- SHLR004: VNVEjzWb79hEutsv7PkV-vLouMcskk7gjNUifStO2fA=
+- SHLR004: INBRLeZyDQCiGOxkRauV900RqhF3_Nevyr-Nq1rq0NU=
 normative: true
 ref: ''
 references:
@@ -17,9 +17,7 @@ references:
   type: file
 - path: zmala_server/http/handler.js
   type: file
-- path: zmala_server/tests/admin-auth.test.js
-  type: file
-- path: zmala_server/tests/http-boundary.test.js
+- path: tests/server/LLT/admin-sessions.test.js
   type: file
 reviewed: null
 scope: Core

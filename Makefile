@@ -12,7 +12,7 @@ CPPCHECK ?= $(if $(wildcard C:/msys64/ucrt64/bin/cppcheck.exe),C:/msys64/ucrt64/
 POWERSHELL ?= powershell.exe
 REQUIREMENTS_PYTHON ?= $(if $(wildcard build_tools/runtime/doorstop/Scripts/python.exe),build_tools/runtime/doorstop/Scripts/python.exe,$(PYTHON))
 
-.PHONY: help clean lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test requirements requirements-check
+.PHONY: help clean lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test test-llt test-hlt test-adhoc requirements requirements-check
 .DEFAULT_GOAL := help
 
 help:
@@ -55,12 +55,27 @@ lint-powershell:
 	$(POWERSHELL) -NoProfile -File build_tools/lint-powershell.ps1
 
 lint-format:
-	$(NODE) node_modules/prettier/bin/prettier.cjs --check "zmala_server/**/*.{js,cjs,ts,css,html}" "build_tools/*.js" "build_tools/*.cjs" "requirements/product/template/*.{js,css}" eslint.config.cjs "zmala_server/tsconfig*.json"
+	$(NODE) node_modules/prettier/bin/prettier.cjs --check "zmala_server/**/*.{js,cjs,ts,css,html}" "tests/**/*.{js,cjs}" "build_tools/*.js" "build_tools/*.cjs" "requirements/product/template/*.{js,css}" eslint.config.cjs "zmala_server/tsconfig*.json"
 
 lint-generated:
 	$(NODE) build_tools/build-admin.cjs --check
 
-test:
+test: test-llt test-hlt
+
+test-llt:
 	$(NODE) build_tools/build-admin.cjs
-	$(NODE) -e "process.chdir('zmala_server'); process.exit(require('node:child_process').spawnSync(process.execPath, ['--test', 'tests/*.test.js'], {stdio: 'inherit'}).status ?? 1)"
-	$(PYTHON) -m unittest discover -s zmala_terminal -p "test_*.py"
+	$(NODE) build_tools/run-tests.cjs LLT
+	$(PYTHON) -m unittest discover -s tests/server/LLT -t . -p "test_*.py"
+	$(PYTHON) -m unittest discover -s tests/terminal/LLT -t . -p "test_*.py"
+
+test-hlt:
+	$(NODE) build_tools/build-admin.cjs
+	$(NODE) build_tools/run-tests.cjs HLT
+	$(PYTHON) -m unittest discover -s tests/server/HLT -t . -p "test_*.py"
+	$(PYTHON) -m unittest discover -s tests/terminal/HLT -t . -p "test_*.py"
+
+# Toolchain/Windows compatibility checks are not Pi product requirement coverage.
+# Do not discover manual or live scenarios here.
+test-adhoc:
+	$(NODE) build_tools/run-tests.cjs adhoc
+	$(PYTHON) -m unittest discover -s tests/adhoc -t . -p "test_*.py"

@@ -13,9 +13,7 @@ references:
   type: file
 - path: build_tools/convert-photo.py
   type: file
-- path: zmala_server/tests/photos.test.js
-  type: file
-- path: build_tools/tests/test_photo_conversion.py
+- path: tests/server/LLT/photos.test.js
   type: file
 reviewed: null
 scope: Core

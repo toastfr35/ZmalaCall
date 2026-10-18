@@ -11,6 +11,7 @@ module.exports = [
       '**/data/**',
       'build_tools/runtime/**',
       'build_tools/tmp/**',
+      'tests/adhoc/tmp/**',
       'build_tools/dist/**',
       'tmp/**',
       'requirements/output/**',

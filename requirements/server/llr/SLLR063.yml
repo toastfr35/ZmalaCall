@@ -19,10 +19,6 @@ references:
   type: file
 - path: zmala_server/web/admin-shared.js
   type: file
-- path: zmala_server/tests/admin.test.js
-  type: file
-- path: zmala_server/tests/admin-interactions.test.js
-  type: file
 - path: zmala_server/web/admin-clipboard.js
   type: file
 - path: zmala_server/web/admin-setup.js
@@ -30,6 +26,10 @@ references:
 - path: zmala_server/web/admin-auth.js
   type: file
 - path: zmala_server/web/admin-callbacks.js
+  type: file
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/terminal-fields.test.js
   type: file
 reviewed: null
 scope: Core

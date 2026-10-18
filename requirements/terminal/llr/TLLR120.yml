@@ -5,7 +5,7 @@ header: |
   Bounded asynchronous portrait fetch
 level: 120.0
 links:
-- THLR021: VykhIjh0-RuDwV9veCo4DQEd5cXAdvTExi0S8P89-9o=
+- THLR021: xtQGjIcxk9fFgdiEcpBFr7wBk2Jes7zHlNb-O68tEMo=
 normative: true
 ref: ''
 references:
@@ -19,11 +19,9 @@ references:
   type: file
 - path: zmala_terminal/common/paths.py
   type: file
-- path: zmala_terminal/common/tests/test_render_cache.py
+- path: tests/terminal/LLT/test_image_bounds.py
   type: file
-- path: zmala_terminal/common/tests/test_image_bounds.py
-  type: file
-- path: zmala_terminal/common/tests/test_performance.py
+- path: tests/terminal/LLT/test_reliability.py
   type: file
 reviewed: null
 scope: Core

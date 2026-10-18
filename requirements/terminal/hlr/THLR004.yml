@@ -9,7 +9,9 @@ links:
 - PROD007: CVFnBhIEqG3Rok_D6npspt2MsVV8o9N_NM64q2fSo0U=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/pairing_ui.py
+  type: file
 reviewed: null
 scope: Core
 text: |

@@ -19,10 +19,6 @@ references:
   type: file
 - path: zmala_server/web/admin-shared.js
   type: file
-- path: zmala_server/tests/admin.test.js
-  type: file
-- path: zmala_server/tests/admin-interactions.test.js
-  type: file
 - path: zmala_server/types/admin-dom.ts
   type: file
 - path: zmala_server/types/admin.ts

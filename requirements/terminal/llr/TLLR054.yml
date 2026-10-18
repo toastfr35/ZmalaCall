@@ -5,7 +5,7 @@ header: |
   Encoder copy avoidance
 level: 54.0
 links:
-- THLR009: czBRDwDSos_gz1THoEpGOOGRtDVHVA68CXapCpQrNxE=
+- THLR009: ICt2C2TiabjI8UzIbSFpumF5YUrmIeGkHMacZ9WNoZ0=
 normative: true
 ref: ''
 references:
@@ -20,10 +20,6 @@ references:
 - path: zmala_terminal/linux/media/video/codec.h
   type: file
 - path: zmala_terminal/linux/media/video/preview-display.c
-  type: file
-- path: build_tools/linux/test-video-workers.sh
-  type: file
-- path: build_tools/linux/test-video-resize.c
   type: file
 reviewed: null
 scope: Core

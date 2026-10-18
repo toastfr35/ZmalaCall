@@ -10,7 +10,11 @@ links:
 - PROD014: YVPFlbLhB-beKb3LHPLMa8devJ7a9EMQQB5q6Gd3BuA=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/server-ssh.test.js
+  type: file
+- path: tests/server/HLT/test_ssh_guard_linux.py
+  type: file
 reviewed: null
 scope: Core
 text: |

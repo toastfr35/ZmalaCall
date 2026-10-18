@@ -9,7 +9,9 @@ links:
 - PROD013: BFCe0hheykhG81agxSmgbbl71ck8ZKiVmETfwLLvA04=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/linux_launcher.py
+  type: file
 reviewed: null
 scope: Core
 text: |

@@ -9,7 +9,9 @@ links:
 - PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/contact_presence_ui.py
+  type: file
 reviewed: null
 scope: Core
 text: |

@@ -19,7 +19,7 @@ references:
   type: file
 - path: zmala_terminal/common/icon_shapes.py
   type: file
-- path: zmala_terminal/common/tests/test_remote_health.py
+- path: tests/terminal/LLT/test_remote_health.py
   type: file
 reviewed: null
 scope: Core

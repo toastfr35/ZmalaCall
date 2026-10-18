@@ -5,7 +5,7 @@ header: |
   Ethernet-only SSH ingress
 level: 98.0
 links:
-- SHLR018: XumfM3gleBo_ZU8mj3HbPW2IYTE-Klip065PMsDYchI=
+- SHLR018: f39kF0PLXcsInGEYrb75UHvNh5tn2hLljaef_eTj6nM=
 normative: true
 ref: ''
 references:
@@ -20,10 +20,6 @@ references:
 - path: build_tools/linux/install-low-wear.sh
   type: file
 - path: build_tools/linux/check-low-wear.py
-  type: file
-- path: zmala_server/tests/server-ssh.test.js
-  type: file
-- path: build_tools/tests/test_ssh_guard_linux.py
   type: file
 reviewed: null
 scope: Core

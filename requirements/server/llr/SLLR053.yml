@@ -11,7 +11,7 @@ ref: ''
 references:
 - path: zmala_server/sip-messages.js
   type: file
-- path: zmala_server/tests/messages.test.js
+- path: tests/server/LLT/messages.test.js
   type: file
 reviewed: null
 scope: Core

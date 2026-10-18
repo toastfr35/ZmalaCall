@@ -5,7 +5,7 @@ header: |
   Supervised fullscreen service
 level: 1.0
 links:
-- THLR001: t-mTJChg7dYE-9m7QhGDcE76Kh7alTgSFxzo3KLYP2c=
+- THLR001: Rf6F0GHMPxYxcMhUHolXWjSljS4Ru6HR61hdaTTBnhA=
 normative: true
 ref: ''
 references:
@@ -23,9 +23,9 @@ references:
   type: file
 - path: build_tools/linux/21-zmalacall-pi4.conf
   type: file
-- path: zmala_terminal/common/tests/test_linux_platform.py
-  type: file
 - path: build_tools/linux/zmalacall-compositor.service
+  type: file
+- path: tests/terminal/LLT/test_linux_package.py
   type: file
 reviewed: null
 scope: Core

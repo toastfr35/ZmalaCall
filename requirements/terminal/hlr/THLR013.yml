@@ -9,7 +9,9 @@ links:
 - PROD009: daJnaNVIG8vBHaWbLcb6QDeOXt24ShNceTW27QHW5HE=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/settings_ui.py
+  type: file
 reviewed: null
 scope: Core
 text: |

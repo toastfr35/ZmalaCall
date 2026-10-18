@@ -115,6 +115,18 @@ do not establish those results for every supported setup.
 
 ## Lower priority
 
+### Close requirement-based verification gaps
+
+The tests now have separate LLT/HLT plans and direct requirement links. Use the
+generated `requirements/output/tests.html` matrix to prioritize missing tests;
+the broad historical file references were not evidence of full coverage.
+Add isolated LLR checks and end-to-end HLR scenarios where the matrix says
+"No mapped test", and review partially exercised requirements as well. In
+particular, qualify startup/deployment failure recovery and TV/USB behavior on
+physical devices. Record the test ID, revision, platform, outcome and skipped or
+manual observations; do not treat a plan, portable pass or skip as hardware
+acceptance. Keep the matrix generated from comments and Doorstop references.
+
 ### Refine administration conflicts and controller interfaces
 
 Browser editors now submit revisions and stale writes are rejected. Revisions

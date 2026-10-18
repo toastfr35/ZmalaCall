@@ -5,7 +5,7 @@ header: |
   Bounded SIP framing and proxy contexts
 level: 34.0
 links:
-- SHLR005: kjEkBhWIi0A-Z7V0s8Wh8m74dyjluRPUQ869fOZLhOY=
+- SHLR005: 2f1Q0BmFzKgWqENZ-vvpcOEfdmRxp6SxNpMcfEfoHBs=
 normative: true
 ref: ''
 references:
@@ -15,15 +15,11 @@ references:
   type: file
 - path: zmala_server/auth.js
   type: file
-- path: zmala_server/tests/server.test.js
-  type: file
-- path: zmala_server/tests/sip-guards.test.js
-  type: file
 - path: zmala_server/vendor/sip/sip.js
   type: file
 - path: zmala_server/vendor/sip/proxy.js
   type: file
-- path: zmala_server/tests/sip-bounds.test.js
+- path: tests/server/LLT/sip-bounds.test.js
   type: file
 reviewed: null
 scope: Core

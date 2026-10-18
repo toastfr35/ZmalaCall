@@ -9,7 +9,17 @@ links:
 - PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/admin-auth.test.js
+  type: file
+- path: tests/server/HLT/admin.test.js
+  type: file
+- path: tests/server/HLT/http-boundary.test.js
+  type: file
+- path: tests/server/HLT/lan-device.test.js
+  type: file
+- path: tests/server/HLT/server-ssh.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

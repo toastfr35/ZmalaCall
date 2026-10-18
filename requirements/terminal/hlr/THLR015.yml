@@ -8,7 +8,9 @@ links:
 - PROD008: ruef0Jq8r9sLWfpYz4_I7M-ICnYI7g0mnfgj_jZzLMU=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/tv_setup_ui.py
+  type: file
 reviewed: null
 scope: Core
 text: |

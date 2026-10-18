@@ -16,7 +16,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
   <a class="brand" href="{{base}}index.html"><span class="brand-mark">Z</span> ZmalaCall <span class="brand-label">Engineering</span></a>
-  <nav aria-label="Report"><a href="{{base}}index.html">Overview</a><a href="{{base}}traceability.html">Traceability</a><a href="{{base}}coverage.html">Source coverage</a></nav>
+  <nav aria-label="Report"><a href="{{base}}index.html">Overview</a><a href="{{base}}traceability.html">Traceability</a><a href="{{base}}coverage.html">Source coverage</a><a href="{{base}}tests.html">Tests</a></nav>
 </header>
 <div class="layout">
 <aside class="sidebar">

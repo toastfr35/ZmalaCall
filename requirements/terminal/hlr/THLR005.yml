@@ -9,7 +9,15 @@ links:
 - PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/terminal/HLT/linux_qr_embedding.py
+  type: file
+- path: tests/terminal/HLT/provisioning_ui.py
+  type: file
+- path: tests/terminal/HLT/qr_camera_process.py
+  type: file
+- path: tests/terminal/HLT/setup_feedback_ui.py
+  type: file
 reviewed: null
 scope: Core
 text: |

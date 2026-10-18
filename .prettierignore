@@ -6,3 +6,4 @@ build_tools/tmp/
 zmala_server/web/admin.js
 zmala_server/web/admin.css
 zmala_server/vendor/
+tests/adhoc/tmp/

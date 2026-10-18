@@ -17,11 +17,7 @@ references:
   type: file
 - path: build_tools/linux/server-launch.py
   type: file
-- path: zmala_server/tests/shutdown.test.js
-  type: file
 - path: zmala_server/http/handler.js
-  type: file
-- path: zmala_server/tests/http-boundary.test.js
   type: file
 reviewed: null
 scope: Core

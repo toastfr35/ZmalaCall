@@ -21,13 +21,11 @@ references:
   type: file
 - path: zmala_server/web/admin-shared.js
   type: file
-- path: zmala_server/tests/admin.test.js
-  type: file
-- path: zmala_server/tests/admin-interactions.test.js
-  type: file
 - path: zmala_server/web/admin-state.js
   type: file
-- path: zmala_server/tests/admin-settings-conflicts.test.js
+- path: tests/server/LLT/admin-interactions.test.js
+  type: file
+- path: tests/server/LLT/terminal-fields.test.js
   type: file
 reviewed: null
 scope: Core

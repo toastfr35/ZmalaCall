@@ -10,7 +10,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 CACHES = {'__pycache__', '.ruff_cache', '.pytest_cache', '.mypy_cache'}
 OUTPUTS = {'tmp', 'build_tools/tmp', 'build_tools/dist', 'build_tools/.npm-cache',
-           'requirements/output'}
+           'requirements/output', 'tests/adhoc/tmp'}
 PRESERVE = {'.git', '.venv', 'venv', 'node_modules', 'data', '.codex-remote-attachments',
             'runtime', 'framing-runtime', 'account-pictures'}
 

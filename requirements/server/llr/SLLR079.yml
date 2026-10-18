@@ -5,7 +5,7 @@ header: |
   Ordered atomic snapshots
 level: 79.0
 links:
-- SHLR014: aD_PVDrUEzhgrScSa9DCydE-3fISTaFd6TW7Y8edKHU=
+- SHLR014: EO7rLe1xwZFkk3xRdRL6fjY50G5y3AlzRrDsg0XEOYQ=
 normative: true
 ref: ''
 references:
@@ -17,11 +17,7 @@ references:
   type: file
 - path: zmala_server/migrations.js
   type: file
-- path: zmala_server/tests/persistence.test.js
-  type: file
-- path: zmala_server/tests/reliability.test.js
-  type: file
-- path: zmala_server/tests/performance.test.js
+- path: tests/server/LLT/snapshot-file.test.js
   type: file
 reviewed: null
 scope: Core

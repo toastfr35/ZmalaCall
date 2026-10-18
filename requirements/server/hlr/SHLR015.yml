@@ -9,7 +9,11 @@ links:
 - PROD015: -6H-Gl7NNlUxjKsaj378-Uu_7rtLHyRh9kgSq7oNXpI=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/performance.test.js
+  type: file
+- path: tests/server/HLT/terminal-status.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

@@ -9,7 +9,15 @@ links:
 - PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
 normative: true
 ref: ''
-references: []
+references:
+- path: tests/server/HLT/account-types.test.js
+  type: file
+- path: tests/server/HLT/admin-settings-conflicts.test.js
+  type: file
+- path: tests/server/HLT/admin.test.js
+  type: file
+- path: tests/server/HLT/terminal-association.test.js
+  type: file
 reviewed: null
 scope: Core
 text: |

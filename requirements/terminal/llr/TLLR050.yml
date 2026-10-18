@@ -5,7 +5,7 @@ header: |
   Audio profile processing
 level: 50.0
 links:
-- THLR009: czBRDwDSos_gz1THoEpGOOGRtDVHVA68CXapCpQrNxE=
+- THLR009: ICt2C2TiabjI8UzIbSFpumF5YUrmIeGkHMacZ9WNoZ0=
 normative: true
 ref: ''
 references:
@@ -23,13 +23,9 @@ references:
   type: file
 - path: zmala_terminal/linux/audio_processing.py
   type: file
-- path: zmala_terminal/common/tests/test_linux_media.py
-  type: file
-- path: zmala_terminal/common/tests/test_video_settings.py
-  type: file
 - path: zmala_terminal/linux/media/audio/echo-rate.c
   type: file
-- path: zmala_terminal/common/tests/test_audio_profile.py
+- path: tests/terminal/LLT/test_audio_profile.py
   type: file
 reviewed: null
 scope: Core

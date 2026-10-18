@@ -5,7 +5,7 @@ header: |
   Private bootstrap compatibility API
 level: 101.0
 links:
-- SHLR012: 9YXR2nPpsDRMQi8i0WVoDehi-vC0xzoygXp_HiySmag=
+- SHLR012: DN0nl0doGlrSw5bKrG09FsPoioGpeXAYS9jKp6U5Tp8=
 normative: true
 ref: ''
 references:
@@ -14,8 +14,6 @@ references:
 - path: zmala_server/main.js
   type: file
 - path: zmala_server/http/admin-routes.js
-  type: file
-- path: zmala_server/tests/admin.test.js
   type: file
 reviewed: null
 scope: Core
