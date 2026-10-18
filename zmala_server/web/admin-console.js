@@ -2,6 +2,7 @@
 import { state, $, shellNames } from './admin-state.js';
 import { api, online, el, badge, iconButton, message, submit, notice } from './admin-shared.js';
 let consoleGeneration = 0;
+let consoleVersion = 0;
 $('console-dialog').addEventListener('close', () => {
   consoleGeneration++;
   state.consoleId = '';
@@ -78,6 +79,7 @@ export async function refreshConsole() {
 /** @param {string} id */
 export function openConsole(id) {
   consoleGeneration++;
+  consoleVersion = state.model.configuration_version;
   state.consoleId = id;
   state.consoleSignature = '';
   $('console-state').textContent = 'Loading terminal status…';
@@ -100,13 +102,15 @@ export function openConsole(id) {
 // Shell preferences belong to maintenance, while media preferences stay on Terminals.
 $('console-shell-form').onsubmit = (event) => {
   event.preventDefault();
-  submit(
+  return submit(
     $('console-shell-form'),
     async () => {
-      const id = state.consoleId;
+      const id = state.consoleId,
+        generation = consoleGeneration;
       const profile = state.model.profiles[id];
-      await api('/api/settings', 'PUT', {
+      const saved = await api('/api/settings', 'PUT', {
         terminal_id: id,
+        configuration_version: consoleVersion,
         display_name: profile.display_name,
         language: profile.language,
         audio_profile: profile.audio_profile,
@@ -115,6 +119,11 @@ $('console-shell-form').onsubmit = (event) => {
         ...profile.terminal_settings,
         command_shell: $('console-shell').value,
       });
+      // A later opening owns its own draft and revision. Use the server's saved
+      // revision, never a newer polling snapshot that this editor did not display.
+      if (generation !== consoleGeneration) return;
+      if (typeof saved.configuration_version === 'number')
+        consoleVersion = saved.configuration_version;
       await state.refresh(true);
       await refreshConsole();
       notice('Command shell saved.');

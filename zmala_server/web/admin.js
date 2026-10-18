@@ -287,6 +287,8 @@ async function run(action, errorId = 'error') {
     await action();
   } catch (e) {
     message(errorId, e instanceof Error ? e.message : 'Request failed.');
+    // A form may be scrolled to its Save button, leaving the error above view.
+    $(errorId).scrollIntoView({ block: 'nearest' });
   } finally {
     state.busy = false;
   }
@@ -597,6 +599,8 @@ async function writeClipboard(value, owner) {
 
 // admin-accounts.js
 // Account list, editing and connection details. Device configuration belongs on the Terminals page.
+let accountVersion = 0;
+let accountGeneration = 0;
 function accountRows() {
   const tbody = $('account-rows');
   if (!tbody) return;
@@ -730,6 +734,8 @@ function renderAccounts() {
   accountRows();
 }
 function openAccount(id = '') {
+  accountVersion = state.model.configuration_version;
+  accountGeneration++;
   state.editingId = id;
   const u = state.model.users[id];
   $('account-form').reset();
@@ -764,15 +770,19 @@ $('edit-photo').onchange = () => {
   $('account-picture-preview').replaceChildren(image);
 };
 $('account-dialog').addEventListener('close', () => {
+  accountGeneration++;
   if (state.accountPreviewUrl) URL.revokeObjectURL(state.accountPreviewUrl);
   state.accountPreviewUrl = undefined;
 });
 $('account-form').onsubmit = (e) => {
   e.preventDefault();
-  submit(
+  return submit(
     $('account-form'),
     async () => {
+      const id = state.editingId,
+        generation = accountGeneration;
       const update = {
+        configuration_version: accountVersion,
         id: $('edit-id').value,
         name: $('edit-name').value,
         emails: emailAddresses($('edit-emails').value),
@@ -780,34 +790,41 @@ $('account-form').onsubmit = (e) => {
         password: $('edit-password').value,
         photo: $('edit-remove-photo').checked ? '' : state.accountPhoto,
       };
-      update.photo = await accountPicture(
-        $('edit-photo').files?.[0],
-        state.accountPhoto,
-        $('edit-remove-photo').checked,
-      );
-      const result = await api(
-        state.editingId ? `/api/users/${state.editingId}` : '/api/users',
-        state.editingId ? 'PUT' : 'POST',
-        update,
-      );
-      $('account-dialog').close();
-      await state.refresh(true);
-      notice(
-        state.editingId
-          ? `Saved ${result.id}.${state.editingId !== result.id ? ' Its SIP address has changed.' : ''}`
-          : `Created ${result.id}. Add it to a group to enable calls.`,
-      );
+      try {
+        update.photo = await accountPicture(
+          $('edit-photo').files?.[0],
+          state.accountPhoto,
+          $('edit-remove-photo').checked,
+        );
+        if (generation !== accountGeneration) return;
+        const result = await api(
+          id ? `/api/users/${id}` : '/api/users',
+          id ? 'PUT' : 'POST',
+          update,
+        );
+        if (generation !== accountGeneration) return;
+        $('account-dialog').close();
+        await state.refresh(true);
+        notice(
+          id
+            ? `Saved ${result.id}.${id !== result.id ? ' Its SIP address has changed.' : ''}`
+            : `Created ${result.id}. Add it to a group to enable calls.`,
+        );
+      } catch (error) {
+        if (generation === accountGeneration) throw error;
+      }
     },
     'account-error',
   );
 };
 /** @param {string} id */
 function deleteAccount(id) {
+  const configurationVersion = state.model.configuration_version;
   confirm(
     'Delete this account?',
     `“${id}” will be removed from its groups and its terminal settings will be deleted. This cannot be undone.`,
     async () => {
-      await api(`/api/users/${id}`, 'DELETE');
+      await api(`/api/users/${id}`, 'DELETE', { configuration_version: configurationVersion });
       notice(`Deleted ${id}.`);
     },
     'Delete account',
@@ -947,6 +964,7 @@ function openConnection(id) {
 // admin-console.js
 // Remote command submission and result polling; command execution stays in the terminal agent.
 let consoleGeneration = 0;
+let consoleVersion = 0;
 $('console-dialog').addEventListener('close', () => {
   consoleGeneration++;
   state.consoleId = '';
@@ -1023,6 +1041,7 @@ async function refreshConsole() {
 /** @param {string} id */
 function openConsole(id) {
   consoleGeneration++;
+  consoleVersion = state.model.configuration_version;
   state.consoleId = id;
   state.consoleSignature = '';
   $('console-state').textContent = 'Loading terminal status…';
@@ -1045,13 +1064,15 @@ function openConsole(id) {
 // Shell preferences belong to maintenance, while media preferences stay on Terminals.
 $('console-shell-form').onsubmit = (event) => {
   event.preventDefault();
-  submit(
+  return submit(
     $('console-shell-form'),
     async () => {
-      const id = state.consoleId;
+      const id = state.consoleId,
+        generation = consoleGeneration;
       const profile = state.model.profiles[id];
-      await api('/api/settings', 'PUT', {
+      const saved = await api('/api/settings', 'PUT', {
         terminal_id: id,
+        configuration_version: consoleVersion,
         display_name: profile.display_name,
         language: profile.language,
         audio_profile: profile.audio_profile,
@@ -1060,6 +1081,11 @@ $('console-shell-form').onsubmit = (event) => {
         ...profile.terminal_settings,
         command_shell: $('console-shell').value,
       });
+      // A later opening owns its own draft and revision. Use the server's saved
+      // revision, never a newer polling snapshot that this editor did not display.
+      if (generation !== consoleGeneration) return;
+      if (typeof saved.configuration_version === 'number')
+        consoleVersion = saved.configuration_version;
       await state.refresh(true);
       await refreshConsole();
       notice('Command shell saved.');
@@ -1519,6 +1545,8 @@ function terminalCardState(card, id) {
 }
 /** @param {HTMLElement} card @param {string} id */
 function buildDevicesForm(card, id) {
+  // Keep the revision that produced these controls, even while polling updates state.model.
+  const configurationVersion = state.model.configuration_version;
   const devices = terminalForm(card, 'Terminal settings', 'devices');
   query(devices, 'h3').remove();
   // Separate visual groups share one form and one save action.
@@ -1541,7 +1569,7 @@ function buildDevicesForm(card, id) {
   /** @param {import('../types/admin').Action} action */
   const setupAction = (action) => () => {
     setup.open = false;
-    action();
+    return action();
   };
   menu.append(
     actionButton('Download Wi-Fi QR PDF', setupAction(openWifi), 'secondary', 'down'),
@@ -1563,13 +1591,14 @@ function buildDevicesForm(card, id) {
   devices.append(footer);
   devices.onsubmit = (e) => {
     e.preventDefault();
-    submit(
+    return submit(
       devices,
       async () => {
         const fields = devices.fields,
           currentId = terminalId(card);
         await api('/api/settings', 'PUT', {
           terminal_id: currentId,
+          configuration_version: configurationVersion,
           display_name: state.model.profiles[currentId].display_name,
           auto_answer: terminalInput(devices, 'autoAnswer').checked,
           auto_answer_seconds: Number(fields.countdown.value),

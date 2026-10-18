@@ -216,6 +216,8 @@ export async function run(action, errorId = 'error') {
     await action();
   } catch (e) {
     message(errorId, e instanceof Error ? e.message : 'Request failed.');
+    // A form may be scrolled to its Save button, leaving the error above view.
+    $(errorId).scrollIntoView({ block: 'nearest' });
   } finally {
     state.busy = false;
   }

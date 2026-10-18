@@ -8,6 +8,7 @@ import struct
 import tkinter as tk
 import unicodedata
 import zlib
+from image_bounds import check_file, checked_size
 from render_cache import (RenderCache, portrait_size, photo_bytes, TEXT_BYTES,
                           PORTRAIT_BYTES, SOURCE_BYTES)
 
@@ -142,14 +143,14 @@ class TextRenderer:
         if key in self.portraits:
             return self.portraits[key]
         if path not in self.sources:
+            check_file(path)
             source, width, height = P(), U(), U()
             self.check(self.dll.GdipLoadImageFromFile(path, C.byref(source)))
             try:
                 self.check(self.dll.GdipGetImageWidth(source, C.byref(width)))
                 self.check(self.dll.GdipGetImageHeight(source, C.byref(height)))
                 width, height = width.value, height.value
-                if width <= 0 or height <= 0:
-                    raise ValueError('Portrait has invalid dimensions')
+                checked_size(width, height)
                 self.sources[path] = (source, width, height)
             except Exception:
                 self.dll.GdipDisposeImage(source)

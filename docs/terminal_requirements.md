@@ -49,9 +49,12 @@ The idle terminal shall show a dark carousel with a central selected portrait tw
 
 Rendering caches shall enforce both entry counts and estimated pixel-byte budgets, evicting least recently used entries individually. Images larger than their cache budget shall remain renderable without being retained. Cache eviction shall not invalidate images still displayed. Native source resources shall be released on eviction, replacement and shutdown. These budgets constrain retained cache payload, not transient decoding allocations or total process memory.
 
+Downloaded and locally cached portraits shall undergo PNG/JPEG header checks before native decoding: at most 2 MiB encoded, 4096 pixels per side and 4,194,304 pixels in total. Invalid/unsupported headers and excessive declared dimensions shall not be published as downloaded portraits or passed to the renderer. An unusable contact picture shall fall back to initials. Header checks do not replace codec error handling or bound total decoder memory.
+
 > `zmala_terminal/tests/contact_presence_ui.py`
 > `zmala_terminal/tests/test_render_cache.py`
 > `zmala_terminal/tests/render_cache_ui.py`
+> `zmala_terminal/tests/test_image_bounds.py`
 
 *Parent links:* [ZMC003 Accessible physical controls](product_requirements.md#ZMC003)
 

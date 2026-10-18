@@ -48,8 +48,13 @@ visible Tk images alive after cache eviction.
 
 These limits estimate pixel payload (four bytes per pixel, conservatively also
 for Pillow RGB), not total RSS. Decoder state, temporary resize/shaping buffers,
-Tk/native overhead and visible image references are outside them. Input image
-allocation limits and incremental carousel canvas reuse remain separate work.
+Tk/native overhead and visible image references are outside them. Before decoding,
+`image_bounds.py` checks both downloaded images and existing local-cache files:
+2 MiB encoded, 4096 pixels per side and 4,194,304 pixels total. It accepts PNG
+and eight-bit baseline/extended-sequential/progressive JPEG headers. Invalid
+or excessive dimensions fall back to initials. These are header/size guards,
+not full compressed-stream validation or a whole-decoder memory limit.
+Incremental carousel canvas reuse remains separate work.
 `tests/render_cache_ui.py` exercises real rendering and eviction with a hidden
 Tk root; `--benchmark` runs 400 synthetic portrait renders for memory/timing
 comparison. Linux CI runs the regression under Xvfb, and Windows CI uses GDI+.
@@ -92,6 +97,17 @@ Production configuration saves serialize the current state into an immutable str
 Static assets and account pictures use asynchronous reads. PDF generation loads the optional Windows font asynchronously once, then passes its bytes to PDFKit. Startup and standalone setup tools retain synchronous persistence. Production callback and console snapshots use asynchronous writers. Callback recipient progress, command leases and results await their own commit barriers; unrelated device reads do not wait for these writers. /health reports liveness and /ready reports known unresolved persistence failures. See [platform and recovery notes](reliability.md) for retry, migration and durability limits.
 
 `npm run typecheck` checks every first-party server runtime module and every `web/admin-*.js` source module with strict `checkJs`. This includes SIP dialogs, registrations and messages, startup, callback delivery, SMTP, console jobs, photos and PDF provisioning. Shared contracts cover persisted records, terminal settings, media/dialog ownership and admin HTTP snapshots. `types/http.ts` defines the service operations available to routes; request fields remain `unknown` until validated. Node executes the existing JavaScript directly; no deployment transpilation step is required. The generated admin bundle, third-party dependencies and JavaScript test fixtures are excluded from type checking.
+
+Terminal settings, console shell preferences and account editors/confirmation
+prompts capture their opening configuration revision. The server rejects a stale
+revision with HTTP 409 before mutation. Polling may refresh the live model but
+cannot rebase a draft; a shell save adopts only the revision returned by that
+save. Conflict guidance asks the administrator to reload/reopen and review the
+new values. Revisions are currently global, so an unrelated configuration edit
+can also require a reload. Older API clients may omit the revision for backward
+compatibility; only versioned writes receive this protection. Photo-upload
+completion is scoped to its account dialog, and setup downloads return their
+promises so the shared action handler displays failures.
 
 The browser API helper derives response types from shared route contracts; admin routes check the snapshot before sending it. JSON decoding remains a trust boundary, not a runtime schema validator. `types/admin-dom.ts` describes static IDs in `admin.html` and form controls; keep it synchronized when editing the markup. Required-element helpers fail clearly if required markup disappears. Optional elements and dirty-form searches retain nullable DOM lookups. `types/admin.ts` describes shared controller state. Controllers render only after an admin snapshot loads.
 

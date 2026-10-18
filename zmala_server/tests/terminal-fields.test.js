@@ -13,6 +13,7 @@ class Element {
     this.tag = tag;
     this.text = text;
     this.children = [];
+    this.dataset = {};
     this.classList = { add() {} };
   }
   append(...children) {
@@ -23,6 +24,11 @@ class Element {
     this.children.unshift(...children);
   }
   setAttribute() {}
+  addEventListener() {}
+  remove() {}
+  querySelector() {
+    return null;
+  }
   contains(target) {
     return this === target || this.children.some((child) => child.contains(target));
   }
@@ -54,4 +60,50 @@ test('every terminal setting is attached to its visible section, including frame
     ['10', '15', '20', '25', '30'],
   );
   assert.equal(form.fields.tvIdleSeconds.value, '30');
+});
+
+test('terminal drafts retain their original revision and setup downloads propagate failures', async () => {
+  const requests = [],
+    actions = [];
+  const model = { ...defaultState(), terminal_statuses: {}, terminal_languages: [] };
+  const context = {
+    state: { model, refresh: async () => {} },
+    el: (tag, text) => new Element(tag, text),
+    HTMLInputElement: Element,
+    query: (form) => form.children[0],
+    submit: (_form, action) => action(),
+    api: async (_url, _method, value) => {
+      requests.push(value);
+    },
+    notice() {},
+    openWifi() {},
+    openConsole() {},
+    serverPdf: async () => {
+      throw Error('Download failed');
+    },
+    actionButton: (text, action) => {
+      actions.push({ text, action });
+      return new Element('button', text);
+    },
+  };
+  for (const name of ['terminalfields', 'terminals']) {
+    const source = fs
+      .readFileSync(path.join(__dirname, `../web/admin-${name}.js`), 'utf8')
+      .replace(/^import[^;]+;\s*/gm, '')
+      .replace(/^export /gm, '');
+    vm.runInNewContext(source, context);
+  }
+  const card = new Element('section');
+  card.dataset.terminalId = 'term1';
+  const revision = model.configuration_version;
+  const form = context.buildDevicesForm(card, 'term1');
+  model.configuration_version += 10;
+  form.fields.videoFps.value = '20';
+  await form.onsubmit({ preventDefault() {} });
+  assert.equal(requests[0].configuration_version, revision);
+  assert.equal(requests[0].video_fps, 20);
+  await assert.rejects(
+    actions.find(({ text }) => text === 'Download server QR PDF').action(),
+    /Download failed/,
+  );
 });

@@ -1,5 +1,54 @@
 # ZmalaCall implementation and specification review
 
+## Concurrent administration and portrait-decoding review — 18 October 2026
+
+Fixed the next verified parts of the outstanding review:
+
+- Account editing/deletion, terminal settings and console shell changes now
+  submit the revision at which the editor/confirmation opened. The server rejects
+  stale versioned writes before mutation, preserving newer admin or local-terminal
+  changes. Background polls cannot silently advance that revision. A successful
+  shell save uses its returned revision for subsequent saves.
+- Account photo uploads cannot continue a save into a closed/replaced editor.
+  Setup-menu download actions return their promises, making failures visible to
+  the shared administration error handler instead of becoming unhandled rejections.
+  Failed saves scroll their error into view when the form is at its bottom.
+- PNG/JPEG headers are checked before portrait decoding, including old local
+  cache files. Limits are 2 MiB encoded, 4096 pixels per side and 4,194,304 pixels
+  total. Download validation uses the same bounds. Invalid pictures fall back to
+  initials; codec error handling remains necessary for corrupt compressed data.
+
+Compatibility: admin revisions remain optional for older API callers. Current
+browser editors send them. The revision is global, so unrelated configuration
+edits can conservatively cause a conflict. Header checks bound accepted declared
+image sizes, not total native decoder memory or all possible codec faults.
+
+Verification includes concurrent real-HTTP saves, local-setting/admin conflicts,
+stale account edits/deletion, polling during edits, delayed photo uploads,
+truncated/oversized image headers and real Windows/Pi rendering. Browser checks
+exercise the conflict message, retained newer values and successive shell saves.
+The complete suites pass: 93 server tests and 282 terminal tests (three
+platform-specific skips), plus all repository lint checks. The tracked-file
+audit found no ignored build outputs, caches, logs or temporary files in Git;
+runtime assets, test portraits, editable CAD and published guides remain useful.
+
+## Current outstanding work — 18 October 2026
+
+This is the current backlog; dated findings below preserve historical evidence
+and are not all still open. The original ten reproduced defects are fixed.
+
+| Priority | Remaining work | Evidence needed before completion |
+| --- | --- | --- |
+| High | Recover identity changes spanning server, callback, console and bootstrap files; define backup restore epochs | Crash injection at each write boundary; old-backup restoration without weakening revision protection |
+| High | Native video input/output byte budgets, decoded-size limits and queue-age policy; bounded recovery from stuck camera/codec shutdown | Target-SDK fault injection, reference/keyframe-safe recovery and longer Pi call/USB soak tests; queue age is already measured, but byte caps are still absent |
+| Medium | SIP response-flow correlation, text deduplication across engine replacement, abandoned-call recovery | Private-peer protocol tests; a defined dedup window and call-loss policy (connected dialogs currently have a four-hour signalling inactivity limit) |
+| Medium | Retention for unreferenced server photos, terminal disk photos and desktop/QR log files | Reference-aware cleanup with grace periods, cancellation/re-enrollment races and disk-failure tests; installed Pi journal retention already exists |
+| Medium | Reduce synchronous whole-console-history JSON serialization | Realistic retained output plus slow-storage measurements; preserve durable acknowledgements and existing snapshot coalescing |
+| Medium | Reuse carousel canvas items incrementally | Pixel-equivalent output, selection/badge correctness and Pi p95/p99 frame-time/RSS comparisons; image-cache budgets are now done |
+| Medium | Release manifests, repeatable rollback and backup/restore acceptance | Interrupted upgrade tests and persistent-data checks; installers already have separate releases and service health checks |
+| Lower | Finer-grained admin conflict checks and eventual policy for unversioned API writes | Avoid conflicts from unrelated edits without permitting silent overwrite; plan compatibility for existing API clients |
+| Lower | Explicit controller host interfaces, serial-keypad host adapter, physical/usability qualification | Keep refactors targeted; test actual keypad, intended users, TV models, power loss and sustained media workloads |
+
 ## Render-cache memory review — 18 October 2026
 
 Addressed the retained-image part of opportunity D. Both text renderers now
@@ -29,9 +78,9 @@ Verification: 277 terminal tests (three platform skips), 88 server tests and
 oversized uncached images, active references and repeated close. These rendering
 checks are now included in both CI platform jobs.
 
-Remaining: incremental carousel canvas updates, transient image allocation
-limits, disk-cache/log retention and native queue byte/frame-age limits still
-need separate work. Older dated findings below describe their original baseline.
+Follow-up: portrait header/size guards were added in the next review above.
+Incremental carousel canvas updates, disk-cache/log retention and native video
+queue byte/frame-age limits remain open; see the current backlog. Older dated findings below describe their original baseline.
 
 ## Administration interaction and cleanup review — 18 October 2026
 
@@ -153,13 +202,14 @@ corrected to describe the current decoder ownership.
    host protocol would make their dependencies more explicit; a wholesale
    controller-object rewrite would add churn without addressing a reproduced fault.
 2. Native queues still need byte/frame-age budgets and longer soak evidence.
-   Render-cache payload budgets are now implemented (18 October review above). Do not drop arbitrary compressed H.264 packets to imitate the
+   Render-cache payload budgets are now implemented (18 October review above).
+   Do not drop arbitrary compressed H.264 packets to imitate the
    safe newest-frame policy for independent JPEG/raw frames.
 3. Native and QR shutdown can wait on SDK/process operations. Measure worst-case
    recovery before introducing asynchronous teardown or bounded forced termination.
 4. Snapshot rename is not fsync durability or a transaction across files. Backup
-   restore epochs, data migrations/rollback and concurrent whole-form admin edits
-   deserve their own design and fault-injection tests.
+   restore epochs and data migrations/rollback still need design and fault-injection
+   tests. Current browser admin edits now reject stale versioned saves.
 5. Retention for on-disk portrait caches and long-lived diagnostic files remains
    separate from the installed volatile journal and bounded command histories.
 6. Real TV/USB/power-loss acceptance and the serial-keypad host adapter remain

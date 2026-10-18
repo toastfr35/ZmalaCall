@@ -9,12 +9,13 @@ import threading
 import time
 import uuid
 import zlib
-
-MAX_BYTES = 2 * 1024 * 1024
+from image_bounds import MAX_BYTES, image_size
 
 
 def valid_photo(data, name):
-    if not data or len(data) > MAX_BYTES:
+    try:
+        image_size(data)
+    except ValueError:
         return False
     digest = Path(name).stem
     if len(digest) == 64 and hashlib.sha256(data).hexdigest() != digest:

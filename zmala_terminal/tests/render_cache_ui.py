@@ -13,6 +13,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from text_renderer import TextRenderer
 from icons import IconRenderer
+from test_image_bounds import png, jpeg
 
 
 def benchmark():
@@ -64,6 +65,16 @@ def exercise():
             renderer.backgrounds.max_bytes = 100000
         visible = []
         with tempfile.TemporaryDirectory() as directory:
+            for extension, data in (('png', png(4096, 4096)), ('jpg', jpeg(16000, 16000))):
+                oversized = Path(directory) / ('oversized.' + extension)
+                oversized.write_bytes(data)
+                try:
+                    renderer.portrait(oversized, 80, '#112233')
+                except OSError:
+                    pass
+                else:
+                    raise AssertionError('Oversized image reached the decoder')
+            assert not renderer.sources
             for i in range(45):
                 path = Path(directory) / f'{i}.png'
                 image = tk.PhotoImage(master=root, width=80, height=100)

@@ -169,10 +169,11 @@ async function adminRoutes(req, res, url, context) {
   }
   if (url.pathname === '/api/settings' && req.method === 'PUT') {
     const update = await readJson(req, 10000);
+    version(update);
     const id = update.terminal_id || v.local_terminal_id;
     if (id !== null && typeof id !== 'string') throw Error('Choose a terminal account.');
     store.setSettings(id, update);
-    return send(res, 200, { ok: true });
+    return send(res, 200, { ok: true, configuration_version: v.configuration_version });
   }
   if (url.pathname === '/api/users' && req.method === 'POST') {
     const update = await readJson(req, 10000);
@@ -186,11 +187,13 @@ async function adminRoutes(req, res, url, context) {
     let credentialsChanged = true,
       next = id;
     if (req.method === 'DELETE') {
+      version(await readJson(req, 10000, true));
       idleAccount(id);
       store.deleteAccount(id);
     } else {
       const update = await readJson(req, 10000),
         old = v.users[id];
+      version(update);
       credentialsChanged =
         !!old &&
         ((update.id !== undefined && update.id !== id) ||

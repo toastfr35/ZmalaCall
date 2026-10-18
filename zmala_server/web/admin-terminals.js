@@ -111,6 +111,8 @@ export function terminalCardState(card, id) {
 }
 /** @param {HTMLElement} card @param {string} id */
 function buildDevicesForm(card, id) {
+  // Keep the revision that produced these controls, even while polling updates state.model.
+  const configurationVersion = state.model.configuration_version;
   const devices = terminalForm(card, 'Terminal settings', 'devices');
   query(devices, 'h3').remove();
   // Separate visual groups share one form and one save action.
@@ -133,7 +135,7 @@ function buildDevicesForm(card, id) {
   /** @param {import('../types/admin').Action} action */
   const setupAction = (action) => () => {
     setup.open = false;
-    action();
+    return action();
   };
   menu.append(
     actionButton('Download Wi-Fi QR PDF', setupAction(openWifi), 'secondary', 'down'),
@@ -155,13 +157,14 @@ function buildDevicesForm(card, id) {
   devices.append(footer);
   devices.onsubmit = (e) => {
     e.preventDefault();
-    submit(
+    return submit(
       devices,
       async () => {
         const fields = devices.fields,
           currentId = terminalId(card);
         await api('/api/settings', 'PUT', {
           terminal_id: currentId,
+          configuration_version: configurationVersion,
           display_name: state.model.profiles[currentId].display_name,
           auto_answer: terminalInput(devices, 'autoAnswer').checked,
           auto_answer_seconds: Number(fields.countdown.value),

@@ -21,6 +21,8 @@ import {
 } from './admin-shared.js';
 import { serverPdf } from './admin-setup.js';
 import { writeClipboard } from './admin-clipboard.js';
+let accountVersion = 0;
+let accountGeneration = 0;
 export function accountRows() {
   const tbody = $('account-rows');
   if (!tbody) return;
@@ -154,6 +156,8 @@ export function renderAccounts() {
   accountRows();
 }
 export function openAccount(id = '') {
+  accountVersion = state.model.configuration_version;
+  accountGeneration++;
   state.editingId = id;
   const u = state.model.users[id];
   $('account-form').reset();
@@ -188,15 +192,19 @@ $('edit-photo').onchange = () => {
   $('account-picture-preview').replaceChildren(image);
 };
 $('account-dialog').addEventListener('close', () => {
+  accountGeneration++;
   if (state.accountPreviewUrl) URL.revokeObjectURL(state.accountPreviewUrl);
   state.accountPreviewUrl = undefined;
 });
 $('account-form').onsubmit = (e) => {
   e.preventDefault();
-  submit(
+  return submit(
     $('account-form'),
     async () => {
+      const id = state.editingId,
+        generation = accountGeneration;
       const update = {
+        configuration_version: accountVersion,
         id: $('edit-id').value,
         name: $('edit-name').value,
         emails: emailAddresses($('edit-emails').value),
@@ -204,34 +212,41 @@ $('account-form').onsubmit = (e) => {
         password: $('edit-password').value,
         photo: $('edit-remove-photo').checked ? '' : state.accountPhoto,
       };
-      update.photo = await accountPicture(
-        $('edit-photo').files?.[0],
-        state.accountPhoto,
-        $('edit-remove-photo').checked,
-      );
-      const result = await api(
-        state.editingId ? `/api/users/${state.editingId}` : '/api/users',
-        state.editingId ? 'PUT' : 'POST',
-        update,
-      );
-      $('account-dialog').close();
-      await state.refresh(true);
-      notice(
-        state.editingId
-          ? `Saved ${result.id}.${state.editingId !== result.id ? ' Its SIP address has changed.' : ''}`
-          : `Created ${result.id}. Add it to a group to enable calls.`,
-      );
+      try {
+        update.photo = await accountPicture(
+          $('edit-photo').files?.[0],
+          state.accountPhoto,
+          $('edit-remove-photo').checked,
+        );
+        if (generation !== accountGeneration) return;
+        const result = await api(
+          id ? `/api/users/${id}` : '/api/users',
+          id ? 'PUT' : 'POST',
+          update,
+        );
+        if (generation !== accountGeneration) return;
+        $('account-dialog').close();
+        await state.refresh(true);
+        notice(
+          id
+            ? `Saved ${result.id}.${id !== result.id ? ' Its SIP address has changed.' : ''}`
+            : `Created ${result.id}. Add it to a group to enable calls.`,
+        );
+      } catch (error) {
+        if (generation === accountGeneration) throw error;
+      }
     },
     'account-error',
   );
 };
 /** @param {string} id */
 export function deleteAccount(id) {
+  const configurationVersion = state.model.configuration_version;
   confirm(
     'Delete this account?',
     `“${id}” will be removed from its groups and its terminal settings will be deleted. This cannot be undone.`,
     async () => {
-      await api(`/api/users/${id}`, 'DELETE');
+      await api(`/api/users/${id}`, 'DELETE', { configuration_version: configurationVersion });
       notice(`Deleted ${id}.`);
     },
     'Delete account',

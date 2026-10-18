@@ -7,6 +7,7 @@ gi.require_version('Pango', '1.0')
 gi.require_version('PangoCairo', '1.0')
 from gi.repository import Pango, PangoCairo
 from PIL import Image, ImageTk
+from image_bounds import check_file, checked_size
 from render_cache import (RenderCache, portrait_size, photo_bytes, TEXT_BYTES,
                           PORTRAIT_BYTES, SOURCE_BYTES, BACKGROUND_BYTES)
 
@@ -70,7 +71,9 @@ class TextRenderer:
         key = (path, size, background, fast)
         if key not in self.portraits:
             if path not in self.sources:
+                check_file(path)
                 with Image.open(path) as source:
+                    checked_size(*source.size)
                     source.load()
                     image = source.convert('RGBA')
                 # Large uploads should not multiply the Pi's memory consumption.

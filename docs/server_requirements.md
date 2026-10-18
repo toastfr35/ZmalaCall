@@ -126,6 +126,8 @@ All administration pages, sign-in and editing dialogs shall be usable on phones 
 
 Background refreshes shall not detach the focused control. Connection-detail copying shall support LAN HTTP where the browser permits it and report any failure inside the open dialog, with manual-copy guidance. Closing or changing a terminal console shall invalidate responses from its previous opening.
 
+Account edits/deletion confirmations, terminal settings and console shell editors shall submit the configuration revision observed when opened. Conflicting saves shall return HTTP 409 without changing state and show reload/reopen guidance. Polling shall not silently advance a draft's revision. A pending account photo upload shall not continue saving after its editor closes or changes account. Setup-download errors shall remain observable by the administration action handler.
+
 > `zmala_server/web/admin.js`
 
 *Parent links:* [ZMC009 Administration and persistent state](product_requirements.md#ZMC009)

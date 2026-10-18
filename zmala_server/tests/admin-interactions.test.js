@@ -43,6 +43,7 @@ class Element {
     this.events.close?.();
   }
   setAttribute() {}
+  reset() {}
   focus() {
     this.focused = true;
   }
@@ -172,6 +173,7 @@ function consoleFixture() {
     online: () => true,
     state: {
       model: {
+        configuration_version: 1,
         users: { one: { name: 'First' }, two: { name: 'Second' } },
         profiles: { one: { command_shell: 'sh' }, two: { command_shell: 'sh' } },
       },
@@ -182,7 +184,10 @@ function consoleFixture() {
     message: (id, text) => {
       if (text) errors.push({ id, text });
     },
-    api: (url) => new Promise((resolve, reject) => requests.push({ url, resolve, reject })),
+    api: (url, method, value) =>
+      new Promise((resolve, reject) => requests.push({ url, method, value, resolve, reject })),
+    submit: (_form, action) => action(),
+    notice() {},
   });
   return { ...context, get, requests, errors };
 }
@@ -228,4 +233,78 @@ test('closing and reopening the same console discards stale errors and fetches a
   assert.equal(f.errors.length, 0);
   assert.equal(f.state.consoleFetching, false);
   assert.equal(f.state.consoleId, '');
+});
+
+test('shell editor keeps its opening revision and adopts only its saved revision', async () => {
+  const f = consoleFixture();
+  f.state.refresh = async () => {
+    f.state.model.configuration_version = 99;
+  };
+  f.openConsole('one');
+  f.requests[0].resolve({ jobs: [] });
+  await settle();
+  f.state.model.configuration_version = 42; // Polling must not rebase an unsubmitted draft.
+  const save = f.get('console-shell-form').onsubmit({ preventDefault() {} });
+  assert.equal(f.requests[1].value.configuration_version, 1);
+  f.requests[1].resolve({ configuration_version: 2 });
+  await settle();
+  f.requests[2].resolve({ jobs: [] });
+  await save;
+  const second = f.get('console-shell-form').onsubmit({ preventDefault() {} });
+  assert.equal(f.requests[3].value.configuration_version, 2);
+  f.requests[3].resolve({ configuration_version: 3 });
+  await settle();
+  f.requests[4].resolve({ jobs: [] });
+  await second;
+});
+
+test('account drafts keep their opening revision and a late photo cannot save a different dialog', async () => {
+  const elements = new Map(),
+    requests = [];
+  const get = (id) => {
+    if (!elements.has(id)) elements.set(id, new Element());
+    return elements.get(id);
+  };
+  const f = load('accounts', {
+    $: get,
+    state: {
+      model: {
+        configuration_version: 1,
+        users: {
+          one: { name: 'First', type: 'linphone', emails: ['one@example.test'] },
+          two: { name: 'Second', type: 'linphone', emails: ['two@example.test'] },
+        },
+      },
+      refresh: async () => {},
+    },
+    avatar: () => new Element(),
+    message() {},
+    notice() {},
+    emailAddresses: (value) => [value],
+    accountPicture: async () => '',
+    submit: (_form, action) => action(),
+    api: async (url, method, value) => {
+      requests.push({ url, method, value });
+      return { id: value.id };
+    },
+  });
+  f.openAccount('one');
+  f.state.model.configuration_version = 42;
+  await get('account-form').onsubmit({ preventDefault() {} });
+  assert.equal(requests[0].value.configuration_version, 1);
+  assert.equal(requests[0].url, '/api/users/one');
+  let finishPicture;
+  f.accountPicture = () =>
+    new Promise((resolve) => {
+      finishPicture = resolve;
+    });
+  f.openAccount('one');
+  const pending = get('account-form').onsubmit({ preventDefault() {} });
+  get('account-dialog').close();
+  f.openAccount('two');
+  finishPicture('/photos/example.png');
+  await pending;
+  assert.equal(requests.length, 1, 'Changing the editor cancels a save still awaiting its upload');
+  assert.equal(get('account-dialog').open, true);
+  assert.equal(get('edit-id').value, 'two');
 });

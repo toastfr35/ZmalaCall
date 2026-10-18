@@ -184,6 +184,6 @@ class CarouselView:
             file = ROOT / 'data' / contact['photo'].lstrip('/')
             try:
                 return self.text_renderer.portrait(file, size, background, fast=bool(self.carousel_motion))
-            except (tk.TclError, RuntimeError, OSError):
+            except (tk.TclError, RuntimeError, OSError, ValueError):
                 pass
         return None
