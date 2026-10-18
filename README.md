@@ -127,6 +127,14 @@ runtime dependencies, isolated integration tests and process ownership.
 
 ## Development checks
 
+Run `make clean` to remove Python bytecode and caches (`__pycache__`, Ruff,
+pytest and mypy), root `tmp/`, and `build_tools/tmp/`, `build_tools/dist/` and
+`build_tools/.npm-cache/`. Preview with `make clean CLEAN_FLAGS=--dry-run`.
+Run it when builds and tests have finished. The listed temporary/output directories
+are disposable, including any logs or locally saved files inside them. Outside
+those directories, it preserves runtime data, credentials, dependencies and
+installed SDKs. Tracked files are protected and directory links are not followed.
+
 The top-level [Makefile](Makefile) runs correctness checks without starting the
 server, terminal, installers or live hardware tests. Install development tools:
 

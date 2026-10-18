@@ -11,11 +11,15 @@ NODE ?= node
 CPPCHECK ?= $(if $(wildcard C:/msys64/ucrt64/bin/cppcheck.exe),C:/msys64/ucrt64/bin/cppcheck.exe,cppcheck)
 POWERSHELL ?= powershell.exe
 
-.PHONY: help lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test
+.PHONY: help clean lint lint-js lint-types lint-python lint-shell lint-native lint-powershell lint-format lint-generated test
 .DEFAULT_GOAL := help
 
 help:
 	@$(NODE) -e "console.log('make lint: JavaScript/Python/native lint, shell syntax, formatting and generated assets\nmake lint-powershell: parse Windows scripts without executing them\nmake test: server and platform-independent terminal tests\nSee README.md for tool installation and overrides.')"
+	@echo "make clean: remove caches, scratch files and build outputs (preview: make clean CLEAN_FLAGS=--dry-run)"
+
+clean:
+	$(PYTHON) build_tools/clean.py $(CLEAN_FLAGS)
 
 lint: lint-js lint-types lint-python lint-shell lint-native lint-format lint-generated
 ifeq ($(OS),Windows_NT)
