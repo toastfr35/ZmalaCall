@@ -1,5 +1,26 @@
 # ZmalaCall implementation and specification review
 
+## Administration interaction and cleanup review — 18 October 2026
+
+- Prevent periodic refreshes from removing a focused account action or view
+  control. Account search remains outside the refreshed row region.
+- Support credential copying over plain LAN HTTP with a dialog-scoped fallback,
+  focus restoration and visible manual-copy guidance if the browser blocks it.
+- Clear the console on opening and ignore responses/errors from an earlier
+  opening, including closing and reopening the same terminal.
+- Remove the unused `presenter-back-power.png` illustration and its obsolete
+  notes (about 1.4 MB). The terminal uses `presenter-turn-over.png` and
+  `presenter-pairing.png`; runtime and packaging references were checked.
+- Remove unused legacy setting-box/toggle/countdown CSS and ignore generated
+  browser screenshots. Keep the current guides, CAD sources, diagnostic tools
+  and portrait fixtures: these have distinct uses and are not disposable builds.
+
+Verification: 88 server tests, combined lint/type/generated-asset checks, and
+47 packaging tests (six platform-dependent skips). Browser checks verified
+actual LAN-HTTP copying, keyboard focus across polls, Escape/Enter dialog
+navigation, console opening and all six pages at 320/768/1920 CSS pixels.
+No horizontal page overflow or clipped panels were found in those 18 checks.
+
 ## Responsive administration review — 17 October 2026
 
 Tested all six server pages with disposable accounts in Chromium viewports from

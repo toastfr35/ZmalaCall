@@ -13,6 +13,7 @@ build_tools/dist/
 
 # Local scratch work and generated test output.
 /tmp/
+/output/screenshots/
 /.codex-remote-attachments/
 *.pyc
 *.pyo

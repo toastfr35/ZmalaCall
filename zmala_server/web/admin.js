@@ -561,6 +561,40 @@ $('wifi-form').onsubmit = (e) => {
   );
 };
 
+// admin-clipboard.js
+// The installed server is also used over plain LAN HTTP, where Clipboard API
+// access is unavailable. Keep the fallback inside the open dialog's focus scope.
+/** @param {string} value @param {HTMLElement} owner @returns {Promise<boolean>} */
+async function writeClipboard(value, owner) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch {
+    // Permission denial can still allow a copy initiated by the same button.
+  }
+  const previous = document.activeElement;
+  const field = document.createElement('textarea');
+  field.value = value;
+  field.readOnly = true;
+  field.tabIndex = -1;
+  field.setAttribute('aria-hidden', 'true');
+  field.style.cssText = 'position:fixed;inset:0 auto auto 0;opacity:0;pointer-events:none';
+  try {
+    (owner.closest('dialog') || document.body).append(field);
+    field.focus({ preventScroll: true });
+    field.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    field.remove();
+    if (previous instanceof HTMLElement && previous.isConnected)
+      previous.focus({ preventScroll: true });
+  }
+}
+
 // admin-accounts.js
 // Account list, editing and connection details. Device configuration belongs on the Terminals page.
 function accountRows() {
@@ -779,9 +813,14 @@ function deleteAccount(id) {
     'Delete account',
   );
 }
-/** @param {string} value @param {HTMLButtonElement} b */
-async function copyValue(value, b) {
-  await navigator.clipboard.writeText(value);
+/** @param {string} value @param {HTMLButtonElement} b @param {HTMLElement} feedback */
+async function copyValue(value, b, feedback) {
+  const copied = await writeClipboard(value, b);
+  feedback.textContent = copied
+    ? 'Copied.'
+    : 'Your browser blocked copying. Reveal the value if hidden, then select and copy it manually.';
+  feedback.hidden = false;
+  if (!copied) return;
   b.replaceChildren(icon('check'));
   b.setAttribute('aria-label', 'Copied');
   setTimeout(() => {
@@ -793,8 +832,11 @@ async function copyValue(value, b) {
 function credential(name, value, secret = false) {
   const row = el('div', null, 'credential-row'),
     content = el('div'),
-    code = el('code', secret ? '••••••••••••' : value);
-  content.append(el('small', name), code);
+    code = el('code', secret ? '••••••••••••' : value),
+    feedback = el('small', '', 'credential-feedback');
+  feedback.setAttribute('role', 'status');
+  feedback.hidden = true;
+  content.append(el('small', name), code, feedback);
   row.append(content);
   if (secret) {
     let revealed = false;
@@ -805,7 +847,7 @@ function credential(name, value, secret = false) {
     });
     row.append(reveal);
   }
-  const b = iconButton('Copy ' + name, 'copy', () => copyValue(value, b));
+  const b = iconButton('Copy ' + name, 'copy', () => copyValue(value, b, feedback));
   b.dataset.field = name;
   row.append(b);
   return row;
@@ -904,11 +946,19 @@ function openConnection(id) {
 
 // admin-console.js
 // Remote command submission and result polling; command execution stays in the terminal agent.
+let consoleGeneration = 0;
+$('console-dialog').addEventListener('close', () => {
+  consoleGeneration++;
+  state.consoleId = '';
+});
 async function refreshConsole() {
   if (!state.consoleId || !$('console-dialog').open || state.consoleFetching) return;
+  const id = state.consoleId,
+    generation = consoleGeneration;
   state.consoleFetching = true;
   try {
-    const data = await api(`/api/terminals/${state.consoleId}/console`);
+    const data = await api(`/api/terminals/${id}/console`);
+    if (generation !== consoleGeneration || !$('console-dialog').open) return;
     $('console-state').textContent =
       `${online(state.consoleId) ? 'Terminal online' : 'Terminal offline'} · ${shellNames[state.model.profiles[state.consoleId]?.command_shell || 'powershell']} · queued commands wait for this terminal`;
     const signature = JSON.stringify(data.jobs);
@@ -939,7 +989,7 @@ async function refreshConsole() {
         if (job.status === 'queued')
           heading.append(
             iconButton('Remove queued command', 'trash', async () => {
-              await api(`/api/terminals/${state.consoleId}/console/${job.id}`, 'DELETE');
+              await api(`/api/terminals/${id}/console/${job.id}`, 'DELETE');
               state.consoleSignature = '';
               await refreshConsole();
             }),
@@ -962,15 +1012,21 @@ async function refreshConsole() {
       if (nearBottom) history.scrollTop = history.scrollHeight;
     }
   } catch (e) {
-    message('console-error', e instanceof Error ? e.message : 'Request failed.');
+    if (generation === consoleGeneration && $('console-dialog').open)
+      message('console-error', e instanceof Error ? e.message : 'Request failed.');
   } finally {
     state.consoleFetching = false;
+    // Switching consoles while a request was pending must load the new one promptly.
+    if (generation !== consoleGeneration && $('console-dialog').open) void refreshConsole();
   }
 }
 /** @param {string} id */
 function openConsole(id) {
+  consoleGeneration++;
   state.consoleId = id;
   state.consoleSignature = '';
+  $('console-state').textContent = 'Loading terminal status…';
+  $('console-history').replaceChildren(el('p', 'Loading commands…', 'muted'));
   $('console-title').textContent = `${state.model.users[id].name} · ${id}`;
   $('console-command').value = '';
   const shell = $('console-shell');
@@ -2141,6 +2197,9 @@ async function performRefresh(force) {
     authControls();
     const changed = state.renderedVersion !== state.model.configuration_version,
       liveChanged = state.renderedLive !== liveSignature();
+    // Account polls replace rows only; typing in the search field can continue.
+    // Other pages replace the view, so retain any focused control until it blurs.
+    const refreshRegion = document.getElementById(page === '/accounts' ? 'account-rows' : 'view');
     if (page === '/terminals')
       for (const [id, card] of state.terminalCards)
         if (state.model.profiles[id]) terminalCardState(card, id);
@@ -2152,7 +2211,7 @@ async function performRefresh(force) {
     } else if (
       !document.querySelector('dialog[open]') &&
       !state.busy &&
-      !(page === '/terminals' && document.activeElement?.closest('.terminal-card')) &&
+      !refreshRegion?.contains(document.activeElement) &&
       (changed || (liveChanged && page !== '/groups'))
     ) {
       if (page === '/accounts') {

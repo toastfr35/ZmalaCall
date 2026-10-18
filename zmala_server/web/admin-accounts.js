@@ -20,6 +20,7 @@ import {
   confirm,
 } from './admin-shared.js';
 import { serverPdf } from './admin-setup.js';
+import { writeClipboard } from './admin-clipboard.js';
 export function accountRows() {
   const tbody = $('account-rows');
   if (!tbody) return;
@@ -236,9 +237,14 @@ export function deleteAccount(id) {
     'Delete account',
   );
 }
-/** @param {string} value @param {HTMLButtonElement} b */
-export async function copyValue(value, b) {
-  await navigator.clipboard.writeText(value);
+/** @param {string} value @param {HTMLButtonElement} b @param {HTMLElement} feedback */
+export async function copyValue(value, b, feedback) {
+  const copied = await writeClipboard(value, b);
+  feedback.textContent = copied
+    ? 'Copied.'
+    : 'Your browser blocked copying. Reveal the value if hidden, then select and copy it manually.';
+  feedback.hidden = false;
+  if (!copied) return;
   b.replaceChildren(icon('check'));
   b.setAttribute('aria-label', 'Copied');
   setTimeout(() => {
@@ -250,8 +256,11 @@ export async function copyValue(value, b) {
 export function credential(name, value, secret = false) {
   const row = el('div', null, 'credential-row'),
     content = el('div'),
-    code = el('code', secret ? '••••••••••••' : value);
-  content.append(el('small', name), code);
+    code = el('code', secret ? '••••••••••••' : value),
+    feedback = el('small', '', 'credential-feedback');
+  feedback.setAttribute('role', 'status');
+  feedback.hidden = true;
+  content.append(el('small', name), code, feedback);
   row.append(content);
   if (secret) {
     let revealed = false;
@@ -262,7 +271,7 @@ export function credential(name, value, secret = false) {
     });
     row.append(reveal);
   }
-  const b = iconButton('Copy ' + name, 'copy', () => copyValue(value, b));
+  const b = iconButton('Copy ' + name, 'copy', () => copyValue(value, b, feedback));
   b.dataset.field = name;
   row.append(b);
   return row;

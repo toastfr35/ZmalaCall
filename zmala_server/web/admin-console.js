@@ -1,11 +1,19 @@
 // Remote command submission and result polling; command execution stays in the terminal agent.
 import { state, $, shellNames } from './admin-state.js';
 import { api, online, el, badge, iconButton, message, submit, notice } from './admin-shared.js';
+let consoleGeneration = 0;
+$('console-dialog').addEventListener('close', () => {
+  consoleGeneration++;
+  state.consoleId = '';
+});
 export async function refreshConsole() {
   if (!state.consoleId || !$('console-dialog').open || state.consoleFetching) return;
+  const id = state.consoleId,
+    generation = consoleGeneration;
   state.consoleFetching = true;
   try {
-    const data = await api(`/api/terminals/${state.consoleId}/console`);
+    const data = await api(`/api/terminals/${id}/console`);
+    if (generation !== consoleGeneration || !$('console-dialog').open) return;
     $('console-state').textContent =
       `${online(state.consoleId) ? 'Terminal online' : 'Terminal offline'} · ${shellNames[state.model.profiles[state.consoleId]?.command_shell || 'powershell']} · queued commands wait for this terminal`;
     const signature = JSON.stringify(data.jobs);
@@ -36,7 +44,7 @@ export async function refreshConsole() {
         if (job.status === 'queued')
           heading.append(
             iconButton('Remove queued command', 'trash', async () => {
-              await api(`/api/terminals/${state.consoleId}/console/${job.id}`, 'DELETE');
+              await api(`/api/terminals/${id}/console/${job.id}`, 'DELETE');
               state.consoleSignature = '';
               await refreshConsole();
             }),
@@ -59,15 +67,21 @@ export async function refreshConsole() {
       if (nearBottom) history.scrollTop = history.scrollHeight;
     }
   } catch (e) {
-    message('console-error', e instanceof Error ? e.message : 'Request failed.');
+    if (generation === consoleGeneration && $('console-dialog').open)
+      message('console-error', e instanceof Error ? e.message : 'Request failed.');
   } finally {
     state.consoleFetching = false;
+    // Switching consoles while a request was pending must load the new one promptly.
+    if (generation !== consoleGeneration && $('console-dialog').open) void refreshConsole();
   }
 }
 /** @param {string} id */
 export function openConsole(id) {
+  consoleGeneration++;
   state.consoleId = id;
   state.consoleSignature = '';
+  $('console-state').textContent = 'Loading terminal status…';
+  $('console-history').replaceChildren(el('p', 'Loading commands…', 'muted'));
   $('console-title').textContent = `${state.model.users[id].name} · ${id}`;
   $('console-command').value = '';
   const shell = $('console-shell');

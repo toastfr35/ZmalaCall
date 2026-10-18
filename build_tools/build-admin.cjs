@@ -8,6 +8,7 @@ const scripts = [
   'shared',
   'auth',
   'setup',
+  'clipboard',
   'accounts',
   'console',
   'groups',

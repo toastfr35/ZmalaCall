@@ -124,6 +124,8 @@ Administration shall remain in English with separate dark pages for overview, ac
 
 All administration pages, sign-in and editing dialogs shall be usable on phones and PC monitors, including viewport widths from 320 to 1920 CSS pixels. Navigation and account actions shall remain accessible without horizontal page scrolling. Phone account rows shall stack with column labels; wider screens shall retain the table. Dialogs shall fit the available viewport and scroll vertically. Narrow-screen and touch layouts shall provide at least 44-pixel button targets and readable form inputs, including long account names, device names and connection details.
 
+Background refreshes shall not detach the focused control. Connection-detail copying shall support LAN HTTP where the browser permits it and report any failure inside the open dialog, with manual-copy guidance. Closing or changing a terminal console shall invalidate responses from its previous opening.
+
 > `zmala_server/web/admin.js`
 
 *Parent links:* [ZMC009 Administration and persistent state](product_requirements.md#ZMC009)

@@ -45,6 +45,9 @@ async function performRefresh(force) {
     authControls();
     const changed = state.renderedVersion !== state.model.configuration_version,
       liveChanged = state.renderedLive !== liveSignature();
+    // Account polls replace rows only; typing in the search field can continue.
+    // Other pages replace the view, so retain any focused control until it blurs.
+    const refreshRegion = document.getElementById(page === '/accounts' ? 'account-rows' : 'view');
     if (page === '/terminals')
       for (const [id, card] of state.terminalCards)
         if (state.model.profiles[id]) terminalCardState(card, id);
@@ -56,7 +59,7 @@ async function performRefresh(force) {
     } else if (
       !document.querySelector('dialog[open]') &&
       !state.busy &&
-      !(page === '/terminals' && document.activeElement?.closest('.terminal-card')) &&
+      !refreshRegion?.contains(document.activeElement) &&
       (changed || (liveChanged && page !== '/groups'))
     ) {
       if (page === '/accounts') {
