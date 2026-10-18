@@ -1,71 +1,71 @@
-# ZmalaCall terminal
+# ZmalaCall terminal implementation
 
-This guide covers the Raspberry Pi TV terminal and the Windows test terminal.
-See [general.md](general.md) for project tools and network scope and
-[server.md](server.md) for accounts, QR creation and administration.
-The shared Python UI and call logic live in `zmala_terminal/common/`; Windows
-and Linux adapters live in their respective platform directories.
+This technical guide covers the shared Python terminal and its Linux/Pi and
+Windows adapters. It is for developers and maintainers. Preparation, enrollment
+and everyday operation are documented separately in `terminal_prep.docx`,
+`terminal_config.docx` and `terminal_use.docx`.
+See [general.md](general.md) for build/network conventions and [server.md](server.md)
+for the authenticated configuration and SIP services.
 
-Contents: [installation](#fresh-raspberry-pi-installation), [first startup/reset](#first-startup-and-reset),
-[controls](#settings-and-controls), [remote](#remote-status-and-recovery),
-[TV/display](#tv-control-and-display), [media](#video-and-audio),
-[services/peripherals](#appliance-services-storage-and-peripherals),
-[Windows and architecture](#windowssource-launch-and-architecture),
-[troubleshooting](#verification-and-troubleshooting).
+Contents: [architecture](#architecture-and-thread-ownership), [deployment](#pi-deployment-pipeline),
+[onboarding/reset](#onboarding-and-reset-state), [settings/input](#settings-and-controls),
+[remote](#remote-status-and-recovery), [TV/display](#tv-control-and-display),
+[media](#video-and-audio), [services](#appliance-services-storage-and-peripherals),
+[Windows/rendering](#windowssource-launch-and-architecture), [verification](#verification-and-troubleshooting).
 
-## Fresh Raspberry Pi installation
+## Architecture and thread ownership
 
-The installer targets Raspberry Pi 4 Model B with Raspberry Pi OS Lite (64-bit),
-Debian 13 Trixie, a Nuroum C20 and a Microsoft Presenter+ remote. The Windows
-installer includes Argon ONE Pi 4 V2 fan configuration automatically. No desktop
-environment, preconfigured Wi-Fi or cloned enrollment is needed.
+The shared UI, models, enrollment and call logic live in `common/`. The `windows/`
+and `linux/` directories provide platform rendering, network, process and native
+media adapters. The common entry point is `python -m zmala_terminal.common.main`.
+Linux source archives exclude Windows adapters and locally built native artifacts.
 
-### Flash and connect
+| Shared modules (under `common/`) | Responsibility |
+| --- | --- |
+| `main.py` | Own state/resource lifetimes and compose controllers |
+| `input_control.py`, `settings_control.py`, `idle_return.py` | Input/repeat handling, drafts/hold and TV timeout |
+| `model.py`, `call_control.py`, `management.py` | Call/notification state, async actions, polling and timers |
+| `configuration.py`, `config_validation.py`, `configuration_control.py` | HTTP validation/cache and idle engine replacement |
+| `setup_flow.py`, `provisioning.py`, `remote_test.py`, `tv_check.py` | Enrollment/reset and persisted setup verification |
+| `ui/`, `theme.py`, `icons.py`, `text_renderer.py` | Display, confirmation, carousel and platform rendering |
+| `engine.py`, `linphone_api.py`, `native_runtime.py` | Shared native ABI/call engine and platform loading |
+| `qr_scanner.py`, `qr_worker.py`, `native_qr.py` | Isolated camera process and preview protocol |
+| `maintenance.py`, `process_job.py`, `volume_control.py` | Command ownership, process cleanup and mixer worker |
 
-1. Install [Raspberry Pi Imager](https://www.raspberrypi.com/software/) on the PC.
-   Select Raspberry Pi OS Lite (64-bit), Debian Trixie, and the intended SD card.
-   Writing erases that card; check the selected drive before proceeding.
-2. In image customization set hostname, username and initial password to `zmala`.
-   Enable SSH with password authentication. Select the correct Wi-Fi country;
-   leave Wi-Fi credentials unset for QR-based setup.
-3. Finish writing/verification, eject the card and insert it with Pi power off.
-4. Connect the C20 to a blue USB 3 socket, the remote charging cradle to the
-   adjacent black USB 2 socket, Ethernet to the router and HDMI to the TV.
-   On the Argon case use one full-size HDMI socket; leave the other unused.
-   A bare Pi uses micro-HDMI. Select that input on the TV.
-5. Connect USB-C power last (a suitable Pi 4 5 V, at least 3 A supply). If needed,
-   press the case power button once and allow the first boot to finish.
+`Terminal` owns shared state; controllers do not keep independent state copies.
+Tk and core iteration run on the UI thread. Native media owns worker/ticker
+threads; HTTP/Wi-Fi results return through queues. Generation/serial checks discard
+late results after reset, cancellation or replacement. Native callbacks/DLL handles
+remain referenced until their core closes; borrowed call pointers are explicitly
+retained/released. Shutdown is idempotent, though SDK/QR waits can still block.
 
-![Argon ONE Pi 4 V2 connections: HDMI to TV, USB-C power, blue USB for C20, black USB for charger, Ethernet to router](../build_tools/assets/installation-connections.png)
+Configuration polls and settings responses share validation, rollback rejection
+and stable-cache policy; presence/callback fields are not persisted every poll.
+Authenticated HTTP rejects redirects. Failed engine setup retains the newest
+desired configuration for idle retry after five seconds, without publishing it as
+successfully applied. QR capture is isolated from native decoder failure and
+releases the camera before the call engine acquires it.
 
-Keep Ethernet with Internet access connected throughout installation. The Windows
-PC needs access to the same LAN. `zmala` is the hostname; `zmala.local` is its mDNS
-network address. Use the Ethernet IP from the router if name resolution fails.
-The terminal's eventual account/serial is assigned by the server QR, not this name.
+## Pi deployment pipeline
 
-### Run the Windows installer
+`build_tools/windows_installer/` embeds the Python/SSH client and a checksummed
+source archive. Both Tk and headless entry points use the same backend. Preflight
+validates Raspberry Pi OS Lite 64-bit Debian 13 Trixie, Pi 4 Model B, hostname,
+sudo access, boot mount, disk space and a physical Ethernet route. Factory
+hostname/account defaults are `zmala.local` and `zmala`, with the initial password
+matching the account name. The account/device identity is supplied later by QR.
 
-Download `zmala_terminal_setup.exe` from the
-[latest public release](https://github.com/toastfr35/ZmalaCall/releases/latest),
-or the artifact of a successful
-[Build terminal installer](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-terminal-installer.yml)
-run for an unreleased build. Extract the download before running it.
+SSH host-key pinning and a retained Ethernet IP prevent mDNS changes from moving
+the deployment to another connection. A separate systemd install job survives a
+PC connection loss. The shell install runner serializes installation, records
+stage failures and prepares root-owned releases before switching `current`.
+The backend verifies a new boot ID and stable services after reboot. A successful
+install establishes startup health, not physical audio/video or enrollment acceptance.
 
-Click **Check Pi** with `zmala.local` (or its Ethernet IP), then **Install** and
-confirm the target. The executable carries its Python/SSH runtime and source
-package; no separate PC Python/SSH install is needed. It verifies login/sudo,
-Pi 4, Raspberry Pi OS image identity, Trixie/ARM64, boot mount, storage and the
-wired route. It pins the SSH host key, verifies the uploaded package, installs
-dependencies/services, reboots and checks a new boot ID and stable services.
-The verified Ethernet address is retained so Wi-Fi mDNS changes cannot redirect
-the installation connection.
-
-**View details** shows progress/errors; **Open saved log** opens the PC log under
-`%LOCALAPPDATA%\ZmalaCall\Installer\logs`. Pi installation logs are retained under
-`/var/log/zmalacall-install/`. Installation runs as a separate systemd job and
-can continue after a dropped SSH/PC connection. Inspect its reported log before
-retrying; do not start overlapping installs. Existing enrollment is preserved.
-Success verifies startup, not the physical picture, sound or QR acceptance.
+The standard Windows installer enables Argon fan configuration. USB power switching
+remains an explicit experiment. Pi install logs are under `/var/log/zmalacall-install/`;
+PC logs are under `%LOCALAPPDATA%\ZmalaCall\Installer\logs`. Updates preserve private
+state. Failure after OS/package changes is not a transactional system rollback.
 
 ### Headless mode and local build
 
@@ -94,7 +94,7 @@ python build_tools/windows_installer/build.py
 
 Output is `build_tools/dist/zmala_terminal_setup.exe`; CI builds/smoke-tests the
 same unsigned executable in GUI/headless modes. Installer downloads include the
-current Markdown guides and their installation illustrations.
+technical Markdown and Word user guides. The Word illustrations are embedded.
 
 ### Manual package installation
 
@@ -138,46 +138,46 @@ automatically visible in a pip virtual environment. The installer supplies Xorg,
 Openbox, Picom, BlueZ, NetworkManager, Liblinphone 5.3, native media plugins,
 framing runtime/model and fonts. Linux packages include shared/Linux source only.
 
-## First startup and reset
+## Onboarding and reset state
 
-Have the account's Wi-Fi/server QR documents ready from the server's Terminals
-page. Stop the old terminal before replacing it with the same enrollment.
+`setup_flow.py` coordinates USB readiness, pairing/button verification, Wi-Fi QR,
+server QR and post-enrollment TV checks. `provisioning.py` persists accepted
+identity and owns reset cleanup; `qr_scanner.py` owns a separate camera process.
+Each asynchronous completion is checked against the current setup generation.
 
-1. With no C20, an illustrated screen asks for the camera and charger USB cables.
-   It advances when the C20 is detected; the power-only charger itself is not
-   detectable. This gate is for enrollment, not an interruption of active calls.
-2. With no saved Presenter pairing, switch it on and hold its rear Bluetooth
-   button for about three seconds until the white light flashes. The pairing
-   service selects one advertising Presenter+ with the HID service; multiple
-   matching remotes are not selected silently.
-3. Press and release **left, right, green, red, middle** in the shown order.
-   Only the requested button is highlighted. Real Presenter reports are required;
-   keyboard input cannot pass. All five must pass before camera QR scanning.
-   Disconnect resets unfinished progress; passing is saved for that pairing.
-4. Show the Wi-Fi QR and wait for connection/success confirmation, then the server
-   QR. The latter's version-1 payload contains `server_url`, `device_id` and
-   `device_token`. Invalid setup data remains an error/retry state. The displayed
-   serial is the server-assigned ID.
-5. Complete the localized TV power and input checks below, then make a test call
-   and check live video, self-view and intelligible audio in both directions.
-   Reboot to check retained identity, reconnection and automatic startup.
+| Stage | Advancement condition and retained state |
+| --- | --- |
+| USB readiness | C20 detected; charger is power-only and cannot itself be detected |
+| Pairing | A unique advertising Presenter+ with HID service; BlueZ pairing alone is insufficient |
+| Button verification | Distinct physical left/right/green/red/middle press and release sequence, saved against pairing identity |
+| Wi-Fi QR | Actual join succeeds, followed by an unskippable ten-second confirmation; existing-link is a development mode |
+| Server QR | URL, device ID and token decode; authenticated, validated configuration succeeds before committing enrollment |
+| TV checks | Independent power/input outcomes and TV binding persist before normal use |
 
-![Presenter front and back with the rear Bluetooth pairing button highlighted](../zmala_terminal/common/assets/presenter-pairing.png)
+Before enrollment, prompts use English. Enrollment applies the selected language;
+detailed diagnostic catalogs use English fallback where a translation is absent.
+Invalid codes, unreachable servers and rejected credentials retain the current
+stage with retry feedback. QR preview remains contained within the screen and
+its process releases the camera before call-engine startup.
 
-Installation starts in English. Server enrollment applies the selected language;
-some detailed Bluetooth/TV recovery prompts currently have English/French copy
-with English fallback. The same server QR can replace a terminal while its URL,
-ID and token remain valid. Changed URL, revoked token or account deletion needs
-current enrollment data. Bluetooth and Samsung permissions belong to the new Pi.
+Reset is entered through Settings with a separate confirmation. It invalidates
+workers and clears the current profile's enrollment, configuration cache, missed
+counts, button verification and TV results. Existing Bluetooth pairing remains,
+but the button test repeats. Only application-owned Wi-Fi profiles are removed.
+A secret-free cleanup record survives failures/reboot; cleanup retries block new
+Wi-Fi enrollment. Other profiles and server accounts are unaffected.
 
-Reset is in local Settings, with a separate confirmation. It clears enrollment,
-cached configuration, missed counts and setup-test results. Application-owned
-Wi-Fi deletion retries across failure/reboot before a new Wi-Fi enrollment;
-unrelated network profiles are preserved. Reset requires remote verification
-again; it does not delete server accounts. New Linux Wi-Fi profiles disable
-power saving. The Wi-Fi icon reports Wi-Fi independently of Ethernet/server access.
+The device ID is supplied by the server QR and is independent of hostname or
+hardware serial. New physical hardware needs its own Bluetooth and Samsung
+permissions even when it reuses an account enrollment. Wi-Fi status is sampled
+independently of the Ethernet path used to reach the server.
 
 ## Settings and controls
+
+`input_control.py` maps keyboard and physical reports to model actions.
+`settings_control.py` owns drafts and the long-red gesture; `volume_control.py`
+coalesces mixer work. The following mappings are implementation behavior, while
+`terminal_use.docx` explains the caller workflow.
 
 | Control | Action |
 | --- | --- |
@@ -508,32 +508,6 @@ credentials for simultaneous registrations. Connection JSON contains
 Linux server, not a stale localhost bootstrap. Windows runtime is Liblinphone
 5.4.98 with Tk, ANGLE graphics bridges and OpenH264; dependencies remain in
 `build_tools/runtime`. Source state remains in `zmala_terminal/data/`.
-
-| Shared modules (under `common/`) | Responsibility |
-| --- | --- |
-| `main.py` | Own state/resource lifetimes and compose controllers |
-| `input_control.py`, `settings_control.py`, `idle_return.py` | Input/repeat handling, drafts/hold and TV timeout |
-| `model.py`, `call_control.py`, `management.py` | Call/notification state, async actions, polling and timers |
-| `configuration.py`, `config_validation.py`, `configuration_control.py` | HTTP validation/cache and idle engine replacement |
-| `setup_flow.py`, `provisioning.py`, `remote_test.py`, `tv_check.py` | Enrollment/reset and persisted setup verification |
-| `ui/`, `theme.py`, `icons.py`, `text_renderer.py` | Display, confirmation, carousel and platform rendering |
-| `engine.py`, `linphone_api.py`, `native_runtime.py` | Shared native ABI/call engine and platform loading |
-| `qr_scanner.py`, `qr_worker.py`, `native_qr.py` | Isolated camera process and preview protocol |
-| `maintenance.py`, `process_job.py`, `volume_control.py` | Command ownership, process cleanup and mixer worker |
-
-`Terminal` owns shared state; controllers do not keep independent state copies.
-Tk and core iteration run on the UI thread. Native media owns worker/ticker
-threads; HTTP/Wi-Fi results return through queues. Generation/serial checks discard
-late results after reset, cancellation or replacement. Native callbacks/DLL handles
-remain referenced until their core closes; borrowed call pointers are explicitly
-retained/released. Shutdown is idempotent, though SDK/QR waits can still block.
-
-Configuration polls and settings responses share validation, rollback rejection
-and stable-cache policy; presence/callback fields are not persisted every poll.
-Authenticated HTTP rejects redirects. Failed engine setup retains the newest
-desired configuration for idle retry after five seconds, without publishing it as
-successfully applied. QR capture is isolated from native decoder failure and
-releases the camera before the call engine acquires it.
 
 Text uses GDI+ on Windows and Pango/Cairo/Noto on Linux, including complex-script
 shaping. LRU pixel budgets are 8 MiB text, 32 MiB rendered portraits, 24 MiB source

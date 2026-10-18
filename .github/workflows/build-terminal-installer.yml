@@ -78,10 +78,9 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path build_tools/dist/download | Out-Null
           Copy-Item build_tools/dist/zmala_terminal_setup.exe build_tools/dist/download/
-          Copy-Item docs build_tools/dist/download/docs -Recurse
-          New-Item -ItemType Directory -Path build_tools/dist/download/build_tools/assets, build_tools/dist/download/zmala_terminal/common/assets -Force | Out-Null
-          Copy-Item build_tools/assets/installation-connections.png build_tools/dist/download/build_tools/assets/
-          Copy-Item zmala_terminal/common/assets/presenter-pairing.png build_tools/dist/download/zmala_terminal/common/assets/
+          New-Item -ItemType Directory -Path build_tools/dist/download/docs | Out-Null
+          Copy-Item docs/*.md build_tools/dist/download/docs/
+          Copy-Item docs/*.docx build_tools/dist/download/
       - name: Upload installer and instructions
         uses: actions/upload-artifact@v4
         with:

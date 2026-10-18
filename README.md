@@ -6,12 +6,18 @@ SIP signalling and the media relay. Terminals run on Raspberry Pi 4 or Windows.
 
 ## Documentation
 
-- [General](docs/general.md): supported deployments, networking, source layout,
-  development checks and the Doorstop workflow.
-- [Server](docs/server.md): installation/migration, administration, authentication,
-  callbacks, console, persistence and recovery.
-- [Terminal](docs/terminal.md): illustrated installation, enrollment, controls,
-  TV/remote integration, media, services and troubleshooting.
+Technical implementation guides:
+
+- [General](docs/general.md): architecture, networking, builds and Doorstop.
+- [Server](docs/server.md): deployment, APIs, SIP/media, persistence and recovery.
+- [Terminal](docs/terminal.md): controllers, native media, TV/remote and Pi integration.
+
+Word user guides:
+
+- [Prepare a new terminal](docs/terminal_prep.docx)
+- [Configure a terminal](docs/terminal_config.docx)
+- [Use a terminal](docs/terminal_use.docx)
+- [Prepare a server](docs/server_prep.docx)
 
 Requirements are maintained only in [Doorstop records](requirements/), with
 product (`ZMC`), server (`SERV`) and terminal (`TERM`) documents. The guides describe

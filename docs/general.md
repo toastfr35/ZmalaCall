@@ -1,11 +1,20 @@
-# ZmalaCall: overview and development
+# ZmalaCall implementation overview
 
-This guide describes the current implementation and development workflow.
-[Server](server.md) covers installation, administration and recovery;
-[terminal](terminal.md) covers installation, controls, media and TV integration.
-Product requirements exist only as Doorstop records in [requirements/](../requirements/).
-Historical experiments and completed review records remain in Git history;
-[astra.md](../astra.md) tracks outstanding work.
+This technical guide is for developers and maintainers. It describes component
+boundaries, networking, persistent state, build tooling and verification.
+[Server implementation](server.md) covers the Node services and deployment;
+[terminal implementation](terminal.md) covers state ownership, native media and
+Pi hardware integration. Product requirements exist only in
+[Doorstop records](../requirements/). [astra.md](../astra.md) tracks engineering gaps.
+
+The separate Word guides are intended for installers, administrators and callers.
+Their editable originals live in `docs/`; downloads place them beside the installer
+executable. They are not embedded in the executable or installed on the Pi:
+
+- `terminal_prep.docx`: SD image, physical connections and installation.
+- `terminal_config.docx`: accounts, enrollment, TV checks and settings.
+- `terminal_use.docx`: remote controls, calls, callbacks and everyday help.
+- `server_prep.docx`: SD image, installation, migration and first accounts.
 
 Contents: [system](#system-and-supported-hosts), [network](#network-and-identity),
 [source/state](#source-and-persistent-state), [development](#development-tools-and-checks),
@@ -65,7 +74,7 @@ code or models.
 | `zmala_terminal/linux/` | Pi adapters, native media, Bluetooth, CEC and peripheral control |
 | `build_tools/` | Packaging, installers, launchers, source checks and hardware probes |
 | `requirements/` | Doorstop product (`ZMC`), terminal (`TERM`) and server (`SERV`) records |
-| `docs/` | These three operational/developer guides |
+| `docs/` | Three implementation guides and four Word user guides |
 
 Source launches keep state in component `data/` directories. Pi installations
 link those paths to private `/var/lib/zmalacall` or `/var/lib/zmalacall-server`;

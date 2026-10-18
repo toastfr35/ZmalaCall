@@ -1,28 +1,26 @@
-# ZmalaCall server
+# ZmalaCall server implementation
 
-The server runs on Raspberry Pi OS/Linux. Windows hosts terminal clients and
-the installer executable, not the server runtime. See [general.md](general.md)
-for network ports, repository checks and the Doorstop requirements workflow;
-see [terminal.md](terminal.md) for client enrollment and controls.
+This guide describes the Linux server's deployment, request boundaries, identities,
+SIP/media lifecycle and persistence. It is intended for developers and maintainers.
+The Windows executable is a deployment client, not a Windows server runtime.
+For user-facing installation and account setup, read `server_prep.docx`
+and `terminal_config.docx`. Network and build conventions are in
+[general.md](general.md); client behavior is in [terminal.md](terminal.md).
 
-Contents: [installation](#install-on-a-fresh-pi), [service and SSH](#service-ssh-and-storage),
-[authentication](#administration-and-authentication), [accounts](#accounts-groups-and-terminal-settings),
-[SIP/media](#sip-and-media-internals), [backup](#persistence-and-backup),
-[source and verification](#source-map-and-verification).
+Contents: [deployment](#deployment-pipeline), [service and SSH](#service-ssh-and-storage),
+[authentication](#administration-and-authentication), [account model](#accounts-groups-and-terminal-settings),
+[SIP/media](#sip-and-media-internals), [persistence](#persistence-and-backup),
+[source map](#source-map-and-verification).
 
-## Install on a fresh Pi
+## Deployment pipeline
 
-1. Use [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash
-   Raspberry Pi OS Lite (64-bit), Debian 13 Trixie. Set hostname, username and
-   initial password to `zmalaserver`, with SSH password authentication enabled.
-   The installer accepts Pi 3 Model B/B+ and Pi 4 Model B.
-2. Connect power and Ethernet with Internet access. No desktop, camera or remote
-   is needed. Keep Ethernet connected throughout installation.
-3. Run `zmala_server_setup.exe` on Windows. Check `zmalaserver.local`, or enter
-   the Ethernet IP if local name resolution fails. Confirm the target to install.
-4. Wait for the automatic reboot and final verification, then open
-   `http://zmalaserver.local:8080/` and set the admin password (or sign in with
-   the migrated password).
+`build_tools/server_installer/` provides the Tk GUI and headless entry point.
+It reuses the terminal installer's SSH/probe machinery while supplying the server
+package, host validation and post-reboot checks. Its accepted target is Raspberry
+Pi OS Lite 64-bit Debian 13 Trixie on Pi 3 Model B/B+ or Pi 4 Model B. The factory
+host/account defaults are `zmalaserver.local` and `zmalaserver`; the initial login
+password matches the account name. These defaults are distinct from the web
+administrator password and the migrated SIP/device credentials.
 
 The executable embeds the Python/SSH runtime and public server source. It checks
 SSH/sudo access, image identity, Trixie/ARM64, model, hostname, boot mount,
@@ -37,7 +35,7 @@ under `/var/lib/zmalacall-server`. An upgrade startup failure restores the prior
 application release, but does not roll back dependencies, configuration or data.
 Ordinary upgrades preserve enrollment and server data.
 
-### Migrate an existing server
+### Migration and cutover boundaries
 
 The optional data-folder field imports accounts, profiles, groups, credentials,
 callback requests, console history and portraits. Logs, old backups and obsolete
@@ -70,8 +68,10 @@ python -m pip install -r build_tools/windows_installer/requirements.txt
 python build_tools/server_installer/build.py
 ```
 
-GitHub's **Build server installer** workflow builds the same credential-free
-executable. The Linux source archive can also be generated with
+GitHub's **Build server installer** workflow builds the same executable without
+private deployment data. The download places Word guides beside the executable
+and technical Markdown in a `docs/` subdirectory. The Word guides are excluded
+from the embedded Pi package. Generate the Linux source archive separately with
 `python build_tools/linux/package-server.py`; it includes an `install.sh` wrapper.
 
 ## Service, SSH and storage
@@ -178,7 +178,7 @@ Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
 are runtime provisioning documents, separate from project documentation.
 Settings include auto-answer, camera/audio selection, resolution, FPS, framing,
 volume, language, portrait count and TV return. See the
-[terminal settings guide](terminal.md#settings-and-controls) for local controls.
+[terminal settings implementation](terminal.md#settings-and-controls) for input and save semantics.
 
 Current editors capture their opening configuration revision and reject stale
 saves with HTTP 409. Polling does not rebase drafts. Reopen/review after a conflict.
