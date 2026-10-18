@@ -29,12 +29,14 @@ export interface Registration {
   reachable?: boolean;
 }
 export interface SipApi {
+  maintenance?: boolean;
   registrations: Map<string, Registration>;
   dialogs: Map<string, { peers: { user: string }[] }>;
   cancelProbe?(id: string): void;
   status(): SipStatus;
 }
 export interface HttpContext {
+  backups?: InstanceType<typeof import('../backups').ServerBackups>;
   persistenceReady?(): boolean;
   adminSessions: InstanceType<typeof import('../admin-sessions').AdminSessions>;
   requireSecureAdmin?: boolean;

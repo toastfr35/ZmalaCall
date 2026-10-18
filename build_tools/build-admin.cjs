@@ -15,6 +15,7 @@ const scripts = [
   'terminalfields',
   'terminals',
   'callbacks',
+  'backups',
   'pages',
   'main',
 ];

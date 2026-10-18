@@ -79,6 +79,84 @@ function clipboardFixture(clipboard, result = true) {
   return { ...context, previous, parent, fields, owner: { closest: () => parent } };
 }
 
+test('backup restore uses explicit browser confirmation despite bundled helper names and waits for new login', async () => {
+  const elements = [],
+    actions = new Map(),
+    requests = [];
+  let confirmed = false,
+    confirmations = 0,
+    reloaded = false;
+  const context = load('backups', {
+    state: {},
+    document: { body: new Element() },
+    el(tag, text) {
+      const node = new Element(tag, text);
+      elements.push(node);
+      return node;
+    },
+    actionButton(label, action) {
+      const node = new Element('button', label);
+      actions.set(label, { node, action });
+      return node;
+    },
+    // The generated bundle contains this shared helper in the same scope.
+    confirm() {
+      throw Error('Do not call the shared modal helper as window.confirm.');
+    },
+    window: {
+      confirm() {
+        confirmations++;
+        return confirmed;
+      },
+    },
+    location: {
+      reload() {
+        reloaded = true;
+      },
+    },
+    setTimeout(callback) {
+      callback();
+    },
+    async fetch(url, options) {
+      requests.push({ url, options });
+      if (url.endsWith('/check'))
+        return {
+          ok: true,
+          json: async () => ({
+            created_at: '2026-10-18T00:00:00Z',
+            accounts: 2,
+            terminals: 1,
+            groups: 1,
+            pictures: 1,
+            configuration_version: 8,
+          }),
+        };
+      if (url.endsWith('/restore')) return { ok: true };
+      return { status: 401 };
+    },
+  });
+  context.openBackups();
+  const input = elements.find((e) => e.tag === 'input');
+  input.files = [{ size: 10 }];
+  const restore = actions.get('Replace configuration');
+  assert.equal(restore.node.disabled, true);
+  await actions.get('Check backup').action();
+  assert.equal(restore.node.disabled, false);
+  await restore.action();
+  assert.equal(confirmations, 1);
+  assert.equal(
+    requests.some((r) => r.url.endsWith('/restore')),
+    false,
+  );
+  confirmed = true;
+  await restore.action();
+  const sent = requests.find((r) => r.url.endsWith('/restore'));
+  assert.equal(sent.options.headers['X-Zmala-Confirm-Restore'], 'replace');
+  assert.equal(sent.options.headers['X-Zmala-Configuration-Version'], '8');
+  assert.equal(context.state.restoring, true);
+  assert.equal(reloaded, true);
+});
+
 test('credential copying uses the Clipboard API when available', async () => {
   const copied = [];
   const f = clipboardFixture({ writeText: async (text) => copied.push(text) });

@@ -149,4 +149,4 @@ class PhotoStore {
     }
   }
 }
-module.exports = { PhotoStore };
+module.exports = { PhotoStore, checkDimensions };

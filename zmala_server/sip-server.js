@@ -20,6 +20,7 @@ class SipServer extends SipMessages {
     super(store);
     /** @type {Map<string, import('./types/contracts').Dialog>} */
     this.dialogs = new Map();
+    this.maintenance = false;
     /** @type {{time: string; message: string}[]} */
     this.events = [];
     /** @type {import('./types/contracts').CallbackInstance | undefined} */
@@ -175,6 +176,11 @@ class SipServer extends SipMessages {
     const v = this.store.value;
     if (!validRequest(rq)) {
       this.reply(rq, 400, 'Malformed Request');
+      return;
+    }
+    // @llr SLLR105
+    if (this.maintenance) {
+      this.reply(rq, 503, 'Server Restoring');
       return;
     }
     const hops = maxForwards(rq.headers['max-forwards']);

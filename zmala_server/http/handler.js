@@ -5,6 +5,7 @@ const asyncFs = require('node:fs/promises');
 const path = require('node:path');
 const { send } = require('./responses');
 const { deviceRoutes } = require('./device-routes');
+const { backupRoutes } = require('./backup-routes');
 const { adminRoutes } = require('./admin-routes');
 const { PhotoStore } = require('../photos');
 const { authRoutes } = require('./auth-routes');
@@ -28,7 +29,11 @@ function createHandler(context) {
   /** @param {import('node:http').IncomingMessage} req
    * @param {import('node:http').ServerResponse} res */
   return async (req, res) => {
+    const backups = context.backups;
+    if (backups) backups.requests++;
     try {
+      if (backups?.restoring)
+        return send(res, 503, { error: 'Server is restarting to restore a backup.' });
       // @llr SLLR022
       const host = req.headers.host;
       const secure = 'encrypted' in req.socket && req.socket.encrypted === true;
@@ -120,6 +125,7 @@ function createHandler(context) {
         );
       }
       if (!admin) return send(res, 401, { error: 'Sign in with the admin password.' });
+      if (await backupRoutes(req, res, url, context)) return;
       if (await adminRoutes(req, res, url, context)) return;
       if (url.pathname === '/api/photos' && req.method === 'POST')
         return send(res, 201, { photo: await photos.upload(req) });
@@ -130,6 +136,8 @@ function createHandler(context) {
         'status' in failure && typeof failure.status === 'number' ? failure.status : 400;
       if (!res.headersSent) send(res, status, { error: failure.message });
       else res.destroy(failure);
+    } finally {
+      if (backups) backups.requests--;
     }
   };
 }

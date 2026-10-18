@@ -12,6 +12,7 @@ class Callbacks {
   /** @param {import('./types/contracts').StoreInstance} store @param {Pick<import('./types/contracts').SipInstance, 'registrations' | 'notifyCallback'>} sipServer @param {import('./types/contracts').Mailer} [mailer] */
   constructor(store, sipServer, mailer = new CallbackMailer(store)) {
     this.store = store;
+    this.paused = false;
     this.sip = sipServer;
     this.file = path.join(store.dir, 'callbacks.json');
     /** @type {import('./types/contracts').CallbackRecord[]} */
@@ -194,6 +195,7 @@ class Callbacks {
   // @llr SLLR047
   /** @param {string} [account] */
   deliver(account) {
+    if (this.paused) return;
     this.reconcile();
     this.email.deliver();
     for (const r of this.requests) {

@@ -35,6 +35,7 @@ export function refresh(force = false) {
 // @llr SLLR060
 /** @param {boolean} force */
 async function performRefresh(force) {
+  if (state.restoring) return;
   try {
     if (force || !state.initialized) state.model = await api('/api/admin');
     else {
@@ -71,6 +72,7 @@ async function performRefresh(force) {
       } else render();
     }
   } catch (e) {
+    if (state.restoring) return;
     if (e instanceof Error && 'status' in e && e.status === 401) await signIn();
     else message('error', e instanceof Error ? e.message : 'Request failed.');
   }

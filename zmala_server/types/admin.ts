@@ -2,6 +2,7 @@ import type { AdminModel } from './contracts';
 export interface AdminState {
   model: AdminModel;
   busy: boolean;
+  restoring?: boolean;
   initialized: boolean;
   editingId: string;
   detailsId: string;

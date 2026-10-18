@@ -262,23 +262,25 @@ export type AdminModel = ReturnType<StoreInstance['admin']> & {
 };
 export type ApiResult<U extends string> = U extends '/api/auth/status'
   ? { setup_required: boolean; can_setup: boolean }
-  : U extends '/api/server/ssh'
-    ? { supported: boolean; enabled?: boolean; active?: boolean; interface?: string }
-    : U extends '/api/admin'
-      ? AdminModel
-      : U extends '/api/admin/live'
-        ? Pick<
-            AdminModel,
-            | 'configuration_version'
-            | 'sip_status'
-            | 'terminal_statuses'
-            | 'terminal_status'
-            | 'callbacks'
-          >
-        : U extends '/api/photos'
-          ? { photo: string }
-          : U extends `/api/terminals/${string}/console`
-            ? { jobs: ConsoleView[]; id: string }
-            : U extends `/api/terminal-bootstrap${string}`
-              ? Enrollment
-              : { ok: boolean; id: string; configuration_version?: number };
+  : U extends '/api/server/backup/status'
+    ? { result: 'none' | 'restored' | 'rolled_back'; completed_at?: string }
+    : U extends '/api/server/ssh'
+      ? { supported: boolean; enabled?: boolean; active?: boolean; interface?: string }
+      : U extends '/api/admin'
+        ? AdminModel
+        : U extends '/api/admin/live'
+          ? Pick<
+              AdminModel,
+              | 'configuration_version'
+              | 'sip_status'
+              | 'terminal_statuses'
+              | 'terminal_status'
+              | 'callbacks'
+            >
+          : U extends '/api/photos'
+            ? { photo: string }
+            : U extends `/api/terminals/${string}/console`
+              ? { jobs: ConsoleView[]; id: string }
+              : U extends `/api/terminal-bootstrap${string}`
+                ? Enrollment
+                : { ok: boolean; id: string; configuration_version?: number };

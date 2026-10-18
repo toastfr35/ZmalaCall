@@ -171,3 +171,28 @@ input[type='file']::file-selector-button {
   margin: 0;
   accent-color: var(--accent);
 }
+
+.backup-controls {
+  padding: 0 25px 24px;
+}
+.backup-controls p {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.backup-dialog > h2 {
+  margin-bottom: 12px;
+}
+.backup-dialog > hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 20px 0;
+}
+.backup-dialog input[type='file'] {
+  width: 100%;
+  margin: 12px 0;
+}
+.backup-dialog > p {
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}

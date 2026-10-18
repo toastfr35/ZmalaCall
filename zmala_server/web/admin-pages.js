@@ -1,3 +1,4 @@
+import { backupPanel } from './admin-backups.js';
 import { query } from './admin-shared.js';
 // Overview and activity views combine persisted account configuration with live SIP/device status.
 import { $, state } from './admin-state.js';
@@ -111,7 +112,7 @@ export function renderOverview() {
     list.append(el('p', 'No terminals yet. Create a Terminal account to get started.', 'muted'));
   terminals.append(list);
   columns.append(server, terminals);
-  setView(hero, stats, columns);
+  setView(hero, stats, columns, backupPanel());
 }
 /** @param {number} limit */
 export function eventList(limit) {

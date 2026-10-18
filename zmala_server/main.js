@@ -11,13 +11,17 @@ const { createHandler } = require('./http/handler');
 const { ConsoleJobs } = require('./console-jobs');
 const { Callbacks } = require('./callbacks');
 const { SnapshotFile } = require('./snapshot-file');
+const { ServerBackups } = require('./backups');
+const { recoverRestore } = require('./backup-storage');
+const { passwordFile } = require('./admin-password');
 const { AdminSessions } = require('./admin-sessions');
 const { createShutdown } = require('./shutdown');
-/** @param {{store?: import('./types/contracts').StoreInstance, sipServer?: import('./types/contracts').SipInstance, callbackMailer?: import('./types/contracts').Mailer}} [options] */
+/** @param {{store?: import('./types/contracts').StoreInstance, sipServer?: import('./types/contracts').SipInstance, callbackMailer?: import('./types/contracts').Mailer, restart?: () => void}} [options] */
 function createApplication({
   store = new Store(),
   sipServer = new SipServer(store),
   callbackMailer,
+  restart,
 } = {}) {
   const bootstrapFiles = [path.join(store.dir, 'terminal.json')];
   if (store.dir === DATA) {
@@ -52,7 +56,9 @@ function createApplication({
     ]);
   }
 
+  const backups = new ServerBackups(store, callbacks, consoleJobs, sipServer, flush, restart);
   const handler = createHandler({
+    backups,
     store,
     sipServer,
     callbacks,
@@ -71,6 +77,7 @@ function createApplication({
   });
   const server = http.createServer(handler);
   return {
+    backups,
     server,
     handler,
     sipServer,
@@ -82,7 +89,9 @@ function createApplication({
     adminSessions,
   };
 }
-function start() {
+// @llr SLLR105
+async function start() {
+  await recoverRestore(DATA, process.env.ZMALA_ADMIN_PASSWORD_FILE || passwordFile(DATA));
   require('../build_tools/build-admin.cjs').buildAdmin();
   const store = new Store();
   // @llr SLLR102
@@ -96,7 +105,15 @@ function start() {
     }
   }
   const v = store.value;
-  const { server, handler, sipServer, flush } = createApplication({ store });
+  const { server, handler, sipServer, flush } = createApplication({
+    store,
+    restart: () => {
+      void shutdown().then(
+        () => process.exit(75),
+        () => process.exit(1),
+      );
+    },
+  });
   // Keep terminal HTTP available. An optional TLS listener uses the same
   // password/session boundary and marks browser cookies Secure on HTTPS.
   // @llr SLLR003
@@ -155,5 +172,9 @@ function start() {
     });
   return { server, sipServer, store };
 }
-if (require.main === module) start();
+if (require.main === module)
+  start().catch(() => {
+    console.error('Server startup failed. Check configuration and restore recovery files.');
+    process.exitCode = 1;
+  });
 module.exports = { createApplication, start };

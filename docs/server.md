@@ -271,13 +271,55 @@ prevents partial JSON, but provides neither cross-file transactions nor fsync
 power-loss durability. Synchronous JSON encoding still runs on the event loop.
 Unrelated read-only device polling continues through console/callback save errors.
 
-Stop the server before copying its private data directory and any separately
-configured password file. Backups include SIP/device/admin credentials, command
-output and possibly SMTP credentials. Restore mutually consistent files while
-stopped; then check `/health`, `/ready`, login, registration and a two-way call.
-Restoring an older configuration revision can cause terminals to reject it:
-use factory reset/re-enrollment with the intended credentials rather than disabling
-rollback protection. Restore epochs and transactional recovery remain backlog work.
+Overview → **Backup and restore → Manage backups** exports a `.zmala-backup`
+file through the authenticated administrator API. It includes accounts, profiles,
+groups, device/SIP credentials, SMTP settings/password, the configured administrator
+password hash, pictures, callback records and console history. The file is
+unencrypted and sensitive: store it privately. Sessions, registrations, logs,
+bootstrap caches and OS/SSH/TLS configuration are excluded.
+
+`backups.js` serializes all in-memory records before yielding, then reads immutable
+hash-named pictures. `backup-format.js` encodes a versioned gzip JSON file map.
+SHA-256 checksums detect corruption, not authenticity. Both upload and expanded
+JSON are capped at 64 MiB. Only four state files and up to 1,000 hash-named PNG/JPEG
+pictures are accepted. The decoder checks schemas, field limits, relationships,
+picture dimensions/hashes and administrator hash syntax. An unsupported backup
+configuration version needs a compatible server release.
+
+`POST /api/server/backup/check` returns a date/count summary. The explicitly
+confirmed `POST /api/server/backup/restore` requires
+`X-Zmala-Confirm-Restore: replace` and the checked revision in
+`X-Zmala-Configuration-Version`. These routes, download and status share the
+administrator/session/Host/Origin boundary. One backup operation runs at a time.
+Calls, running console jobs, callback deliveries or overlapping HTTP work cause
+a retryable conflict. Maintenance gates HTTP/SIP and callback delivery; state is
+flushed before staging the replacement and previous snapshot.
+
+`backup-storage.js` fsyncs temporary files, renames them and syncs directories.
+A journal under `data/restore-recovery/` commits the staged transaction. After
+the 202 response the service shuts down and exits with code 75; systemd's
+on-failure policy restarts it. Startup completes the apply before constructing
+the Store or opening listeners. Partial failures switch to a durable rollback
+phase; failed recovery stops startup and retains the journal. The private
+`restore-recovery/previous.zmala-backup` remains until the next restore. Do not
+remove a pending journal during troubleshooting. `restore-result.json` records
+success or rollback for the overview after sign-in. Recovery files are excluded
+from exports, avoiding recursive backups.
+
+Restore preserves this installation's advertised address and HTTP/SIP ports.
+It advances the configuration revision beyond both the current and saved values,
+so terminals can accept older settings without re-enrollment when their saved
+identities still match. A different server address still requires updating
+terminal provisioning. Browser sessions disappear: sign in with the administrator
+password from the backup. Queued console jobs become cancelled, running jobs
+become lost, and leases are removed; commands never replay. Callback requests
+resume normal expiry/delivery rules, so an old snapshot can repeat a reminder
+already sent after that snapshot was taken.
+
+A manual filesystem restore bypasses these protections. Prefer the supported UI;
+for disaster recovery preserve the entire private data directory and any external
+password file while the service is stopped. Check `/health`, `/ready`, sign-in,
+terminal configuration/registration and a call after recovery.
 
 HTTP/HTTPS listener failures and process signals share one shutdown operation:
 drain requests, stop SIP and flush state/bootstrap writes. This is graceful
@@ -293,6 +335,7 @@ Paths below are relative to `zmala_server/`.
 | `http/handler.js`, `responses.js`, `admin-routes.js`, `device-routes.js` | Host/origin/authentication boundary and scoped API operations |
 | `store.js`, `accounts.js`, `terminal-settings.js`, `migrations.js` | Validated configuration, identities and migration |
 | `json-file.js`, `snapshot-file.js`, `history.js` | Startup/tool persistence, asynchronous snapshots and bounded history |
+| `backups.js`, `backup-format.js`, `backup-storage.js`, `http/backup-routes.js` | Validated export, restore transaction and recovery |
 | `sip-server.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP dialogs, validation, exact-flow presence and messaging |
 | `media.js` | RTP/RTCP ports and transactional SDP updates |
 | `callbacks.js`, `callback-*.js`, `console-jobs.js` | Callback/reminder jobs and maintenance leases/results |
