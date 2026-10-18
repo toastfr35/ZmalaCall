@@ -1,0 +1,31 @@
+--- turn_tcp.cpp
++++ turn_tcp.cpp
+@@ -123,11 +123,17 @@
+-	switch (mState) {
+-		case WaitingHeader:
+-			return parsePacket(std::move(rawPacket));
+-			break;
+-		case Continuation:
+-			return processContinuationPacket(std::move(rawPacket));
+-			break;
+-	}
+-	return 0;
+-}
+-
++    if (mCurPacket) mCurPacket->concat(rawPacket); else mCurPacket = std::move(rawPacket);
++    size_t used = 0, total = mCurPacket->length();
++    const uint8_t *data = mCurPacket->data();
++    while (total - used >= 4) {
++        const uint8_t *p = data + used;
++        bool channel = (p[0] & 0xc0) == 0x40;
++        size_t header = channel ? 4 : 20;
++        size_t length = (size_t(p[2]) << 8) | p[3];
++        size_t wire = header + ((length + 3) & ~size_t(3));
++        if (total - used < wire) break;
++        mTurnPackets.push_back(std::make_unique<Packet>(const_cast<uint8_t *>(p), header + length));
++        used += wire;
++    }
++    if (used == total) mCurPacket.reset();
++    else if (used) mCurPacket = std::make_unique<Packet>(const_cast<uint8_t *>(data + used), total - used);
++    return 0;
++}

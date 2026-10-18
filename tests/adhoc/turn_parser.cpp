@@ -1,0 +1,47 @@
+/* Ad-hoc upstream SDK regression. Test every split boundary, byte-at-a-time
+ * input and coalesced STUN/ChannelData. Output must exclude TCP padding and
+ * preserve each byte exactly; a partial frame must not be emitted early. */
+#include "turn_tcp.h"
+#include <cassert>
+#include <cstring>
+#include <cstdlib>
+#include <iostream>
+#include <vector>
+using namespace ms2::turn;
+using Bytes = std::vector<uint8_t>;
+
+int main(int argc, char **argv) {
+    MSTurnContext context{};
+    context.state = MS_TURN_CONTEXT_STATE_BINDING_CHANNEL;
+    std::vector<Bytes> frames;
+    Bytes wire;
+    for (size_t length : {1, 2, 3, 4, 5, 1239, 1240, 1241}) {
+        Bytes packet{0x40, 1, uint8_t(length >> 8), uint8_t(length)};
+        for (size_t i = 0; i < length; ++i) packet.push_back(uint8_t(i));
+        frames.push_back(packet);
+        wire.insert(wire.end(), packet.begin(), packet.end());
+        while (wire.size() % 4) wire.push_back(0xaa);
+    }
+    Bytes stun(24, 0);
+    stun[1] = 1; stun[3] = 4;
+    frames.push_back(stun);
+    wire.insert(wire.end(), stun.begin(), stun.end());
+    auto verify = [&](size_t chunk) {
+        PacketReader reader(&context);
+        size_t count = 0;
+        for (size_t offset = 0; offset < wire.size(); offset += chunk) {
+            const size_t size = std::min(chunk, wire.size() - offset);
+            reader.parseData(std::make_unique<Packet>(wire.data() + offset, size));
+            while (auto packet = reader.getTurnPacket()) {
+                assert(count < frames.size());
+                assert(packet->length() == frames[count].size());
+                assert(!memcmp(packet->data(), frames[count].data(), packet->length()));
+                ++count;
+            }
+        }
+        assert(count == frames.size());
+    };
+    if (argc == 2) verify(std::strtoul(argv[1], nullptr, 10));
+    else for (size_t chunk = 1; chunk <= wire.size(); ++chunk) verify(chunk);
+    std::cout << "TURN framing: " << wire.size() << " chunk sizes passed\n";
+}
