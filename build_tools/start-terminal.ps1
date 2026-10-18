@@ -32,7 +32,7 @@ Invoke-LauncherLock {
     }
     $windowPython = Join-Path (Split-Path -Parent $terminalPython) 'pythonw.exe'
     if (-not (Test-Path -LiteralPath $windowPython)) { $windowPython = $terminalPython }
-    $arguments = @('"' + "$projectRoot\zmala_terminal\main.py" + '"')
+    $arguments = @('-m', 'zmala_terminal.common.main')
     $logPrefix = 'terminal'
     if ($Unconfigured) {
         $arguments += @('--profile', 'unconfigured', '--unconfigured', '--wifi-mode')

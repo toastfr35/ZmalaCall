@@ -1,8 +1,8 @@
 /* Opt-in Pi hardware regression: synthetic pictures only, no camera or calls.
  * Stop the terminal first. Build from repository root:
  * cc -std=c11 -D_GNU_SOURCE -O2 -Wall -Wextra -Werror -pthread
- *   -Izmala_terminal/media/video build_tools/linux/test-video-resize.c
- *   zmala_terminal/media/video/codec.c -o /tmp/test-video-resize
+ *   -Izmala_terminal/linux/media/video build_tools/linux/test-video-resize.c
+ *   zmala_terminal/linux/media/video/codec.c -o /tmp/test-video-resize
  *   $(pkg-config --cflags --libs libavcodec libavutil)
  *   -lmediastreamer2 -lortp -lbctoolbox
  * Run under an external timeout: timeout 30 /tmp/test-video-resize

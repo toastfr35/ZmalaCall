@@ -7,7 +7,7 @@ links: []
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/provisioning_ui.py
+- path: zmala_terminal/common/tests/provisioning_ui.py
   type: file
 reviewed: null
 text: |

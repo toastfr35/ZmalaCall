@@ -7,22 +7,15 @@ const { readJson } = require('./json-file');
 /** Detect hardware rather than CPU architecture: ordinary ARM Linux hosts
  * must keep the normal data path. Injectable reads keep tests off real boot files.
  * @param {string} directory
- * @param {string} [platform]
  * @param {(file: string) => string} [readModel] */
-function passwordFile(
-  directory,
-  platform = process.platform,
-  readModel = (file) => fs.readFileSync(file, 'utf8'),
-) {
-  if (platform === 'linux') {
-    for (const file of ['/sys/firmware/devicetree/base/model', '/proc/device-tree/model']) {
-      try {
-        if (/^Raspberry Pi\b/.test(readModel(file)))
-          return '/boot/firmware/zmalacall/admin-password.json';
-      } catch (error) {
-        if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'ENOENT')
-          throw error;
-      }
+function passwordFile(directory, readModel = (file) => fs.readFileSync(file, 'utf8')) {
+  for (const file of ['/sys/firmware/devicetree/base/model', '/proc/device-tree/model']) {
+    try {
+      if (/^Raspberry Pi\b/.test(readModel(file)))
+        return '/boot/firmware/zmalacall/admin-password.json';
+    } catch (error) {
+      if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'ENOENT')
+        throw error;
     }
   }
   return path.join(directory, 'admin-password.json');

@@ -11,7 +11,7 @@
 #include <mediastreamer2/msvideo.h>
 #include <mediastreamer2/mswebcam.h>
 #include <bctoolbox/logging.h>
-#include "../../zmala_terminal/media/video/codec.h"
+#include "../../zmala_terminal/linux/media/video/codec.h"
 
 extern int zmala_mjpeg_register(MSFactory *factory);
 extern int zmala_video_register(MSFactory *factory);

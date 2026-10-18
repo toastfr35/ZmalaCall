@@ -4,11 +4,11 @@ header: |
   Manual callback availability notice
 level: 15.0
 links:
-- ZMC007: okdnjnJUbYvxwazvker-EmVOJq6HIbT-jsk1pxbuvX4=
+- ZMC007: OqewVOoDzV-3HB917oog3FobgdOxVNF2dxRsa2cT3wk=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/call_feedback_ui.py
+- path: zmala_terminal/common/tests/call_feedback_ui.py
   type: file
 reviewed: null
 text: |

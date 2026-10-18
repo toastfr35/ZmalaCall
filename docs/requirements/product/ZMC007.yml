@@ -7,7 +7,7 @@ links: []
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/callbacks_live.py
+- path: zmala_terminal/common/tests/callbacks_live.py
   type: file
 reviewed: null
 text: |

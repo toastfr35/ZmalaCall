@@ -4,13 +4,13 @@ header: |
   Callback confirmation
 level: 6.0
 links:
-- ZMC007: okdnjnJUbYvxwazvker-EmVOJq6HIbT-jsk1pxbuvX4=
+- ZMC007: OqewVOoDzV-3HB917oog3FobgdOxVNF2dxRsa2cT3wk=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/callbacks_live.py
+- path: zmala_terminal/common/tests/callbacks_live.py
   type: file
-- path: zmala_terminal/tests/test_callbacks.py
+- path: zmala_terminal/common/tests/test_callbacks.py
   type: file
 reviewed: null
 text: |

@@ -13,7 +13,7 @@ const { SnapshotFile } = require('./snapshot-file');
 const { AdminPassword, passwordFile } = require('./admin-password');
 const { validateCallbackSettings, validateSmtpSettings, smtpView } = require('./callback-settings');
 const DATA = path.resolve(__dirname, 'data');
-const LANGUAGES = require('../zmala_terminal/shared/terminal-languages.json');
+const LANGUAGES = require('../zmala_terminal/common/shared/terminal-languages.json');
 
 /** Authoritative configuration and derived views. Mutations commit one versioned snapshot. */
 class Store extends AccountStore {

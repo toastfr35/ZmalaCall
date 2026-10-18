@@ -4,13 +4,13 @@ header: |
   Connectivity indicator
 level: 10.0
 links:
-- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+- ZMC003: DfMXaDndFGdXrJLPl14hBxmswS-nKB73iL9Kiml03V8=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/ui/display.py
+- path: zmala_terminal/common/ui/display.py
   type: file
-- path: zmala_terminal/icons.py
+- path: zmala_terminal/common/icons.py
   type: file
 reviewed: null
 text: |

@@ -16,6 +16,8 @@ test('concurrent photo conversion yields to other work, deduplicates output and 
   const sources = new Set();
   const gates = [];
   const store = new PhotoStore(directory, async (_executable, args) => {
+    assert.equal(_executable, 'python3');
+    assert.equal(path.basename(args[0]), 'convert-photo.py');
     const source = args[args.indexOf('-Source') + 1];
     const destination = args[args.indexOf('-Destination') + 1];
     sources.add(source);

@@ -3,7 +3,7 @@
 ZmalaCall is a television video-call terminal with a portrait carousel and simple
 physical controls. A separate server manages accounts, contact groups, settings,
 SIP signalling and the audio/video relay. Terminals run on Windows or Raspberry
-Pi 4; the server runs on Windows or Raspberry Pi OS. SIP phone clients can join
+Pi 4; the server runs on Raspberry Pi OS/Linux. SIP phone clients can join
 the same LAN and call permitted contacts.
 
 ## Install
@@ -110,16 +110,14 @@ and [automatic framing](docs/automatic-framing.md) for measured limits and proce
 ```powershell
 git clone https://github.com/toastfr35/ZmalaCall.git
 Set-Location ZmalaCall
-npm.cmd ci
-npm.cmd --prefix zmala_server ci --ignore-scripts
 ```
 
-Use the root **Start ZmalaCall Server.cmd** and **Start ZmalaCall Terminal.cmd**
-launchers independently. Runtime setup scripts prepare the required dependencies.
+The server runs on Raspberry Pi OS/Linux. Use the root **Start ZmalaCall Terminal.cmd**
+launcher for a Windows terminal connected to that server. Runtime setup scripts prepare the required dependencies.
 **Start ZmalaCall Terminal Unconfigured.cmd** uses a separate enrollment profile;
 pass `-ConnectWifi` to join the scanned network instead of testing the existing
 link, and `-Fullscreen` for fullscreen. The regular terminal also accepts
-`-Fullscreen`; the server accepts `-NoBrowser`.
+`-Fullscreen`.
 
 The matching **Stop** launchers stop only their recorded component processes.
 They do not erase configuration or stop directly launched Python/Node instances.

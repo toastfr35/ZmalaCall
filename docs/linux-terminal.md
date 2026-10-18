@@ -6,7 +6,7 @@ For the Pi 3 and Pi 4 hardware codec probes and integration assessment, see
 ZmalaCall uses one Python terminal implementation for Windows and Linux. Call
 states, server communication, contacts, translations, carousel animation,
 notifications, confirmations and provisioning flow are shared. Operating-system
-adapters live under `zmala_terminal/platforms/`. Windows launchers and its native
+adapters live under `zmala_terminal/linux/`; shared code is in `common/`. Windows launchers and its native
 SDK remain available for testing on the PC.
 
 ## Install
@@ -439,7 +439,7 @@ processes when it exits.
 For direct foreground diagnostics:
 
 ```sh
-python3 zmala_terminal/main.py --profile terminal --fullscreen
+python3 -m zmala_terminal.common.main --profile terminal --fullscreen
 ```
 
 ## Configure and use
@@ -607,13 +607,13 @@ verification guide for the measured limits and opt-in live tests.
 For headless checks, install `./build_tools/linux/install-terminal.sh --testing`:
 
 ```sh
-python3 -m unittest discover -s zmala_terminal/tests -p 'test_*.py'
+python3 -m unittest discover -s zmala_terminal/common/tests -p 'test_*.py'
 xvfb-run -a -s '-screen 0 1366x900x24' \
-  python3 zmala_terminal/tests/linux_smoke.py --bootstrap /path/to/test-bootstrap.json
+  python3 zmala_terminal/linux/tests/linux_smoke.py --bootstrap /path/to/test-bootstrap.json
 ```
 
 Use private test accounts for the smoke tests. The test mutates its own contact
-view to check layouts and saves screenshots under `zmala_terminal/tests/`.
+view to check layouts and saves screenshots under `zmala_terminal/common/tests/`.
 
 ## Historical test deployment — 9 October 2026
 

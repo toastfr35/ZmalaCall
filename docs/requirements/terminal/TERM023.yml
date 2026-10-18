@@ -4,13 +4,13 @@ header: |
   Text messages use missed-call badges
 level: 23.0
 links:
-- ZMC010: 0Bu8wBAvQdLKlVc4IHPP0qtN5Mr2KHvjPNhFV_ibtFU=
+- ZMC010: RzAVpyQmBClqOhC40aONDGanjHbLDtxFeETSYpPgCg0=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/test_messages.py
+- path: zmala_terminal/common/tests/test_messages.py
   type: file
-- path: zmala_terminal/tests/callbacks_live.py
+- path: zmala_terminal/common/tests/callbacks_live.py
   type: file
 reviewed: null
 text: |

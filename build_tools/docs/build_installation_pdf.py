@@ -30,7 +30,7 @@ def img(file,x,y,w):
     im=Image.open(file);h=w*im.height/im.width;c.drawImage(str(file),x,H-y-h,w,h,mask='auto');return y+h
 def start(n,title,subtitle):
     c.setFillColor(NAVY);c.rect(0,H-9,W,9,stroke=0,fill=1)
-    img(ROOT/'zmala_terminal/assets/zmala-icon.png',44,28,28)
+    img(ROOT/'zmala_terminal/common/assets/zmala-icon.png',44,28,28)
     text('ZMALACALL  /  FRESH SD CARD',84,47,10,True,BLUE)
     text(title,44,96,25,True,NAVY)
     p(subtitle,44,111,size=11,color=MUTED)
@@ -128,7 +128,7 @@ c.showPage()
 start(4,'4. Finish setup on the TV','Have the Wi-Fi QR code and the terminal\'s server QR code ready. Keep the server running.')
 heading('Pair the Microsoft Presenter+ remote',168)
 p('Switch the remote on. Turn it over and hold the rear Bluetooth button for about <b>3 seconds</b>, until the white light flashes. Pairing happens automatically.',44,182)
-img(ROOT/'zmala_terminal/assets/presenter-pairing.png',93,237,410)
+img(ROOT/'zmala_terminal/common/assets/presenter-pairing.png',93,237,410)
 p('Front at left; back at right. After pairing, press and release Left, Right, Green, Red and Middle as prompted. QR setup starts only after all five buttons pass the test.',44,475,size=9,leading=13,color=MUTED)
 heading('Scan the two QR codes',516)
 y=p('<b>1. Wi-Fi QR:</b> hold it in front of the C20 and wait for the connection to succeed.<br/><b>2. Server QR:</b> scan it next to enroll the terminal. Its ID comes from this QR, not from the Pi hostname or the installer.',44,530)

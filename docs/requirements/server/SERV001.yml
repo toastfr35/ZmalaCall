@@ -4,7 +4,7 @@ header: |
   Independent server and LAN administration
 level: 1.0
 links:
-- ZMC001: Db1hjT23wwLy-O60eh7PgU2MJ6jKxp5SyN7yA0gSEAg=
+- ZMC001: cO7jf7y_M-co2gergFW4QFNwItDcao3TPcIs5FfZfZo=
 normative: true
 ref: ''
 references:
@@ -12,4 +12,4 @@ references:
   type: file
 reviewed: null
 text: |
-  The Node.js server shall run independently of the terminal runtime, with Windows start/stop scripts and a Raspberry Pi systemd deployment, same-LAN SIP over UDP/TCP and an audio/video relay. LAN browsers may perform first-time shared-password setup and authenticate for administration. Password changes shall revoke existing sessions; sessions shall expire after eight hours and on restart. Mutations shall enforce same-origin checks. HTTP shall be limited to a trusted LAN; optional HTTPS shall reject remote plaintext administration when enabled. Local password-file removal while stopped shall deliberately reopen setup. Linux portrait conversion shall require Python with Pillow.
+  The Node.js server shall run independently of the terminal runtime, on Raspberry Pi OS/Linux with systemd deployment, same-LAN SIP over UDP/TCP and an audio/video relay. LAN browsers may perform first-time shared-password setup and authenticate for administration. Password changes shall revoke existing sessions; sessions shall expire after eight hours and on restart. Mutations shall enforce same-origin checks. HTTP shall be limited to a trusted LAN; optional HTTPS shall reject remote plaintext administration when enabled. Local password-file removal while stopped shall deliberately reopen setup. Linux portrait conversion shall require Python with Pillow.

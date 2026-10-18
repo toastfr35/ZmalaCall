@@ -35,7 +35,7 @@ sudo sh build_tools/linux/setup-auto-framing.sh
 sudo systemctl restart zmalacall-terminal
 ```
 
-The script creates a private runtime under `zmala_terminal/media/framing-runtime`
+The script creates a private runtime under `zmala_terminal/linux/media/framing-runtime`
 and downloads a SHA-256-checked model to `media/models/person.tflite`. Calls never
 download models. The detector uses the CPU version of Google's
 [SSD MobileNet V2 COCO quantized model](https://github.com/google-coral/test_data/blob/master/ssd_mobilenet_v2_coco_quant_postprocess.tflite)

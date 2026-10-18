@@ -30,7 +30,7 @@ test('Wi-Fi QR escaping, validation and printable PDF', async () => {
     assert.throws(() => wifiPayload(bad));
   const pdf = await setupPdf({ kind: 'wifi', label: input.ssid, payload });
   assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
-  // Linux uses a built-in font; Windows embeds one. Byte size therefore says
+  // PDF byte size says
   // nothing about whether the page and its QR code were actually generated.
   const source = pdf.toString('latin1');
   assert.match(source, /%%EOF\s*$/);

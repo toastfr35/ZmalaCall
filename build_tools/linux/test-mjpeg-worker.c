@@ -1,5 +1,5 @@
 /* A deliberately blocked decoder must not block the ticker or grow queues. */
-#include "../../zmala_terminal/media/video/auto-framing.c"
+#include "../../zmala_terminal/linux/media/video/auto-framing.c"
 #include <assert.h>
 #include <stdatomic.h>
 #include <stdio.h>

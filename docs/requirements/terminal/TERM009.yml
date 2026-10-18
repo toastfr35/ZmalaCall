@@ -4,11 +4,11 @@ header: |
   Missing remote video
 level: 9.0
 links:
-- ZMC004: BbMxQdJgPXYShedM3jT-p6HeO4lTCVWqKbr5Ogqcw7w=
+- ZMC004: _HrFhKcvYc7NiisGP2ZlwZBWsD_CEeHKxxXhFgTPL0c=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/accounts_live.py
+- path: zmala_terminal/common/tests/accounts_live.py
   type: file
 reviewed: null
 text: |

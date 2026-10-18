@@ -4,11 +4,11 @@ header: |
   Language application
 level: 16.0
 links:
-- ZMC006: Shvt9QnsSvgjt_twxvs-cx_4hgTHE6ZYmAaKJ5VxxxU=
+- ZMC006: xcASoKZyck3KFffgKp5BNRd39TnYdodYI0gH9AQRQwk=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/terminal_languages_ui.py
+- path: zmala_terminal/common/tests/terminal_languages_ui.py
   type: file
 reviewed: null
 text: |

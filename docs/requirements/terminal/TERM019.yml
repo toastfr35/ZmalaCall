@@ -4,11 +4,11 @@ header: |
   QR enrollment sequence
 level: 19.0
 links:
-- ZMC005: gAnqFfRxhvQytUsND93nzYSP5RlLVsaxcGEDtP6Dg4s=
+- ZMC005: qcg3rNiosnkxGDGkwv6ocN-hG6OMCpoepxaLMd0kX-s=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/provisioning_ui.py
+- path: zmala_terminal/common/tests/provisioning_ui.py
   type: file
 reviewed: null
 text: |

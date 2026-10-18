@@ -5,10 +5,10 @@ $toolsRoot = Split-Path -Parent $PSScriptRoot
 $realRoot = Split-Path -Parent $toolsRoot
 $fixture = Join-Path $toolsRoot ('tmp\process-control-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path "$fixture\build_tools", "$fixture\build_tools\data" | Out-Null
-foreach ($name in @('processes.ps1', 'stop-server.ps1', 'stop-terminal.ps1')) {
+foreach ($name in @('processes.ps1', 'stop-terminal.ps1')) {
     Copy-Item -LiteralPath (Join-Path $toolsRoot $name) -Destination "$fixture\build_tools\$name"
 }
-foreach ($name in @('Stop ZmalaCall Server.cmd', 'Stop ZmalaCall Terminal.cmd')) {
+foreach ($name in @('Stop ZmalaCall Terminal.cmd')) {
     Copy-Item -LiteralPath (Join-Path $realRoot $name) -Destination (Join-Path $fixture $name)
 }
 'Start-Sleep -Seconds 120' | Set-Content -LiteralPath "$fixture\sleeper.ps1"
@@ -31,13 +31,6 @@ try {
     $server = Start-Sleeper 'server'; $children += $server
     $terminal = Start-Sleeper 'terminal'; $children += $terminal
     $unconfigured = Start-Sleeper 'unconfigured'; $children += $unconfigured
-    Run-Stop 'Server'
-    $server.Refresh()
-    Assert-Check $server.HasExited 'Server process did not stop.'
-    Assert-Check ([bool](Get-TrackedProcess (Get-ProcessRecord 'terminal'))) 'Stopping server stopped terminal.'
-    Assert-Check ([bool](Get-TrackedProcess (Get-ProcessRecord 'unconfigured'))) 'Stopping server stopped unconfigured terminal.'
-    Run-Stop 'Server'
-    $server = Start-Sleeper 'server'; $children += $server
     Run-Stop 'Terminal'
     $terminal.Refresh(); $unconfigured.Refresh()
     Assert-Check ($terminal.HasExited -and $unconfigured.HasExited) 'Stop Terminal did not stop both profiles.'
@@ -51,8 +44,7 @@ try {
     Run-Stop 'Terminal'
     Assert-Check ([bool](Get-TrackedProcess (Get-ProcessRecord 'server'))) 'A stale PID killed an unrelated process.'
     Assert-Check (-not (Get-ProcessRecord 'terminal')) 'Stale terminal record was not cleared.'
-    Run-Stop 'Server'
-    Write-Host 'PASS: independent stop CMD scripts, both terminal profiles, repeated stops, state preservation and stale-PID protection.'
+    Write-Host 'PASS: terminal stop CMD script, both terminal profiles, repeated stops, state preservation and stale-PID protection.'
 } finally {
     foreach ($child in $children) {
         $child.Refresh()

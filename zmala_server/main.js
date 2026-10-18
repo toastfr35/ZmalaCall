@@ -19,7 +19,6 @@ function createApplication({
   sipServer = new SipServer(store),
   callbackMailer,
 } = {}) {
-  const v = store.value;
   const bootstrapFiles = [path.join(store.dir, 'terminal.json')];
   if (store.dir === DATA) {
     const terminalData = path.resolve(__dirname, '../zmala_terminal/data');
@@ -36,10 +35,6 @@ function createApplication({
   }
   const bootstrap = JSON.stringify(store.bootstrap(), null, 2);
   for (const file of bootstrapFiles) fs.writeFileSync(file, bootstrap);
-  fs.writeFileSync(
-    path.join(store.dir, 'open-admin.url'),
-    `[InternetShortcut]\r\nURL=http://127.0.0.1:${v.http_port}/\r\n`,
-  );
   const terminalStatuses = {};
   const adminSessions = new AdminSessions();
   const consoleJobs = new ConsoleJobs(store);
@@ -135,9 +130,7 @@ function start() {
       console.log(`HTTPS administration: https://${v.host}:${tlsPort}/`),
     );
     server.listen(v.http_port, '0.0.0.0', () => {
-      console.log(
-        `Administration: http://127.0.0.1:${v.http_port}/ (open zmala_server/data/open-admin.url)`,
-      );
+      console.log(`Administration: http://${v.host}:${v.http_port}/`);
       console.log(`Phone SIP domain: ${v.host}:${v.sip_port}`);
     });
   } catch (error) {

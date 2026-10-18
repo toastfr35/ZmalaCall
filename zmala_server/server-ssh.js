@@ -7,7 +7,7 @@ const execute = promisify(execFile);
 const helper = '/usr/local/libexec/zmala-server-ssh';
 let changing = false;
 function supported() {
-  return process.platform === 'linux' && fs.existsSync(helper);
+  return fs.existsSync(helper);
 }
 async function sshStatus() {
   if (!supported()) return { supported: false };

@@ -16,7 +16,7 @@ ProtectHome=yes
 RuntimeDirectory=zmalacall-cec
 RuntimeDirectoryMode=0700
 Environment=PYTHONDONTWRITEBYTECODE=1
-ExecStart=/usr/bin/python3 /opt/zmalacall/current/zmala_terminal/platforms/cec_observer.py
+ExecStart=/usr/bin/python3 /opt/zmalacall/current/zmala_terminal/linux/cec_observer.py
 Restart=always
 RestartSec=5
 TimeoutStopSec=5

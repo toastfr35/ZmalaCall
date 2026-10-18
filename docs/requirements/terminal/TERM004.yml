@@ -4,11 +4,11 @@ header: |
   Call confirmation
 level: 4.0
 links:
-- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+- ZMC003: DfMXaDndFGdXrJLPl14hBxmswS-nKB73iL9Kiml03V8=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/call_feedback_ui.py
+- path: zmala_terminal/common/tests/call_feedback_ui.py
   type: file
 reviewed: null
 text: |

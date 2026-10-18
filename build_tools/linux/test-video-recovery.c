@@ -1,7 +1,7 @@
 /* No camera capture or calls. Link codec.c, mjpeg-filter.c and mjpeg-stream.c
  * with the same SDK/FFmpeg flags as build-media.sh. */
-#include "../../zmala_terminal/media/video/codec.h"
-#include "../../zmala_terminal/media/video/mjpeg-stream.h"
+#include "../../zmala_terminal/linux/media/video/codec.h"
+#include "../../zmala_terminal/linux/media/video/mjpeg-stream.h"
 #include <mediastreamer2/msfactory.h>
 #include <stdio.h>
 

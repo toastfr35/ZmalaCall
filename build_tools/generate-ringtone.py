@@ -40,7 +40,7 @@ def sample(seconds):
 
 if __name__ == '__main__':
     # Preserve the asset path used by already-deployed terminals.
-    destination = ROOT / 'zmala_terminal/assets/gentle-chime.wav'
+    destination = ROOT / 'zmala_terminal/common/assets/gentle-chime.wav'
     with wave.open(str(destination), 'wb') as audio:
         audio.setparams((1, 2, RATE, 0, 'NONE', 'not compressed'))
         audio.writeframes(b''.join(struct.pack('<h', sample(index / RATE))

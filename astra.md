@@ -1,5 +1,31 @@
 # ZmalaCall implementation and specification review
 
+## Repository layout and supported hosts — 18 October 2026
+
+The CAD and serial-keypad projects and their build jobs have been removed at
+the owner's request. TERM024 is retired, rather than an outstanding feature.
+The server runtime now targets Raspberry Pi OS/Linux: desktop server launchers,
+PowerShell photo conversion and Windows font discovery are removed. Its API
+still manages Windows terminals, including their shell choices and QR limits.
+The Windows executable Pi installers remain supported.
+
+Terminal source now lives in three directories: `common/`, `windows/` and
+`linux/`. Shared modules use explicit package imports; platform loaders, command
+construction and native media policies live with their adapters. Linux releases
+include only shared and Linux source. Launchers, QR subprocesses, services,
+build scripts, test discovery and documentation follow the new paths. Mutable
+`zmala_terminal/data/` and installed persistent-data symlinks are unchanged.
+
+Verification: all 93 server tests passed on the server Pi; 282 terminal tests
+passed on Windows (three Linux-only skips) and Pi (two Windows-only skips).
+Real Windows/Pi render-cache checks and Pi native framing, preview and JPEG
+worker regressions passed. These checks used temporary source staging and did
+not replace either running installation. Three additional release-layout checks
+passed against the Windows checkout and the Linux-only release archive; both
+native Pi plugins compiled from that archive, and its entry points and real
+renderer worked without a Windows source directory. Installer tests, repository
+lint and Doorstop validation/catalogue publication also passed.
+
 ## Concurrent administration and portrait-decoding review — 18 October 2026
 
 Fixed the next verified parts of the outstanding review:
@@ -47,7 +73,7 @@ and are not all still open. The original ten reproduced defects are fixed.
 | Medium | Reuse carousel canvas items incrementally | Pixel-equivalent output, selection/badge correctness and Pi p95/p99 frame-time/RSS comparisons; image-cache budgets are now done |
 | Medium | Release manifests, repeatable rollback and backup/restore acceptance | Interrupted upgrade tests and persistent-data checks; installers already have separate releases and service health checks |
 | Lower | Finer-grained admin conflict checks and eventual policy for unversioned API writes | Avoid conflicts from unrelated edits without permitting silent overwrite; plan compatibility for existing API clients |
-| Lower | Explicit controller host interfaces, serial-keypad host adapter, physical/usability qualification | Keep refactors targeted; test actual keypad, intended users, TV models, power loss and sustained media workloads |
+| Lower | Explicit controller host interfaces and physical/usability qualification | Keep refactors targeted; test the Presenter remote, intended users, TV models, power loss and sustained media workloads |
 
 ## Render-cache memory review — 18 October 2026
 
@@ -235,7 +261,7 @@ Applied the ten reproduced defects and the bounded optimizations below. Added re
 | 1 — Command ownership | Jobs carry immutable device serials. Replacement devices cannot claim old commands or view old output. Pending legacy jobs without provable ownership are cancelled/lost. | `zmala_server/tests/reliability.test.js`, existing association tests |
 | 2 — Output stalls | Bound decoded text to 65,536 combined UTF-8 bytes; allow 400,000-byte JSON bodies. Permanent rejection submits a bounded diagnostic then resumes polling; transient errors retry results without rerunning commands. | NULs, malformed UTF-8, Unicode, permanent and transient failure tests |
 | 3 — Persistence recovery | Subsequent barriers retry the latest failed snapshot, including a completed-in-memory result with the same lease. Concurrent duplicates wait for commit. | Repeated injected disk failures, concurrent result retries and reload |
-| 4 — Hidden badges | Pruning and saved-count loading use call-permitted contacts; regrant does not resurrect pruned counters. | `zmala_terminal/tests/test_reliability.py` |
+| 4 — Hidden badges | Pruning and saved-count loading use call-permitted contacts; regrant does not resurrect pruned counters. | `zmala_terminal/common/tests/test_reliability.py` |
 | 5 — SIP retention | Strict bounded Content-Length framing and a 30-second unfinished-message deadline. ACK bypasses contexts; other contexts have expiry and per-IP/global quotas. | `zmala_server/tests/sip-bounds.test.js`, existing real-UDP cancellation test |
 | 6 — Linux reset | Secret-free Wi-Fi cleanup identifiers survive reset/restart; cleanup retries before new enrollment and tolerates an already-deleted UUID. | Controller failure/restart test; Linux adapter regression has a Linux-only execution gate |
 | 7 — Engine recovery | Publish the applied revision after successful engine setup; release failed cores and retry latest desired configuration while idle with five-second backoff. | Injected constructor failure, same-version poll and recovery |
@@ -281,7 +307,7 @@ Console records are keyed by the mutable account username (`terminal_id`). Delet
 
 ### 2. P1 — Console output limits can permanently stall maintenance polling
 
-**Evidence:** `zmala_terminal/maintenance.py:61`, `:91`, and `MaintenanceAgent.loop()`; `zmala_terminal/configuration.py`, `request()`; `zmala_server/http/device-routes.js:81`; `zmala_server/console-jobs.js:143`. Related requirements: SERV014, TERM021.
+**Evidence:** `zmala_terminal/common/maintenance.py:61`, `:91`, and `MaintenanceAgent.loop()`; `zmala_terminal/common/configuration.py`, `request()`; `zmala_server/http/device-routes.js:81`; `zmala_server/console-jobs.js:143`. Related requirements: SERV014, TERM021.
 
 The terminal limits retained raw output to 65,536 bytes, but then decodes it with replacement and JSON-encodes it. The server independently limits the HTTP body to 150,000 bytes and decoded UTF-8 output to 70,000 bytes. These are different size measures. Valid retained output can exceed either downstream limit.
 
@@ -307,7 +333,7 @@ After a rejected submission, `pending` remains set. Each loop retries the same r
 
 ### 4. P2 — Revoking contact access leaves an unreachable unread badge
 
-**Evidence:** `zmala_server/store.js`, `buildContacts()`; `zmala_terminal/model.py:59`, `:75`; `zmala_terminal/missed_calls.py:32`. Related requirements: SERV004, TERM012–TERM014.
+**Evidence:** `zmala_server/store.js`, `buildContacts()`; `zmala_terminal/common/model.py:59`, `:75`; `zmala_terminal/common/missed_calls.py:32`. Related requirements: SERV004, TERM012–TERM014.
 
 The server includes all other accounts in configuration, marking non-permitted ones with false permission flags. The carousel filters by `can_call`, but notification pruning and persisted badge loading use every contact ID. Removing the last shared group therefore hides the contact while retaining their count in the corner total. The user cannot open that contact's confirmation to acknowledge it.
 
@@ -335,7 +361,7 @@ The server includes all other accounts in configuration, marking non-permitted o
 
 ### 6. P1 — Linux factory reset retains the saved Wi-Fi connection
 
-**Evidence:** `zmala_terminal/setup_flow.py:96`; `zmala_terminal/platforms/linux_wifi.py`, `connect_wifi()` and `forget_wifi()`. Related requirement: TERM018.
+**Evidence:** `zmala_terminal/common/setup_flow.py:96`; `zmala_terminal/linux/wifi.py`, `connect_wifi()` and `forget_wifi()`. Related requirement: TERM018.
 
 `factory_reset()` decides whether to run the Wi-Fi deletion worker using only `wifi.get('windows_profile')`. Linux enrollment instead stores `linux_profile` and `linux_uuid`, and creates a persistent NetworkManager connection with autoconnect enabled. Reset clears the enrollment record and proceeds to QR scanning without calling the Linux deletion adapter. The OS connection and its secret remain, while the application loses the UUID needed to remove that connection later.
 
@@ -347,7 +373,7 @@ The server includes all other accounts in configuration, marking non-permitted o
 
 ### 7. P1 — Failed engine replacement publishes configuration that was never applied
 
-**Evidence:** `zmala_terminal/main.py`, `apply_config()` at lines 184–227; `zmala_terminal/management.py`, `apply_poll_config()` and `tick()`.
+**Evidence:** `zmala_terminal/common/main.py`, `apply_config()` at lines 184–227; `zmala_terminal/common/management.py`, `apply_poll_config()` and `tick()`.
 
 When a SIP credential, video preset, or audio-profile change requires a new core, the model receives the new configuration first. The old engine is closed, then `self.engine = Engine(...)` constructs its replacement. If construction raises, the assignment does not happen: `self.engine` still references the closed old object, with `core=None`, while the model reports the new configuration version.
 
@@ -375,7 +401,7 @@ There is also no deactivation of an existing stream when its new media port is z
 
 ### 9. P2 — Optional photo work blocks presence delivery and can poison the cache
 
-**Evidence:** `zmala_terminal/configuration.py`, `request()` and `fetch()`; `zmala_terminal/management.py`, `poll()`; `zmala_terminal/ui/carousel.py`, `contact_image()`.
+**Evidence:** `zmala_terminal/common/configuration.py`, `request()` and `fetch()`; `zmala_terminal/common/management.py`, `poll()`; `zmala_terminal/common/ui/carousel.py`, `contact_image()`.
 
 **Polling delay:** `fetch()` retrieves a valid configuration but does not return it until it has tried every missing contact photo serially. The worker queues the presence/configuration event only after this returns. Missing photos retry on every poll, including live-only polls. With up to 39 other accounts, 39 four-second photo timeouts can add roughly 156 seconds before an otherwise successful presence response reaches the UI. Contacts become stale after six seconds; status reporting is delayed too.
 
@@ -489,7 +515,7 @@ These are design recommendations or unverified failure risks, not additional rep
 | Check | Result |
 | --- | --- |
 | `node --test tests/*.test.js` from `zmala_server/` | 57 passed |
-| `.venv/Scripts/python.exe -m unittest discover -s zmala_terminal/tests -p 'test_*.py'` | 138 run, successful, 4 skipped |
+| `.venv/Scripts/python.exe -m unittest discover -s zmala_terminal/common/tests -p 'test_*.py'` | 138 run, successful, 4 skipped |
 | `.venv/Scripts/python.exe -m unittest discover -s build_tools/tests -p 'test_*.py'` | 4 passed |
 | `npm.cmd run typecheck` | Passed for server and admin source |
 | `node build_tools/build-admin.cjs --check` | Passed |
@@ -504,7 +530,7 @@ The server suite was rerun directly with Node, avoiding the npm pretest asset-ge
 | Check | Result |
 | --- | --- |
 | `node --test tests/*.test.js` from `zmala_server/` | 57 passed |
-| `.venv/Scripts/python.exe -m unittest discover -s zmala_terminal/tests -p 'test_*.py'` | 130 run, successful, 3 skipped |
+| `.venv/Scripts/python.exe -m unittest discover -s zmala_terminal/common/tests -p 'test_*.py'` | 130 run, successful, 3 skipped |
 | SIP parser probe | Malformed lengths retained 1 MiB without rejection despite an 8 KiB configured body cap |
 | Proxy VM probe | 10,000 unique ACKs retained 10,000 contexts; stop did not clear them |
 | Linux reset controller probe | Saved Linux enrollment cleared; deletion adapter called zero times |

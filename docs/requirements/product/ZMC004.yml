@@ -7,7 +7,7 @@ links: []
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/accounts_live.py
+- path: zmala_terminal/common/tests/accounts_live.py
   type: file
 reviewed: null
 text: |

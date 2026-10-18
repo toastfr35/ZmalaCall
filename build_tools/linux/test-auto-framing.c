@@ -1,5 +1,5 @@
 /* Crop safety/metadata, stale-result fencing and 1080p per-frame cost. */
-#include "../../zmala_terminal/media/video/auto-framing.c"
+#include "../../zmala_terminal/linux/media/video/auto-framing.c"
 #include <assert.h>
 #include <stdio.h>
 #include <time.h>

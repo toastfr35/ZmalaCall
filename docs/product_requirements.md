@@ -17,7 +17,7 @@ Generated from [Doorstop ZMC records](requirements/product/). Edit the YAML reco
 
 ## 1.0 Independent platform components _(ZMC001)_
 
-The system shall provide independently startable and stoppable server and terminal components. Windows shall provide desktop launchers; Linux shall provide the documented terminal service and native media adapters. The platform and hardware acceptance matrix shall distinguish source-level support from verified hardware deployment.
+The system shall provide independently startable and stoppable server and terminal components. The server shall run on Raspberry Pi OS/Linux. Windows shall provide terminal desktop launchers and SSH-based Pi installers; Linux shall provide the documented server and terminal services and native media adapters. The platform and hardware acceptance matrix shall distinguish source-level support from verified hardware deployment.
 
 > `README.md`
 
@@ -39,9 +39,9 @@ The system shall use one SIP server/domain for multiple phone and terminal accou
 
 The terminal shall let an elderly user choose a familiar person and control calls using LEFT, RIGHT, GREEN and RED, without clickable screen controls.
 
-> `zmala_terminal/tests/test_terminal.py`
+> `zmala_terminal/common/tests/test_terminal.py`
 
-*Child links:* [TERM002 Contact identity and carousel](terminal_requirements.md#TERM002), [TERM003 Contact availability](terminal_requirements.md#TERM003), [TERM004 Call confirmation](terminal_requirements.md#TERM004), [TERM005 Physical-button prompts](terminal_requirements.md#TERM005), [SERV007 Online presence](server_requirements.md#SERV007), [TERM010 Connectivity indicator](terminal_requirements.md#TERM010), [TERM022 Interrupted or changed confirmation](terminal_requirements.md#TERM022), [TERM024 Serial keypad host integration acceptance](terminal_requirements.md#TERM024), [TERM025 Presenter motion volume control](terminal_requirements.md#TERM025), [TERM026 Local settings with remote control](terminal_requirements.md#TERM026), [TERM028 TV setup and idle restoration](terminal_requirements.md#TERM028)
+*Child links:* [TERM002 Contact identity and carousel](terminal_requirements.md#TERM002), [TERM003 Contact availability](terminal_requirements.md#TERM003), [TERM004 Call confirmation](terminal_requirements.md#TERM004), [TERM005 Physical-button prompts](terminal_requirements.md#TERM005), [SERV007 Online presence](server_requirements.md#SERV007), [TERM010 Connectivity indicator](terminal_requirements.md#TERM010), [TERM022 Interrupted or changed confirmation](terminal_requirements.md#TERM022), [TERM025 Presenter motion volume control](terminal_requirements.md#TERM025), [TERM026 Local settings with remote control](terminal_requirements.md#TERM026), [TERM028 TV setup and idle restoration](terminal_requirements.md#TERM028)
 
 <a id="ZMC004"></a>
 
@@ -49,7 +49,7 @@ The terminal shall let an elderly user choose a familiar person and control call
 
 The system shall support bidirectional audio/video calls between permitted phone and terminal accounts.
 
-> `zmala_terminal/tests/accounts_live.py`
+> `zmala_terminal/common/tests/accounts_live.py`
 
 *Child links:* [SERV005 Authenticated SIP and media routing](server_requirements.md#SERV005), [TERM007 Incoming calls and auto-answer](terminal_requirements.md#TERM007), [TERM008 Active call controls](terminal_requirements.md#TERM008), [TERM009 Missing remote video](terminal_requirements.md#TERM009)
 
@@ -59,7 +59,7 @@ The system shall support bidirectional audio/video calls between permitted phone
 
 The terminal shall support a deliberate factory reset followed by camera-based Wi-Fi and server QR configuration; administration shall provide printable setup PDFs.
 
-> `zmala_terminal/tests/provisioning_ui.py`
+> `zmala_terminal/common/tests/provisioning_ui.py`
 
 *Child links:* [SERV013 Printable QR downloads](server_requirements.md#SERV013), [TERM017 Factory reset access](terminal_requirements.md#TERM017), [TERM018 Factory reset scope](terminal_requirements.md#TERM018), [TERM019 QR enrollment sequence](terminal_requirements.md#TERM019), [TERM020 Stable camera QR scanning](terminal_requirements.md#TERM020), [TERM027 Remote onboarding and status](terminal_requirements.md#TERM027)
 
@@ -69,7 +69,7 @@ The terminal shall support a deliberate factory reset followed by camera-based W
 
 The terminal shall support the provided European and Asian languages while administration remains in English.
 
-> `zmala_terminal/tests/terminal_languages_ui.py`
+> `zmala_terminal/common/tests/terminal_languages_ui.py`
 
 *Child links:* [SERV012 Terminal settings](server_requirements.md#SERV012), [TERM016 Language application](terminal_requirements.md#TERM016)
 
@@ -79,7 +79,7 @@ The terminal shall support the provided European and Asian languages while admin
 
 The system shall let a terminal request a callback from an unavailable contact and notify the contact when available, without automatically calling.
 
-> `zmala_terminal/tests/callbacks_live.py`
+> `zmala_terminal/common/tests/callbacks_live.py`
 
 *Child links:* [TERM006 Callback confirmation](terminal_requirements.md#TERM006), [SERV008 Callback lifecycle](server_requirements.md#SERV008), [SERV009 Callback delivery](server_requirements.md#SERV009), [TERM015 Manual callback availability notice](terminal_requirements.md#TERM015), [SERV017 Callback email reminders](server_requirements.md#SERV017)
 
@@ -109,7 +109,7 @@ The server shall provide dark administration pages for accounts, groups, termina
 
 A caller ending an unanswered call shall stop terminal ringing and increase that contact's visible unread notification counter. Each phone text message received by the terminal shall increase the same counter without displaying its body or interrupting a call. The terminal shall show both per-contact counters and their combined total until each contact is acknowledged by opening their call or callback confirmation.
 
-> `zmala_terminal/tests/callbacks_live.py`
+> `zmala_terminal/common/tests/callbacks_live.py`
 
 *Child links:* [SERV006 Valid caller cancellation](server_requirements.md#SERV006), [TERM011 Caller hang-up while ringing](terminal_requirements.md#TERM011), [TERM012 Missed-call badge](terminal_requirements.md#TERM012), [TERM013 Missed-call acknowledgment](terminal_requirements.md#TERM013), [TERM014 Missed-call persistence](terminal_requirements.md#TERM014), [SERV016 Text message notifications](server_requirements.md#SERV016), [TERM023 Text messages use missed-call badges](terminal_requirements.md#TERM023)
 

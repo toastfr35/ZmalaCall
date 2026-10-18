@@ -21,8 +21,8 @@ build_tools/dist/
 *.exe
 *.bak
 *.tmp
-/zmala_terminal/media/framing-runtime/
-/zmala_terminal/media/models/*.tflite
+/zmala_terminal/linux/media/framing-runtime/
+/zmala_terminal/linux/media/models/*.tflite
 
 # Keep local configuration and credentials out of commits.
 .env
@@ -35,6 +35,3 @@ build_tools/dist/
 
 # Personal portrait drafts are local account assets, not application source.
 /zmala_server/assets/account-pictures/
-
-# OpenSCAD test export; retain the editable design.
-/CAD/test.stl

@@ -19,7 +19,7 @@ def package(destination=None):
                          for part in p.relative_to(ROOT / 'zmala_server').parts)]
     paths += [ROOT / 'build_tools/linux' / name for name in SCRIPTS]
     paths += [ROOT / 'build_tools' / name for name in ('build-admin.cjs', 'convert-photo.py')]
-    paths += [ROOT / 'zmala_terminal/shared/terminal-languages.json']
+    paths += [ROOT / 'zmala_terminal/common/shared/terminal-languages.json']
     checksums = []
     with tarfile.open(destination, 'w:gz') as archive:
         def add(name, data, mode=0o644):

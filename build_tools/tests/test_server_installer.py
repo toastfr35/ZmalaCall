@@ -87,7 +87,7 @@ class ServerPackageTests(unittest.TestCase):
                 names = archive.getnames()
                 self.assertIn('zmala_server/vendor/sip/sip.js', names)
                 self.assertIn('build_tools/linux/server-ssh.py', names)
-                self.assertIn('zmala_terminal/shared/terminal-languages.json', names)
+                self.assertIn('zmala_terminal/common/shared/terminal-languages.json', names)
                 self.assertFalse(any('/data/' in p or '/node_modules/' in p or 'password.txt' in p for p in names))
                 self.assertNotIn(b'\r\n', archive.extractfile('install.sh').read())
 

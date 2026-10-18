@@ -81,7 +81,7 @@ Windows consumes keyboard events and the supported Pi uses Presenter+ input. An 
 
 ## Network capacity
 
-Bandwidth presets are resolution/rate dependent (`zmala_terminal/video_settings.py`). At the default 720p/15 fps they allow 1,500 kbit/s upload and 4,000 kbit/s download; 1080p/30 fps allows 5,000/6,000 kbit/s. These are SDK budgets rather than guaranteed throughput, and protocol/audio overhead needs additional capacity. Qualify the installed network with headroom for Wi-Fi variation, both call directions and other users; a single fixed 5 Mbit/s recommendation is insufficient for the highest setting.
+Bandwidth presets are resolution/rate dependent (`zmala_terminal/common/video_settings.py`). At the default 720p/15 fps they allow 1,500 kbit/s upload and 4,000 kbit/s download; 1080p/30 fps allows 5,000/6,000 kbit/s. These are SDK budgets rather than guaranteed throughput, and protocol/audio overhead needs additional capacity. Qualify the installed network with headroom for Wi-Fi variation, both call directions and other users; a single fixed 5 Mbit/s recommendation is insufficient for the highest setting.
 
 The Wi-Fi signal at the installed television shall remain stable for the duration of a call. Qualification shall use the real enclosure and final positions of the SBC, antenna, television, camera, and USB devices.
 

@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 const { own } = require('./validation');
-const LANGUAGES = require('../zmala_terminal/shared/terminal-languages.json');
+const LANGUAGES = require('../zmala_terminal/common/shared/terminal-languages.json');
 
 /** Undefined preserves an existing setting; explicit null remains invalid.
  * @param {import('./types/contracts').JsonObject} update

@@ -55,8 +55,8 @@ task_stage='preparing application release'
 install -d -m 755 /opt/zmalacall-server /opt/zmalacall-server/releases /usr/local/libexec
 task_release=$(mktemp -d /opt/zmalacall-server/releases/install-XXXXXXXX)
 cp -a "$task_root/zmala_server" "$task_root/build_tools" "$task_release/"
-mkdir -p "$task_release/zmala_terminal/shared"
-cp "$task_root/zmala_terminal/shared/terminal-languages.json" "$task_release/zmala_terminal/shared/"
+mkdir -p "$task_release/zmala_terminal/common/shared"
+cp "$task_root/zmala_terminal/common/shared/terminal-languages.json" "$task_release/zmala_terminal/common/shared/"
 npm --prefix "$task_release/zmala_server" ci --omit=dev --ignore-scripts --cache /tmp/zmala-server-npm-cache
 node "$task_release/build_tools/build-admin.cjs"
 install -d -m 700 -o zmalaserver -g zmalaserver /var/lib/zmalacall-server

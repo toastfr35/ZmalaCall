@@ -11,4 +11,4 @@ references:
   type: file
 reviewed: null
 text: |
-  The system shall provide independently startable and stoppable server and terminal components. Windows shall provide desktop launchers; Linux shall provide the documented terminal service and native media adapters. The platform and hardware acceptance matrix shall distinguish source-level support from verified hardware deployment.
+  The system shall provide independently startable and stoppable server and terminal components. The server shall run on Raspberry Pi OS/Linux. Windows shall provide terminal desktop launchers and SSH-based Pi installers; Linux shall provide the documented server and terminal services and native media adapters. The platform and hardware acceptance matrix shall distinguish source-level support from verified hardware deployment.

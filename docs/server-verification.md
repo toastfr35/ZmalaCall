@@ -3,7 +3,7 @@
 This document includes dated hardware observations. Preserve their original
 settings when comparing results; they are not current global limits. Current
 video defaults and targets are in [the terminal guide](linux-terminal.md#video-defaults-and-historical-pi-3-validation)
-and `zmala_terminal/video_settings.py`.
+and `zmala_terminal/common/video_settings.py`.
 
 The server runtime and admin source use two strict `checkJs` configurations.
 `make lint` runs both along with ESLint, Ruff, shell/native checks, formatting,
@@ -65,7 +65,7 @@ current TV/port combination; they do not establish an exact wake-up latency.
 The opt-in receiver check now supports an explicit snapshot for repeat tests:
 
 ```powershell
-.venv/Scripts/python.exe zmala_terminal/tests/camera_feed_live.py --seconds 12 --snapshot build_tools/tmp/cec-call.jpg --output build_tools/tmp/cec-call.json
+.venv/Scripts/python.exe zmala_terminal/common/tests/camera_feed_live.py --seconds 12 --snapshot build_tools/tmp/cec-call.jpg --output build_tools/tmp/cec-call.json
 ```
 
 Run only with both terminals idle and the Pi set to auto-answer. Arrange the
@@ -326,7 +326,7 @@ presets. The original probe was reported as passing 640×360, 1280×720 and
 1920×1080 selection, but the 10 October readback check disproved the 640×360
 result: both installed SDKs reject that size without a return-code failure.
 The low preset is now 480p (640×480), with migration of saved 360p settings.
-`zmala_terminal/tests/video_settings_native.py` checks the actual SDK size and
+`zmala_terminal/common/tests/video_settings_native.py` checks the actual SDK size and
 NACK enablement for each preset without starting a call. Configuration checks
 do not establish HD capture or HD call reliability.
 A temporary V4L2 conversion trial remained below HD and was removed.
@@ -390,7 +390,7 @@ Linux now uses one C20 configuration: explicit MJPEG camera capture, Pi V4L2
 H.264 encoding, FFmpeg software decoding and C20 microphone/speaker/ringer.
 Windows retains server-selected SDK devices. The obsolete C930e capture bridge,
 hardware-decoder mode, media-mode launch scripts and local video overrides were
-removed. Native source is under `zmala_terminal/media/`; the standard installer
+removed. Native source is under `zmala_terminal/linux/media/`; the standard installer
 builds both private plugins and removes obsolete systemd media drop-ins.
 The hardware encoder reuses writable raw frame buffers instead of allocating
 one for every input picture. Shared SIP, UI, provisioning and CEC code remain.

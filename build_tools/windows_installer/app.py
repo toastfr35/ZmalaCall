@@ -22,7 +22,7 @@ def resources():
 def logo_path():
     if getattr(sys, 'frozen', False):
         return resources() / 'zmala-icon.png'
-    return Path(__file__).resolve().parents[2] / 'zmala_terminal/assets/zmala-icon.png'
+    return Path(__file__).resolve().parents[2] / 'zmala_terminal/common/assets/zmala-icon.png'
 
 
 class Installer(tk.Tk):

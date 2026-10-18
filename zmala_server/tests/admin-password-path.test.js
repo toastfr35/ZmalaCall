@@ -7,24 +7,20 @@ const path = require('node:path');
 const { AdminPassword, passwordFile } = require('../admin-password');
 const { hashPassword } = require('../admin-sessions');
 
-test('only Raspberry Pi hardware selects the Windows-accessible boot path', () => {
+test('only Raspberry Pi hardware selects the FAT boot boot path', () => {
   const local = path.join('data', 'admin-password.json');
   const piModel = () => 'Raspberry Pi 3 Model B Rev 1.2\0';
+  assert.equal(passwordFile('data', piModel), '/boot/firmware/zmalacall/admin-password.json');
   assert.equal(
-    passwordFile('data', 'linux', piModel),
-    '/boot/firmware/zmalacall/admin-password.json',
-  );
-  assert.equal(passwordFile('data', 'win32', piModel), local);
-  assert.equal(
-    passwordFile('data', 'linux', () => 'Other ARM board'),
+    passwordFile('data', () => 'Other ARM board'),
     local,
   );
   const absent = () => {
     throw Object.assign(Error('missing'), { code: 'ENOENT' });
   };
-  assert.equal(passwordFile('data', 'linux', absent), local);
+  assert.equal(passwordFile('data', absent), local);
   assert.equal(
-    passwordFile('data', 'linux', (file) => (file.startsWith('/sys/') ? absent() : piModel())),
+    passwordFile('data', (file) => (file.startsWith('/sys/') ? absent() : piModel())),
     '/boot/firmware/zmalacall/admin-password.json',
   );
 });
@@ -46,21 +42,25 @@ test('moving credentials to boot removes the old copy so deletion stays a reset'
   }
 });
 
-test('release data symlink preserves credentials across repeated startups', async () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'zmala-password-link-'));
-  try {
-    const persistent = path.join(directory, 'persistent');
-    fs.mkdirSync(persistent);
-    const linked = path.join(directory, 'release-data');
-    fs.symlinkSync(persistent, linked, process.platform === 'win32' ? 'junction' : 'dir');
-    const credentials = new AdminPassword(persistent);
-    const hash = await hashPassword('symlink migration test');
-    credentials.setHash(hash);
-    for (let startup = 0; startup < 3; startup++) {
-      assert.equal(new AdminPassword(linked, undefined, credentials.file).hash, hash);
-      assert.equal(fs.existsSync(credentials.file), true);
+test(
+  'release data symlink preserves credentials across repeated startups',
+  { skip: process.platform !== 'linux' },
+  async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'zmala-password-link-'));
+    try {
+      const persistent = path.join(directory, 'persistent');
+      fs.mkdirSync(persistent);
+      const linked = path.join(directory, 'release-data');
+      fs.symlinkSync(persistent, linked, 'dir');
+      const credentials = new AdminPassword(persistent);
+      const hash = await hashPassword('symlink migration test');
+      credentials.setHash(hash);
+      for (let startup = 0; startup < 3; startup++) {
+        assert.equal(new AdminPassword(linked, undefined, credentials.file).hash, hash);
+        assert.equal(fs.existsSync(credentials.file), true);
+      }
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
     }
-  } finally {
-    fs.rmSync(directory, { recursive: true, force: true });
-  }
-});
+  },
+);

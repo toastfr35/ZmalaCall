@@ -1,6 +1,6 @@
 # Administration authentication
 
-Open the server's LAN address and HTTP port in a browser, for example `http://zmalaserver.local:8080/` for the installed Pi server, or its LAN IP. On the server machine, `http://127.0.0.1:8080/` and the generated `data/open-admin.url` shortcut also work. The shortcut contains only a URL. Use a configured hostname/address; request-origin checks reject unrecognized hosts.
+Open the server's LAN address and HTTP port in a browser, for example `http://zmalaserver.local:8080/` for the installed Pi server, or its LAN IP. On the server machine, `http://127.0.0.1:8080/` also works. Use a configured hostname/address; request-origin checks reject unrecognized hosts.
 
 The first visitor sets the shared admin password and confirms it. This one-time
 setup works from another computer, without access to the server's desktop.
@@ -23,7 +23,7 @@ only before the first password is configured; afterwards they need a session.
 Password-file location depends on how the server was started:
 
 - The dedicated Pi installer sets `ZMALA_ADMIN_PASSWORD_FILE` to **`/var/lib/zmalacall-server/admin-password.json`** in its service. This is on the Linux data partition, not the FAT boot partition.
-- Windows and non-Pi source launches default to **`zmala_server/data/admin-password.json`**.
+- Non-Pi Linux source launches default to **`zmala_server/data/admin-password.json`**.
 - A source launch on Pi hardware without that override uses the legacy **`/boot/firmware/zmalacall/admin-password.json`** path. Hardware detection reads the device-tree model; ARM architecture alone is insufficient. Isolated test stores retain their own data path.
 
 Check the service environment before recovery if the installation was customized. A write failure is reported rather than silently changing the password location.
@@ -40,14 +40,17 @@ putting real passwords in command histories or checked-in scripts.
 The default LAN listener uses HTTP, which does not encrypt passwords or sessions
 in transit. Configure HTTPS with a certificate trusted by the client computers
 and valid for the server's address. Set both certificate paths before launching
-the server, for example in PowerShell:
+the server. For systemd, use `sudo systemctl edit zmalacall-server`:
 
-```powershell
-$env:ZMALA_TLS_CERT = 'C:\ZmalaCall-private\server-cert.pem'
-$env:ZMALA_TLS_KEY = 'C:\ZmalaCall-private\server-key.pem'
-$env:ZMALA_HTTPS_PORT = '8443'
-& .\build_tools\start-server.ps1 -NoBrowser
+```ini
+[Service]
+Environment=ZMALA_TLS_CERT=/etc/zmalacall/server-cert.pem
+Environment=ZMALA_TLS_KEY=/etc/zmalacall/server-key.pem
+Environment=ZMALA_HTTPS_PORT=8443
 ```
+
+Then run `sudo systemctl daemon-reload` and `sudo systemctl restart zmalacall-server`.
+Make the key readable by the service user only.
 
 Restart an already running server to apply these environment variables. The HTTPS
 port defaults to 8443 and must differ from the HTTP port. Allow it through the

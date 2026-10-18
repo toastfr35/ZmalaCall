@@ -1,7 +1,7 @@
 /* Check the SDK's actual encoder capability negotiation without a camera/SIP.
  * Build alongside the C20 plugin:
  * cc probe-hardware-presets.c -o probe-hardware-presets -lmediastreamer2 \
- *    -lortp -lbctoolbox -L../../zmala_terminal/media/video -lzmala_video
+ *    -lortp -lbctoolbox -L../../zmala_terminal/linux/media/video -lzmala_video
  * Run with that plugin directory in LD_LIBRARY_PATH.
  */
 #include <stdio.h>

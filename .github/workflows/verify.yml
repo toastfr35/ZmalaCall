@@ -25,13 +25,10 @@ jobs:
       - run: make lint
       - run: make test
       - name: Real Linux rendering under cache pressure
-        run: xvfb-run -a .venv/bin/python zmala_terminal/tests/render_cache_ui.py
-      - name: Packaging and firmware simulation
+        run: xvfb-run -a .venv/bin/python zmala_terminal/common/tests/render_cache_ui.py
+      - name: Installer packaging
         run: |
           .venv/bin/python -m unittest discover -s build_tools/tests -p 'test_*.py'
-          mkdir -p build_tools/tmp/keypad
-          g++ -std=c++11 -Wall -Wextra -Werror -I keypad/tests keypad/tests/firmware_test.cpp -o build_tools/tmp/keypad/firmware-test
-          build_tools/tmp/keypad/firmware-test
       - name: Requirements
         run: .venv/bin/doorstop --no-reformat --error-all --no-review-check --project "$GITHUB_WORKSPACE"
       - name: Native video worker and preview regressions
@@ -54,11 +51,9 @@ jobs:
           python-version: '3.12'
       - run: |
           npm ci --ignore-scripts
-          npm --prefix zmala_server ci --ignore-scripts
           python -m pip install -r requirements-dev.txt pillow websocket-client
-      - run: npm test
       - run: npm run typecheck
-      - run: python -m unittest discover -s zmala_terminal/tests -p 'test_*.py'
-      - run: python zmala_terminal/tests/render_cache_ui.py
+      - run: python -m unittest discover -s zmala_terminal -p 'test_*.py'
+      - run: python zmala_terminal/common/tests/render_cache_ui.py
       - run: python -m unittest discover -s build_tools/tests -p 'test_*.py'
       - run: powershell -NoProfile -File build_tools/lint-powershell.ps1

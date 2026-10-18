@@ -4,7 +4,7 @@ header: |
   Independent terminal launch
 level: 1.0
 links:
-- ZMC001: Db1hjT23wwLy-O60eh7PgU2MJ6jKxp5SyN7yA0gSEAg=
+- ZMC001: cO7jf7y_M-co2gergFW4QFNwItDcao3TPcIs5FfZfZo=
 normative: true
 ref: ''
 references:
@@ -12,4 +12,4 @@ references:
   type: file
 reviewed: null
 text: |
-  The terminal shall run on Windows and the documented Linux/Pi configuration with Tk and Liblinphone, support an optional fullscreen mode, and have separate start, stop and fresh unconfigured launchers. Starting it shall not implicitly start the server. The Pi installer shall validate Raspberry Pi OS Lite 64-bit Trixie and wired SSH before deployment, install boot services and dependencies, limit SSH to Ethernet, configure Argon fan control and low-write storage settings, and leave account identity to QR enrollment.
+  The terminal shall run on Windows and the documented Linux/Pi configuration with Tk and Liblinphone, support an optional fullscreen mode, and have separate start, stop and fresh unconfigured launchers. Starting it shall not implicitly start the server. Shared source/assets shall live under common/, Windows adapters under windows/, and Linux adapters/native media under linux/. Linux installation archives shall omit Windows code. Existing data paths shall remain stable across source-layout upgrades. The Pi installer shall validate Raspberry Pi OS Lite 64-bit Trixie and wired SSH before deployment, install boot services and dependencies, limit SSH to Ethernet, configure Argon fan control and low-write storage settings, and leave account identity to QR enrollment.

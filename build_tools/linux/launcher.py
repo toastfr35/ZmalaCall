@@ -11,7 +11,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
-TERMINAL = ROOT / 'zmala_terminal/main.py'
+TERMINAL = ROOT / 'zmala_terminal/common/main.py'
 
 
 def start_time(pid):
@@ -79,7 +79,7 @@ def main():
         def stop(signum, frame):
             raise KeyboardInterrupt()
         signal.signal(signal.SIGTERM, stop)
-        sys.path.insert(0, str(TERMINAL.parent))
+        sys.path.insert(0, str(ROOT))
         sys.argv = [str(TERMINAL), '--profile', args.profile, *forwarded]
         try:
             runpy.run_path(str(TERMINAL), run_name='__main__')

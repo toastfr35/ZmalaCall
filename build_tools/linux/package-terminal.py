@@ -16,7 +16,7 @@ def package(destination=None):
     destination.parent.mkdir(parents=True, exist_ok=True)
     checksums = []
     with tarfile.open(destination, 'w:gz') as archive:
-        for base in (ROOT / 'zmala_terminal', ROOT / 'build_tools/linux'):
+        for base in (ROOT / 'zmala_terminal/common', ROOT / 'zmala_terminal/linux', ROOT / 'build_tools/linux'):
             for path in sorted(base.rglob('*')):
                 if not path.is_file() or any(part in ('data', '__pycache__', 'framing-runtime', 'models')
                                              for part in path.relative_to(ROOT).parts):

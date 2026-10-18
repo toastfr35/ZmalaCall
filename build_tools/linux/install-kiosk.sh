@@ -223,10 +223,10 @@ if [ "$splash" = yes ]; then
     for theme_file in zmala.plymouth zmala.script; do
         cmp -s "$task_root/build_tools/linux/$theme_file" "/usr/share/plymouth/themes/zmala/$theme_file" || theme_changed=yes
     done
-    cmp -s "$task_root/zmala_terminal/assets/boot-family.png" /usr/share/plymouth/themes/zmala/boot-family.png || theme_changed=yes
+    cmp -s "$task_root/zmala_terminal/common/assets/boot-family.png" /usr/share/plymouth/themes/zmala/boot-family.png || theme_changed=yes
     mkdir -p /usr/share/plymouth/themes/zmala
     install -m 644 "$task_root/build_tools/linux/zmala.plymouth" "$task_root/build_tools/linux/zmala.script" /usr/share/plymouth/themes/zmala/
-    install -m 644 "$task_root/zmala_terminal/assets/boot-family.png" /usr/share/plymouth/themes/zmala/boot-family.png
+    install -m 644 "$task_root/zmala_terminal/common/assets/boot-family.png" /usr/share/plymouth/themes/zmala/boot-family.png
     python3 "$task_root/build_tools/linux/boot-branding.py"
     if [ "$theme_changed" = yes ] || [ "$(plymouth-set-default-theme)" != zmala ]; then
         plymouth-set-default-theme -R zmala

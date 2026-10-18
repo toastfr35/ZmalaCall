@@ -17,7 +17,7 @@ def main():
             '--name', 'zmala_server_setup', '--paths', str(ROOT), '--distpath', str(destination),
             '--workpath', str(work/'work'), '--specpath', str(work)]
     for path in (destination/'ZmalaCall-Server-rpi.tar.gz', destination/'ZmalaCall-Server-rpi.tar.gz.sha256',
-                 ROOT/'build_tools/windows_installer/remote_probe.py', ROOT/'zmala_terminal/assets/zmala-icon.png'):
+                 ROOT/'build_tools/windows_installer/remote_probe.py', ROOT/'zmala_terminal/common/assets/zmala-icon.png'):
         args += ['--add-data', str(path)+':.']
     subprocess.run(args+[str(Path(__file__).with_name('entrypoint.py'))], check=True)
 

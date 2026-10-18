@@ -3,7 +3,7 @@
 This document includes dated hardware observations. Preserve their original
 settings when comparing results; they are not current global limits. Current
 video defaults and targets are in [the terminal guide](linux-terminal.md#video-defaults-and-historical-pi-3-validation)
-and `zmala_terminal/video_settings.py`.
+and `zmala_terminal/common/video_settings.py`.
 
 ## Supported configuration
 
@@ -91,10 +91,10 @@ codec switch or external camera-capture checkout is needed. Updating an old
 installation removes its legacy media systemd drop-ins and command links;
 enrollment, TV pairing and state remain in `/var/lib/zmalacall`.
 
-Native source lives under `zmala_terminal/media/video/` and `media/audio/`.
+Native source lives under `zmala_terminal/linux/media/video/` and `media/audio/`.
 `build_tools/linux/build-media.sh` builds the private libraries, which are
 registered explicitly instead of modifying another application's SDK plugin
-directory. `platforms/linux_media.py` owns the Linux device policy and plugin
+directory. `zmala_terminal/linux/media.py` owns the Linux device policy and plugin
 loader. Camera entries are registered only for kernel devices named Nuroum
 C20. The terminal selects the current MJPEG entry and C20 audio IDs, even if
 ALSA/V4L2 indices or saved server device strings changed. Only C20 choices are
@@ -129,8 +129,8 @@ restart it afterwards. From the repository root:
 
 ```sh
 cc -std=c11 -D_GNU_SOURCE -O2 -Wall -Wextra -Werror -pthread \
-  -Izmala_terminal/media/video build_tools/linux/test-video-resize.c \
-  zmala_terminal/media/video/codec.c -o /tmp/test-video-resize \
+  -Izmala_terminal/linux/media/video build_tools/linux/test-video-resize.c \
+  zmala_terminal/linux/media/video/codec.c -o /tmp/test-video-resize \
   $(pkg-config --cflags --libs libavcodec libavutil) \
   -lmediastreamer2 -lortp -lbctoolbox
 timeout 30 /tmp/test-video-resize
@@ -192,7 +192,7 @@ webcam may be occupied. A one-fps placeholder must not count as a passing
 moving-video workload:
 
 ```powershell
-python zmala_terminal/tests/camera_feed_live.py --synthetic --seconds 60 --min-fps 10 --output build_tools/tmp/c20-call.json --snapshot build_tools/tmp/c20-call.jpg
+python zmala_terminal/common/tests/camera_feed_live.py --synthetic --seconds 60 --min-fps 10 --output build_tools/tmp/c20-call.json --snapshot build_tools/tmp/c20-call.jpg
 ```
 
 Run with both terminals idle. This calls the auto-answering Pi as term1 and
@@ -295,7 +295,7 @@ The opt-in camera probes open the physical C20; run them only when idle.
 From an installed checkout, compile and run:
 
 ```sh
-video=zmala_terminal/media/video
+video=zmala_terminal/linux/media/video
 cc -std=c11 -O2 -Wall -Wextra -Werror build_tools/linux/probe-mjpeg-camera.c \
   -o /tmp/probe-mjpeg-camera -lmediastreamer2 -lortp -lbctoolbox \
   -L"$video" -lzmala_video

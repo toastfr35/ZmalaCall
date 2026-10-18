@@ -1,5 +1,5 @@
 /* Synthetic aliasing regression and Pi timing; no camera, display or call. */
-#include "../../zmala_terminal/media/video/preview-display.c"
+#include "../../zmala_terminal/linux/media/video/preview-display.c"
 #include <stdio.h>
 #include <time.h>
 #include <assert.h>

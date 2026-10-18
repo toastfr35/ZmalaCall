@@ -101,10 +101,7 @@ test('password-only setup, login, CSRF, logout and password change revoke old cr
       (await request('login', 'POST', { password: 'replacement admin password' })).status,
       200,
     );
-    assert.equal(
-      fs.readFileSync(path.join(store.dir, 'open-admin.url'), 'utf8').includes('#'),
-      false,
-    );
+    assert.equal(fs.existsSync(path.join(store.dir, 'open-admin.url')), false);
   } finally {
     await fixture.close();
   }

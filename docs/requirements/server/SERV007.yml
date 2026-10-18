@@ -4,7 +4,7 @@ header: |
   Online presence
 level: 7.0
 links:
-- ZMC003: XoJO1AyXoQ0FPgBeejZgvz7bhQZwbL2gPRYMVSwz4iQ=
+- ZMC003: DfMXaDndFGdXrJLPl14hBxmswS-nKB73iL9Kiml03V8=
 normative: true
 ref: ''
 references:
@@ -12,7 +12,7 @@ references:
   type: file
 - path: zmala_server/tests/presence.test.js
   type: file
-- path: zmala_terminal/tests/callbacks_live.py
+- path: zmala_terminal/common/tests/callbacks_live.py
   type: file
 reviewed: null
 text: |

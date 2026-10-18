@@ -9,7 +9,7 @@
 #include <mediastreamer2/msvideo.h>
 #include <mediastreamer2/mswebcam.h>
 #include <bctoolbox/logging.h>
-#include "../../zmala_terminal/media/video/mjpeg-stream.h"
+#include "../../zmala_terminal/linux/media/video/mjpeg-stream.h"
 
 extern int zmala_mjpeg_register(MSFactory *factory);
 static unsigned frames;

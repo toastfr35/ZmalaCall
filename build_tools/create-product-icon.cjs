@@ -8,7 +8,7 @@ const { createCanvas, loadImage } = require('./runtime/pdf-render/node_modules/@
     canvas = createCanvas(256, 256);
   canvas.getContext('2d').drawImage(image, 0, 0, 256, 256);
   fs.writeFileSync(
-    path.join(root, 'zmala_terminal/assets/zmala-icon.png'),
+    path.join(root, 'zmala_terminal/common/assets/zmala-icon.png'),
     canvas.toBuffer('image/png'),
   );
 })();

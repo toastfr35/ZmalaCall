@@ -4,11 +4,11 @@ header: |
   Missed-call acknowledgment
 level: 13.0
 links:
-- ZMC010: 0Bu8wBAvQdLKlVc4IHPP0qtN5Mr2KHvjPNhFV_ibtFU=
+- ZMC010: RzAVpyQmBClqOhC40aONDGanjHbLDtxFeETSYpPgCg0=
 normative: true
 ref: ''
 references:
-- path: zmala_terminal/tests/test_missed_calls.py
+- path: zmala_terminal/common/tests/test_missed_calls.py
   type: file
 reviewed: null
 text: |

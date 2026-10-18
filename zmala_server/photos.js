@@ -97,25 +97,17 @@ class PhotoStore {
       const output = temporary + '.display.png';
       try {
         await fs.writeFile(source, bytes);
-        // Never block SIP timers while Windows decodes/scales an administration photo.
+        // Decode in a separate process so photo uploads never block SIP timers.
         await this.convert(
-          process.platform === 'win32' ? 'powershell.exe' : 'python3',
+          'python3',
           [
-            ...(process.platform === 'win32'
-              ? [
-                  '-NoProfile',
-                  '-ExecutionPolicy',
-                  'Bypass',
-                  '-File',
-                  path.resolve(__dirname, '../build_tools/convert-photo.ps1'),
-                ]
-              : [path.resolve(__dirname, '../build_tools/convert-photo.py')]),
+            path.resolve(__dirname, '../build_tools/convert-photo.py'),
             '-Source',
             source,
             '-Destination',
             output,
           ],
-          { windowsHide: true, timeout: 10000 },
+          { timeout: 10000 },
         );
         const name = digest(await fs.readFile(output)) + '.png';
         await this.publish(output, name);
@@ -133,8 +125,7 @@ class PhotoStore {
   async publish(output, name) {
     let commit = this.publishing.get(name);
     if (!commit) {
-      // Windows can reject replacing an existing photo while another process
-      // has it open. Content-addressed names already identify the exact bytes.
+      // Content-addressed names identify identical bytes; publish each only once.
       commit = (async () => {
         const destination = path.join(this.directory, name);
         try {

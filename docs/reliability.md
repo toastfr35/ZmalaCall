@@ -2,14 +2,14 @@
 
 | Component | Windows | Linux |
 | --- | --- | --- |
-| Server core | Node.js; desktop start/stop scripts | Node.js; Pi installer supplies systemd supervision |
-| Portrait converter | PowerShell/System.Drawing | Python 3/Pillow (`python3-pil`) |
+| Server core | Not supported as a server host; SSH installer remains available | Node.js; Pi installer supplies systemd supervision |
+| Portrait converter | Runs on the Linux server | Python 3/Pillow (`python3-pil`) |
 | Terminal | Tk/Liblinphone desktop launcher | Documented Pi kiosk/service, Linux media adapters and C20 routing |
 | Maintenance shells | Windows PowerShell, PowerShell 7, cmd | sh, bash; selected shell must match the OS |
-| Automated acceptance | Server/model, Windows process tests, source checks | CI runs portable suites and Linux process-group tests |
+| Automated acceptance | Terminal/model, Windows process tests, installer and source checks | CI runs server, portable and Linux process-group suites |
 | Hardware acceptance | Requires live camera/audio/display tests | Requires actual supported Pi/C20/TV calls and recovery tests |
 
-An available adapter or passing fixture does not establish hardware acceptance. The serial Nano keypad host adapter remains a delivery item (TERM024). Public-Internet deployment, certificate enrollment and encrypted SIP/RTP are outside the trusted-LAN prototype contract. LAN administration intentionally permits remote first-password setup; see [administration authentication](admin-authentication.md).
+An available adapter or passing fixture does not establish hardware acceptance. The serial keypad project and its acceptance requirement (TERM024) are retired. Public-Internet deployment, certificate enrollment and encrypted SIP/RTP are outside the trusted-LAN prototype contract. LAN administration intentionally permits remote first-password setup; see [administration authentication](admin-authentication.md).
 
 ## Persistence and command migration
 

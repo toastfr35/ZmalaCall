@@ -4,16 +4,26 @@ The terminal, server and Windows build tools have separate entry points. Source 
 
 ## Terminal
 
+`zmala_terminal/` has three source directories: `common/` (application, UI,
+protocols, assets, translations and cross-platform tests), `windows/` (Windows
+adapters and probes), and `linux/` (Pi adapters, native media and Linux probes).
+Unqualified shared paths in the table below are relative to `common/`.
+Run `python -m zmala_terminal.common.main` from the repository root; managed
+launchers handle the working directory. The isolated QR worker is also launched
+as a module. Data remains at `zmala_terminal/data/`, including the installed
+symlink to `/var/lib/zmalacall`; moving source does not move enrollment data.
+The Pi release contains only `common/` and `linux/`.
+
 | Source | Responsibility |
 |---|---|
-| `zmala_terminal/main.py` | Compose the application, restore enrollment and own resource creation/shutdown |
+| `zmala_terminal/common/main.py` | Compose the application, restore enrollment and own resource creation/shutdown |
 | `input_control.py` | Bind keyboard/remote input, suppress repeats and consume TV-wake presses |
 | `configuration_control.py` | Apply validated configuration and rebuild/retry media engines when idle |
 | `settings_control.py`, `local_settings.py` | Settings hold, drafts, optimistic server updates and reset entry |
 | `idle_return.py` | Monotonic browsing timeout and bottom progress bar |
-| `platforms/presenter_input.py`, `platforms/remote_health.py`, `remote_test.py` | Remote input, connection/battery health and durable button verification |
-| `platforms/tv_control.py`, `tv_check.py` | TV session ownership and localized installation checks |
-| `usb_power.py`, `volume_control.py`, `auto_framing.py` | Peripheral lifetimes, mixer worker and off-thread person detection |
+| `linux/presenter_input.py`, `linux/remote_health.py`, `remote_test.py` | Remote input, connection/battery health and durable button verification |
+| `linux/tv_control.py`, `tv_check.py` | TV session ownership and localized installation checks |
+| `linux/usb_power.py`, `volume_control.py`, `linux/auto_framing.py` | Peripheral lifetimes, mixer worker and off-thread person detection |
 | `model.py` | Platform-independent call state, contact selection and unread notification counts |
 | `call_control.py` | SIP events, availability preflight and callback requests |
 | `management.py` | Dispatch worker messages, refresh presence and run UI timers |
@@ -30,7 +40,7 @@ The terminal, server and Windows build tools have separate entry points. Source 
 
 `Terminal` owns state and resource lifetimes. Its display and controller classes operate on that one host rather than maintaining copies of call/configuration state. The model has no Tk or native SDK dependency. Keep business transitions in the model or call controller, and drawing in `ui/`.
 
-`platforms/` contains Windows GDI+/WLAN/Job Object and Linux Pango/Cairo/NetworkManager/POSIX implementations. `platforms/native_runtime.py` locates native libraries and resources; the call engine and ABI are shared. Linux QR preview uses OpenCV/ZBar in the same isolated-worker protocol; Windows retains its native preview bridge. See [Linux terminal](linux-terminal.md) for deployment and hardware-test limits.
+`windows/` contains GDI+/WLAN/Job Object implementations; `linux/` contains Pango/Cairo/NetworkManager/POSIX implementations. The `common/native_runtime.py` facade selects each platform's native library and resource loader; the call engine and ABI are shared. Linux QR preview uses OpenCV/ZBar in the same isolated-worker protocol; Windows retains its native preview bridge. See [Linux terminal](linux-terminal.md) for deployment and hardware-test limits.
 
 Tk operations and Liblinphone core iteration run on the UI thread. Native media filters have their own worker/ticker threads; they must not call Tk. HTTP and Wi-Fi workers return results through the message queue. Every enrollment-sensitive result carries a generation number; reset advances that number and discards old results. Dial and callback operations also use a serial number to reject cancelled attempts. The UI thread owns timer and network-check scheduling.
 
@@ -68,6 +78,12 @@ Unread counts persist by account identity. Older contact-only flags load as one 
 
 ## Server
 
+The server runtime targets Raspberry Pi OS/Linux. Windows remains supported for
+terminal clients and the executable installers that deploy over SSH; it is no
+longer a server host. Server photo conversion uses Python/Pillow and provisioning
+PDFs use PDFKit's built-in font. Windows terminal shell choices and QR compatibility
+remain part of the server API.
+
 | Source | Responsibility |
 |---|---|
 | `zmala_server/main.js` | Construct services, write bootstrap files and start/stop the process |
@@ -94,7 +110,7 @@ Configuration mutations validate before changing shared state and commit through
 
 Production configuration saves serialize the current state into an immutable string and queue asynchronous temporary-file writes and renames through one `SnapshotFile` per file. Admin responses wait for the store's persistence barrier; bootstrap updates also wait for the store before publishing enrollment files. Failed writes return a sanitized HTTP error; a subsequent commit barrier retries the latest failed snapshot. Unstarted revisions coalesce into one latest snapshot, and all affected acknowledgements wait for its commit. Memory may already contain the mutation when disk persistence fails. Shutdown waits for pending configuration and bootstrap writes. These renames provide atomic replacement, not an fsync durability guarantee.
 
-Static assets and account pictures use asynchronous reads. PDF generation loads the optional Windows font asynchronously once, then passes its bytes to PDFKit. Startup and standalone setup tools retain synchronous persistence. Production callback and console snapshots use asynchronous writers. Callback recipient progress, command leases and results await their own commit barriers; unrelated device reads do not wait for these writers. /health reports liveness and /ready reports known unresolved persistence failures. See [platform and recovery notes](reliability.md) for retry, migration and durability limits.
+Static assets and account pictures use asynchronous reads. PDF generation uses PDFKit's built-in font and has no host font dependency. Startup and standalone setup tools retain synchronous persistence. Production callback and console snapshots use asynchronous writers. Callback recipient progress, command leases and results await their own commit barriers; unrelated device reads do not wait for these writers. /health reports liveness and /ready reports known unresolved persistence failures. See [platform and recovery notes](reliability.md) for retry, migration and durability limits.
 
 `npm run typecheck` checks every first-party server runtime module and every `web/admin-*.js` source module with strict `checkJs`. This includes SIP dialogs, registrations and messages, startup, callback delivery, SMTP, console jobs, photos and PDF provisioning. Shared contracts cover persisted records, terminal settings, media/dialog ownership and admin HTTP snapshots. `types/http.ts` defines the service operations available to routes; request fields remain `unknown` until validated. Node executes the existing JavaScript directly; no deployment transpilation step is required. The generated admin bundle, third-party dependencies and JavaScript test fixtures are excluded from type checking.
 
@@ -117,7 +133,7 @@ Terminal status reports validate diagnostic strings, configuration versions, reg
 
 The SIP dependency is pinned to the local `vendor/sip` copy of npm `sip@0.0.6`, with its MIT license and original-file hashes retained. A real UDP regression exposed a transaction-cache issue: rejecting a forged CANCEL inside the router was too late, because it could reserve the legitimate caller's transaction key. The local pre-transaction hook rejects cancellation unless the transport peer, From tag, CSeq and Via branch match the pending INVITE. Cancellation while SDP allocation is pending terminates the original INVITE without forwarding a late offer. Late SDP responses recheck dialog ownership before connecting or forwarding. See [patch provenance and upgrade instructions](../zmala_server/vendor/sip/ZMALA-PATCH.md). The application also validates required SIP fields and hop limits before routing. These targeted checks do not constitute a complete protocol audit.
 
-Media allocations are shared while UDP bind is pending. Closing a session marks it closed before releasing sockets, so a late allocation is reclaimed. Late dialog responses cannot reopen a released relay. Picture conversion runs outside the Node event loop with two converter slots and ten admitted requests, deduplicates identical in-flight sources, checks dimensions before decoding, uses unique intermediate paths and publishes by content hash. Windows uses PowerShell; Linux uses Python/Pillow. Repeated uploads reuse existing files rather than replacing a photo that Windows may have open. Established-call media changes are staged until successful negotiation, with rejected updates preserving active targets and accepted disabled streams releasing sockets.
+Media allocations are shared while UDP bind is pending. Closing a session marks it closed before releasing sockets, so a late allocation is reclaimed. Late dialog responses cannot reopen a released relay. Picture conversion runs outside the Node event loop with two converter slots and ten admitted requests, deduplicates identical in-flight sources, checks dimensions before decoding, uses unique intermediate paths and publishes by content hash. The Linux server uses Python/Pillow. Repeated uploads reuse existing content-addressed files. Established-call media changes are staged until successful negotiation, with rejected updates preserving active targets and accepted disabled streams releasing sockets.
 
 Callback policy stores hour delays (`email_after_hours`, `remove_after_hours`) in server configuration. `Callbacks` derives timestamps from the request's original creation time, including during restart recovery if saving policy and request snapshots was interrupted. Removal deletes pending records; it does not retain an expired history row. Connected/cancelled requests retain the existing bounded history behavior.
 
@@ -137,7 +153,7 @@ Styles are split under `web/styles/` into theme, tools, layout, pages, forms, re
 
 ## Native media boundaries
 
-Linux adapters under `zmala_terminal/media/` own camera decode, crop/preview and codec integration, with build/test tooling under `build_tools/linux/`. The MJPEG worker keeps only the newest pending camera frame; JPEG decoding, framing and preview reduction run off the media ticker. The preview adapter forwards small frames without an extra reduction copy. The H.264 decoder retains its ordered compressed queue because dropping arbitrary interdependent packets would corrupt decoding; its worker count is capped to leave CPU time for UI/audio/encoding. Ownership and shutdown rules are documented next to the queue operations. Native tests and real two-way calls are required after changes to these paths; Python/Node tests cannot prove SDK ABI compatibility or hardware frame pacing.
+Linux adapters under `zmala_terminal/linux/media/` own camera decode, crop/preview and codec integration, with build/test tooling under `build_tools/linux/`. The MJPEG worker keeps only the newest pending camera frame; JPEG decoding, framing and preview reduction run off the media ticker. The preview adapter forwards small frames without an extra reduction copy. The H.264 decoder retains its ordered compressed queue because dropping arbitrary interdependent packets would corrupt decoding; its worker count is capped to leave CPU time for UI/audio/encoding. Ownership and shutdown rules are documented next to the queue operations. Native tests and real two-way calls are required after changes to these paths; Python/Node tests cannot prove SDK ABI compatibility or hardware frame pacing.
 
 ## Administration screen sizes
 
@@ -157,7 +173,7 @@ npm.cmd run format:check
 npm.cmd run build:check
 npm.cmd run typecheck
 npm.cmd test
-& '.venv/Scripts/python.exe' -m unittest discover -s zmala_terminal/tests -p 'test_*.py'
+& '.venv/Scripts/python.exe' -m unittest discover -s zmala_terminal/common/tests -p 'test_*.py'
 & '.\build_tools\tests\process_controls.ps1'
 & '.\build_tools\doorstop.cmd' --no-reformat --error-all --no-review-check
 & '.\build_tools\publish-requirements.ps1'
@@ -168,11 +184,11 @@ Use `npm run format` to format JavaScript, TypeScript, HTML and source CSS and r
 Terminal native/UI checks:
 
 ```powershell
-& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/tests/call_feedback_ui.py
-& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/tests/terminal_languages_ui.py
-& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/tests/contact_presence_ui.py
-& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/tests/provisioning_ui.py
-& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/tests/callbacks_live.py
+& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/common/tests/call_feedback_ui.py
+& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/common/tests/terminal_languages_ui.py
+& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/common/tests/contact_presence_ui.py
+& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/common/tests/provisioning_ui.py
+& 'C:\msys64\ucrt64\bin\python.exe' zmala_terminal/common/tests/callbacks_live.py
 ```
 
 Provisioning starts an isolated HTTP service and account, exercises the actual Windows command runner and stops its service on completion. Callback integration starts an isolated SIP/HTTP service and uses static cameras/file audio. UI-only checks read the configured server's contacts with a quiet engine and do not replace a live registration. `accounts_live.py` and `sip_peer.py` can target a separate fixture using `ZMALA_TEST_SERVER_STATE` set to its absolute `server.json` path; without it, they use temporary accounts on the configured server. Never run launcher or media checks that replace a live registration while that terminal is in use.

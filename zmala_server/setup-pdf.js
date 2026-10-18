@@ -1,18 +1,7 @@
 'use strict';
-// Provisioning payloads must match terminal/provisioning.py; PDFs carry private Wi-Fi or enrollment credentials.
-const fs = require('node:fs/promises');
+// Payloads match zmala_terminal/common/provisioning.py; PDFs carry private Wi-Fi or enrollment credentials.
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
-// Read font bytes asynchronously once; passing a path to PDFKit reads it
-// synchronously for every PDF. Non-Windows hosts use the built-in font.
-let fontBytes;
-function setupFont() {
-  return (fontBytes ??= fs.readFile('C:/Windows/Fonts/segoeui.ttf').catch((error) => {
-    if (error.code === 'ENOENT') return null;
-    fontBytes = undefined;
-    throw error;
-  }));
-}
 
 /** @param {import('./types/contracts').JsonObject} update @returns {string} */
 function wifiPayload({ ssid, password = '', security = 'WPA', hidden = false }) {
@@ -60,7 +49,6 @@ function serverPayload(bootstrap) {
 /** @param {{kind: 'wifi' | 'server', label: string, payload: string, serverUrl?: string}} options
  * @returns {Promise<Buffer>} */
 async function setupPdf({ kind, label, payload, serverUrl }) {
-  const font = await setupFont();
   const qr = QRCode.create(payload, { errorCorrectionLevel: 'M' }),
     doc = new PDFDocument({
       size: 'A4',
@@ -75,8 +63,6 @@ async function setupPdf({ kind, label, payload, serverUrl }) {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
   });
-  // Embedded Windows fonts keep accented network/account names printable.
-  if (font) doc.font(font);
   const width = doc.page.width - 96;
   doc.fillColor('#586276').fontSize(11).text('ZMALACALL  /  TERMINAL SETUP', 48, 48, { width });
   doc

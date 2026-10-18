@@ -36,8 +36,8 @@ Add an item, then edit its new YAML file and link it to the appropriate product 
 
 ```powershell
 & '.\build_tools\doorstop.cmd' add TERM
-& '.\build_tools\doorstop.cmd' edit TERM024
-& '.\build_tools\doorstop.cmd' link TERM024 ZMC003
+& '.\build_tools\doorstop.cmd' edit TERM028
+& '.\build_tools\doorstop.cmd' link TERM028 ZMC003
 ```
 
 Use an existing item's ID to edit it instead. Every record contains its requirement text, human-readable header and parent links. `references` uses project-relative paths to the code or tests that implement/check it. A reference is a traceability link, not a test-pass result. Run the referenced tests separately when changing the behavior.
@@ -45,8 +45,8 @@ Use an existing item's ID to edit it instead. Every record contains its requirem
 After reviewing an item's text, record the review. If a parent changes, inspect its children before clearing their suspect links and reviewing the affected records:
 
 ```powershell
-& '.\build_tools\doorstop.cmd' clear TERM024
-& '.\build_tools\doorstop.cmd' review TERM024
+& '.\build_tools\doorstop.cmd' clear TERM028
+& '.\build_tools\doorstop.cmd' review TERM028
 & '.\build_tools\publish-requirements.ps1'
 ```
 

@@ -50,4 +50,4 @@ lint-generated:
 test:
 	$(NODE) build_tools/build-admin.cjs
 	$(NODE) -e "process.chdir('zmala_server'); process.exit(require('node:child_process').spawnSync(process.execPath, ['--test', 'tests/*.test.js'], {stdio: 'inherit'}).status ?? 1)"
-	$(PYTHON) -m unittest discover -s zmala_terminal/tests -p "test_*.py"
+	$(PYTHON) -m unittest discover -s zmala_terminal -p "test_*.py"

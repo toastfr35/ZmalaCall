@@ -25,7 +25,7 @@ Generated from [Doorstop SERV records](requirements/server/). Edit the YAML reco
 
 ## 1.0 Independent server and LAN administration _(SERV001)_
 
-The Node.js server shall run independently of the terminal runtime, with Windows start/stop scripts and a Raspberry Pi systemd deployment, same-LAN SIP over UDP/TCP and an audio/video relay. LAN browsers may perform first-time shared-password setup and authenticate for administration. Password changes shall revoke existing sessions; sessions shall expire after eight hours and on restart. Mutations shall enforce same-origin checks. HTTP shall be limited to a trusted LAN; optional HTTPS shall reject remote plaintext administration when enabled. Local password-file removal while stopped shall deliberately reopen setup. Linux portrait conversion shall require Python with Pillow.
+The Node.js server shall run independently of the terminal runtime, on Raspberry Pi OS/Linux with systemd deployment, same-LAN SIP over UDP/TCP and an audio/video relay. LAN browsers may perform first-time shared-password setup and authenticate for administration. Password changes shall revoke existing sessions; sessions shall expire after eight hours and on restart. Mutations shall enforce same-origin checks. HTTP shall be limited to a trusted LAN; optional HTTPS shall reject remote plaintext administration when enabled. Local password-file removal while stopped shall deliberately reopen setup. Linux portrait conversion shall require Python with Pillow.
 
 > `zmala_server/main.js`
 
@@ -79,7 +79,7 @@ The server shall authenticate registrations and call requests, enforce groups an
 
 The server shall relay cancellation of a ringing call to the called terminal so it stops ringing. Forwarded SIP CANCEL shall contain the required Max-Forwards header and preserve the INVITE transaction identity and authenticated registration flow.
 
-> `zmala_terminal/tests/callbacks_live.py`
+> `zmala_terminal/common/tests/callbacks_live.py`
 
 *Parent links:* [ZMC010 Contact notifications and caller cancellation](product_requirements.md#ZMC010)
 
@@ -91,7 +91,7 @@ Terminal configuration and authenticated availability checks shall report accoun
 
 > `zmala_server/tests/admin.test.js`
 > `zmala_server/tests/presence.test.js`
-> `zmala_terminal/tests/callbacks_live.py`
+> `zmala_terminal/common/tests/callbacks_live.py`
 
 *Parent links:* [ZMC003 Accessible physical controls](product_requirements.md#ZMC003)
 
