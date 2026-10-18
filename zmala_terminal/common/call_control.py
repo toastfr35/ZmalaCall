@@ -31,6 +31,9 @@ class CallControl:
             if not self.model.incoming(user, domain):
                 self.engine.call_decline(call, 6 if self.model.state != State.HOME else 2)
                 return
+            # @llr TLLR110
+            if getattr(self, 'usb_power', None):
+                self.usb_power.require(urgent=True)
             if getattr(self, 'settings_hold', None):
                 self.settings_hold.clear()
                 self.settings_open = False

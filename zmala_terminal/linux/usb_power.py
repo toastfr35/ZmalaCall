@@ -14,7 +14,7 @@ HELPER = '/usr/local/libexec/zmala-usb-power'
 
 # @llr TLLR110
 def should_power_off(now, last_use, active, battery):
-    return (not active and type(battery) is int and 25 < battery <= 100
+    return (not active and type(battery) is int and 25 <= battery <= 100
             and now - last_use >= IDLE_SECONDS)
 
 
@@ -41,6 +41,8 @@ class UsbPower:
         self.active, self.battery, self.ringing = True, None, False
         self.updated = self.last_use = time.monotonic()
         self.state = 'starting' if self.enabled else 'unsupported'
+        self.powered = None  # Confirmed supply state, independent of camera readiness.
+        self.wake_serial = 0
         self.revision = self.refreshed = 0
         self.next_refresh = 0
         self.ringer = None
@@ -55,23 +57,34 @@ class UsbPower:
         with self.lock:
             return not self.enabled or self.state == 'on' and self.revision == self.refreshed
 
+    # @llr TLLR127
+    @property
+    def power_state(self):
+        with self.lock:
+            return self.powered
+
     def update(self, active, battery, ringing=False):
         if not self.enabled:
             return
         now = time.monotonic()
         with self.lock:
             changed = (active, battery, ringing) != (self.active, self.battery, self.ringing)
+            was_active = self.active
             self.active, self.battery, self.ringing, self.updated = active, battery, ringing, now
-            if active:
+            if active or was_active:
                 self.last_use = now
         if changed:
             self.changed.set()
 
-    def require(self):
+    # @llr TLLR110
+    def require(self, urgent=False):
+        """Record activity and wake the worker; never perform USB I/O on the caller."""
         if self.enabled:
             with self.lock:
                 self.last_use = time.monotonic()
                 self.active = True
+                if urgent:
+                    self.wake_serial += 1
             self.changed.set()
         return self.ready
 
@@ -117,11 +130,15 @@ class UsbPower:
     def run(self):
         next_attempt = 0
         next_status = 0
+        handled_wake = 0
         try:
             while not self.stopped:
                 self.changed.clear()
                 now = time.monotonic()
                 with self.lock:
+                    if handled_wake != self.wake_serial:
+                        handled_wake = self.wake_serial
+                        next_attempt = 0  # New user/call activity bypasses a failed attempt's backoff.
                     # A stalled UI or stale battery must never leave the charger off.
                     active = self.active or now - self.updated > 10
                     off = should_power_off(now, self.last_use, active, self.battery)
@@ -133,7 +150,7 @@ class UsbPower:
                             try:
                                 path = Path(folder) / 'usb-power.json'
                                 temporary = path.with_suffix('.tmp')
-                                temporary.write_text(json.dumps({'state': state, 'battery': self.battery,
+                                temporary.write_text(json.dumps({'state': state, 'powered': self.powered, 'battery': self.battery,
                                     'active': active, 'idle_seconds': round(now-self.last_use, 1)}))
                                 temporary.replace(path)
                             except OSError:
@@ -147,9 +164,12 @@ class UsbPower:
                                 self.active or time.monotonic() - self.updated > 10, self.battery):
                             continue
                         self.state = 'switching'
+                        self.powered = None
                     try:
                         self.stop_ringing()
                         self.command(desired)
+                        with self.lock:
+                            self.powered = desired == 'on'
                         if desired == 'on':
                             deadline = time.monotonic() + 15
                             while not self.stopped and not media_present() and time.monotonic() < deadline:

@@ -31,11 +31,13 @@ class ManagementLoop:
         power.refresh(self.engine)
         return power.ready
 
+    # @llr TLLR110
     def tick_usb(self):
         power = getattr(self, 'usb_power', None)
         if power and power.enabled:
             active = bool(self.setup_stage or self.scanner or self.model.state != State.HOME
-                          or self.engine and self.engine.call or self.settings_open)
+                          or self.engine and self.engine.call or self.settings_open
+                          or getattr(self, 'keys_down', None))
             power.update(active, self.presenter_input.battery, self.model.state == State.RINGING)
             power.refresh(self.engine)
 

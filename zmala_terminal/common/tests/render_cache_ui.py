@@ -61,6 +61,9 @@ def exercise():
         renderer.portraits.max_bytes = 100000
         renderer.sources.max_bytes = 100000
         icons.cache.max_bytes = 2000
+        usb_icons = [icons.usb_power(powered, '#0e141d') for powered in (True, False, None)]
+        assert all((icon.width(), icon.height()) == (30, 22) for icon in usb_icons)
+        assert len({str(icon) for icon in usb_icons}) == 3
         if hasattr(renderer, 'backgrounds'):
             renderer.backgrounds.max_bytes = 100000
         visible = []

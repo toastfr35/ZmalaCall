@@ -3,6 +3,25 @@ import math
 
 
 class IconShapes:
+    # @llr TLLR127
+    def usb_power(self, powered, background):
+        """Compact USB trident; a slash distinguishes off without relying on color."""
+        color = '#71ddba' if powered is True else '#8d9db5'
+        def draw(line, ellipse, rectangle, arc, polygon, curve, text):
+            line([(15, 18), (15, 4)], color, 1.5)
+            polygon([(15, 1), (12, 5), (18, 5)], color)
+            line([(15, 14), (8, 10), (8, 7)], color, 1.5)
+            ellipse((6, 4, 4, 4), color)
+            line([(15, 12), (22, 9), (22, 6)], color, 1.5)
+            rectangle((20, 3, 4, 4), color, 1.5)
+            ellipse((13, 17, 4, 4), color, 1.5)
+            if powered is False:
+                line([(4, 21), (26, 1)], background, 4)
+                line([(4, 21), (26, 1)], color, 1.5)
+            elif powered is None:
+                text('?', (0, 9, 9, 13), color, 10)
+        return self._photo(('usb-power', powered, background), 30, 22, draw, background)
+
     def rounded_button(self, width, height, color, background):
         """Use the native antialiased renderer for smooth confirmation corners."""
         radius = min(18, height // 4, width // 2)

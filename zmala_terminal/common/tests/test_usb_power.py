@@ -11,20 +11,89 @@ from zmala_terminal.linux.usb_power import UsbPower, should_power_off
 from zmala_terminal.common.call_control import CallControl
 from zmala_terminal.common.model import State
 from zmala_terminal.common.engine import Engine
+from zmala_terminal.common.input_control import InputControl
+from zmala_terminal.common.management import ManagementLoop
 
 
 class UsbPowerTests(unittest.TestCase):
     def test_exact_idle_and_battery_boundaries(self):
         self.assertFalse(should_power_off(299.9, 0, False, 100))
-        self.assertTrue(should_power_off(300, 0, False, 26))
-        for battery in (None, 25, 0, True, 101, '100'):
+        self.assertTrue(should_power_off(300, 0, False, 25))
+        for battery in (None, 24, 0, True, 101, '100'):
             self.assertFalse(should_power_off(900, 0, False, battery))
         self.assertFalse(should_power_off(900, 0, True, 100))
 
     def controller(self):
-        power = UsbPower(Path('.'))
+        with patch.dict('os.environ', {}, clear=True):
+            power = UsbPower(Path('.'))
         power.enabled = True
         return power
+
+    def test_every_press_wakes_before_setup_can_consume_it(self):
+        app = InputControl()
+        app.usb_power = self.controller()
+        app.remote_setup_blocked = lambda: True
+        app.setup_stage = 'remote'
+        for action in (lambda: app.keypress('red'), lambda: app.pointer_button(True), app.volume_activity):
+            app.usb_power.active = False
+            app.usb_power.changed.clear()
+            with patch('time.monotonic', return_value=1000):
+                action()
+            self.assertEqual(app.usb_power.last_use, 1000)
+            self.assertTrue(app.usb_power.changed.is_set())
+            self.assertFalse(should_power_off(1299, app.usb_power.last_use, False, 95))
+
+    def test_idle_starts_after_activity_ends(self):
+        power = self.controller()
+        with patch('time.monotonic', return_value=1000):
+            power.update(False, 95)
+        self.assertEqual(power.last_use, 1000)
+        with patch('time.monotonic', return_value=1100):
+            power.update(False, 95)
+        self.assertEqual(power.last_use, 1000)
+
+    def test_held_button_inhibits_power_off(self):
+        app = ManagementLoop()
+        app.usb_power = Mock(enabled=True)
+        app.setup_stage = app.scanner = app.engine = None
+        app.model = Mock(state=State.HOME)
+        app.settings_open = False
+        app.keys_down = {'red'}
+        app.presenter_input = Mock(battery=95)
+        app.tick_usb()
+        app.usb_power.update.assert_called_once_with(True, 95, False)
+
+    def test_incoming_call_wakes_before_tv_work(self):
+        app = CallControl()
+        app.setup_stage = None
+        app.model, app.engine, app.root = Mock(), Mock(), Mock()
+        app.render = Mock()
+        app.usb_power = self.controller()
+        app.tv_control = Mock()
+        def check_woken():
+            self.assertEqual(app.usb_power.wake_serial, 1)
+            self.assertTrue(app.usb_power.changed.is_set())
+        app.tv_control.wake.side_effect = check_woken
+        app.call_event(123, 1, 'term1', 'example.test')
+        app.tv_control.wake.assert_called_once()
+
+    def test_button_during_failed_off_restores_without_backoff(self):
+        power = self.controller()
+        power.active, power.battery = False, 95
+        power.last_use, power.updated = 0, 1000
+        power.state = 'on'
+        actions = []
+        def command(action):
+            actions.append(action)
+            if action == 'off':
+                power.require(urgent=True)
+                raise RuntimeError('off interrupted')
+            power.stopped = True
+        power.command = command
+        with patch('time.monotonic', return_value=1000), patch('zmala_terminal.linux.usb_power.media_present', return_value=False):
+            power.run()
+        self.assertEqual(actions[:2], ['off', 'on'])
+        self.assertTrue(power.power_state)  # Supply is on even if C20 enumeration fails.
 
     def test_wake_is_not_ready_until_native_devices_refreshed(self):
         power = self.controller()
@@ -119,6 +188,19 @@ class HelperSafetyTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('usb_helper', path)
         cls.helper = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.helper)
+
+    def test_successful_command_with_unchanged_ports_is_rejected(self):
+        output = '\n'.join(f'  Port {i}: 0000 off' for i in range(1, 5))
+        with patch.object(self.helper, 'run', return_value=Mock(stdout=output)):
+            with self.assertRaisesRegex(RuntimeError, 'did not confirm'):
+                self.helper.switch('on')
+
+    def test_both_hubs_confirm_power(self):
+        for action, state in [('on', '0507 power highspeed enable connect'), ('off', '0080 off')]:
+            output = '\n'.join(f'  Port {i}: {state}' for i in range(1, 5))
+            with patch.object(self.helper, 'run', return_value=Mock(stdout=output)) as run:
+                self.helper.switch(action)
+                self.assertEqual(run.call_count, 4)
 
     def test_unknown_peripheral_blocks_shared_power_off(self):
         h = self.helper

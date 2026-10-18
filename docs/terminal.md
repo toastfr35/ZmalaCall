@@ -460,9 +460,12 @@ software is not installed. An enabled competing `argononed` causes install refus
 
 This experiment is not enabled by the regular installer. The Pi 4's external USB
 ports switch together, including the C20 and charger. It cuts power only after
-five idle camera minutes with a fresh remote battery reading strictly above 25%.
-Calls/ringing/setup/settings, low/unknown battery or a stale app heartbeat restore
-or retain power. Another peripheral or open media handles blocks shutdown.
+five minutes without terminal activity with a fresh remote battery reading of at
+least 25%. Every button press (even consumed or debounced), volume adjustment and
+accepted incoming call wakes the worker immediately, before TV routing or answer
+timers. Calls/ringing/setup/settings, held buttons, low/unknown battery or a stale
+app heartbeat restore or retain power. The idle interval starts when ongoing
+activity ends. Another peripheral or open media handles blocks shutdown.
 Do not use with USB storage; disable before attaching extra equipment to an
 unpowered port, where it cannot yet be detected.
 
@@ -478,6 +481,13 @@ audio enumeration, refreshes SDK devices on their owning thread and reapplies
 volume. Operations run off-thread and fail toward power-on. A stop hook restores
 power after app exit. Status is `/run/zmalacall/usb-power.json`. Wake adds device
 startup latency before auto-answer; no electrical energy-saving claim is made.
+
+The USB icon immediately left of the battery uses the existing compact status
+style: mint means powered, grey with a slash means off, and a grey question mark
+means transitioning or unconfirmed. The helper checks all ports of both shared
+hubs after switching; `powered` in the runtime JSON and the icon reflect that
+confirmation, independently of camera/SDK readiness. Settings hides this strip,
+and installations without the experiment omit the USB icon.
 
 Disable while preserving power:
 

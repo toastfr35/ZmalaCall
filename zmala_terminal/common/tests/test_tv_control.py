@@ -228,6 +228,7 @@ class TVControlTests(unittest.TestCase):
                               remote_setup_blocked=lambda: False, setup_stage=None,
                               cancel_settings_hold=Mock(), generation=1, model=TerminalModel(),
                               tv_control=Mock(), messages=Mock(), closed=False)
+        app.input_activity = lambda: Terminal.input_activity(app)
         app.tv_control.handle_button.return_value = True
         Terminal.pointer_button(app, True)
         app.volume_control.pointer.assert_not_called()

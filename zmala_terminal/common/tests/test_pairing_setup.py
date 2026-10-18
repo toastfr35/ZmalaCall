@@ -72,6 +72,7 @@ class PairingSetupTests(unittest.TestCase):
             view.presenter_input = Mock(status='connected')
             view.remote_test = RemoteTest(Path(folder)/'test.json')
             self.assertTrue(view.needs_pairing())
+            view.input_activity = lambda: Terminal.input_activity(view)
             for button in BUTTONS:
                 Terminal.keypress(view, button)
             self.assertEqual(view.remote_test.index, 0)

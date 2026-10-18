@@ -20,15 +20,16 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         self.top = tk.Frame(self.root, bg=BG)
         self.top.pack(fill='x', padx=18, pady=(12, 0))
         # Equal side columns keep the call name centered between the status icons.
-        self.top.grid_columnconfigure(0, minsize=246)
+        self.status_width = 282 if getattr(getattr(self, 'usb_power', None), 'enabled', False) else 246
+        self.top.grid_columnconfigure(0, minsize=self.status_width)
         self.top.grid_columnconfigure(1, weight=1)
-        self.top.grid_columnconfigure(2, minsize=246)
+        self.top.grid_columnconfigure(2, minsize=self.status_width)
         self.hidden_notifications = tk.Canvas(self.top, width=64, height=56, bg=BG, highlightthickness=0)
         self.hidden_notifications.grid(row=0, column=0, sticky='w')
         self.corner_logo = self.text_renderer.portrait(ROOT / 'common/assets/zmala-icon.png', 40, BG)
         self.corner_notification_state = None
         self.draw_corner_notification(0)
-        self.connectivity = tk.Canvas(self.top, width=246, height=30, bg=BG, highlightthickness=0)
+        self.connectivity = tk.Canvas(self.top, width=self.status_width, height=30, bg=BG, highlightthickness=0)
         self.connectivity.grid(row=0, column=2, sticky='e')
         self.call_name = tk.Label(self.top, text='', bg=BG, fg=FG, borderwidth=0)
         self.title = tk.Label(self.root, text='Who would you like to call?', font=('Segoe UI', 32, 'bold'), bg=BG, fg=FG)
@@ -120,7 +121,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
 
     def fit_call_name(self):
         """Keep even long display names on one line within the existing top bar."""
-        width = max(100, self.root.winfo_width() - 552)
+        width = max(100, self.root.winfo_width() - 2*self.status_width - 60)
         text, size = self.call_name.cget('text'), 28
         font = tkfont.Font(self.root, family=self.font_family, size=size, weight='bold')
         while font.measure(text) > width and size > 18:
@@ -205,19 +206,27 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         remote = getattr(getattr(self, 'presenter_input', None), 'connected', None)
         battery = getattr(getattr(self, 'presenter_input', None), 'battery', None)
         charger = getattr(getattr(self, 'presenter_input', None), 'charger_connected', None) is True
-        signature = (network, server, remote, battery, charger, self.language)
+        # @llr TLLR127
+        power = getattr(self, 'usb_power', None)
+        show_usb = bool(power and power.enabled)
+        powered = power.power_state if show_usb else None
+        offset = 36 if show_usb else 0
+        signature = (network, server, remote, battery, charger, show_usb, powered, self.language)
         if self.connection_drawn == signature:
             return
         self.connection_drawn = signature
         c.delete('all')
         colors = [GREEN, GREEN if network else RED if network is False else MUTED, GREEN if server else RED]
         self.network_image = self.icon_renderer.connectivity(168, 30, colors, BG)
-        c.create_image(78, 0, anchor='nw', image=self.network_image, tags='network-status')
+        c.create_image(78+offset, 0, anchor='nw', image=self.network_image, tags='network-status')
         color = GREEN if remote is True else RED if remote is False else MUTED
         self.remote_image = self.icon_renderer.bluetooth(22, color, BG, remote)
-        c.create_image(36, 4, anchor='nw', image=self.remote_image, tags='remote-status')
+        c.create_image(36+offset, 4, anchor='nw', image=self.remote_image, tags='remote-status')
         self.battery_image = self.icon_renderer.battery(battery, BG, charger)
-        c.create_image(0, 4, anchor='nw', image=self.battery_image, tags='remote-battery')
+        c.create_image(offset, 4, anchor='nw', image=self.battery_image, tags='remote-battery')
+        if show_usb:
+            self.usb_image = self.icon_renderer.usb_power(powered, BG)
+            c.create_image(0, 4, anchor='nw', image=self.usb_image, tags='usb-power')
 
     def render_setup_feedback(self):
         label = self.setup_feedback_label

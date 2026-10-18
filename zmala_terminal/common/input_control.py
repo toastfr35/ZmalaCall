@@ -7,6 +7,14 @@ from zmala_terminal.common.volume_control import VolumeControl
 
 
 class InputControl:
+    # @llr TLLR110
+    def input_activity(self):
+        """Wake USB before any TV routing, debounce or setup consumption."""
+        self.last_button = time.monotonic()
+        power = getattr(self, 'usb_power', None)
+        if power:
+            power.require(urgent=True)
+
     def bind_inputs(self):
         self.root.bind('<Configure>', self.resize)
         for key, button in [('Left', 'left'), ('Prior', 'left'), ('Right', 'right'), ('Next', 'right'), ('Return', 'green'), ('Escape', 'red')]:
@@ -24,6 +32,7 @@ class InputControl:
 
     def pointer_button(self, held):
         """Pointer follows the same wake-only first press as the other buttons."""
+        self.input_activity()
         if self.setup_stage == 'tv' or self.remote_setup_blocked():
             return
         if held and 'pointer' in self.keys_down:
@@ -50,9 +59,10 @@ class InputControl:
             self.volume_control.pointer(True)
 
     def volume_activity(self):
-        self.last_button = time.monotonic()
+        self.input_activity()
 
     def other_key(self, event):
+        self.input_activity()
         self.cancel_settings_hold()
         if self.settings_open or self.settings_hold.capturing:
             return
@@ -61,6 +71,7 @@ class InputControl:
             return 'break'
 
     def toggle_fullscreen(self, event):
+        self.input_activity()
         if self.model.state in (State.CONFIRMING, State.CONFIRM_CALLBACK, State.REQUESTING_CALLBACK):
             self.press('cancel')
         else:
@@ -69,6 +80,7 @@ class InputControl:
 
     # @llr TLLR093
     def keypress(self, button):
+        self.input_activity()
         if self.remote_setup_blocked():
             return 'break'  # Keyboard/X11 copies must not pass the physical test.
         now = time.monotonic()

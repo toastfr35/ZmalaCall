@@ -2,6 +2,7 @@
 """Fixed Pi 4 USB power helper. Installed root-owned; no arbitrary commands/paths."""
 import argparse
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -37,6 +38,13 @@ def switch(action):
     # -e avoids implicitly switching the companion hub a second time.
     for hub in ('1-1', '2'):
         run('/usr/sbin/uhubctl', '-e', '-l', hub, '-a', action)
+        # @llr TLLR127
+        # A successful process exit alone does not prove port power changed.
+        result = run('/usr/sbin/uhubctl', '-e', '-l', hub)
+        states = re.findall(r'^\s*Port \d+: [0-9a-fA-F]+ (.*)$', result.stdout, re.MULTILINE)
+        expected = 'power' if action == 'on' else 'off'
+        if len(states) != 4 or any(expected not in state.split() for state in states):
+            raise RuntimeError('USB hub did not confirm power ' + action)
 
 
 def power(action):

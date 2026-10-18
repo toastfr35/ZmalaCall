@@ -21,11 +21,23 @@ references:
   type: file
 - path: zmala_terminal/common/tests/test_usb_power.py
   type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
 reviewed: null
 scope: Experimental
 text: |
-  USB power may be removed only after five minutes without camera use and a fresh remote
-  battery level strictly above 25%. Calls, ringing, setup, Settings, stale application
-  state and low/unknown battery shall retain or restore power.
+  USB power may be removed only after five continuous minutes without terminal activity
+  and a fresh remote battery level of at least 25%. Calls, ringing, setup, Settings,
+  held buttons, stale application state and low/unknown battery shall retain or restore
+  power. Every button press (including consumed or debounced presses), volume motion
+  and accepted incoming call shall immediately request power restoration without waiting
+  for TV routing or answer timers, and restart the idle interval. The interval shall
+  start when ongoing activity ends; device enumeration may complete asynchronously.
 verification: |
-  Test clock/battery boundaries and all inhibition conditions.
+  Test the 300-second boundary, exactly 25%, unknown/low battery and all inhibition
+  conditions. Press each button while idle/off or TV-hidden, and receive a call while
+  off; verify immediate wake requests, enumeration and a fresh five-minute idle interval.

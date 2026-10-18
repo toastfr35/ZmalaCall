@@ -61,6 +61,7 @@ class IdleTests(unittest.TestCase):
                               tv_control=Mock(), root=Mock(), messages=Mock(), generation=0,
                               model=SimpleNamespace(state=State.HOME), press=Mock(), pointer_serial=0,
                               cancel_settings_hold=Mock(), volume_control=Mock())
+        app.input_activity = lambda: Terminal.input_activity(app)
         for button in ('left', 'right', 'green', 'red', 'pointer'):
             app.last_button = 0
             with patch('zmala_terminal.common.input_control.time.monotonic', return_value=100):
