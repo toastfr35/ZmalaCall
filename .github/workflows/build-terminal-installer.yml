@@ -10,6 +10,7 @@ on:
       - 'build_tools/tests/**'
       - 'zmala_terminal/**'
       - 'docs/**'
+      - 'build_tools/assets/**'
       - '.github/workflows/build-terminal-installer.yml'
 
 permissions:
@@ -77,7 +78,10 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path build_tools/dist/download | Out-Null
           Copy-Item build_tools/dist/zmala_terminal_setup.exe build_tools/dist/download/
-          Copy-Item docs/ZmalaCall-Pi4-Installation-Guide.docx build_tools/dist/download/
+          Copy-Item docs build_tools/dist/download/docs -Recurse
+          New-Item -ItemType Directory -Path build_tools/dist/download/build_tools/assets, build_tools/dist/download/zmala_terminal/common/assets -Force | Out-Null
+          Copy-Item build_tools/assets/installation-connections.png build_tools/dist/download/build_tools/assets/
+          Copy-Item zmala_terminal/common/assets/presenter-pairing.png build_tools/dist/download/zmala_terminal/common/assets/
       - name: Upload installer and instructions
         uses: actions/upload-artifact@v4
         with:

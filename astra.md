@@ -17,7 +17,7 @@ does not provide fsync durability. Add deterministic startup reconciliation or
 a transaction journal, and define restore epochs without weakening terminal
 revision rollback protection. Inject crashes at every write boundary and verify
 device credentials, command ownership and callbacks after restart. Until then,
-retain the [documented backup/re-enrollment procedure](docs/reliability.md#backup-and-restore-procedure).
+retain the [documented backup/re-enrollment procedure](docs/server.md#persistence-and-backup).
 
 ### Bound native media memory and recovery time
 

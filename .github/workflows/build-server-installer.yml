@@ -11,6 +11,9 @@ on:
       - 'build_tools/linux/**'
       - 'build_tools/tests/test_server_installer.py'
       - 'zmala_server/**'
+      - 'docs/**'
+      - 'build_tools/assets/**'
+      - 'zmala_terminal/common/assets/presenter-pairing.png'
       - '.github/workflows/build-server-installer.yml'
 
 permissions:
@@ -40,9 +43,18 @@ jobs:
             if ($process.ExitCode -ne 0 -or -not (Test-Path $report)) { throw 'Smoke test failed' }
             Get-Content $report
           }
+      - name: Collect installer and guides
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path build_tools/dist/download | Out-Null
+          Copy-Item build_tools/dist/zmala_server_setup.exe build_tools/dist/download/
+          Copy-Item docs build_tools/dist/download/docs -Recurse
+          New-Item -ItemType Directory -Path build_tools/dist/download/build_tools/assets, build_tools/dist/download/zmala_terminal/common/assets -Force | Out-Null
+          Copy-Item build_tools/assets/installation-connections.png build_tools/dist/download/build_tools/assets/
+          Copy-Item zmala_terminal/common/assets/presenter-pairing.png build_tools/dist/download/zmala_terminal/common/assets/
       - uses: actions/upload-artifact@v4
         with:
           name: zmala-server-setup
-          path: build_tools/dist/zmala_server_setup.exe
+          path: build_tools/dist/download/*
           if-no-files-found: error
           retention-days: 90

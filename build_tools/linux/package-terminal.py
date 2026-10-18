@@ -39,9 +39,13 @@ def package(destination=None):
                 info.size = len(content)
                 archive.addfile(info, io.BytesIO(content))
                 checksums.append(hashlib.sha256(content).hexdigest() + '  ' + info.name)
-        for name in ('linux-terminal.md', 'pi-hardware-video.md', 'automatic-framing.md'):
+        for name in ('general.md', 'server.md', 'terminal.md'):
             archive.add(ROOT / 'docs' / name, arcname='docs/' + name)
             checksums.append(hashlib.sha256((ROOT / 'docs' / name).read_bytes()).hexdigest() + '  docs/' + name)
+        diagram = ROOT / 'build_tools/assets/installation-connections.png'
+        archive.add(diagram, arcname='build_tools/assets/installation-connections.png')
+        checksums.append(hashlib.sha256(diagram.read_bytes()).hexdigest()
+                         + '  build_tools/assets/installation-connections.png')
         wrapper = b'#!/bin/sh\nset -eu\ncd -- "$(dirname -- "$0")"\nexec sh build_tools/linux/install-kiosk.sh "$@"\n'
         info = tarfile.TarInfo('install.sh')
         info.mode = 0o755

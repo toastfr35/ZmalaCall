@@ -24,9 +24,10 @@ class LinuxPackageTests(unittest.TestCase):
                 'build_tools/linux/terminal.service': b'[Service]\r\nExecStart=/usr/bin/true\r\n',
                 'build_tools/linux/test.conf': b'[Journal]\r\nStorage=volatile\r\n',
                 'zmala_terminal/common/image.bin': b'asset\r\nbytes',
-                'docs/linux-terminal.md': b'Linux installation',
-                'docs/pi-hardware-video.md': b'Hardware experiment',
-                'docs/automatic-framing.md': b'Optional detector',
+                'docs/general.md': b'Project guide',
+                'docs/server.md': b'Server guide',
+                'docs/terminal.md': b'Terminal guide',
+                'build_tools/assets/installation-connections.png': b'Connection diagram',
                 'zmala_terminal/linux/media/models/person.tflite': b'downloaded model',
                 'zmala_terminal/linux/media/framing-runtime/lib/runtime.py': b'installed runtime',
             }.items():
@@ -92,7 +93,9 @@ class LinuxPackageTests(unittest.TestCase):
                              'build_tools/linux/picom.conf',
                              'build_tools/linux/21-zmalacall-pi4.conf',
                              'zmala_terminal/linux/cec_observer.py',
-                             'zmala_terminal/common/main.py', 'docs/linux-terminal.md'):
+                             'zmala_terminal/common/main.py', 'docs/terminal.md',
+                             'docs/general.md', 'docs/server.md',
+                             'build_tools/assets/installation-connections.png'):
                     self.assertIn(name, names)
                 for name in names:
                     self.assertNotIn('data', Path(name).parts)
