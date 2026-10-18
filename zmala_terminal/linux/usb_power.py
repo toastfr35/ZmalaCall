@@ -186,7 +186,9 @@ class UsbPower:
                         # A failed off attempt restores power in the helper. Refresh
                         # device lists even after a rollback may have re-enumerated it.
                         with self.lock:
-                            self.state = 'on' if media_present() else 'error'
+                            # Device presence cannot prove both hubs are powered.
+                            # Keep wake retryable even if rollback left the C20 visible.
+                            self.state = 'error'
                             self.revision += 1
                         next_attempt = time.monotonic() + 10
                     continue

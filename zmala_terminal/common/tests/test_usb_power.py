@@ -90,10 +90,21 @@ class UsbPowerTests(unittest.TestCase):
                 raise RuntimeError('off interrupted')
             power.stopped = True
         power.command = command
-        with patch('time.monotonic', return_value=1000), patch('zmala_terminal.linux.usb_power.media_present', return_value=False):
+        with patch('time.monotonic', return_value=1000), patch('zmala_terminal.linux.usb_power.media_present', return_value=True):
             power.run()
         self.assertEqual(actions[:2], ['off', 'on'])
-        self.assertTrue(power.power_state)  # Supply is on even if C20 enumeration fails.
+        self.assertTrue(power.power_state)
+
+    def test_confirmed_supply_is_independent_of_missing_camera(self):
+        power = self.controller()
+        power.state = 'off'
+        def command(action):
+            power.stopped = True
+        power.command = command
+        with patch('zmala_terminal.linux.usb_power.media_present', return_value=False):
+            power.run()
+        self.assertTrue(power.power_state)
+        self.assertFalse(power.ready)
 
     def test_wake_is_not_ready_until_native_devices_refreshed(self):
         power = self.controller()
