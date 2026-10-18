@@ -1,23 +1,38 @@
 # Remaining review work
 
-Reviewed against `db25e2e` on 18 October 2026. This file contains only outstanding
+Reviewed against `5213c3e` on 18 October 2026. This file contains only outstanding
 improvements and acceptance gaps. Completed fixes and superseded test records
-are available in Git history. These items are source-supported risks or
-optimization opportunities, not claims of newly reproduced production failures.
+are available in Git history. Code-review risks are distinguished from reproduced
+hardware failures below.
 
 ## High priority
 
-### Recover interrupted identity changes and older backups
+### Recover interrupted identity changes
 
 Account and device changes span independently written configuration, callback,
 console and bootstrap files. The barriers in
 [`admin-routes.js`](zmala_server/http/admin-routes.js) wait for writes but do not
 make them transactional; [`snapshot-file.js`](zmala_server/snapshot-file.js)
-does not provide fsync durability. Add deterministic startup reconciliation or
-a transaction journal, and define restore epochs without weakening terminal
-revision rollback protection. Inject crashes at every write boundary and verify
-device credentials, command ownership and callbacks after restart. Until then,
-retain the [documented backup/re-enrollment procedure](docs/server.md#persistence-and-backup).
+does not provide fsync durability. Extend deterministic startup reconciliation or
+transaction journals to ordinary identity mutations. Inject crashes at every write
+boundary and verify credentials, command ownership and callbacks after restart.
+The [supported backup restore](docs/server.md#persistence-and-backup) now has its
+own journal, rollback recovery and revision advancement; that transaction does not
+cover unrelated account edits.
+
+### Qualify C20 readiness after USB power restoration
+
+On term2 on 18 October, the C20 re-enumerated after hub power restoration and the
+terminal reported its devices refreshed. The following call still failed with
+UVC probe timeouts (-110), MJPEG format I/O errors and ALSA frequency/open errors.
+Stopping the terminal, cycling USB power and restarting recovered a 25-second
+call with decoded audio and at least 18.7 received fps at 1080p.
+
+[`media_present()`](zmala_terminal/linux/usb_power.py) checks V4L2 and ALSA
+enumeration, which is insufficient to prove capture readiness. Investigate the
+device/driver recovery sequence and qualify repeated idle/wake/call cycles;
+bound recovery attempts and avoid reporting capture health from enumeration
+alone. The single successful recovery does not establish a durable fix.
 
 ### Bound native media memory and recovery time
 
