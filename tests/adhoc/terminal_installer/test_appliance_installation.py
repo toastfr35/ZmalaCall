@@ -58,7 +58,7 @@ class ApplianceInstallTests(unittest.TestCase):
             script = '''set -eu
 unit_root=$(pwd)
 task_root="$unit_root/source"; data_from="$unit_root/migrate"; bootstrap=; task_user=fixture; framing=yes
-task_step() { :; }; chown() { printf 'OWNER %s\\n' "$*"; }; id() { echo fixture; }; sh() { printf 'BUILD %s\\n' "$*"; }
+task_step() { :; }; chown() { printf 'OWNER %s\\n' "$*"; }; id() { echo fixture; }; sh() { printf 'BUILD %s\\n' "$*"; }; python3() { printf 'BUILD %s\\n' "$*"; }
 '''+block+'\nprintf "RELEASE %s\\n" "$release"\n'
             result = shell(script, folder)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -68,6 +68,7 @@ task_step() { :; }; chown() { printf 'OWNER %s\\n' "$*"; }; id() { echo fixture;
             self.assertEqual((root/'var/lib/zmalacall/terminal.json').read_text(), 'existing-private-state')
             self.assertEqual((root/'var/lib/zmalacall').stat().st_mode & 0o777, 0o700)
             self.assertIn('build-media.sh', result.stdout)
+            self.assertIn('build-turn.py', result.stdout)
             self.assertIn('setup-auto-framing.sh', result.stdout)
 
 

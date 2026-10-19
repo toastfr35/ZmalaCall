@@ -48,14 +48,32 @@ deployment credentials and account QR codes are not included in this repository.
 
 ## Development installers and releases
 
-Successful [terminal installer](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-terminal-installer.yml)
-and [server installer](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-server-installer.yml)
-workflow runs provide development artifacts named `zmala-terminal-setup` and
-`zmala-server-setup`. Each includes the Pi setup executable and its PDF guides.
-GitHub sign-in is required to download workflow artifacts.
+Start work with a GitHub issue and a feature branch, then open a pull request
+to `main` linking the issue with `Closes #number`. Push only the feature branch.
+Verify runs once per pull request update; a newer update cancels superseded
+checks. Its Linux, Windows and Android jobs remain separate platform checks.
+Branch pushes and merges do not launch duplicate Verify runs.
+
+Every pull request, including documentation changes, must increase both
+`versionName` and `versionCode` in `zmala_phone/app/build.gradle` above current
+`main`. Normally use the next patch version and code + 1. Verify checks the
+increase and rejects an existing release tag. Update the branch if another
+pull request merges first. Required checks must pass against the current base
+before merging; direct pushes, force pushes and deletion of `main` are blocked.
 
 The [Publish release workflow](https://github.com/toastfr35/ZmalaCall/actions/workflows/release.yml)
-builds the two Pi installers, six PDFs and signed Android APK. See the
+starts automatically on each merge into `main`, using the committed version
+for its tag. It builds the two Pi installers, six PDFs and signed Android APK,
+then publishes only after packaging, smoke tests and signature checks pass.
+The separate installer workflows have been removed. The release workflow's
+`release-windows` and `release-android` artifacts are retained for seven days;
+GitHub sign-in is required to download them.
+
+Use **Run workflow** on `main` to retry an unpublished release; the optional tag
+input must match the committed version. Published releases are never replaced.
+A failed upload leaves a draft: inspect it and remove only that unpublished
+draft/tag before retrying the same commit. For an older failed merge, rerun its
+original workflow so the intended source commit is retained. See the
 [distribution guide](docs/general.md#distribution-and-third-party-components)
 for build tooling and the Android guide for private signing inputs.
 

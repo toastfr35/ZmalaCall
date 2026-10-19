@@ -14,13 +14,44 @@ sys.path.insert(0, str(ROOT))
 from build_tools.release.assemble import ASSETS  # noqa: E402
 
 
+def android_version(text):
+    names = re.findall(r"versionName '((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))'", text)
+    codes = re.findall(r'\bversionCode ([0-9]+)\b', text)
+    if len(names) != 1 or len(codes) != 1 or not 0 < int(codes[0]) <= 2100000000:
+        raise ValueError('Expected one stable Android versionName and valid versionCode')
+    return names[0], int(codes[0])
+
+
 def version_tag():
-    text = (ROOT / 'zmala_phone/app/build.gradle').read_text(encoding='utf-8')
-    version = re.search(r"versionName '([0-9]+\.[0-9]+\.[0-9]+)'", text).group(1)
-    tag = os.environ.get('RELEASE_TAG', '')
+    version, _ = android_version((ROOT / 'zmala_phone/app/build.gradle').read_text(encoding='utf-8'))
+    tag = os.environ.get('RELEASE_TAG') or 'v' + version
     if tag != 'v' + version:
         raise ValueError('Release tag must match the Android version: v' + version)
     return tag
+
+
+def validate_version_increase(current, previous):
+    version, code = android_version(current)
+    old_version, old_code = android_version(previous)
+    if tuple(map(int, version.split('.'))) <= tuple(map(int, old_version.split('.'))) or code <= old_code:
+        raise ValueError('Every pull request must increase both Android versionName and versionCode above main')
+    return 'v' + version
+
+
+def check_pr_version():
+    base = os.environ.get('BASE_SHA', '')
+    if not re.fullmatch(r'[0-9a-f]{40}', base):
+        raise ValueError('BASE_SHA must identify the pull request base commit')
+    gradle = 'zmala_phone/app/build.gradle'
+    previous = subprocess.check_output(['git', 'show', base + ':' + gradle], cwd=ROOT, text=True)
+    tag = validate_version_increase((ROOT / gradle).read_text(encoding='utf-8'), previous)
+    result = subprocess.run(['git', 'ls-remote', '--exit-code', '--tags', 'origin', 'refs/tags/' + tag],
+                            cwd=ROOT, text=True, capture_output=True, check=False)
+    if result.returncode == 0:
+        raise ValueError('Release tag already exists: ' + tag)
+    if result.returncode != 2:
+        raise ValueError('Could not verify release tag availability')
+    print('New release version verified: ' + tag)
 
 
 def private_paths():
@@ -106,18 +137,28 @@ def publish(folder, notes_file):
         ['gh', 'release', 'view', tag, '--json', 'assets'], cwd=ROOT, text=True))['assets']
     if {item['name'] for item in uploaded} != set(ASSETS) or any(item['state'] != 'uploaded' for item in uploaded):
         raise ValueError('Uploaded release assets did not match; draft retained')
-    subprocess.run(['gh', 'release', 'edit', tag, '--draft=false', '--latest'], cwd=ROOT, check=True)
+    # GitHub's semantic-version selection prevents an older, slower build from
+    # forcing the latest-download URL backwards when two merges build together.
+    release_id = subprocess.check_output(
+        ['gh', 'api', 'repos/{owner}/{repo}/releases/tags/' + tag, '--jq', '.id'],
+        cwd=ROOT, text=True).strip()
+    if not release_id.isdigit():
+        raise ValueError('Invalid draft release identity')
+    subprocess.run(['gh', 'api', '--method', 'PATCH', 'repos/{owner}/{repo}/releases/' + release_id,
+                    '-F', 'draft=false', '-f', 'make_latest=legacy', '--silent'], cwd=ROOT, check=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('check-version', 'prepare-signing', 'cleanup-signing', 'notes', 'publish'))
+    parser.add_argument('action', choices=('check-version', 'check-pr-version', 'prepare-signing', 'cleanup-signing', 'notes', 'publish'))
     parser.add_argument('--assets', type=Path)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--notes', type=Path)
     args = parser.parse_args()
     if args.action == 'check-version':
         print(version_tag())
+    elif args.action == 'check-pr-version':
+        check_pr_version()
     elif args.action == 'prepare-signing':
         prepare_signing()
     elif args.action == 'cleanup-signing':

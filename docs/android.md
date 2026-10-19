@@ -457,7 +457,7 @@ uploads only the APK and six PDF guides/two Pi installers described in
 `ZMALA_RELEASE_SIGNING` for this private JSON and fails release preparation when
 signing or Firebase client configuration is absent. Debug builds remain available
 without either for disposable tests. The normal Verify workflow receives no signing
-secrets. The manual Publish release workflow uses encrypted repository Actions
+secrets. Publish release runs after merges to protected `main` and uses encrypted repository Actions
 secrets only in its Android job; see [release automation](general.md#github-actions-publication).
 
 The first signed release is 0.3.6, version code 15, Android 9/API 28 or newer,
