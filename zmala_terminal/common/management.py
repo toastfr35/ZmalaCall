@@ -168,7 +168,9 @@ class ManagementLoop:
             live = availability.get(contact['id'], {})
             online = live.get('online') is True
             presence = live.get('presence', 'available' if online else 'offline')
-            changed |= contact.get('online', False) != online or contact.get('presence') != presence
+            previous_online = contact.get('online', False)
+            previous_presence = contact.get('presence', 'available' if previous_online else 'offline')
+            changed |= previous_online != online or previous_presence != presence
             contact.update(online=online, presence=presence)
         if changed and self.model.state == State.HOME:
             self.render()

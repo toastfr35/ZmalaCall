@@ -2,7 +2,7 @@
 # @requirements LLR-TERM-NAV-005, LLR-TERM-CONFIG-020, LLR-TERM-UI-014, LLR-TERM-UI-015, LLR-TERM-UI-016, LLR-TERM-UI-017, LLR-TERM-UI-019, LLR-TERM-UI-024, LLR-TERM-HISTORY-016, LLR-TERM-HISTORY-022
 # @environment portable
 # @plan Record drawing calls at small and full-HD dimensions; check the selected-to-adjacent portrait size ratio, in-frame contact labels, portrait margins, localized rounded affirmative/negative controls, settings-only chrome and serial footer. Inject Pango to verify unchanged Unicode text and bounded shaping; force a tall translated settings label to check minimum-font ellipsis and intact combining marks. Test absolute carousel deadlines under delayed frames. Exercise real carousel composition with recording widgets, controlled shaped-label metrics and image failures; assert pending/missed badges, logo restoration, bounded labels and placeholder/ringing redraws.
-# Check three-state contact colours, labels and symbols; expire a six-second live snapshot and confirm push remains callable only while fresh.
+# Check three-state contact colours, labels and symbols; expire a six-second live snapshot and confirm push remains callable only while fresh. Change presence at the same configuration version and assert redraws without reconfiguration.
 # @pass Geometry, color, text and timing assertions must pass; these unit checks do not replace physical display or font-rendering acceptance.
 
 import importlib.util
@@ -31,7 +31,7 @@ class ViewContractTests(unittest.TestCase):
         loop = ManagementLoop(); loop.model = TerminalModel(); loop.model.configure(config())
         loop.render = Mock(); loop.apply_config = Mock(); loop.callback_requests = []
         original_version = loop.model.config['configuration_version']
-        for state in ('available', 'push', 'offline'):
+        for state in ('push', 'available', 'offline'):
             update = copy.deepcopy(loop.model.config)
             update['contacts'][0].update(online=state != 'offline', presence=state)
             loop.apply_poll_config(update)
