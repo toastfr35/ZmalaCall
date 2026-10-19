@@ -4,7 +4,7 @@
 
 <h1 align="center">ZmalaCall</h1>
 
-<p align="center"><strong>Family video calls, on your TV or Android phone.</strong></p>
+<p align="center"><strong>Easy family video calls, from the comfort of your sofa.</strong></p>
 
 <p align="center">
   <img src="docs/images/zmalacall-overview.png" alt="A retired couple calling from a TV terminal and a younger person using the Android app, connected through ZmalaServer." width="1000">
@@ -17,39 +17,57 @@
   <a href="https://github.com/toastfr35/ZmalaCall/issues">Report an issue</a>
 </p>
 
-ZmalaCall turns a Raspberry Pi and a television into a video-call terminal.
-Choose a familiar face with the remote, confirm the call, and talk on the big
-screen. It is designed for people who prefer a few physical buttons to a phone
-or computer interface.
+ZmalaCall brings family and friends onto a familiar TV screen. Settle into your
+sofa, choose a familiar face with a small remote, confirm the call and enjoy
+the conversation. Family can join from their Android phones or another TV
+terminal.
 
-The system has three components:
+**ZmalaTerminal is designed to make video calling feel comfortable and
+approachable.** It suits anyone who feels most at home with a TV and physical
+buttons, including older relatives who want an easy way to see the family.
+Large portraits, a simplified interface and clear on-screen prompts help each
+person call with confidence, at their own pace.
 
-- **ZmalaTerminal:** a Raspberry Pi connected to a TV, camera and remote.
-- **ZmalaServer:** a separate Raspberry Pi that connects calls and lets an
-  administrator manage accounts, contacts and devices from a web browser.
-- **ZmalaPhone:** an Android app for calling family on their phones or TV terminals.
+A family member or helper takes care of installation, contacts and preferences.
+Once set up, everyday calls need only the TV and remote. Optional automation
+takes care of more of the steps, so the person calling can focus on the people
+on screen.
 
 ![Terminal home screen with five portrait contacts, Clara selected, and clear online and offline indicators](docs/images/terminal-home.png)
 
 *Screenshots on this page use fictional demo contacts and simulated device status.*
 
-## Built around simple calls
+## Familiar faces, a few buttons
 
-- **Faces instead of numbers.** Browse three or five portraits at a time. See
-  who is available, missed calls and pending callback requests.
-- **A few physical controls.** Left and right select a contact; green confirms
-  or answers; red cancels or ends a call. Hold the middle button and move the
-  Presenter+ remote to adjust volume.
-- **Video that fills the TV.** See the other person with your own camera in a
-  small inset. Optional automatic framing keeps people in view, with a maximum
-  2× zoom. Resolution and frame rate can be set for each terminal.
-- **Help with the television.** On compatible HDMI-CEC TVs, the terminal can
-  wake the screen, select its input and restore the previous TV state after
-  calls or a configurable idle period.
-- **Guided first use.** Screens help connect the camera, pair and test the
-  remote, scan Wi-Fi and server QR codes, and check TV control.
-- **Settings for each person.** Choose the language, automatic-answer delay,
-  framing, speaker volume, portrait count and return-to-TV timeout.
+- **Recognise the person you want to call.** Browse three or five large contact
+  portraits at a time, with clear availability indicators.
+- **Use the same simple controls throughout.** Left and right choose a contact;
+  green confirms or answers; red cancels or ends a call. These same colours and
+  buttons guide you through the screens.
+- **Enjoy a big picture and hands-free conversation.** See family on the TV
+  while the camera, microphone and speaker handle the conversation from the sofa.
+- **Keep in touch when the timing isn't right.** Missed-call notices and callback
+  requests make it easy to see who wants to talk.
+- **Make it feel right for each person.** Choose the language, volume and number
+  of portraits shown. Settings can be adjusted as someone's preferences change.
+
+## Let the terminal take care of the extra steps
+
+Automation is configurable, so a family can choose how much help the terminal
+provides:
+
+- **Ready after startup.** The calling interface starts automatically when the
+  Raspberry Pi boots.
+- **Help with the TV.** On compatible HDMI-CEC televisions, the terminal can wake
+  the screen, select the correct input and restore the previous TV state after
+  a call or a configured idle period.
+- **Optional automatic answering.** Incoming calls can be answered after a
+  chosen countdown. The person at the terminal can still cancel before it answers.
+- **Optional automatic framing.** The camera view can adjust to keep people in
+  the picture, helping them stay comfortably seated.
+
+First-time setup is guided on the TV, including connecting the camera, pairing
+and testing the remote, scanning setup QR codes and checking TV control.
 
 ## Settings without a keyboard
 
@@ -59,11 +77,13 @@ to the server.
 
 ![Terminal settings screen editing the automatic-answer delay, with green Accept and red Cancel controls](docs/images/terminal-settings.png)
 
-## Manage from a phone or computer
+## A helping hand from family
 
-The browser interface brings accounts, portraits, contact groups and terminal
-settings together. Check device and call status, manage callback requests,
-download setup QR codes, and back up or restore server data.
+A family member or helper uses the server's browser interface to prepare contact
+portraits, choose who can call whom and adjust terminal preferences. This keeps
+account management and maintenance separate from everyday calling on the TV.
+The same interface shows device and call status, manages callback requests,
+provides setup QR codes, and lets the helper back up or restore server data.
 Each account is assigned to either an app or a terminal. Give each device its own
 account and setup QR code. Server administration is restricted to the server's
 local network.
@@ -78,10 +98,12 @@ administration page.
 
 Contacts appear as compact rows with a portrait and name. Tap a green name to
 start a video call; gray names are unavailable. During a call, tap the video to
-show the microphone, audio output, camera-switch and hangup controls. The app
-supports portrait and landscape views, with your camera preview in the corner.
+show the microphone, audio output, camera-switch and hangup controls. Calls
+support portrait and landscape views, with your camera preview in the corner;
+the contact screen stays in portrait.
 Missed-call and callback icons appear beside contacts. Request a callback for an
-offline contact or after an unanswered call.
+offline contact or after an unanswered call. While your request is pending, its
+button becomes a cancel button.
 
 The contact screen shows the installed version and an Updates control. Updates
 can be downloaded in the app; optional automatic updates on supported phones
@@ -93,6 +115,14 @@ on the server. After using Android's **Force stop**, reopen ZmalaPhone to receiv
 calls again.
 
 ## How it fits together
+
+The system has three components:
+
+- **ZmalaTerminal:** a Raspberry Pi connected to a TV, camera and remote, for
+  simple calls from the sofa.
+- **ZmalaServer:** a separate Raspberry Pi that connects calls and lets a helper
+  manage accounts, contacts and devices from a web browser.
+- **ZmalaPhone:** an Android app so family can join calls from their phones.
 
 The **terminal** and **Android app** provide the calling interfaces. The
 **server** holds accounts and settings, connects calls and relays their audio
