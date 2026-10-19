@@ -12,6 +12,7 @@ on:
       - 'tests/terminal/LLT/turn_parser.cpp'
       - 'zmala_terminal/**'
       - 'docs/**'
+      - 'build_tools/release/**'
       - 'build_tools/assets/**'
       - '.github/workflows/build-terminal-installer.yml'
 
@@ -30,7 +31,7 @@ jobs:
           cache: pip
           cache-dependency-path: build_tools/windows_installer/requirements.txt
       - name: Install build dependencies
-        run: python -m pip install -r build_tools/windows_installer/requirements.txt
+        run: python -m pip install -r build_tools/windows_installer/requirements.txt -r build_tools/release/requirements.txt
       - name: Test deployment and confirmation
         run: python -m unittest discover -s tests/adhoc/terminal_installer -t . -p 'test_*.py'
       - name: Build standalone installer
@@ -39,7 +40,7 @@ jobs:
         shell: pwsh
         run: |
           $report = Join-Path $env:RUNNER_TEMP 'installer-smoke.txt'
-          $process = Start-Process -FilePath 'build_tools/dist/zmala_terminal_setup.exe' -ArgumentList '--smoke-test', $report -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath 'build_tools/dist/ZmalaTerminal-Pi4-setup.exe' -ArgumentList '--smoke-test', $report -PassThru -WindowStyle Hidden
           if (-not $process.WaitForExit(60000)) {
             $process.Kill()
             throw 'Installer smoke test timed out'
@@ -58,7 +59,7 @@ jobs:
         run: |
           $report = Join-Path $env:RUNNER_TEMP 'installer-headless-smoke.txt'
           $log = Join-Path $env:RUNNER_TEMP 'installer-headless.log'
-          $process = Start-Process -FilePath 'build_tools/dist/zmala_terminal_setup.exe' -ArgumentList '--headless', '--smoke-test', $report, '--log', $log -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath 'build_tools/dist/ZmalaTerminal-Pi4-setup.exe' -ArgumentList '--headless', '--smoke-test', $report, '--log', $log -PassThru -WindowStyle Hidden
           if (-not $process.WaitForExit(60000)) {
             $process.Kill()
             throw 'Headless smoke test timed out'
@@ -69,17 +70,15 @@ jobs:
           if ((Get-Content $report -Raw) -notmatch 'Headless mode; bundled package checksum verified') {
             throw 'Headless smoke test failed'
           }
-          $process = Start-Process -FilePath 'build_tools/dist/zmala_terminal_setup.exe' -ArgumentList '--headless', '--log', $log -PassThru -WindowStyle Hidden
+          $process = Start-Process -FilePath 'build_tools/dist/ZmalaTerminal-Pi4-setup.exe' -ArgumentList '--headless', '--log', $log -PassThru -WindowStyle Hidden
           if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Consent check timed out' }
           if ($process.ExitCode -ne 2) { throw 'Missing --yes must return exit code 2' }
-      - name: Collect download files
+      - name: Collect installer and PDF guides
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path build_tools/dist/download | Out-Null
-          Copy-Item build_tools/dist/zmala_terminal_setup.exe build_tools/dist/download/
-          New-Item -ItemType Directory -Path build_tools/dist/download/docs | Out-Null
-          Copy-Item docs/*.md build_tools/dist/download/docs/
-          Copy-Item docs/*.docx build_tools/dist/download/
+          Copy-Item build_tools/dist/ZmalaTerminal-Pi4-setup.exe build_tools/dist/download/
+          python build_tools/release/guides.py --component terminal --output build_tools/dist/download
       - name: Upload installer and instructions
         uses: actions/upload-artifact@v4
         with:

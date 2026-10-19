@@ -13,6 +13,7 @@ on:
       - 'tests/support/**'
       - 'zmala_server/**'
       - 'docs/**'
+      - 'build_tools/release/**'
       - 'build_tools/assets/**'
       - 'zmala_terminal/common/assets/presenter-pairing.png'
       - '.github/workflows/build-server-installer.yml'
@@ -29,7 +30,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install -r build_tools/windows_installer/requirements.txt
+      - run: python -m pip install -r build_tools/windows_installer/requirements.txt -r build_tools/release/requirements.txt
       - run: python -m unittest discover -s tests/adhoc/server_installer -t . -p "test_*.py"
       - run: python build_tools/server_installer/build.py
       - name: Check executable modes
@@ -39,19 +40,17 @@ jobs:
             $report = Join-Path $env:RUNNER_TEMP "server-$mode.txt"
             $arguments = @('--smoke-test', $report)
             if ($mode -eq 'headless') { $arguments = @('--headless') + $arguments }
-            $process = Start-Process build_tools/dist/zmala_server_setup.exe -ArgumentList $arguments -WindowStyle Hidden -PassThru
+            $process = Start-Process build_tools/dist/ZmalaServer-Pi4-setup.exe -ArgumentList $arguments -WindowStyle Hidden -PassThru
             if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Smoke test timed out' }
             if ($process.ExitCode -ne 0 -or -not (Test-Path $report)) { throw 'Smoke test failed' }
             Get-Content $report
           }
-      - name: Collect installer and guides
+      - name: Collect installer and PDF guides
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path build_tools/dist/download | Out-Null
-          Copy-Item build_tools/dist/zmala_server_setup.exe build_tools/dist/download/
-          New-Item -ItemType Directory -Path build_tools/dist/download/docs | Out-Null
-          Copy-Item docs/*.md build_tools/dist/download/docs/
-          Copy-Item docs/*.docx build_tools/dist/download/
+          Copy-Item build_tools/dist/ZmalaServer-Pi4-setup.exe build_tools/dist/download/
+          python build_tools/release/guides.py --component server --output build_tools/dist/download
       - uses: actions/upload-artifact@v4
         with:
           name: zmala-server-setup

@@ -3,8 +3,10 @@
 This guide describes the Linux server's deployment, request boundaries, identities,
 SIP/media lifecycle and persistence. It is intended for developers and maintainers.
 The Windows executable is a deployment client, not a Windows server runtime.
-For user-facing installation and account setup, read `server_prep.docx`
-and `terminal_config.docx`. Network and build conventions are in
+For user-facing installation and account setup, use `ZmalaServer-Installation.pdf`
+and `ZmalaServer-Guide.pdf` beside the release installer. Their retained Word
+source is `server_prep.docx`; terminal setup uses `terminal_config.docx`.
+Network and build conventions are in
 [general.md](general.md); client behavior is in [terminal.md](terminal.md).
 
 The [three-network Docker lab](general.md#three-network-docker-lab) exercises this
@@ -244,7 +246,7 @@ migration; use a new server QR when remote reconfiguration is unavailable.
 ### Headless installer and local build
 
 ```powershell
-$setup = Start-Process .\zmala_server_setup.exe -Wait -PassThru -ArgumentList `
+$setup = Start-Process .\ZmalaServer-Pi4-setup.exe -Wait -PassThru -ArgumentList `
     '--headless', '--check-only', '--host', 'zmalaserver.local', '--log', 'check.log'
 $setup.ExitCode
 ```

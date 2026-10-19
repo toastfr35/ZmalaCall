@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -66,17 +67,19 @@ def main():
     manifest = run([sdk / 'cmdline-tools/latest/bin' / ('apkanalyzer' + suffix),
                     'manifest', 'print', apk], env, True).stdout
     version, code = verify_manifest(manifest)
+    with zipfile.ZipFile(apk) as archive:
+        for name in ('AGPL-3.0.txt', 'LINPHONE-NOTICES.txt', 'NOTICE.txt', 'APACHE-2.0.txt'):
+            if not archive.read('assets/licenses/' + name):
+                raise ValueError('Missing packaged dependency notice: ' + name)
     destination = ROOT / 'build_tools/dist' / ('ZmalaPhone-' + version)
     destination.mkdir(parents=True, exist_ok=True)
-    output = destination / ('ZmalaPhone-' + version + '.apk')
+    output = destination / 'ZmalaPhone.apk'
     shutil.copy2(apk, output)
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
     (destination / 'SHA256SUMS.txt').write_text(digest + '  ' + output.name + '\n', encoding='utf-8')
     (destination / 'SIGNATURE.txt').write_text(signature, encoding='utf-8')
     for filename in ('LICENSE.txt', 'NOTICE.md'):
         shutil.copy2(ROOT / 'zmala_phone' / filename, destination / filename)
-    for filename in ('server_prep.docx', 'terminal_config.docx'):
-        shutil.copy2(ROOT / 'docs' / filename, destination / filename)
     print(f'Verified release {version} (code {code}): {output}')
     print('SHA-256: ' + digest)
     print('Signing certificate SHA-256: ' + fingerprint)

@@ -14,14 +14,14 @@ def main():
     work = ROOT / 'build_tools/tmp/windows-installer-build'
     work.mkdir(parents=True, exist_ok=True)
     subprocess.run([sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '--onefile', '--windowed',
-                    '--name', 'zmala_terminal_setup', '--distpath', str(destination),
+                    '--name', 'ZmalaTerminal-Pi4-setup', '--distpath', str(destination),
                     '--workpath', str(work / 'work'), '--specpath', str(work),
                     '--add-data', str(destination / 'ZmalaCall-Terminal-rpi.tar.gz') + ':.',
                     '--add-data', str(destination / 'ZmalaCall-Terminal-rpi.tar.gz.sha256') + ':.',
                     '--add-data', str(Path(__file__).with_name('remote_probe.py')) + ':.',
                     '--add-data', str(ROOT / 'zmala_terminal/common/assets/zmala-icon.png') + ':.',
                     str(Path(__file__).with_name('entrypoint.py'))], check=True)
-    print(destination / 'zmala_terminal_setup.exe')
+    print(destination / 'ZmalaTerminal-Pi4-setup.exe')
 
 
 if __name__ == '__main__':

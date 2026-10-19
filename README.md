@@ -95,15 +95,23 @@ ports and deployment boundaries.
 ### Downloads
 
 The [latest public release](https://github.com/toastfr35/ZmalaCall/releases/latest)
-contains the published terminal installer. For current development versions,
-open a successful workflow run and download its artifact:
+contains published installers and instructions. New combined releases use these
+download names (older releases may contain only the terminal):
+
+| Product | Installation PDF | User guide PDF | Installer |
+| --- | --- | --- | --- |
+| ZmalaTerminal | `ZmalaTerminal-Installation.pdf` | `ZmalaTerminal-Guide.pdf` | `ZmalaTerminal-Pi4-setup.exe` |
+| ZmalaServer | `ZmalaServer-Installation.pdf` | `ZmalaServer-Guide.pdf` | `ZmalaServer-Pi4-setup.exe` |
+| ZmalaPhone | `ZmalaPhone-Installation.pdf` | `ZmalaPhone-Guide.pdf` | `ZmalaPhone.apk` |
+
+For current development versions, open a successful workflow run and download its artifact:
 
 - **Terminal:** [Build terminal installer](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-terminal-installer.yml).
-  Download `zmala-terminal-setup` and run `zmala_terminal_setup.exe`.
+  Download `zmala-terminal-setup` and run `ZmalaTerminal-Pi4-setup.exe`.
 - **Server:** [Build server installer](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-server-installer.yml).
-  Download `zmala-server-setup` and run `zmala_server_setup.exe`.
+  Download `zmala-server-setup` and run `ZmalaServer-Pi4-setup.exe`.
 
-Development artifacts include the Word guides beside the executable. GitHub
+Development installer artifacts include their PDF guides beside the executable. GitHub
 [requires sign-in](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts)
 to download workflow artifacts; published release assets can
 be downloaded without an account. The installers support a graphical interface
@@ -122,7 +130,7 @@ and headless operation.
 
 ### Guides
 
-Download the Word document for the task you want to complete:
+Use the PDFs supplied with your release. Editable Word sources remain here for maintainers:
 
 | Guide | What it covers |
 | --- | --- |
@@ -130,6 +138,8 @@ Download the Word document for the task you want to complete:
 | [Prepare a terminal](docs/terminal_prep.docx) | SD card, physical connections and installation |
 | [Configure a terminal](docs/terminal_config.docx) | Accounts, enrollment, TV checks and settings |
 | [Use a terminal](docs/terminal_use.docx) | Remote controls, calls, callbacks and everyday help |
+| [Install ZmalaPhone](docs/phone_installation.docx) | APK installation, QR enrollment and incoming alerts |
+| [Use ZmalaPhone](docs/phone_guide.docx) | Contacts, calls, camera controls and everyday help |
 
 ## For developers
 

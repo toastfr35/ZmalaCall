@@ -46,7 +46,7 @@ class HeadlessInstallerTests(unittest.TestCase):
             self.assertEqual(run.call_count, 2)
             package, bundle = [call.args[0] for call in run.call_args_list]
             self.assertTrue(package[-1].endswith('package-terminal.py'))
-            self.assertEqual(bundle[bundle.index('--name')+1], 'zmala_terminal_setup')
+            self.assertEqual(bundle[bundle.index('--name')+1], 'ZmalaTerminal-Pi4-setup')
             self.assertIn('--onefile', bundle)
             self.assertEqual(bundle.count('--add-data'), 4)
             self.assertTrue(any('tar.gz.sha256' in arg for arg in bundle))

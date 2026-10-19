@@ -14,7 +14,7 @@ def main():
     work = ROOT/'build_tools/tmp/server-installer-build'
     work.mkdir(parents=True, exist_ok=True)
     args = [sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '--onefile', '--windowed',
-            '--name', 'zmala_server_setup', '--paths', str(ROOT), '--distpath', str(destination),
+            '--name', 'ZmalaServer-Pi4-setup', '--paths', str(ROOT), '--distpath', str(destination),
             '--workpath', str(work/'work'), '--specpath', str(work)]
     for path in (destination/'ZmalaCall-Server-rpi.tar.gz', destination/'ZmalaCall-Server-rpi.tar.gz.sha256',
                  ROOT/'build_tools/windows_installer/remote_probe.py', ROOT/'zmala_terminal/common/assets/zmala-icon.png'):

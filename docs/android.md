@@ -398,11 +398,15 @@ because a build machine is missing the original.
 The helper runs portable JVM tests plus release lint and assembly, verifies the APK signature
 against the pinned certificate, checks 16 KiB ZIP alignment and rejects debuggable,
 test-only, wrong-package or backup-enabled APKs. Output is in
-`build_tools/dist/ZmalaPhone-<version>/`, with SHA-256 checksum, public signature
-details, license notices and the two operator guides. Gradle uses
+`build_tools/dist/ZmalaPhone-<version>/ZmalaPhone.apk`, with local SHA-256 checksum,
+public signature details and license notices alongside it. The release collector
+uploads only the APK and six PDF guides/two Pi installers described in
+[general.md](general.md#release-download-layout). Gradle uses
 `ZMALA_RELEASE_SIGNING` for this private JSON and fails release preparation when
 signing or Firebase client configuration is absent. Debug builds remain available
-without either for disposable tests. No signing secrets are provided to public CI.
+without either for disposable tests. The normal Verify workflow receives no signing
+secrets. The manual Publish release workflow uses encrypted repository Actions
+secrets only in its Android job; see [release automation](general.md#github-actions-publication).
 
 The first signed release is 0.3.6, version code 15, Android 9/API 28 or newer,
 arm64-v8a and x86_64. It uses the qualified native libraries without adding code
@@ -420,7 +424,8 @@ The source repository does not contain a deployment's `google-services.json`;
 builders supply their own Firebase Android configuration. Firebase client project
 identifiers/API configuration are necessarily embedded in the configured APK and
 are not server sender credentials. See `zmala_phone/NOTICE.md` for corresponding
-source and dependency-notice obligations before binary publication.
+source access and packaged dependency notices. The APK includes the AGPL and Apache
+licenses and the pinned SDK/component notice inventory under assets/licenses/.
 
 ## Qualification record
 

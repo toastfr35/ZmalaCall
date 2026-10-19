@@ -1,0 +1,134 @@
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'New release tag matching the Android version, for example v0.3.6'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install packaging dependencies
+        run: python -m pip install -r build_tools/windows_installer/requirements.txt -r build_tools/release/requirements.txt
+      - name: Check release version and installer regressions
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python build_tools/release/github_release.py check-version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/adhoc/terminal_installer -t . -p 'test_*.py'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/adhoc/server_installer -t . -p 'test_*.py'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest tests.adhoc.test_release_assets tests.adhoc.test_android_release
+      - name: Build the two Pi installers
+        run: |
+          python build_tools/windows_installer/build.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python build_tools/server_installer/build.py
+      - name: Smoke-test both installers without contacting a Pi
+        shell: pwsh
+        run: |
+          foreach ($component in @('Terminal', 'Server')) {
+            foreach ($mode in @('gui', 'headless')) {
+              $report = Join-Path $env:RUNNER_TEMP "$component-$mode.txt"
+              $arguments = @('--smoke-test', $report)
+              if ($mode -eq 'headless') { $arguments = @('--headless') + $arguments }
+              $process = Start-Process "build_tools/dist/Zmala$component-Pi4-setup.exe" -ArgumentList $arguments -WindowStyle Hidden -PassThru
+              if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Installer smoke test timed out' }
+              if ($process.ExitCode -ne 0 -or -not (Test-Path $report)) { throw 'Installer smoke test failed' }
+              if ((Get-Content $report -Raw) -notmatch 'bundled package checksum verified') { throw 'Installer payload verification failed' }
+              Get-Content $report
+            }
+          }
+      - name: Generate the six PDF manuals
+        run: python build_tools/release/guides.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: |
+            build_tools/dist/ZmalaTerminal-Pi4-setup.exe
+            build_tools/dist/ZmalaServer-Pi4-setup.exe
+            build_tools/dist/guides/*.pdf
+          if-no-files-found: error
+          retention-days: 7
+
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install the pinned Android toolchain
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0' 'ndk;29.0.14206865'
+      - name: Materialize private inputs on the temporary runner
+        env:
+          ZMALA_ANDROID_KEYSTORE_BASE64: ${{ secrets.ZMALA_ANDROID_KEYSTORE_BASE64 }}
+          ZMALA_ANDROID_SIGNING_JSON: ${{ secrets.ZMALA_ANDROID_SIGNING_JSON }}
+          ZMALA_FIREBASE_CLIENT_JSON: ${{ secrets.ZMALA_FIREBASE_CLIENT_JSON }}
+        run: python3 build_tools/release/github_release.py prepare-signing
+      - name: Verify version and build the signed APK
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 build_tools/release/github_release.py check-version
+          python3 build_tools/android/release.py --signing "$RUNNER_TEMP/android-release.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-android
+          path: build_tools/dist/ZmalaPhone-*/ZmalaPhone.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Remove temporary signing and Firebase files
+        if: always()
+        run: python3 build_tools/release/github_release.py cleanup-signing
+
+  publish:
+    needs: [windows, android]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-windows
+          path: build_tools/dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-android
+          path: build_tools/dist/android
+      - name: Collect exactly nine downloads and write release notes
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 build_tools/release/assemble.py --apk build_tools/dist/android/ZmalaPhone.apk --output build_tools/dist/release-downloads
+          python3 build_tools/release/github_release.py notes --assets build_tools/dist/release-downloads --output build_tools/dist/release-notes.md
+      - name: Upload and publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: python3 build_tools/release/github_release.py publish --assets build_tools/dist/release-downloads --notes build_tools/dist/release-notes.md

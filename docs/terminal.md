@@ -2,7 +2,8 @@
 
 This technical guide covers the shared Python terminal and its Linux/Pi and
 Windows adapters. It is for developers and maintainers. Preparation, enrollment
-and everyday operation are documented separately in `terminal_prep.docx`,
+and everyday operation are covered by the release's `ZmalaTerminal-Installation.pdf`
+and `ZmalaTerminal-Guide.pdf`. Their editable sources are `terminal_prep.docx`,
 `terminal_config.docx` and `terminal_use.docx`.
 See [general.md](general.md) for build/network conventions and [server.md](server.md)
 for the authenticated configuration and SIP services.
@@ -272,7 +273,7 @@ state. Failure after OS/package changes is not a transactional system rollback.
 The same executable supports unattended deployment, including reboot:
 
 ```powershell
-$setup = Start-Process -FilePath .\zmala_terminal_setup.exe `
+$setup = Start-Process -FilePath .\ZmalaTerminal-Pi4-setup.exe `
     -ArgumentList '--headless', '--host', 'zmala.local', '--yes', `
                   '--log', 'C:\Temp\zmala-install.log' `
     -Wait -PassThru
@@ -292,9 +293,9 @@ python -m pip install -r build_tools/windows_installer/requirements.txt
 python build_tools/windows_installer/build.py
 ```
 
-Output is `build_tools/dist/zmala_terminal_setup.exe`; CI builds/smoke-tests the
+Output is `build_tools/dist/ZmalaTerminal-Pi4-setup.exe`; CI builds/smoke-tests the
 same unsigned executable in GUI/headless modes. Installer downloads include the
-technical Markdown and Word user guides. The Word illustrations are embedded.
+two terminal PDFs rendered from the retained Word sources and illustrations.
 
 ### Manual package installation
 

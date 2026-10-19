@@ -1,0 +1,191 @@
+{
+  "sdk_version": "5.5.32",
+  "sdk_repository": "https://github.com/BelledonneCommunications/linphone-sdk.git",
+  "sdk_commit": "5eaa11cfd2b052d9a9c71989faa0d55a8a8c57aa",
+  "sdk_license_files": [
+    "LICENSE.txt",
+    "bctoolbox/LICENSE.txt",
+    "bcunit/COPYING",
+    "belcard/LICENSE.txt",
+    "belle-sip/LICENSE.txt",
+    "belr/LICENSE.txt",
+    "bzrtp/LICENSE.txt",
+    "liblinphone/LICENSE.txt",
+    "liblinphone/libxsd/LICENSE",
+    "lime/LICENSE.txt",
+    "mediastreamer2/LICENSE.txt",
+    "mediastreamer2/debian/copyright",
+    "mediastreamer2/include/OpenGL/LICENSE",
+    "mediastreamer2/tools/audio/tools/LICENSE.txt",
+    "msaaudio/LICENSE.txt",
+    "msamr/COPYING",
+    "msandroidcamera2/LICENSE.txt",
+    "mscodec2/COPYING",
+    "msoboe/LICENSE.txt",
+    "msopenh264/COPYING",
+    "mswasapi/COPYING",
+    "mswebrtc/COPYING",
+    "mswebrtc/common_audio/third_party/ooura/LICENSE",
+    "mswebrtc/third_party/abseil-cpp/LICENSE",
+    "ortp/LICENSE.txt",
+    "ortp/debian/copyright",
+    "postquantumcryptoengine/LICENSE.txt"
+  ],
+  "submodules": [
+    {
+      "path": "bcg729",
+      "repository": "https://gitlab.linphone.org/BC/public/bcg729.git",
+      "commit": "8bec1e5fc072f3669e435edd137eb3da6da2eef7"
+    },
+    {
+      "path": "bcmatroska2",
+      "repository": "https://gitlab.linphone.org/BC/public/bcmatroska2.git",
+      "commit": "ca080c1689a3bfebe6b71c69444b94b0dba8e54a"
+    },
+    {
+      "path": "belle-sip/tester/cpp-httplib",
+      "repository": "https://gitlab.linphone.org/BC/public/external/cpp-httplib.git",
+      "commit": "a2ed0d11c134b6c23da275103b5183b423cea8a8"
+    },
+    {
+      "path": "external/aom",
+      "repository": "https://gitlab.linphone.org/BC/public/external/aom.git",
+      "commit": "65ad4cd63cbe7f10eaa4b4af7f55fd540617516a"
+    },
+    {
+      "path": "external/bv16-floatingpoint",
+      "repository": "https://gitlab.linphone.org/BC/public/external/bv16-floatingpoint.git",
+      "commit": "c4a341a3277e8adcc42427c4fd80a457fe934f2a"
+    },
+    {
+      "path": "external/codec2",
+      "repository": "https://gitlab.linphone.org/BC/public/external/codec2.git",
+      "commit": "164447c2fcb4ded07cfe7cee406f9c5052629536"
+    },
+    {
+      "path": "external/dav1d",
+      "repository": "https://gitlab.linphone.org/BC/public/external/dav1d.git",
+      "commit": "1fd0bab43674eef68eb8427b543bb8a5e4271f9f"
+    },
+    {
+      "path": "external/decaf",
+      "repository": "https://gitlab.linphone.org/BC/public/external/decaf.git",
+      "commit": "e5cc6240690d3ffdfcbdb1e4e851954b789cd5d9"
+    },
+    {
+      "path": "external/gsm",
+      "repository": "https://gitlab.linphone.org/BC/public/external/gsm.git",
+      "commit": "ff67768db9e49fc749920422ea4061b7f8f01b3f"
+    },
+    {
+      "path": "external/hidapi",
+      "repository": "https://github.com/libusb/hidapi.git",
+      "commit": "d6b2a974608dec3b76fb1e36c189f22b9cf3650c"
+    },
+    {
+      "path": "external/jsoncpp",
+      "repository": "https://gitlab.linphone.org/BC/public/external/jsoncpp.git",
+      "commit": "dadce78005ba1147c3f840167123d66e76e9707f"
+    },
+    {
+      "path": "external/libjpeg-turbo",
+      "repository": "https://gitlab.linphone.org/BC/public/external/libjpeg-turbo.git",
+      "commit": "91f8025a3071d6cec2c41265a038f47fcd28f092"
+    },
+    {
+      "path": "external/liboqs",
+      "repository": "https://gitlab.linphone.org/BC/public/external/liboqs.git",
+      "commit": "e219b1a679254c0eef9e3d9b224d0bb6555d474a"
+    },
+    {
+      "path": "external/libvpx",
+      "repository": "https://gitlab.linphone.org/BC/public/external/libvpx.git",
+      "commit": "5a4dda49fda0f6226173c27b93659c953f094fe0"
+    },
+    {
+      "path": "external/libxml2",
+      "repository": "https://gitlab.linphone.org/BC/public/external/libxml2.git",
+      "commit": "d6131eb375dd507006ed4d3541915cb1b3da5aa2"
+    },
+    {
+      "path": "external/libyuv",
+      "repository": "https://gitlab.linphone.org/BC/public/external/libyuv.git",
+      "commit": "a3a7937e762a7ce33b79f4b05f2ad44093e7ba1c"
+    },
+    {
+      "path": "external/mbedtls",
+      "repository": "https://gitlab.linphone.org/BC/public/external/mbedtls.git",
+      "commit": "7cbc810e5645e16206555343deb2e9263c0f3750"
+    },
+    {
+      "path": "external/opencore-amr",
+      "repository": "https://gitlab.linphone.org/BC/public/external/opencore-amr.git",
+      "commit": "084d2a08e2bce13a27cb33f4b371030dab8c2460"
+    },
+    {
+      "path": "external/openh264",
+      "repository": "https://gitlab.linphone.org/BC/public/external/openh264.git",
+      "commit": "5ac757be463248e36fcde4c5417d4ac6e04a9051"
+    },
+    {
+      "path": "external/openldap",
+      "repository": "https://gitlab.linphone.org/BC/public/external/openldap.git",
+      "commit": "c4d91453d12497e4db66e1bad9056ad55ac12adb"
+    },
+    {
+      "path": "external/opus",
+      "repository": "https://gitlab.linphone.org/BC/public/external/opus.git",
+      "commit": "f86ad14bbbe9644efee876ebb73a5931b25c4627"
+    },
+    {
+      "path": "external/rnnoise",
+      "repository": "https://gitlab.linphone.org/BC/public/external/rnnoise.git",
+      "commit": "d107462bff3bcda43d8115487959d1e66da905dc"
+    },
+    {
+      "path": "external/soci",
+      "repository": "https://gitlab.linphone.org/BC/public/external/soci.git",
+      "commit": "3a9c79088212941d0175c22cd2da8fe1bdd639df"
+    },
+    {
+      "path": "external/speex",
+      "repository": "https://gitlab.linphone.org/BC/public/external/speex.git",
+      "commit": "52f01d5a680efd0433df5e130997f01e1976939a"
+    },
+    {
+      "path": "external/sqlite3",
+      "repository": "https://gitlab.linphone.org/BC/public/external/sqlite3.git",
+      "commit": "ceb88c26e1bde0ab02b09d09cbb481d9baeeefc4"
+    },
+    {
+      "path": "external/srtp",
+      "repository": "https://gitlab.linphone.org/BC/public/external/srtp.git",
+      "commit": "930ec54bf0c5b63b7e319d8551028af897127f8c"
+    },
+    {
+      "path": "external/vo-amrwbenc",
+      "repository": "https://gitlab.linphone.org/BC/public/external/vo-amrwbenc.git",
+      "commit": "986a52ced2a02511a3c250f101df18e7f7d36dde"
+    },
+    {
+      "path": "external/xerces-c",
+      "repository": "https://gitlab.linphone.org/BC/public/external/xerces-c.git",
+      "commit": "cb8467f9e4ed31e3af9474f439af98182bf64728"
+    },
+    {
+      "path": "external/zlib",
+      "repository": "https://gitlab.linphone.org/BC/public/external/zlib.git",
+      "commit": "446edd4aeeaec542ce2b3ef78286d2c1088c93ea"
+    },
+    {
+      "path": "external/zxing-cpp",
+      "repository": "https://gitlab.linphone.org/BC/public/external/zxing-cpp.git",
+      "commit": "722123ad0cadee0e4c313f80eac5162a9f8d7d73"
+    },
+    {
+      "path": "msoboe/oboe",
+      "repository": "https://github.com/google/oboe.git",
+      "commit": "5975ab04b02861dc126f3c8fd687321520cd8ae4"
+    }
+  ]
+}

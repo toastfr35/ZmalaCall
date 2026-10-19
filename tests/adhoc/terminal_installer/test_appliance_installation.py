@@ -48,6 +48,10 @@ class ApplianceInstallTests(unittest.TestCase):
             root = Path(folder)
             for name in ('source/zmala_terminal/common','source/build_tools/linux','var/lib/zmalacall','migrate'):
                 (root/name).mkdir(parents=True,exist_ok=True)
+            for name in ('tests/terminal/LLT/turn_parser.cpp', 'tests/support/native/turn-write-cases.h'):
+                fixture = root/'source'/name
+                fixture.parent.mkdir(parents=True, exist_ok=True)
+                fixture.write_bytes((ROOT/name).read_bytes())
             (root/'var/lib/zmalacall/terminal.json').write_text('existing-private-state')
             (root/'migrate/terminal.json').write_text('must-not-overwrite')
             (root/'migrate').chmod(0o755)  # Source permissions must not weaken private state.

@@ -108,7 +108,7 @@ class ServerInstallerTests(unittest.TestCase):
             self.assertTrue(first[-1].endswith('package-server.py'))
             self.assertIn('--onefile', second)
             self.assertIn('--windowed', second)
-            self.assertEqual(second[second.index('--name')+1], 'zmala_server_setup')
+            self.assertEqual(second[second.index('--name')+1], 'ZmalaServer-Pi4-setup')
             self.assertEqual(sum(argument == '--add-data' for argument in second), 4)
             self.assertTrue(any('tar.gz.sha256' in argument for argument in second))
             self.assertTrue(any('remote_probe.py' in argument for argument in second))
