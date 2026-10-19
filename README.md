@@ -7,6 +7,10 @@
 <p align="center"><strong>Family video calls, on your TV or Android phone.</strong></p>
 
 <p align="center">
+  <img src="docs/images/zmalacall-overview.png" alt="A retired couple calling from a TV terminal and a younger person using the Android app, connected through ZmalaServer." width="1000">
+</p>
+
+<p align="center">
   <a href="#get-started">Get started</a> ·
   <a href="https://github.com/toastfr35/ZmalaCall/releases/latest">Releases</a> ·
   <a href="#guides">Guides</a> ·
