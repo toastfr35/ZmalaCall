@@ -28,6 +28,7 @@ SOURCES = {
 }
 SERVER_INSTALL = {'', 'Before you start', 'Prepare the microSD card',
                   'Install and open administration', 'Keep its address stable',
+                  'Router port forwarding for remote calls',
                   'Replacing an existing server', 'Maintenance and failed installation'}
 
 

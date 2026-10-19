@@ -681,6 +681,13 @@ be forwarded to an ACME challenge responder for certificate issuance/renewal.
 Use the same trusted hostname certificate for all three TLS services. All client
 connections are outbound; the phone and terminal routers need no port forwarding.
 
+The server Installation PDF includes a generic router walkthrough for this
+single-Pi topology, including DHCP reservation, DDNS, double NAT and CGNAT,
+the forwarding rules, and outside-network checks. Its editable source is
+`docs/server_prep.docx`; `build_tools/update-network-guides.py` maintains the
+network sections. Forwarding is separate from secure-service provisioning and
+must match the configured listeners and coturn relay range.
+
 One reference Pi deployment uses a wired DHCP reservation and relay UDP ports
 `30000–30199`. A router DDNS updater maintains its public A record. In that deployment, `zmala-turn-address.timer`
 checks the A record every five minutes and updates coturn's external-address
