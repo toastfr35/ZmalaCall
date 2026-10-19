@@ -73,7 +73,7 @@ class Callbacks {
     });
     for (const r of this.requests)
       if (r.status === 'pending') {
-        if (!this.store.terminal(r.from) || !this.store.permitted(r.from, r.to)) {
+        if (!this.store.enrolledAccount(r.from) || !this.store.permitted(r.from, r.to)) {
           r.status = 'cancelled';
           changed = true;
         }
@@ -93,7 +93,8 @@ class Callbacks {
   // @llr LLR-SRV-CALLBACK-015
   /** @param {string} from @param {unknown} to */
   create(from, to) {
-    this.store.requireTerminal(from);
+    if (!this.store.enrolledAccount(from))
+      throw Object.assign(Error('Choose an enrolled account.'), { status: 403 });
     this.reconcile();
     if (typeof to !== 'string' || !this.store.permitted(from, to)) {
       const e = Object.assign(Error('Callback request is not permitted.'), { status: 403 });

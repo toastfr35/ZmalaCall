@@ -1,0 +1,54 @@
+active: true
+derived: false
+normative: true
+ref: ''
+reviewed: null
+scope: Experimental
+level: 2
+area: Application updates
+header: Verified idle installation policy
+text: The app shall check the fixed public ZmalaCall latest-release endpoint on opening no more than every
+  six hours and schedule a daily network-constrained check. It shall offer only newer stable releases
+  with one exact ZmalaPhone.apk asset, bounded size and SHA256 digest. Downloads shall use trusted HTTPS
+  GitHub asset origins without enrollment credentials, remain private, and be verified for length, digest,
+  application ID, increasing version code, matching release version, non-debuggable flag and the existing
+  signing certificate before submission to Android signature validation. Automatic updates shall default
+  off, be offered only on Android 12 or later, and require installation permission, an unmetered network
+  and thirty seconds of visible idle time. Update and Later shall be available; Later shall defer prompting
+  and automatic work for a day. APK transfer and staging shall stop when the app backgrounds or a call
+  rings or starts, and installation commit shall be mutually exclusive with incoming and outgoing calls.
+  Committed installation shall temporarily refuse new calls until it finishes. Android approval shall
+  be requested only for a user-initiated update; automatic approval fallback shall require a manual Update
+  action. Failed or partial downloads shall be removed and retries bounded. Enrollment shall be retained.
+  A discreet installed version and Updates action shall appear only on the contact screen, never setup
+  or call screens.
+verification: Unit-test metadata, origins, archive identity and signature matching, and call/install exclusion.
+  Exercise the actual update UI and an Android PackageInstaller self-update with a same-key higher-version
+  fixture; verify rejection paths, retained enrollment and confirmation fallback separately on older Android.
+links:
+- HLR-AND-UPDATE-001: null
+references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/UpdatePolicy.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/UpdateGate.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/AppUpdates.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/UpdateJob.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/UpdateResult.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallEngine.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/PushAlerts.java
+  type: file
+- path: tests/android/LLT/unit/UpdatePolicyTest.java
+  type: file
+- path: tests/android/LLT/device/InterfaceTest.java
+  type: file
+- path: tests/android/LLT/device/UpdateInstallerTest.java
+  type: file
+- path: zmala_phone/app/src/main/AndroidManifest.xml
+  type: file

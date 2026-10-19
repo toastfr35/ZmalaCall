@@ -45,6 +45,7 @@ def installer_source(name: str) -> bool:
 
 
 EXCLUSIONS = {
+    'zmala_phone/app/src/main/assets/licenses/SDK-SOURCES.json': 'Packaged dependency source provenance, not runtime configuration.',
     'zmala_server/web/admin.js': 'Generated bundle; authored admin modules are mapped.',
     'zmala_server/web/admin.css': 'Generated bundle; authored stylesheets are mapped.',
     'zmala_server/package.json': 'Dependency/build metadata, not an application behavior.',

@@ -26,6 +26,18 @@ function liveConfiguration(id, { store, sipServer, callbacks }) {
 async function deviceRoutes(req, res, url, context) {
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses } = context;
   let { deviceId } = context;
+  // @llr LLR-SRV-CALLBACK-015, LLR-SRV-APP-003
+  if (url.pathname === '/api/app/callbacks' && req.method === 'POST') {
+    const id = requireDevice(deviceId);
+    if (store.enrolledAccount(id)?.type !== 'app')
+      throw httpError(403, 'An app account is required.');
+    const update = await readJson(req, 4096);
+    if (Object.keys(update).some((key) => key !== 'to'))
+      throw httpError(400, 'Send only the recipient.');
+    const callback = callbacks.create(id, update.to);
+    await callbacks.flush();
+    return send(res, 200, { callback });
+  }
   // @llr LLR-SRV-APP-005
   if (['/api/app/push', '/api/app/call/decline'].includes(url.pathname) && req.method === 'POST') {
     const id = requireDevice(deviceId);
@@ -49,7 +61,12 @@ async function deviceRoutes(req, res, url, context) {
         registrationOnline(sipServer.registrations.get(contact.id)) ||
         !!sipServer.appCalls?.push.available(contact.id),
     }));
-    return send(res, 200, { ...config, push_enabled: !!sipServer.appCalls?.push.sender.enabled });
+    return send(res, 200, {
+      ...config,
+      callbacks: callbacks.list(id),
+      callbacks_enabled: true,
+      push_enabled: !!sipServer.appCalls?.push.sender.enabled,
+    });
   }
   if (
     deviceId &&

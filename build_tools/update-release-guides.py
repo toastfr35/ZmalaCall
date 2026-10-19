@@ -20,7 +20,7 @@ PHONE = {
             ('1. Download and install', [
                 'Open the release link supplied by your administrator and download ZmalaPhone.apk. The project release page is ' + RELEASES + '. The two ZmalaPhone PDF files are the installation instructions and user guide.',
                 'Open the APK from Downloads or your file manager. If Android asks, allow that browser or file manager to install apps, then return to the APK and tap Install. You can turn off that permission after installation. No USB cable or SIM card is needed for this installation method.',
-                'For an update from an earlier signed release, install the new APK over the existing app. Your account setup stays in place. Do not uninstall just to perform an ordinary update.',
+                'For an update from an earlier signed release, install the new APK over the existing app. Your account setup stays in place. Do not uninstall just to perform an ordinary update. Once the contact screen has an Updates control, use it for later updates; see ZmalaPhone-Guide.pdf for optional automatic updates.',
                 'An earlier development/debug copy uses a different signing certificate. Android cannot replace it with the release APK. Obtain your setup QR first, uninstall the development copy, install the release and scan the QR again. Uninstalling removes this phone\'s local setup; the server account and groups remain.',
             ]),
             ('2. Scan your setup QR', [
@@ -45,9 +45,17 @@ PHONE = {
                 'Contacts appear with a photo and name. A green name means the contact is online: tap it to call. A gray name means offline and cannot be tapped to start a call. Scroll when there are more contacts than fit on screen.',
                 'A pulsing phone animation appears while the other end rings. After answer, Connecting video stays visible until the first remote video frame arrives. A brief wait can happen while the connection starts.',
             ]),
+            ('Missed calls and callback requests', [
+                'A red missed-call arrow and count on a contact portrait show calls you did not answer. A green return arrow means that person has asked you to call back; a green outgoing arrow means your request is pending. Tap the callback icon beside the name for details or to clear missed calls.',
+                'For an offline contact, tap the callback icon and choose Request callback. After an unanswered outgoing call, the app also offers Request callback. This sends a request through the Zmala server; it does not place another call. Repeated requests remain one pending request for the pair.',
+                'When the contact becomes available, tap their green name to call. A connected call completes pending callback requests between you and clears your missed-call count for that person. The administrator controls request expiry. If the action is absent, the server needs an update to support app callbacks.',
+            ]),
             ('Answer an incoming call', [
                 'Use Answer or Decline on the incoming-call screen or notification. Incoming alerts can arrive while you use another app or the phone sleeps when notifications and server push are configured. Unlock the phone if Android requires it.',
                 'Keep ZmalaPhone visible during an answered video call. Leaving the app ends its call media. After a deliberate Android Force stop, open the app again before expecting incoming calls.',
+            ]),
+            ('Reset setup only when needed', [
+                'To deliberately remove setup, use Android Settings > Apps > ZmalaPhone > Storage > Clear storage (sometimes Clear app data). This requires a setup QR again and does not delete the server account. Do not clear data as the first response to a temporary network problem.',
             ]),
             ('During a call', [
                 'The large picture shows the other person; the small view at bottom right shows your own camera. Rotate your phone for portrait or landscape. Tap the video to show the four round controls; they disappear after five seconds without interaction.',
@@ -60,9 +68,11 @@ PHONE = {
                 'No sound or video: check camera and microphone permissions, microphone mute, listening volume and the camera lens. If Connecting video does not clear, end the call and retry; report which direction failed and whether sound worked.',
                 'Calls work only on one network: ask the administrator to check secure remote access and whether your setup QR uses the HTTPS server address. A local-only server cannot support calls across arbitrary networks.',
             ]),
-            ('Updates and deliberate setup changes', [
-                'Install a newer signed ZmalaPhone.apk over the existing release to preserve setup. See ZmalaPhone-Installation.pdf before replacing a development copy.',
-                'To deliberately remove setup, use Android Settings > Apps > ZmalaPhone > Storage > Clear storage (sometimes Clear app data). This requires a setup QR again and does not delete the server account. Do not clear data as the first response to a temporary network problem.',
+            ('Updates', [
+                'The installed version appears discreetly at the bottom of the contact screen, beside Updates. Tap Updates to check now. When a newer published version is available, choose Update or Later. Later postpones reminders and automatic updates for a day.',
+                'Allow installation from ZmalaPhone when Android opens Settings, then return and tap Update. Android 9 to 11 requires confirmation. Updates preserve your setup. If your older app has no Updates button, install one APK manually first; see ZmalaPhone-Installation.pdf.',
+                'On Android 12 or later, Automatic updates on Wi-Fi is optional and initially off. It requires installation permission, an unmetered connection and 30 seconds with the app open and idle. If Android still requires approval, tap Update to continue.',
+                'Updates wait during calls. Downloads pause when a call starts or you leave the app; reopen Updates to continue. Calls are briefly unavailable during installation. Do not uninstall the app for ordinary updates.',
             ]),
         ],
     ),
@@ -130,7 +140,7 @@ def build_phone():
         doc.add_paragraph(intro)
         for heading, paragraphs in sections:
             paragraph = doc.add_heading(heading, 1)
-            if heading in ('3. Enable incoming call alerts', 'When something is not working'):
+            if heading in ('3. Enable incoming call alerts', 'During a call'):
                 paragraph.paragraph_format.page_break_before = True
             for text in paragraphs:
                 doc.add_paragraph(text)

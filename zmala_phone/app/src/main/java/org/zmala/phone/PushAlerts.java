@@ -171,10 +171,16 @@ public final class PushAlerts {
             : PushMessage.verify(enrollment, data, System.currentTimeMillis());
     if (message == null) return;
     if (message.event.equals("cancel")) {
+      // @llr LLR-AND-HISTORY-002
+      CallNotices.finish(context, message.callId, true);
       dismiss(context, message.callId);
       return;
     }
     if (closed(context, message.callId, false)) return;
+    // @llr LLR-AND-UPDATE-002
+    if (!AppUpdates.get(context).ring(message.expires)) return;
+    // @llr LLR-AND-HISTORY-002
+    CallNotices.ring(context, message.callId, message.caller, message.expires);
     if (MainActivity.pushIncoming(data)) return;
     show(context, message, data);
   }
@@ -246,6 +252,8 @@ public final class PushAlerts {
               ? null
               : PushMessage.verify(enrollment, unpack(intent), System.currentTimeMillis());
       if (message == null) return;
+      // @llr LLR-AND-HISTORY-002
+      CallNotices.finish(context, message.callId, false);
       dismiss(context, message.callId);
       PendingResult result = goAsync();
       NETWORK.execute(

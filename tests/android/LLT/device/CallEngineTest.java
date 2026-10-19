@@ -19,8 +19,14 @@ import java.util.concurrent.TimeUnit;
 import org.junit.*;
 
 public class CallEngineTest {
+  @Rule public androidx.test.rule.ActivityTestRule<MainActivity> activity =
+      new androidx.test.rule.ActivityTestRule<>(MainActivity.class, false, false);
+
   @Test
   public void foregroundTimerSurvivesStartupBoost() throws Exception {
+    java.nio.file.Files.deleteIfExists(new java.io.File(
+        PhoneFixture.INSTRUMENTATION.getTargetContext().getNoBackupFilesDir(), "enrollment.json").toPath());
+    activity.launchActivity(null);
     CallEngine engine = new CallEngine(status -> {});
     try (PhoneFixture.Sip sip = new PhoneFixture.Sip()) {
       PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {

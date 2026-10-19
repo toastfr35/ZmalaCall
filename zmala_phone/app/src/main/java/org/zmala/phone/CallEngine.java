@@ -20,6 +20,11 @@ public final class CallEngine {
   public Call call;
   public boolean registered;
   private final VideoStartup videoStartup;
+  // @llr LLR-AND-HISTORY-002
+  private Context context;
+  private boolean connected;
+  private String outgoingPeer, unansweredPeer;
+  String takeUnansweredPeer() { String peer = unansweredPeer; unansweredPeer = null; return peer; }
 
   public CallEngine(Events events) {
     this.events = events;
@@ -31,10 +36,11 @@ public final class CallEngine {
 
   public void start(Context context, JSONObject configuration) throws Exception {
     stop();
+    this.context = context.getApplicationContext();
     config = configuration;
     Factory.instance().setDebugMode(false, "ZmalaPhone");
     core = Factory.instance().createCore(null, null, context.getApplicationContext());
-    core.setUserAgent("ZmalaPhone", "0.3.6");
+    core.setUserAgent("ZmalaPhone", context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName);
     core.setAutoIterateEnabled(true);
     core.setDatabaseEnabled(false);
     core.setMaxCalls(1);
@@ -97,14 +103,30 @@ public final class CallEngine {
                 changed.decline(Reason.Declined);
                 return;
               }
+              // @llr LLR-AND-UPDATE-002
+              if (!UpdateGate.INSTANCE.beginCall()) { changed.decline(Reason.Busy); return; }
+              // @llr LLR-AND-HISTORY-002
+              connected = false; outgoingPeer = null;
+              CallNotices.ring(context, changed.getCallLog().getCallId(), remote.getUsername(), System.currentTimeMillis() + 120000);
               call = changed;
             } else if (state == Call.State.OutgoingInit) call = changed;
             if (call != changed) return;
+            // @llr LLR-AND-HISTORY-002
+            if (state == Call.State.Connected || state == Call.State.StreamsRunning) {
+              connected = true;
+              CallNotices.answered(context, changed.getCallLog().getCallId(), changed.getRemoteAddress().getUsername());
+            }
             if (state == Call.State.End
                 || state == Call.State.Error
                 || state == Call.State.Released) {
               videoStartup.reset();
+              // @llr LLR-AND-HISTORY-002
+              if (!connected && outgoingPeer != null) unansweredPeer = outgoingPeer;
+              if (outgoingPeer == null) CallNotices.finish(context, changed.getCallLog().getCallId(), !connected);
+              outgoingPeer = null;
               call = null;
+              // @llr LLR-AND-UPDATE-002
+              UpdateGate.INSTANCE.endCall();
               core.setNativeVideoWindowId(null);
               core.setNativePreviewWindowId(null);
               events.changed(state == Call.State.Error ? "Call could not connect" : "Call ended");
@@ -197,8 +219,16 @@ public final class CallEngine {
     params.setAudioEnabled(true);
     params.setMediaEncryption(callEncryption());
     params.setRtpBundleEnabled(false);
-    if (core.inviteAddressWithParams(address, params) == null)
-      events.changed("Call could not start");
+    // @llr LLR-AND-UPDATE-002
+    if (!UpdateGate.INSTANCE.beginCall()) { events.changed("An update is being installed. Try again shortly."); return; }
+    // @llr LLR-AND-HISTORY-002
+    connected = false; outgoingPeer = contact.optString("id"); unansweredPeer = null;
+    try {
+      if (core.inviteAddressWithParams(address, params) == null) {
+        UpdateGate.INSTANCE.endCall();
+        events.changed("Call could not start");
+      }
+    } catch (RuntimeException error) { UpdateGate.INSTANCE.endCall(); throw error; }
   }
 
   public void answer() {
@@ -217,6 +247,9 @@ public final class CallEngine {
   }
 
   public void hangup() {
+    // @llr LLR-AND-HISTORY-002
+    if (call != null && call.getState() == Call.State.IncomingReceived)
+      CallNotices.finish(context, call.getCallLog().getCallId(), false);
     if (call != null) call.terminate();
   }
 
@@ -265,10 +298,15 @@ public final class CallEngine {
   }
 
   public void stop() {
+    // @llr LLR-AND-HISTORY-002
+    if (call != null && outgoingPeer == null && context != null)
+      CallNotices.finish(context, call.getCallLog().getCallId(), !connected);
     videoStartup.reset();
     Core previous = core;
     core = null;
     call = null;
+    // @llr LLR-AND-UPDATE-002
+    UpdateGate.INSTANCE.endCall();
     registered = false;
     if (previous != null) {
       previous.terminateAllCalls();

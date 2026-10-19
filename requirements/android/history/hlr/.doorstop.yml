@@ -1,0 +1,19 @@
+settings:
+  digits: 3
+  itemformat: yaml
+  prefix: HLR-AND-HISTORY
+  sep: '-'
+  parent: PROD
+attributes:
+  defaults:
+    doc:
+      name: HLR-AND-HISTORY
+      title: Missed calls and callback requests - HLR
+  publish:
+  - area
+  - scope
+  - verification
+  reviewed:
+  - area
+  - scope
+  - verification

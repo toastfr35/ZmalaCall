@@ -125,7 +125,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
-          python3 build_tools/release/assemble.py --apk build_tools/dist/android/ZmalaPhone.apk --output build_tools/dist/release-downloads
+          python3 build_tools/release/assemble.py --apk build_tools/dist/android --output build_tools/dist/release-downloads
           python3 build_tools/release/github_release.py notes --assets build_tools/dist/release-downloads --output build_tools/dist/release-notes.md
       - name: Upload and publish the GitHub Release
         env:

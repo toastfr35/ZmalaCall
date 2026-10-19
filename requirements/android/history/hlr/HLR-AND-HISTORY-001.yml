@@ -1,0 +1,19 @@
+active: true
+area: Missed calls and callback requests
+derived: false
+header: Contact call notices and callback requests
+level: 1
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/android/HLT/callbacks.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The app shall show missed calls and incoming or sent callback requests beside
+  the relevant contact. Users shall be able to request a callback from an offline
+  contact or after an unanswered outgoing call using the shared server callback system.
+verification: Exercise missed native and push calls, offline and unanswered requests,
+  another account receiving a request, and completion after a connected call.

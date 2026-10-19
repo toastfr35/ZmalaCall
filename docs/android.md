@@ -2,7 +2,7 @@
 
 ZmalaPhone is the Android companion in `zmala_phone/`, package `org.zmala.phone`.
 
-Version 0.3.6 supports encrypted calls through the server's TLS/TURN relay from
+Version 0.3.7 supports encrypted calls through the server's TLS/TURN relay from
 
 separate NAT networks, alongside LAN mode and Firebase incoming-call alerts while
 
@@ -10,7 +10,7 @@ the activity is closed. Remote mode needs a publicly reachable, configured secur
 
 deployment and HTTPS enrollment. Leaving an active call ends media and registration;
 
-callback-message presentation is not implemented.
+missed-call and callback indicators are shown in the contact list.
 
 Normative scope and verification plans live in `requirements/android/`; this
 
@@ -132,6 +132,50 @@ Clear storage (called Clear app data on some phones), then scan an App QR again.
 This stops the app and removes its local data; the server account is unchanged.
 
 There is no reset action within the app. There is no manual SIP editor or public Linphone account assistant.
+
+## App updates and contact notices
+
+The contact screen alone displays the installed version and an Updates action.
+`AppUpdates` checks the fixed public GitHub latest-release API at most every six
+hours on opening; `UpdateJob` schedules a daily network-constrained metadata check.
+No server bearer token, account identity or GitHub token goes to GitHub. Only
+stable newer releases with the exact uploaded APK asset and SHA256 digest qualify.
+Downloads use bounded HTTPS redirects to GitHub asset hosts and private cache
+storage, with length, digest, package, version, debug-flag and signer checks.
+Android PackageInstaller performs final APK signature validation.
+
+Automatic updates default off and are offered on Android 12+. They require the
+user's install-apps permission, an unmetered connection and 30 seconds with the
+app visible and idle. Android 9-11 uses the Update button and system confirmation.
+Android 12+ may also require confirmation; an automatic attempt then falls back
+to manual Update without repeatedly launching approval. Later defers reminders
+and automatic work for 24 hours. Background jobs check metadata only; APK transfer
+and installation require the visible app. Android scheduling and Force stop can
+delay checks. The first updater-enabled release still needs a manual installation.
+Debug builds cannot update to the differently signed public release.
+
+`UpdateGate` serializes native call admission, verified push rings and installation
+commit. Ringing and calls prevent commit and cancel transfer/staging at chunk
+boundaries; backgrounding cancels it too. Once committed, installation briefly
+refuses new calls until Android reports completion/cancellation. Session identity
+is persisted for recovery; stale staging sessions and failed downloads are removed.
+A completed update retains enrollment. Neither update prompts nor version labels
+appear over a call.
+
+`NoticeBook` deduplicates native/push incoming calls by call ID, retains up to 128
+recent observations and 128 contact counts capped at 99, and settles unacknowledged
+rings at expiry. `CallNotices` saves this per-enrollment state in private app
+preferences. Answered/declined calls are not missed; connected calls clear the
+peer's count. Missed icons are red; incoming callback and sent-request arrows are
+green. The adjacent callback action opens details, requests a callback or clears
+missed calls. Unanswered outgoing calls also offer a callback. Badges are derived
+from the current allowed directory and the server's pending callback snapshot.
+
+The server advertises `callbacks_enabled` and returns `callbacks` in app config.
+`POST /api/app/callbacks` accepts only a recipient `to`; authenticated App identity
+is the requester. Shared server callbacks deduplicate, expire and complete on
+connection for App and Terminal accounts. Old servers omit the capability, so
+the action stays hidden. App callbacks need a server upgrade as well as the APK.
 
 ## Sources and ownership
 
@@ -458,3 +502,16 @@ a distribution artifact. Release lint reported zero errors and six existing
 warnings. Packaging checks rejected missing signing and missing Firebase inputs.
 Physical call qualification used the same 0.3.6 sources in the development variant;
 the release certificate was not installed over existing phones' debug enrollment.
+
+For 0.3.7, portable tests, release lint and eight emulator instrumentation cases
+passed, covering native calls, notices, callback submission, the contact-only version
+and invalid installer inputs. A separate emulator run performed a real same-key
+PackageInstaller self-update using a private higher-version fixture: APK transfer
+was refused during an outgoing native call, then automatic installation completed
+after hangup and retained enrollment. Only the HTTPS transport was replaced with
+fixture metadata and bytes; this does not qualify GitHub availability or older OEM
+approval behavior. The OnePlus was migrated to the signed release with enrollment
+preserved, media/notification permissions restored and the contact screen checked.
+The Pi's App callback API passed a deployed capability check. Cross-device callback
+delivery and the complete physical update matrix remain hardware plans, not passed
+runs. Nine focused server callback/API scenarios and requirements validation passed.

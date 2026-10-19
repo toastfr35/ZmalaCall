@@ -806,3 +806,15 @@ was interrupted by USB disconnection and is not counted as a pass. A subsequent
 idle service restart expired the diagnostic sessions, including that interrupted
 attempt. The server suite passed 199 tests with four opt-in/hardware skips;
 unit policy checks also cover remote app/terminal configuration and portraits.
+
+### App callback requests
+
+App configuration includes `callbacks_enabled: true` and the same per-account
+pending `callbacks` view used by terminals. `POST /api/app/callbacks` requires
+an App bearer token and a body containing only `to`. It creates the request as
+the authenticated account, validates current group permission, flushes the
+shared callback store and returns the request in a `callback` object. Existing
+pair deduplication, the 400-pending limit, cancellation on permission loss,
+expiry and connected-call completion apply to both App and Terminal requesters.
+The app receives no access to Pi settings or console APIs. Phone missed-call
+counts remain local to the app and are not part of server backups.

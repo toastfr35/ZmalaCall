@@ -189,6 +189,8 @@ public final class PhoneFixture {
     public final ServerSocket server;
     public volatile boolean authorized;
     public volatile String lastRequest = "", lastBody = "";
+    public volatile int callbackRequests;
+    public volatile String callbackRecipient;
     private final Thread thread;
 
     public Http(JSONObject config) throws Exception {
@@ -218,6 +220,10 @@ public final class PhoneFixture {
                     }
                     lastBody = new String(received, 0, offset);
                     lastRequest = request.toString();
+                    if (lastRequest.startsWith("POST /api/app/callbacks ")) {
+                      callbackRecipient = new JSONObject(lastBody).getString("to");
+                      callbackRequests++;
+                    }
                     byte[] body = config.toString().getBytes(StandardCharsets.UTF_8);
                     socket
                         .getOutputStream()

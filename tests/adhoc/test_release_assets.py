@@ -43,6 +43,21 @@ class ReleaseAssetTests(unittest.TestCase):
                 collect(dist, apk, root / 'release')
             self.assertFalse((root / 'release').exists())
 
+    def test_downloaded_android_artifact_preserves_version_directory(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            dist, apk = self.fixtures(root)
+            artifact = root / 'android'
+            nested = artifact / 'ZmalaPhone-0.3.7' / 'ZmalaPhone.apk'
+            nested.parent.mkdir(parents=True)
+            apk.rename(nested)
+            collect(dist, artifact, root / 'release')
+            self.assertEqual((root / 'release' / 'ZmalaPhone.apk').read_bytes(), nested.read_bytes())
+            (artifact / 'ZmalaPhone.apk').write_bytes(nested.read_bytes())
+            with self.assertRaisesRegex(ValueError, 'exactly one'):
+                collect(dist, artifact, root / 'ambiguous')
+            self.assertFalse((root / 'ambiguous').exists())
+
     def test_existing_destination_is_never_overwritten_or_merged(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

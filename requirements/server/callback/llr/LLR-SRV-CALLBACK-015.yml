@@ -19,9 +19,16 @@ references:
   type: file
 - path: zmala_server/history.js
   type: file
+- path: tests/server/LLT/app-callbacks.test.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
 reviewed: null
 scope: Core
 text: |
-  An authenticated terminal shall create requests only as itself to another permitted account. Repeated submissions shall return one pending request per pair across restart. The server shall admit at most 400 pending requests.
+  An authenticated Terminal or App account shall create requests only as itself to another permitted
+  account. Repeated submissions shall return one pending request per pair across restart. The server shall
+  admit at most 400 pending requests.
 verification: |
-  Create duplicates, foreign-identity requests and a full queue. Restart and check identity, limits and uniqueness.
+  Create duplicates, foreign-identity requests and a full queue. Restart and check identity,
+  limits and uniqueness.

@@ -71,6 +71,10 @@ public final class MainActivity extends Activity {
   private long answerExpires;
   private boolean pushReady;
   private boolean restartRequested;
+  // @llr LLR-AND-HISTORY-002
+  private boolean callbackSending;
+  private String displayedNotices = "";
+  private AlertDialog contactDialog;
   private final Runnable poll = () -> refresh(false);
 
   @Override
@@ -127,6 +131,23 @@ public final class MainActivity extends Activity {
   public void onDestroy() {
     network.shutdownNow();
     super.onDestroy();
+  }
+
+  // @llr LLR-AND-UPDATE-002
+  @Override public void onResume() {
+    super.onResume();
+    AppUpdates.get(this).attach(this);
+  }
+
+  // @llr LLR-AND-UPDATE-002
+  @Override public void onPause() {
+    AppUpdates.get(this).detach();
+    super.onPause();
+  }
+
+  // @llr LLR-AND-UPDATE-002
+  boolean updatesAllowed() {
+    return visible && enrollment != null && config != null && engine.call == null;
   }
 
   private boolean permissions() {
@@ -254,7 +275,10 @@ public final class MainActivity extends Activity {
                       engine.start(this, next);
                     else engine.refresh(next);
                     if (engine.call == null) registerPush();
-                    if (changed && engine.call == null) directory();
+                    // @llr LLR-AND-HISTORY-002
+                    boolean noticesChanged = !CallNotices.snapshot(this, next.getJSONArray("contacts"))
+                        .toString().equals(displayedNotices);
+                    if ((changed || noticesChanged) && engine.call == null) directory();
                   } catch (Exception e) {
                     engine.stop();
                     showError("Unable to start calling. Check app permissions and setup.");
@@ -371,6 +395,9 @@ public final class MainActivity extends Activity {
       scroll.addView(contacts);
       page.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
       JSONArray entries = config.optJSONArray("contacts");
+      // @llr LLR-AND-HISTORY-002
+      NoticeBook notices = CallNotices.snapshot(this, entries == null ? new JSONArray() : entries);
+      displayedNotices = notices.toString();
       int count = 0;
       if (entries != null)
         for (int i = 0; i < entries.length(); i++) {
@@ -388,7 +415,9 @@ public final class MainActivity extends Activity {
           photo.setContentDescription("Photo of " + contact.optString("name"));
           photo.setBackground(rounded(PANEL));
           photo.setClipToOutline(true);
-          card.addView(photo, new LinearLayout.LayoutParams(dp(72), dp(72)));
+          FrameLayout portrait = new FrameLayout(this);
+          portrait.addView(photo, new FrameLayout.LayoutParams(-1, -1));
+          card.addView(portrait, new LinearLayout.LayoutParams(dp(72), dp(72)));
           boolean online = contact.optBoolean("online");
           Button call =
               button(
@@ -412,6 +441,36 @@ public final class MainActivity extends Activity {
           LinearLayout.LayoutParams nameArea = new LinearLayout.LayoutParams(0, -2, 1);
           nameArea.setMargins(dp(10), 0, 0, 0);
           card.addView(call, nameArea);
+          // @llr LLR-AND-HISTORY-002
+          int missed = notices.count(contact.optString("id"));
+          int callbacks = NoticeBook.callbacks(config.optJSONArray("callbacks"),
+              config.optJSONObject("sip").optString("username"), contact.optString("id"));
+          if (missed > 0) {
+            TextView badge = label("↙ " + missed, 13, FG);
+            badge.setBackground(rounded(RED));
+            badge.setContentDescription(missed + " missed call" + (missed == 1 ? "" : "s") + " from " + contact.optString("name"));
+            portrait.addView(badge, new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.RIGHT));
+          }
+          if (callbacks != 0) {
+            TextView badge = label(callbacks == 3 ? "↶ ↗" : (callbacks & 1) != 0 ? "↶" : "↗", 17, FG);
+            badge.setBackground(rounded(GREEN));
+            String incoming = "Please call " + contact.optString("name") + " back";
+            String sent = "Callback requested from " + contact.optString("name");
+            badge.setContentDescription(callbacks == 3 ? incoming + ". " + sent
+                : (callbacks & 1) != 0 ? incoming : sent);
+            portrait.addView(badge, new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.RIGHT));
+          }
+          if (config.optBoolean("callbacks_enabled") || missed > 0) {
+            ImageButton actions = new ImageButton(this);
+            actions.setImageResource(R.drawable.ic_callback);
+            actions.setBackground(rounded(PANEL));
+            actions.setPadding(dp(17), dp(17), dp(17), dp(17));
+            actions.setContentDescription("Call notices and callback for " + contact.optString("name"));
+            actions.setOnClickListener(v -> contactActions(contact, missed, callbacks));
+            LinearLayout.LayoutParams actionSize = new LinearLayout.LayoutParams(dp(60), dp(60));
+            actionSize.setMargins(dp(6), 0, 0, 0);
+            card.addView(actions, actionSize);
+          }
           String path = contact.optString("photo");
           int ticket = generation;
           Enrollment target = enrollment;
@@ -452,10 +511,29 @@ public final class MainActivity extends Activity {
                 : "Keep this screen open to receive calls",
             13,
             MUTED));
+    // @llr LLR-AND-UPDATE-002
+    if (enrollment != null && config != null) {
+      LinearLayout footer = new LinearLayout(this);
+      footer.setGravity(Gravity.CENTER_VERTICAL);
+      TextView version = label("v" + AppUpdates.get(this).version(), 12, MUTED);
+      footer.addView(version, new LinearLayout.LayoutParams(0, -2, 1));
+      TextView updates = label("Updates", 13, MUTED);
+      updates.setGravity(Gravity.CENTER);
+      updates.setMinHeight(dp(60));
+      updates.setMinWidth(dp(80));
+      updates.setContentDescription("Check for ZmalaPhone updates");
+      updates.setOnClickListener(v -> AppUpdates.get(this).show());
+      footer.addView(updates);
+      page.addView(footer);
+    }
   }
 
   // @llr LLR-AND-CALL-002, LLR-AND-UI-002
   private void callChanged(String text) {
+    // @llr LLR-AND-UPDATE-002
+    AppUpdates.get(this).callChanged();
+    // @llr LLR-AND-HISTORY-002
+    if (engine.call != null && contactDialog != null) { contactDialog.dismiss(); contactDialog = null; }
     if (!visible) return;
     message = text;
     if (engine.call == null) {
@@ -463,6 +541,21 @@ public final class MainActivity extends Activity {
       releaseAudio();
       getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
       directory();
+      // @llr LLR-AND-HISTORY-002
+      String unanswered = engine.takeUnansweredPeer();
+      if (unanswered != null && config != null && config.optBoolean("callbacks_enabled")) {
+        JSONArray contacts = config.optJSONArray("contacts");
+        if (contacts != null) for (int i = 0; i < contacts.length(); i++) {
+          JSONObject peer = contacts.optJSONObject(i);
+          if (unanswered.equals(peer.optString("id")) && peer.optBoolean("can_call")) {
+            contactDialog = new AlertDialog.Builder(this).setTitle("Call was not answered")
+                .setMessage("Ask " + peer.optString("name") + " to call you back?")
+                .setPositiveButton("Request callback", (d, which) -> requestCallback(peer))
+                .setNegativeButton("Not now", null).show();
+            break;
+          }
+        }
+      }
       return;
     }
     if (displayedCall == engine.call && callScreen != null) {
@@ -575,6 +668,44 @@ public final class MainActivity extends Activity {
         callScreen.progress(null);
         break;
     }
+  }
+
+  // @llr LLR-AND-HISTORY-002
+  private void contactActions(JSONObject contact, int missed, int callbacks) {
+    if (engine.call != null) return;
+    String details = missed > 0 ? missed + " missed call" + (missed == 1 ? "" : "s") + ".\n" : "";
+    if ((callbacks & 1) != 0) details += "This person has asked you to call back.\n";
+    if ((callbacks & 2) != 0) details += "Your callback request is pending.\n";
+    if (details.isEmpty()) details = contact.optBoolean("online") ? "Ask this person to call you back." : "This person is offline. You can ask them to call you back.";
+    AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle(contact.optString("name"))
+        .setMessage(details).setNegativeButton("Close", null);
+    if (config.optBoolean("callbacks_enabled") && (callbacks & 2) == 0)
+      builder.setPositiveButton("Request callback", (d, which) -> requestCallback(contact));
+    if (missed > 0) builder.setNeutralButton("Clear missed calls", (d, which) -> {
+      CallNotices.clear(this, contact.optString("id")); if (engine.call == null) directory();
+    });
+    contactDialog = builder.show();
+  }
+
+  // @llr LLR-AND-HISTORY-002
+  private void requestCallback(JSONObject contact) {
+    if (callbackSending || enrollment == null || !contact.optBoolean("can_call")) return;
+    callbackSending = true;
+    Enrollment target = enrollment;
+    network.execute(() -> {
+      boolean success;
+      try { ServerApi.requestCallback(target, contact.optString("id")); success = true; }
+      catch (Exception error) { success = false; }
+      boolean sent = success;
+      main.post(() -> {
+        callbackSending = false;
+        if (!visible || target != enrollment || engine.call != null) return;
+        if (sent) {
+          Toast.makeText(this, "Callback requested", Toast.LENGTH_SHORT).show();
+          refresh(false);
+        } else showError("Could not request a callback. Check your connection and try again.");
+      });
+    });
   }
 
   @Override

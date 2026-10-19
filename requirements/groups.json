@@ -37,6 +37,8 @@
   "AND": {
     "ENROLL": "QR enrollment and configuration",
     "CALL": "Audio and video calls",
-    "UI": "Portrait interface and controls"
+    "UI": "Portrait interface and controls",
+    "UPDATE": "Application updates",
+    "HISTORY": "Missed calls and callback requests"
   }
 }

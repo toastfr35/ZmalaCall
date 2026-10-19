@@ -15,6 +15,11 @@ ASSETS = (
 def collect(dist, apk, output):
     if output.exists():
         raise ValueError('Use a new empty destination; never merge with old release assets')
+    if apk.is_dir():
+        candidates = list(apk.rglob('ZmalaPhone.apk'))
+        if len(candidates) != 1 or candidates[0].is_symlink():
+            raise ValueError('Android artifact must contain exactly one ZmalaPhone.apk')
+        apk = candidates[0]
     sources = {name: apk if name.endswith('.apk') else
                dist / 'guides' / name if name.endswith('.pdf') else dist / name for name in ASSETS}
     for name, source in sources.items():
@@ -34,7 +39,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dist', type=Path, default=ROOT / 'build_tools/dist')
     parser.add_argument('--apk', type=Path, required=True,
-                        help='APK already verified by build_tools/android/release.py')
+                        help='Verified APK or downloaded Android artifact directory containing exactly one APK')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     for name in collect(args.dist, args.apk, args.output):

@@ -24,6 +24,12 @@ public final class ServerApi {
     return request(enrollment, path, limit, null);
   }
 
+  // @llr LLR-AND-HISTORY-002
+  static void requestCallback(Enrollment enrollment, String peer) throws Exception {
+    if (!peer.matches("[a-z][a-z0-9_-]{0,30}")) throw new IllegalArgumentException("Invalid contact.");
+    request(enrollment, "/api/app/callbacks", 16384, new JSONObject().put("to", peer));
+  }
+
   // @llr LLR-AND-CALL-004
   public static JSONObject push(Enrollment enrollment, String path, JSONObject body)
       throws Exception {

@@ -14,10 +14,14 @@ references:
   type: file
 - path: tests/server/LLT/app-accounts.test.js
   type: file
+- path: tests/server/LLT/app-callbacks.test.js
+  type: file
 reviewed: null
 scope: Core
 text: The server shall mark App QR payloads with account_type app, serve only the authenticated app identity
   and permitted contacts at GET /api/app/config, and reject app tokens on Pi management APIs. App views
-  shall omit Pi profiles, other account credentials and contact email addresses.
+  shall omit Pi profiles, other account credentials and contact email addresses. Authenticated App accounts
+  shall receive only their own pending callback pairs and may create a callback through POST /api/app/callbacks
+  using a permitted recipient; the source identity shall come solely from the bearer token.
 verification: Inspect QR and private views; attempt unauthorized device and administrator routes through
   HTTP.

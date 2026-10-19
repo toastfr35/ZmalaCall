@@ -76,6 +76,12 @@ Contacts appear as compact rows with a portrait and name. Tap a green name to
 start a video call; gray names are unavailable. During a call, tap the video to
 show the microphone, audio output, camera-switch and hangup controls. The app
 supports portrait and landscape views, with your camera preview in the corner.
+Missed-call and callback icons appear beside contacts. Request a callback for an
+offline contact or after an unanswered call.
+
+The contact screen shows the installed version and an Updates control. Updates
+can be downloaded in the app; optional automatic updates on supported phones
+wait until the app is idle. Android may ask you to confirm installation.
 
 Allow notifications to receive incoming-call alerts while the app is closed or
 the phone is asleep. This requires internet access and Firebase push configured

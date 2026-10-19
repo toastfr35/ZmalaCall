@@ -1,0 +1,43 @@
+active: true
+derived: false
+normative: true
+ref: ''
+reviewed: null
+scope: Experimental
+level: 2
+area: Missed calls and callback requests
+header: Contact notices and authorized callback actions
+text: The app shall persist bounded missed-call counts per enrolled identity, deduplicate push and native
+  observations of the same incoming call, and not count answered or explicitly declined calls as missed.
+  An unanswered ring shall count on cancellation, native end or expiry. Contact rows shall show accessible
+  missed-call counts and distinct incoming and sent callback indicators from the authenticated server
+  snapshot. Users may clear missed counts; a connected call clears that peer count. Removed contacts shall
+  not retain visible counts. A callback action shall be available for offline permitted contacts and after
+  an unanswered outgoing call. Requests shall use only the enrolled bearer identity and the selected permitted
+  recipient, show failure or sent status, prevent duplicate in-flight submissions, and refresh the shared
+  callback state. Servers without callback support shall not expose the action. Pending server callbacks
+  shall disappear when completed or expired.
+verification: Test duplicate ring/answer/cancel/expiry sequences and storage reload, pair filtering and
+  clearing. Inspect contact badges and submit the callback button through an authenticated HTTP fixture;
+  verify app-to-terminal callback lifecycle against the server.
+links:
+- HLR-AND-HISTORY-001: null
+references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/NoticeBook.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallNotices.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallEngine.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/PushAlerts.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/ServerApi.java
+  type: file
+- path: tests/android/LLT/unit/NoticeBookTest.java
+  type: file
+- path: tests/android/LLT/device/InterfaceTest.java
+  type: file
+- path: zmala_phone/app/src/main/res/drawable/ic_callback.xml
+  type: file

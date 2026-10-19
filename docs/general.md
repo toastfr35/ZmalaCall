@@ -583,9 +583,11 @@ see `zmala_phone/NOTICE.md`.
 
 Run **Publish release** (`.github/workflows/release.yml`) manually, selecting the
 intended source branch and a new tag matching the Android version, such as
-`v0.3.6`. Windows builds both Pi installers and all PDFs; Linux builds and verifies
+`v0.3.7`. Windows builds both Pi installers and all PDFs; Linux builds and verifies
 the signed APK. The publication job waits for both, collects the nine named files,
 creates a draft, uploads and checks its assets, then publishes it as Latest.
+The Android artifact may retain its version directory. The collector accepts that
+artifact root and requires exactly one `ZmalaPhone.apk`; ambiguous APK inputs fail.
 Existing releases are never overwritten. A failed upload leaves a draft for review.
 
 Configure these repository **Actions secrets**, never repository files:

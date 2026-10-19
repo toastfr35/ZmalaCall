@@ -1,0 +1,22 @@
+active: true
+area: Application updates
+derived: false
+header: Updates without interrupting calls
+level: 1
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/android/HLT/updates.py
+  type: file
+- path: tests/android/HLT/UpdaterFlowTest.java
+  type: file
+reviewed: null
+scope: Experimental
+text: The app shall discover stable published updates, offer Update and Later, and support optional automatic
+  updates on compatible Android versions. Updates shall preserve enrollment and never interrupt ringing
+  or active calls. The installed version shall appear discreetly only on the contact screen.
+verification: Exercise manual and optional automatic updates on Android 10 and Android 12 or later using
+  signed test releases. Check call exclusion, approval fallback, retained enrollment and contact-only
+  version display.
