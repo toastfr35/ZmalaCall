@@ -4,11 +4,7 @@
 
 <h1 align="center">ZmalaCall</h1>
 
-<p align="center"><strong>Family video calls, made for the TV.</strong></p>
-
-<p align="center">
-  <a href="https://github.com/toastfr35/ZmalaCall/actions/workflows/verify.yml"><img src="https://github.com/toastfr35/ZmalaCall/actions/workflows/verify.yml/badge.svg" alt="Verify workflow status"></a>
-</p>
+<p align="center"><strong>Family video calls, on your TV or Android phone.</strong></p>
 
 <p align="center">
   <a href="#get-started">Get started</a> ·
@@ -22,14 +18,16 @@ Choose a familiar face with the remote, confirm the call, and talk on the big
 screen. It is designed for people who prefer a few physical buttons to a phone
 or computer interface.
 
-A separate Raspberry Pi server lets an administrator manage contacts, settings
-and devices from a web browser. A Windows terminal and compatible SIP phone
-clients can also join the same local network.
+The system has three components:
+
+- **ZmalaTerminal:** a Raspberry Pi connected to a TV, camera and remote.
+- **ZmalaServer:** a separate Raspberry Pi that connects calls and lets an
+  administrator manage accounts, contacts and devices from a web browser.
+- **ZmalaPhone:** an Android app for calling family on their phones or TV terminals.
 
 ![Terminal home screen with five portrait contacts, Clara selected, and clear online and offline indicators](docs/images/terminal-home.png)
 
-*The current terminal interface. Screenshots on this page use fictional demo
-contacts and simulated device status, rendered by the actual application.*
+*Screenshots on this page use fictional demo contacts and simulated device status.*
 
 ## Built around simple calls
 
@@ -62,22 +60,39 @@ to the server.
 The browser interface brings accounts, portraits, contact groups and terminal
 settings together. Check device and call status, manage callback requests,
 download setup QR codes, and back up or restore server data.
+Each account is assigned to either an app or a terminal. Give each device its own
+account and setup QR code. Server administration is restricted to the server's
+local network.
 
 ![Server administration Accounts page showing six fictional contacts, their groups and registration status](docs/images/server-accounts.png)
 
+## Call from an Android phone
+
+Install **ZmalaPhone** and scan the setup QR code supplied by your administrator,
+on paper or displayed on another screen. You do not need access to the server's
+administration page.
+
+Contacts appear as compact rows with a portrait and name. Tap a green name to
+start a video call; gray names are unavailable. During a call, tap the video to
+show the microphone, audio output, camera-switch and hangup controls. The app
+supports portrait and landscape views, with your camera preview in the corner.
+
+Allow notifications to receive incoming-call alerts while the app is closed or
+the phone is asleep. This requires internet access and Firebase push configured
+on the server. After using Android's **Force stop**, reopen ZmalaPhone to receive
+calls again.
+
 ## How it fits together
 
-The **terminal** provides the TV interface, remote controls, camera, microphone
-and speaker. The **server** holds accounts and settings, connects calls through
-SIP, and relays their audio and video. It does not record or transcode calls.
-The **admin browser** is used for setup and maintenance.
+The **terminal** and **Android app** provide the calling interfaces. The
+**server** holds accounts and settings, connects calls and relays their audio
+and video. It does not record calls. An administrator uses a web browser for
+setup and maintenance.
 
-The default setup is intended for a trusted local network. An optional
-[secure relay deployment](docs/server.md#secure-calls-when-a-terminal-network-blocks-udp)
-uses TLS and encrypted media to support terminals on networks that block UDP.
-It requires configured public endpoints and certificates; HTTPS-only proxies can
-still block it. See the [network guide](docs/general.md#network-and-identity) for
-ports and deployment boundaries.
+The default setup uses a trusted local network. With a publicly reachable server
+and secure relay configured, phones and terminals can call from different
+networks using encrypted connections. Follow the server installation guide to
+configure internet access; some restrictive networks may still block calls.
 
 ## Get started
 
@@ -90,7 +105,7 @@ ports and deployment boundaries.
 | Server | Raspberry Pi 3 Model B/B+ or Raspberry Pi 4 Model B |
 | Pi operating system | Raspberry Pi OS Lite **64-bit**, Debian 13 **Trixie**, for both server and terminal |
 | Installation computer | Windows; installers deploy to the Pi over wired Ethernet SSH |
-| Desktop terminal | 64-bit Windows with a camera, microphone and speaker or headset |
+| Android phone | Android 9 or later, 64-bit ARM or x86 processor, camera and microphone; notifications and internet access for incoming alerts |
 
 ### Downloads
 
@@ -104,20 +119,11 @@ download names (older releases may contain only the terminal):
 | ZmalaServer | `ZmalaServer-Installation.pdf` | `ZmalaServer-Guide.pdf` | `ZmalaServer-Pi4-setup.exe` |
 | ZmalaPhone | `ZmalaPhone-Installation.pdf` | `ZmalaPhone-Guide.pdf` | `ZmalaPhone.apk` |
 
-For current development versions, open a successful workflow run and download its artifact:
+Published release downloads do not require a GitHub account. Run the Pi setup
+programs on a Windows computer; install the APK directly on your Android phone.
+Download the matching PDFs for each product you use.
 
-- **Terminal:** [Build terminal installer](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-terminal-installer.yml).
-  Download `zmala-terminal-setup` and run `ZmalaTerminal-Pi4-setup.exe`.
-- **Server:** [Build server installer](https://github.com/toastfr35/ZmalaCall/actions/workflows/build-server-installer.yml).
-  Download `zmala-server-setup` and run `ZmalaServer-Pi4-setup.exe`.
-
-Development installer artifacts include their PDF guides beside the executable. GitHub
-[requires sign-in](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts)
-to download workflow artifacts; published release assets can
-be downloaded without an account. The installers support a graphical interface
-and headless operation.
-
-### From SD card to first call
+### From setup to first call
 
 1. **Prepare the server.** Follow the server guide to flash the supported OS,
    connect Ethernet and run the server installer. Open its web page and create
@@ -127,60 +133,25 @@ and headless operation.
 3. **Complete setup on the TV.** Pair and test the remote, scan the Wi-Fi and
    server QR codes, and complete the TV-control checks. The server QR code
    assigns the terminal identity.
+4. **Set up phones.** Create a separate App account for each phone and give its
+   user the setup QR code. Install ZmalaPhone, scan the QR and allow camera,
+   microphone and notification permissions.
+5. **Make a call.** Put the accounts in a shared calling group. Select a contact
+   on the TV or tap a green contact name on the phone.
 
 ### Guides
 
-Use the PDFs supplied with your release. Editable Word sources remain here for maintainers:
+Use the PDFs supplied with your release:
 
 | Guide | What it covers |
 | --- | --- |
-| [Prepare a server](docs/server_prep.docx) | SD card, installation, migration and first accounts |
-| [Prepare a terminal](docs/terminal_prep.docx) | SD card, physical connections and installation |
-| [Configure a terminal](docs/terminal_config.docx) | Accounts, enrollment, TV checks and settings |
-| [Use a terminal](docs/terminal_use.docx) | Remote controls, calls, callbacks and everyday help |
-| [Install ZmalaPhone](docs/phone_installation.docx) | APK installation, QR enrollment and incoming alerts |
-| [Use ZmalaPhone](docs/phone_guide.docx) | Contacts, calls, camera controls and everyday help |
+| ZmalaServer Installation | SD card, installation and secure internet access |
+| ZmalaServer Guide | Accounts, groups, setup QR codes, backups and maintenance |
+| ZmalaTerminal Installation | SD card, physical connections and installation |
+| ZmalaTerminal Guide | Enrollment, TV settings, remote controls, calls and everyday help |
+| ZmalaPhone Installation | APK installation, QR enrollment and incoming alerts |
+| ZmalaPhone Guide | Contacts, calls, camera controls and everyday help |
 
-## For developers
+---
 
-Start with the [development setup and checks](docs/general.md#development-tools-and-checks).
-The implementation guides cover the current code and its component boundaries:
-
-- [System overview](docs/general.md): architecture, networking, builds and verification.
-- [Server](docs/server.md): web administration, APIs, SIP/media, persistence and recovery.
-- [Terminal](docs/terminal.md): user functions, controllers, native media and Pi hardware.
-
-After installing the development dependencies, run these from the repository root:
-
-```sh
-make lint            # Static checks and generated-asset consistency
-make test            # Portable requirement-based unit and integration tests
-make requirements    # Validate traces and build the searchable requirements report
-make coverage-llt    # Measure unit-test coverage separately from other tests
-```
-
-`make clean CLEAN_FLAGS=--dry-run` previews temporary-file cleanup. For Windows
-terminal instances, use **Start ZmalaCall Terminal.cmd** and
-**Stop ZmalaCall Terminal.cmd** at the repository root. Server hosting is Linux-only.
-
-### Requirements and verification
-
-[Doorstop records](requirements/) are the source of product requirements.
-Product items lead to themed server and Pi-terminal high-level requirements,
-then low-level requirements linked to code and tests. Tests live in
-[`tests/server/`](tests/server/) and [`tests/terminal/`](tests/terminal/), with
-separate `LLT` unit tests and `HLT` system/integration scenarios.
-
-`make requirements` writes the report to `requirements/output/index.html`.
-The [Verify workflow](https://github.com/toastfr35/ZmalaCall/actions/workflows/verify.yml)
-also publishes it as the `zmala-requirements` artifact. See the
-[requirement rewrite method](howto_rewrite_requirements.md) for the process and
-[astra.md](astra.md) for remaining engineering work.
-
-## ZmalaPhone Android preview
-
-The Android companion lives in `zmala_phone/`. See [Android setup and development](docs/android.md). It uses App-only QR enrollment and the terminal visual identity, with LAN or encrypted server-relayed video calls and Firebase incoming-call alerts when the app is closed. Build with `make phone test-android` after configuring the Android SDK and JDK.
-
-For a signed APK, use `python build_tools/android/release.py` with private release
-signing and Firebase configuration as described in the Android guide. Signing keys,
-deployment credentials and account QR codes are not included in this repository.
+[Developer information](for_developpers.md)
