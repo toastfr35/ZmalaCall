@@ -383,6 +383,13 @@ test('setup downloads pass intended terminal payload and SSH routes delegate con
   assert.equal(res.headers['Content-Type'], 'application/pdf');
   assert.match(res.headers['Content-Disposition'], /term2/);
   assert.equal(f.calls.find((c) => c[0] === 'setupPdf')[1].label, 'Second (term2)');
+  const rejected = fixture();
+  rejected.context.store.enrolledAccount = () => null;
+  await assert.rejects(
+    rejected.request('GET', '/api/setup/server.pdf?id=unknown'),
+    /Choose an app or terminal account/,
+  );
+  assert.ok(!rejected.calls.some((c) => c[0] === 'setupPdf'));
   res = await f.request('POST', '/api/setup/wifi.pdf', { ssid: 'Network', password: 'private' });
   assert.equal(res.status, 200);
   assert.ok(!f.calls.some((c) => c[0] === 'flush'));

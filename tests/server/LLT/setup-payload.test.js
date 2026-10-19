@@ -2,6 +2,7 @@
 // @requirements LLR-SRV-ENROLL-002, LLR-SRV-ENROLL-003, LLR-SRV-ENROLL-004
 // @environment portable
 // @plan Generate setup payloads and PDF bytes directly; reject invalid Wi-Fi input, decode compact UTF-8 identity and inspect current setup instruction/privacy text, one A4 page and QR module geometry with its four-module quiet border.
+// App sheets also contain a clickable stable APK download, installation steps and app permissions.
 // @pass All payload fields, validation cases and PDF structure assertions must pass; physical print readability remains a system check.
 
 'use strict';
@@ -91,6 +92,44 @@ test('Wi-Fi QR escaping, validation and printable PDF', async () => {
   }
   assert.match(page, /\bBT\b/); // The page also contains the setup instructions.
 });
+
+test('app setup includes a clickable APK download and concise installation steps on one page', async (t) => {
+  const PDFDocument = require('node:module').createRequire(
+    require.resolve('../../../zmala_server/setup-pdf'),
+  )('pdfkit');
+  const original = PDFDocument.prototype.text,
+    lines = [];
+  t.mock.method(PDFDocument.prototype, 'text', function (...args) {
+    lines.push(args[0]);
+    return original.apply(this, args);
+  });
+  const pdf = await setupPdf({
+    kind: 'server',
+    app: true,
+    label: 'A long fixture account name (phone1)',
+    payload: 'private-fixture',
+    serverUrl: 'https://calls.example.test',
+  });
+  const source = pdf.toString('latin1');
+  assert.equal((source.match(/\/Type \/Page\b/g) || []).length, 1);
+  assert.match(
+    source,
+    /\/URI \(https:\/\/github.com\/toastfr35\/ZmalaCall\/releases\/latest\/download\/ZmalaPhone.apk\)/,
+  );
+  for (const phrase of [
+    'Install the app',
+    'file manager',
+    'tap Install',
+    'Scan setup QR',
+    'microphone and notifications',
+    'another screen',
+    'Keep this page private',
+  ])
+    assert.ok(
+      lines.some((line) => line.includes(phrase)),
+      phrase,
+    );
+});
 test('enrollment contains versioned QR identity and compact Wi-Fi preserves UTF-8', () => {
   const enrollment = {
     server_url: 'http://192.168.1.81:8080',
@@ -101,6 +140,12 @@ test('enrollment contains versioned QR identity and compact Wi-Fi preserves UTF-
     type: 'family-call-server',
     version: 1,
     ...enrollment,
+  });
+  assert.deepEqual(JSON.parse(serverPayload({ ...enrollment, account_type: 'app' })), {
+    type: 'family-call-server',
+    version: 1,
+    ...enrollment,
+    account_type: 'app',
   });
   const input = { ssid: 'Café 日本語', password: 'fixture-password', hidden: true };
   const encoded = wifiPayload(input);

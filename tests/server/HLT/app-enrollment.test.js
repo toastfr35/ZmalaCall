@@ -2,6 +2,7 @@
 // @requirements HLR-SRV-APP-001
 // @environment portable
 // @plan Fetch app configuration and QR PDFs from a disposable HTTP server, attempt terminal and administrator APIs with an app token, convert the account and retry both old and new credentials.
+// Inspect the App PDF's clickable latest APK URL and one-page structure.
 // @pass App enrollment succeeds only for its account type and all forbidden or revoked access attempts fail.
 'use strict';
 const test = require('node:test');
@@ -39,12 +40,13 @@ test('HTTP app enrollment is isolated from terminal and administrative control',
     await response.arrayBuffer();
     response = await get('/api/setup/server.pdf?id=phone1', store.value.admin_token);
     assert.equal(response.status, 200);
-    assert.equal(
-      Buffer.from(await response.arrayBuffer())
-        .subarray(0, 5)
-        .toString(),
-      '%PDF-',
+    const pdf = Buffer.from(await response.arrayBuffer());
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    assert.match(
+      pdf.toString('latin1'),
+      /\/URI \(https:\/\/github.com\/toastfr35\/ZmalaCall\/releases\/latest\/download\/ZmalaPhone.apk\)/,
     );
+    assert.equal((pdf.toString('latin1').match(/\/Type \/Page\b/g) || []).length, 1);
     store.updateAccount('phone1', { name: 'Converted', type: 'terminal' });
     response = await get('/api/app/config');
     assert.equal(response.status, 401);

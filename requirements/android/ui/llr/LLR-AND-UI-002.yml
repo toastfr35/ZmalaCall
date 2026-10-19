@@ -35,6 +35,7 @@ text: The interface shall present labeled controls for setup, permitted outgoing
   shall have a green background and initiate a call when tapped while registered; offline names
   shall have a gray background and be disabled. Availability shall also be exposed to accessibility
   services. Rows shall omit separate availability labels and call buttons to show more contacts.
+  The contact screen shall stay in portrait orientation; starting a call shall restore display rotation and returning to contacts shall restore portrait.
   The contact screen shall omit the phone account name, the ready-to-call status line and any in-app reset action.
   Contact rows shall be vertically centered in the available contact area when they fit;
   longer lists shall scroll from the top without clipping or inaccessible rows.

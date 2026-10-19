@@ -5,7 +5,7 @@ header: |
   Versioned server identity code
 level: 44.0
 links:
-- HLR-SRV-ENROLL-001: pDfvXbbFZBKdNpCDts3hIS4Rdyar3pDSWuoB7m7VaiQ=
+- HLR-SRV-ENROLL-001: cpzuLhH7MHX-iuf3i1mTr-w9N3rLjLjyJn8enBf5ack=
 normative: true
 ref: ''
 references:
@@ -20,6 +20,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  A server code shall encode type family-call-server and version 1, plus the selected terminal's reachable server URL, device serial and device token. Nonterminal account selections shall be rejected.
+  A server code shall encode type family-call-server and version 1, plus the selected enrolled terminal or app account's reachable server URL, device serial and device token. App codes shall identify the app account type. Unknown or unenrolled account selections shall be rejected.
 verification: |
-  Decode codes for two terminals and compare their identity and credentials. Reject phone and unknown selections.
+  Decode terminal and app codes and compare their identity, credentials and app account type. Verify setup routes require an enrolled account.

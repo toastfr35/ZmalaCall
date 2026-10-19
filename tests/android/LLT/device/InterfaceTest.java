@@ -7,6 +7,8 @@
 // Check that the contact screen omits the phone account name and ready status.
 // Seed missed and callback notices, inspect accessible badges, request a callback over the
 // authenticated fixture API, and inspect the contact-only version and idle update controls.
+// Request then cancel through the same row button, assert the exact DELETE and restored action.
+// Assert portrait-only contact orientation, released for calling and restored after hangup.
 // Check balanced vertical space for two contacts; add enough contacts to overflow and verify
 // top alignment and scrolling. No Reset setup action is present.
 // @pass Setup explains using a supplied QR without server administration; setup labels, action
@@ -79,6 +81,7 @@ public class InterfaceTest {
                   (android.widget.Button)
                       PhoneFixture.text(screen.getWindow().getDecorView(), "Kitchen");
               assertTrue(online.isEnabled());
+              assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, screen.getRequestedOrientation());
               assertFalse(offline.isEnabled());
               assertEquals(
                   MainActivity.GREEN,
@@ -125,6 +128,10 @@ public class InterfaceTest {
         PhoneFixture.dialog("Request callback");
         PhoneFixture.waitFor(() -> http.callbackRequests > 0);
         assertEquals("term2", http.callbackRecipient);
+        PhoneFixture.waitFor(() -> PhoneFixture.description(screen.getWindow().getDecorView(), "Cancel callback request to Kitchen") != null);
+        PhoneFixture.click(screen, "Cancel callback request to Kitchen");
+        PhoneFixture.waitFor(() -> http.callbackCancellations == 1);
+        PhoneFixture.waitFor(() -> PhoneFixture.description(screen.getWindow().getDecorView(), "Call notices and callback for Kitchen") != null);
         for (int i = 0; i < 20; i++)
           config
               .getJSONArray("contacts")
@@ -157,6 +164,10 @@ public class InterfaceTest {
         assertTrue(invite.startsWith("INVITE sip:term1@127.0.0.1"));
         PhoneFixture.INSTRUMENTATION.runOnMainSync(() ->
             assertNull(PhoneFixture.text(screen.getWindow().getDecorView(), "v" + AppUpdates.get(screen).version())));
+        assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, screen.getRequestedOrientation());
+        PhoneFixture.click(screen, "Remote video. Tap to show call controls.");
+        PhoneFixture.click(screen, "End call");
+        PhoneFixture.waitFor(() -> screen.getRequestedOrientation() == android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
       }
     } finally {
       activity.finishActivity();

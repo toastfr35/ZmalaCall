@@ -9,6 +9,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: tests/server/LLT/app-callbacks.test.js
+  type: file
 - path: tests/server/LLT/callback-editor.test.js
   type: file
 - path: tests/server/LLT/callback-state.test.js

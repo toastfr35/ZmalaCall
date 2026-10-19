@@ -30,6 +30,12 @@ public final class ServerApi {
     request(enrollment, "/api/app/callbacks", 16384, new JSONObject().put("to", peer));
   }
 
+  // @llr LLR-AND-HISTORY-002
+  static void cancelCallback(Enrollment enrollment, String id) throws Exception {
+    if (!id.matches("[a-f0-9-]{36}")) throw new IllegalArgumentException("Invalid callback request.");
+    request(enrollment, "/api/app/callbacks/" + id, 16384, null, "DELETE");
+  }
+
   // @llr LLR-AND-CALL-004
   public static JSONObject push(Enrollment enrollment, String path, JSONObject body)
       throws Exception {
@@ -41,6 +47,11 @@ public final class ServerApi {
 
   private static byte[] request(Enrollment enrollment, String path, int limit, JSONObject body)
       throws Exception {
+    return request(enrollment, path, limit, body, body == null ? "GET" : "POST");
+  }
+
+  private static byte[] request(Enrollment enrollment, String path, int limit, JSONObject body, String method)
+      throws Exception {
     HttpURLConnection connection =
         (HttpURLConnection) enrollment.server.resolve(path).toURL().openConnection();
     connection.setConnectTimeout(6000);
@@ -48,8 +59,8 @@ public final class ServerApi {
     connection.setInstanceFollowRedirects(false);
     connection.setRequestProperty("Authorization", "Bearer " + enrollment.token);
     try {
+      connection.setRequestMethod(method);
       if (body != null) {
-        connection.setRequestMethod("POST");
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
         byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);

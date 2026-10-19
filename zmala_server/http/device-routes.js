@@ -26,6 +26,16 @@ function liveConfiguration(id, { store, sipServer, callbacks }) {
 async function deviceRoutes(req, res, url, context) {
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses } = context;
   let { deviceId } = context;
+  // @llr LLR-SRV-CALLBACK-016, LLR-SRV-APP-003
+  const appCallback = url.pathname.match(/^\/api\/app\/callbacks\/([a-f0-9-]{36})$/);
+  if (appCallback && req.method === 'DELETE') {
+    const id = requireDevice(deviceId);
+    if (store.enrolledAccount(id)?.type !== 'app')
+      throw httpError(403, 'An app account is required.');
+    callbacks.cancel(appCallback[1], id);
+    await callbacks.flush();
+    return send(res, 200, { ok: true });
+  }
   // @llr LLR-SRV-CALLBACK-015, LLR-SRV-APP-003
   if (url.pathname === '/api/app/callbacks' && req.method === 'POST') {
     const id = requireDevice(deviceId);

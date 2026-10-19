@@ -190,6 +190,7 @@ public final class PhoneFixture {
     public volatile boolean authorized;
     public volatile String lastRequest = "", lastBody = "";
     public volatile int callbackRequests;
+    public volatile int callbackCancellations;
     public volatile String callbackRecipient;
     private final Thread thread;
 
@@ -223,6 +224,14 @@ public final class PhoneFixture {
                     if (lastRequest.startsWith("POST /api/app/callbacks ")) {
                       callbackRecipient = new JSONObject(lastBody).getString("to");
                       callbackRequests++;
+                      config.optJSONArray("callbacks").put(new JSONObject().put("id", "12345678-1234-1234-1234-123456789abc")
+                          .put("from", "phone1").put("to", callbackRecipient).put("status", "pending"));
+                    }
+                    if (lastRequest.startsWith("DELETE /api/app/callbacks/12345678-1234-1234-1234-123456789abc ")) {
+                      JSONArray pending = config.optJSONArray("callbacks");
+                      for (int i = pending.length() - 1; i >= 0; i--)
+                        if ("12345678-1234-1234-1234-123456789abc".equals(pending.getJSONObject(i).optString("id"))) pending.remove(i);
+                      callbackCancellations++;
                     }
                     byte[] body = config.toString().getBytes(StandardCharsets.UTF_8);
                     socket

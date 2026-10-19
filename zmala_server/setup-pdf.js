@@ -76,11 +76,38 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
   doc
     .fillColor('#111827')
     .fontSize(30)
-    .text(kind === 'wifi' ? '1. Wi-Fi connection' : '2. Server connection', 48, 85, { width });
+    .text(
+      app ? 'Set up ZmalaPhone' : kind === 'wifi' ? '1. Wi-Fi connection' : '2. Server connection',
+      48,
+      85,
+      { width },
+    );
   doc.fontSize(16).text(label, 48, 133, { width, height: 66, ellipsis: true });
-  const size = 340,
+  if (app) {
+    doc
+      .fontSize(14)
+      .fillColor('#111827')
+      .text('1. Install the app on your phone', 48, 182, { width });
+    const apk = 'https://github.com/toastfr35/ZmalaCall/releases/latest/download/ZmalaPhone.apk';
+    doc
+      .fontSize(10)
+      .fillColor('#16734B')
+      .text('Download ZmalaPhone.apk', 48, 205, { width, link: apk, underline: true });
+    doc.fontSize(8).text(apk, 48, 222, { width, link: apk });
+    doc
+      .fontSize(10)
+      .fillColor('#586276')
+      .text(
+        'Open the link on your phone, then open the downloaded APK. If asked, allow installation from your browser or file manager, then tap Install.',
+        48,
+        242,
+        { width },
+      );
+    doc.fontSize(14).fillColor('#111827').text('2. Scan your private setup QR', 48, 286, { width });
+  }
+  const size = app ? 300 : 340,
     x = (doc.page.width - size) / 2,
-    y = 220,
+    y = app ? 310 : 220,
     unit = size / (qr.modules.size + 8);
   doc.rect(x, y, size, size).fill('#ffffff');
   doc.fillColor('#000000');
@@ -95,7 +122,7 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
     .text(
       app ? 'Scan this code in ZmalaPhone.' : 'Show this QR code to the terminal camera.',
       48,
-      595,
+      app ? 624 : 595,
       { width, align: 'center' },
     );
   doc
@@ -105,19 +132,19 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
       kind === 'wifi'
         ? 'Use when the screen says "Scan the Wi-Fi QR code".'
         : app
-          ? 'Open ZmalaPhone and choose Scan setup QR.'
+          ? 'Choose Scan setup QR. Allow camera, microphone and notifications.\nShow this page on another screen or print it to scan the code.'
           : 'Use after Wi-Fi setup, when the screen says "Scan the server QR code".',
       48,
-      630,
+      app ? 655 : 630,
       { width, align: 'center' },
     );
-  if (serverUrl) doc.fontSize(10).text(serverUrl, 48, 669, { width, align: 'center' });
+  if (serverUrl) doc.fontSize(10).text(serverUrl, 48, app ? 703 : 669, { width, align: 'center' });
   doc
     .fontSize(10)
     .text(
       'Print at actual size (100%). Keep the full code and its white border visible.',
       48,
-      710,
+      app ? 728 : 710,
       { width, align: 'center' },
     );
   doc
@@ -127,7 +154,7 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
         ? 'This code contains the Wi-Fi password. Keep this page private.'
         : 'This code grants access to this account. Keep this page private.',
       48,
-      742,
+      app ? 754 : 742,
       { width, align: 'center' },
     );
   doc.end();

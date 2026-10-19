@@ -378,6 +378,9 @@ public final class MainActivity extends Activity {
   }
 
   private void directory() {
+    setRequestedOrientation(enrollment != null && config != null
+        ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     displayedCall = null;
     callScreen = null;
     shell();
@@ -462,11 +465,15 @@ public final class MainActivity extends Activity {
           }
           if (config.optBoolean("callbacks_enabled") || missed > 0) {
             ImageButton actions = new ImageButton(this);
-            actions.setImageResource(R.drawable.ic_callback);
+            boolean sent = (callbacks & 2) != 0;
+            actions.setImageResource(sent ? R.drawable.ic_cancel_callback : R.drawable.ic_callback);
             actions.setBackground(rounded(PANEL));
             actions.setPadding(dp(17), dp(17), dp(17), dp(17));
-            actions.setContentDescription("Call notices and callback for " + contact.optString("name"));
-            actions.setOnClickListener(v -> contactActions(contact, missed, callbacks));
+            actions.setContentDescription((sent ? "Cancel callback request to " : "Call notices and callback for ") + contact.optString("name"));
+            actions.setOnClickListener(v -> {
+              if (sent) cancelCallback(contact); else contactActions(contact, missed, callbacks);
+            });
+            portrait.setOnClickListener(v -> contactActions(contact, missed, callbacks));
             LinearLayout.LayoutParams actionSize = new LinearLayout.LayoutParams(dp(60), dp(60));
             actionSize.setMargins(dp(6), 0, 0, 0);
             card.addView(actions, actionSize);
@@ -558,6 +565,7 @@ public final class MainActivity extends Activity {
       }
       return;
     }
+    setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     if (displayedCall == engine.call && callScreen != null) {
       updateCallProgress();
       return;
@@ -681,6 +689,8 @@ public final class MainActivity extends Activity {
         .setMessage(details).setNegativeButton("Close", null);
     if (config.optBoolean("callbacks_enabled") && (callbacks & 2) == 0)
       builder.setPositiveButton("Request callback", (d, which) -> requestCallback(contact));
+    else if (config.optBoolean("callbacks_enabled") && (callbacks & 2) != 0)
+      builder.setPositiveButton("Cancel request", (d, which) -> cancelCallback(contact));
     if (missed > 0) builder.setNeutralButton("Clear missed calls", (d, which) -> {
       CallNotices.clear(this, contact.optString("id")); if (engine.call == null) directory();
     });
@@ -689,21 +699,45 @@ public final class MainActivity extends Activity {
 
   // @llr LLR-AND-HISTORY-002
   private void requestCallback(JSONObject contact) {
+    updateCallback(contact, null);
+  }
+
+  // @llr LLR-AND-HISTORY-002
+  private void cancelCallback(JSONObject contact) {
+    if (config == null) return;
+    JSONArray requests = config.optJSONArray("callbacks");
+    String self = config.optJSONObject("sip").optString("username");
+    if (requests != null) for (int i = 0; i < requests.length(); i++) {
+      JSONObject request = requests.optJSONObject(i);
+      if (request != null && "pending".equals(request.optString("status"))
+          && self.equals(request.optString("from")) && contact.optString("id").equals(request.optString("to"))) {
+        updateCallback(contact, request.optString("id")); return;
+      }
+    }
+    refresh(false);
+  }
+
+  // @llr LLR-AND-HISTORY-002
+  private void updateCallback(JSONObject contact, String cancelId) {
     if (callbackSending || enrollment == null || !contact.optBoolean("can_call")) return;
     callbackSending = true;
     Enrollment target = enrollment;
     network.execute(() -> {
       boolean success;
-      try { ServerApi.requestCallback(target, contact.optString("id")); success = true; }
+      try {
+        if (cancelId == null) ServerApi.requestCallback(target, contact.optString("id"));
+        else ServerApi.cancelCallback(target, cancelId);
+        success = true;
+      }
       catch (Exception error) { success = false; }
       boolean sent = success;
       main.post(() -> {
         callbackSending = false;
         if (!visible || target != enrollment || engine.call != null) return;
         if (sent) {
-          Toast.makeText(this, "Callback requested", Toast.LENGTH_SHORT).show();
+          Toast.makeText(this, cancelId == null ? "Callback requested" : "Callback request cancelled", Toast.LENGTH_SHORT).show();
           refresh(false);
-        } else showError("Could not request a callback. Check your connection and try again.");
+        } else showError("Could not update the callback request. Check your connection and try again.");
       });
     });
   }

@@ -5,7 +5,7 @@ header: |
   Printable setup document
 level: 42.0
 links:
-- HLR-SRV-ENROLL-001: pDfvXbbFZBKdNpCDts3hIS4Rdyar3pDSWuoB7m7VaiQ=
+- HLR-SRV-ENROLL-001: cpzuLhH7MHX-iuf3i1mTr-w9N3rLjLjyJn8enBf5ack=
 normative: true
 ref: ''
 references:
@@ -18,6 +18,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Authenticated setup downloads shall produce one-page A4 PDFs with a QR code and a four-module white border. English instructions shall identify the corresponding terminal scan step and warn that the page contains private access data.
+  Authenticated setup downloads shall produce one-page A4 PDFs with a QR code and a four-module white border. English instructions shall identify the corresponding terminal or app scan step and warn that the page contains private access data. App sheets shall also provide a clickable stable ZmalaPhone APK download URL, concise on-phone installation and permission instructions, and explain scanning from another screen or paper.
 verification: |
-  Generate both PDFs, inspect page size and QR geometry, capture instruction text and verify payload decoding.
+  Generate both PDFs, inspect page size and QR geometry, capture instruction text and verify payload decoding and the App APK link annotation and installation text.

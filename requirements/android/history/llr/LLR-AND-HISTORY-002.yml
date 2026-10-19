@@ -13,7 +13,7 @@ text: The app shall persist bounded missed-call counts per enrolled identity, de
   missed-call counts and distinct incoming and sent callback indicators from the authenticated server
   snapshot. Users may clear missed counts; a connected call clears that peer count. Removed contacts shall
   not retain visible counts. A callback action shall be available for offline permitted contacts and after
-  an unanswered outgoing call. Requests shall use only the enrolled bearer identity and the selected permitted
+  an unanswered outgoing call. A pending outgoing request shall replace the row callback button with a cancel icon and accessible cancel label. Tapping it shall cancel only that request on the server, restore the request button after success, and report failures without pretending it was cancelled. Requests shall use only the enrolled bearer identity and the selected permitted
   recipient, show failure or sent status, prevent duplicate in-flight submissions, and refresh the shared
   callback state. Servers without callback support shall not expose the action. Pending server callbacks
   shall disappear when completed or expired.
@@ -40,4 +40,6 @@ references:
 - path: tests/android/LLT/device/InterfaceTest.java
   type: file
 - path: zmala_phone/app/src/main/res/drawable/ic_callback.xml
+  type: file
+- path: zmala_phone/app/src/main/res/drawable/ic_cancel_callback.xml
   type: file

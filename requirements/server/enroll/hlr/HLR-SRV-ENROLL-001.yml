@@ -5,6 +5,7 @@ header: |
   Private camera-readable setup documents
 level: 12.0
 links:
+- PROD015: null
 - PROD007: CVFnBhIEqG3Rok_D6npspt2MsVV8o9N_NM64q2fSo0U=
 - PROD012: Sngp2Wrf5F7Itt04zyOTkOEEFhubhoX6ydJxnwExjUg=
 normative: true
@@ -15,6 +16,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The server shall provide authenticated setup documents for Wi-Fi connection and terminal enrollment. The server code shall supply the selected terminal identity and credential.
+  The server shall provide authenticated setup documents for Wi-Fi connection and terminal or app enrollment. The server code shall supply the selected account identity and credential. App setup documents shall link to the ZmalaPhone download and explain installation before scanning.
 verification: |
-  Generate and inspect both documents. Decode their payloads and verify identity, privacy, validation and readable setup instructions.
+  Generate and inspect Wi-Fi, terminal and app documents. Decode their payloads and verify identity, privacy, validation and readable setup instructions, including the App download link.

@@ -18,7 +18,7 @@ PHONE = {
                 'Each account belongs to one phone or one Pi terminal. An App QR cannot enroll a terminal, and a Terminal QR cannot enroll ZmalaPhone. Ask the administrator for the correct account if setup rejects the code.',
             ]),
             ('1. Download and install', [
-                'Open the release link supplied by your administrator and download ZmalaPhone.apk. The project release page is ' + RELEASES + '. The two ZmalaPhone PDF files are the installation instructions and user guide.',
+                'Use Download ZmalaPhone.apk on your private setup PDF, or open the release link supplied by your administrator. The project release page is ' + RELEASES + '. The two ZmalaPhone PDF files are the installation instructions and user guide.',
                 'Open the APK from Downloads or your file manager. If Android asks, allow that browser or file manager to install apps, then return to the APK and tap Install. You can turn off that permission after installation. No USB cable or SIM card is needed for this installation method.',
                 'For an update from an earlier signed release, install the new APK over the existing app. Your account setup stays in place. Do not uninstall just to perform an ordinary update. Once the contact screen has an Updates control, use it for later updates; see ZmalaPhone-Guide.pdf for optional automatic updates.',
                 'An earlier development/debug copy uses a different signing certificate. Android cannot replace it with the release APK. Obtain your setup QR first, uninstall the development copy, install the release and scan the QR again. Uninstalling removes this phone\'s local setup; the server account and groups remain.',
@@ -42,12 +42,12 @@ PHONE = {
         'For everyday video calls after your phone has been set up. If the welcome screen still asks for a setup QR, follow ZmalaPhone-Installation.pdf first.',
         [
             ('Choose someone to call', [
-                'Contacts appear with a photo and name. A green name means the contact is online: tap it to call. A gray name means offline and cannot be tapped to start a call. Scroll when there are more contacts than fit on screen.',
+                'The contact screen stays in portrait. Contacts appear with a photo and name. A green name means the contact is online: tap it to call. A gray name means offline and cannot be tapped to start a call. Scroll when there are more contacts than fit on screen.',
                 'A pulsing phone animation appears while the other end rings. After answer, Connecting video stays visible until the first remote video frame arrives. A brief wait can happen while the connection starts.',
             ]),
             ('Missed calls and callback requests', [
-                'A red missed-call arrow and count on a contact portrait show calls you did not answer. A green return arrow means that person has asked you to call back; a green outgoing arrow means your request is pending. Tap the callback icon beside the name for details or to clear missed calls.',
-                'For an offline contact, tap the callback icon and choose Request callback. After an unanswered outgoing call, the app also offers Request callback. This sends a request through the Zmala server; it does not place another call. Repeated requests remain one pending request for the pair.',
+                'A red missed-call arrow and count on a contact portrait show calls you did not answer. A green return arrow means that person has asked you to call back; a green outgoing arrow means your request is pending. Tap the portrait for details or to clear missed calls.',
+                'For an offline contact, tap the callback icon and choose Request callback. After an unanswered outgoing call, the app also offers Request callback. This sends a request through the Zmala server; it does not place another call. While your request is pending, the button becomes an X. Tap it to cancel the request; the callback button returns. This does not end or place a call.',
                 'When the contact becomes available, tap their green name to call. A connected call completes pending callback requests between you and clears your missed-call count for that person. The administrator controls request expiry. If the action is absent, the server needs an update to support app callbacks.',
             ]),
             ('Answer an incoming call', [

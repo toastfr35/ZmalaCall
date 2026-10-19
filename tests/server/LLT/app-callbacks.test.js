@@ -1,9 +1,10 @@
 // @test S-LLT-043
-// @requirements LLR-SRV-APP-003, LLR-SRV-CALLBACK-015
+// @requirements LLR-SRV-APP-003, LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016
 // @environment portable
 // @plan Submit callbacks through the real device-route handler as app and terminal identities;
 // reject forged identity fields and forbidden recipients. Restart callback storage, deduplicate,
 // inspect app-scoped configuration and complete the pair through the shared callback lifecycle.
+// Cancel as the requesting app, reject cancellation by another app, and repeat after restart.
 // @pass App requests persist once per authorized pair, private views exclude other pairs, and
 // connected calls remove pending requests without permitting app access to terminal settings.
 'use strict';
@@ -20,10 +21,10 @@ test('apps use shared callbacks with bearer identity and scoped views', async (t
   store.value.groups.family.members.push('phone2');
   ctx.deviceId = 'phone1';
   ctx.callbacks = new Callbacks(store, ctx.sipServer);
-  async function route(path, body) {
+  async function route(path, body, method = body === undefined ? 'GET' : 'POST') {
     const res = response();
     await deviceRoutes(
-      request(path, body === undefined ? {} : { method: 'POST', value: body }),
+      request(path, { method, ...(body === undefined ? {} : { value: body }) }),
       res,
       new URL(path, 'http://localhost'),
       ctx,
@@ -55,6 +56,13 @@ test('apps use shared callbacks with bearer identity and scoped views', async (t
     /not available/,
   );
   ctx.callbacks.connected('term1', 'phone1');
+  assert.deepEqual((await route('/api/app/config')).json().callbacks, []);
+  const pending = (await route('/api/app/callbacks', { to: 'term1' })).json().callback;
+  ctx.deviceId = 'phone2';
+  await assert.rejects(route('/api/app/callbacks/' + pending.id, undefined, 'DELETE'), /not found/);
+  ctx.deviceId = 'phone1';
+  assert.equal((await route('/api/app/callbacks/' + pending.id, undefined, 'DELETE')).status, 200);
+  ctx.callbacks = new Callbacks(store, ctx.sipServer);
   assert.deepEqual((await route('/api/app/config')).json().callbacks, []);
   ctx.deviceId = 'term1';
   await assert.rejects(route('/api/app/callbacks', { to: 'phone1' }), /app account/);

@@ -1,7 +1,7 @@
 // @test S-HLT-018
 // @requirements HLR-SRV-ENROLL-001
 // @environment portable
-// @plan Generate Wi-Fi/server enrollment PDFs through authenticated HTTP and inspect payloads; assert escaping, valid enrolled account identity and absence of persisted Wi-Fi secrets.
+// @plan Generate Wi-Fi/terminal/App enrollment PDFs through authenticated HTTP and inspect payloads; assert valid enrolled account identity, the App download link and absence of persisted Wi-Fi secrets.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -38,7 +38,12 @@ test('QR PDF endpoints require admin, target enrolled accounts and do not persis
       ).status,
       401,
     );
-    assert.equal((await req('/api/setup/server.pdf?id=phone1')).status, 200);
+    const appPdf = await req('/api/setup/server.pdf?id=phone1');
+    assert.equal(appPdf.status, 200);
+    assert.match(
+      Buffer.from(await appPdf.arrayBuffer()).toString('latin1'),
+      /https:\/\/github\.com\/toastfr35\/ZmalaCall\/releases\/latest\/download\/ZmalaPhone\.apk/,
+    );
     const r = await req('/api/setup/server.pdf?id=term1');
     assert.equal(r.status, 200);
     assert.equal(r.headers.get('content-type'), 'application/pdf');

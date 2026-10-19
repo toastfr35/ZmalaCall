@@ -172,6 +172,14 @@ missed calls. Unanswered outgoing calls also offer a callback. Badges are derive
 from the current allowed directory and the server's pending callback snapshot.
 
 The server advertises `callbacks_enabled` and returns `callbacks` in app config.
+The contact screen requests portrait orientation; the call screen restores normal
+display rotation, and hangup returns to portrait.
+
+A pending outgoing callback changes the same row button to a cancel icon. Its
+action sends `DELETE /api/app/callbacks/:id`, then refreshes the server snapshot.
+Failure keeps the pending state and reports an error. Tapping the portrait still
+opens notice details and missed-call clearing. Cancellation does not place or end a call.
+
 `POST /api/app/callbacks` accepts only a recipient `to`; authenticated App identity
 is the requester. Shared server callbacks deduplicate, expire and complete on
 connection for App and Terminal accounts. Old servers omit the capability, so

@@ -22,6 +22,6 @@ text: The server shall mark App QR payloads with account_type app, serve only th
   and permitted contacts at GET /api/app/config, and reject app tokens on Pi management APIs. App views
   shall omit Pi profiles, other account credentials and contact email addresses. Authenticated App accounts
   shall receive only their own pending callback pairs and may create a callback through POST /api/app/callbacks
-  using a permitted recipient; the source identity shall come solely from the bearer token.
+  using a permitted recipient; the source identity shall come solely from the bearer token. DELETE /api/app/callbacks/:id shall cancel only a request made by that authenticated app, never another account's request.
 verification: Inspect QR and private views; attempt unauthorized device and administrator routes through
   HTTP.

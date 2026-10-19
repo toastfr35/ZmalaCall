@@ -369,7 +369,7 @@ also block credential/type changes and account deletion.
 
 Terminal cards group Calls, Video & audio and General settings. **Setup** downloads
 Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
-are runtime provisioning documents, separate from project documentation.
+are runtime provisioning documents, separate from project documentation. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it.
 Settings include auto-answer, camera/audio selection, resolution, FPS, framing,
 volume, language, portrait count and TV return. See the
 [terminal settings implementation](terminal.md#settings-and-controls) for input and save semantics.
@@ -385,7 +385,7 @@ to their editor so a late response cannot save into another account dialog.
 Pending requests are unique per requester/recipient pair and require current
 group permission. They survive restart, follow username edits and complete when
 a call connects in either direction. Cancellation, permission revocation, account
-deletion or requester conversion to a phone removes eligibility. Terminal polls
+deletion or conversion that invalidates enrollment removes eligibility. Terminal polls
 include only that terminal's requests, independently of configuration revision.
 
 Reachable phones receive server-generated SIP MESSAGE notifications over their
@@ -818,3 +818,13 @@ pair deduplication, the 400-pending limit, cancellation on permission loss,
 expiry and connected-call completion apply to both App and Terminal requesters.
 The app receives no access to Pi settings or console APIs. Phone missed-call
 counts remain local to the app and are not part of server backups.
+
+App request cancellation uses `DELETE /api/app/callbacks/:id`. Only the authenticated
+requesting app can cancel its pending request; the recipient cannot cancel it on
+the requester's behalf. The existing callback lifecycle persists the change and
+subsequent phone/terminal snapshots remove the pending indicator.
+
+App request cancellation uses `DELETE /api/app/callbacks/:id`. Only the authenticated
+requesting app can cancel its pending request; the recipient cannot cancel it on
+the requester's behalf. The existing callback lifecycle persists the change and
+subsequent phone/terminal snapshots remove the pending indicator.
