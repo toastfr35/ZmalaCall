@@ -26,10 +26,19 @@ for language, values in REMOTE_ORIENTATION.items():
     REMOTE_MESSAGES.setdefault(language, {}).update(zip(REMOTE_ORIENTATION_KEYS, values))
 
 
+# @llr LLR-TERM-NAV-005
+PRESENCE_MESSAGES = {
+    'en': {'available': 'Available', 'try_calling': 'Try calling'},
+    'fr': {'available': 'Disponible', 'try_calling': 'Essayer d’appeler'},
+}
+
+
 # @llr LLR-TERM-UI-023
 def translate(language, key, **values):
     # Picture labels and turn-over instructions cover every selectable language.
     # The more detailed Bluetooth diagnostic copy still has an English fallback.
+    if key in PRESENCE_MESSAGES['en']:
+        return PRESENCE_MESSAGES.get(language, PRESENCE_MESSAGES['en'])[key]
     if key in REMOTE_MESSAGES['en']:
         return REMOTE_MESSAGES.get(language, {}).get(key, REMOTE_MESSAGES['en'][key]).format(**values)
     messages = LANGUAGES.get(language, LANGUAGES['en'])['messages']

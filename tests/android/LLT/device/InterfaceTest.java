@@ -2,7 +2,7 @@
 // @requirements LLR-AND-UI-002, LLR-AND-UPDATE-002, LLR-AND-HISTORY-002
 // @environment native-display
 // @plan Open the activity without enrollment; inspect setup instructions and minimum touch height.
-// Enroll against local fixtures with online/offline contacts; inspect compact name buttons and
+// Enroll against local fixtures with available/push-only/offline contacts; inspect compact name buttons and
 // rounded portraits, then tap the online name and inspect its outgoing SIP INVITE.
 // Check that the contact screen omits the phone account name and ready status.
 // Seed missed and callback notices, inspect accessible badges, request a callback over the
@@ -13,7 +13,7 @@
 // top alignment and scrolling. No Reset setup action is present.
 // @pass Setup explains using a supplied QR without server administration; setup labels, action
 // geometry assertions pass on an Android display.
-// Online names are green and callable, offline names gray/disabled, and tapping calls the named
+// Available names are green, push-only names blue and callable, offline names red/disabled, and tapping calls the named
 // peer.
 package org.zmala.phone;
 
@@ -64,6 +64,9 @@ public class InterfaceTest {
                   .put("can_call", true)
                   .put("can_receive", true)
                   .put("online", false));
+      config.getJSONArray("contacts").put(new org.json.JSONObject()
+          .put("id", "phone2").put("name", "Sleeping phone").put("photo", "")
+          .put("can_call", true).put("can_receive", true).put("online", true).put("presence", "push"));
       try (PhoneFixture.Http http = new PhoneFixture.Http(config)) {
         MainActivity screen = activity.launchActivity(null);
         PhoneFixture.scan(screen, PhoneFixture.qr(http.port(), "app"));
@@ -80,6 +83,12 @@ public class InterfaceTest {
               android.widget.Button offline =
                   (android.widget.Button)
                       PhoneFixture.text(screen.getWindow().getDecorView(), "Kitchen");
+              android.widget.Button push = (android.widget.Button) PhoneFixture.text(screen.getWindow().getDecorView(), "Sleeping phone");
+              assertTrue(push.isEnabled());
+              assertEquals(MainActivity.BLUE, ((android.graphics.drawable.GradientDrawable) push.getBackground()).getColor().getDefaultColor());
+              assertTrue(push.getText().toString().endsWith("\nTry calling"));
+              assertTrue(online.getText().toString().endsWith("\nAvailable"));
+              assertTrue(offline.getText().toString().endsWith("\nOffline"));
               assertTrue(online.isEnabled());
               assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, screen.getRequestedOrientation());
               assertFalse(offline.isEnabled());
@@ -89,11 +98,11 @@ public class InterfaceTest {
                       .getColor()
                       .getDefaultColor());
               assertEquals(
-                  MainActivity.OFFLINE,
+                  MainActivity.RED,
                   ((android.graphics.drawable.GradientDrawable) offline.getBackground())
                       .getColor()
                       .getDefaultColor());
-              assertTrue(online.getContentDescription().toString().contains("online"));
+              assertTrue(online.getContentDescription().toString().contains("available"));
               assertTrue(offline.getContentDescription().toString().contains("offline"));
               android.view.ViewGroup row = (android.view.ViewGroup) online.getParent();
               assertEquals(3, row.getChildCount());

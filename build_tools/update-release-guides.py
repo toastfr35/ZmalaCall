@@ -32,7 +32,7 @@ PHONE = {
                 'If alerts are disabled, enable ZmalaPhone notifications in Android Settings and reopen the app. Open it again after using Force stop, and at least monthly to renew alerts. Contact the administrator if alerts remain unavailable.',
             ]),
             ('4. Check a call before handover', [
-                'Tap an online green contact and ask the other person to answer. Check moving video and speech in both directions, then hang up. Ask them to call you back once with ZmalaPhone open and once after returning to the phone Home screen.',
+                'Tap a green Available contact or a blue Try calling contact and ask the other person to answer. Check moving video and speech in both directions, then hang up. Ask them to call you back once with ZmalaPhone open and once after returning to the phone Home screen.',
                 'Rotate the phone and switch cameras twice during a call. Check that the picture stays upright and the front camera returns. See ZmalaPhone-Guide.pdf for the call controls and everyday help.',
             ]),
         ],
@@ -42,13 +42,13 @@ PHONE = {
         'For everyday video calls after your phone has been set up. If the welcome screen still asks for a setup QR, follow ZmalaPhone-Installation.pdf first.',
         [
             ('Choose someone to call', [
-                'The contact screen stays in portrait. Contacts appear with a photo and name. A green name means the contact is online: tap it to call. A gray name means offline and cannot be tapped to start a call. Scroll when there are more contacts than fit on screen.',
+                'The contact screen stays in portrait. Contacts appear with a photo and name. Green Available means the contact was recently active. Blue Try calling means push may reach their phone, but this is unconfirmed. Tap either to try a call. Red Offline means no current connection or usable push registration; it cannot start a call. The status appears below the name. Scroll when there are more contacts than fit on screen.',
                 'A pulsing phone animation appears while the other end rings. After answer, Connecting video stays visible until the first remote video frame arrives. A brief wait can happen while the connection starts.',
             ]),
             ('Missed calls and callback requests', [
                 'A red missed-call arrow and count on a contact portrait show calls you did not answer. A green return arrow means that person has asked you to call back; a green outgoing arrow means your request is pending. Tap the portrait for details or to clear missed calls.',
                 'For an offline contact, tap the callback icon and choose Request callback. After an unanswered outgoing call, the app also offers Request callback. This sends a request through the Zmala server; it does not place another call. While your request is pending, the button becomes an X. Tap it to cancel the request; the callback button returns. This does not end or place a call.',
-                'When the contact becomes available, tap their green name to call. A connected call completes pending callback requests between you and clears your missed-call count for that person. The administrator controls request expiry. If the action is absent, the server needs an update to support app callbacks.',
+                'When the contact becomes available, tap their green Available or blue Try calling name to call. A connected call completes pending callback requests between you and clears your missed-call count for that person. The administrator controls request expiry. If the action is absent, the server needs an update to support app callbacks.',
             ]),
             ('Answer an incoming call', [
                 'Use Answer or Decline on the incoming-call screen or notification. Incoming alerts can arrive while you use another app or the phone sleeps when notifications and server push are configured. Unlock the phone if Android requires it.',
@@ -140,7 +140,7 @@ def build_phone():
         doc.add_paragraph(intro)
         for heading, paragraphs in sections:
             paragraph = doc.add_heading(heading, 1)
-            if heading in ('3. Enable incoming call alerts', 'During a call'):
+            if heading == '3. Enable incoming call alerts':
                 paragraph.paragraph_format.page_break_before = True
             for text in paragraphs:
                 doc.add_paragraph(text)
@@ -174,7 +174,35 @@ def update_c20_guide():
     doc.save(path)
 
 
+def update_presence_guides():
+    """Keep the retained terminal instructions aligned with three-state presence."""
+    for filename in ('terminal_use.docx', 'terminal_config.docx'):
+        path = ROOT / 'docs' / filename
+        doc = Document(path)
+        for paragraph in doc.paragraphs:
+            if filename == 'terminal_use.docx':
+                paragraph.paragraph_format.page_break_before = False
+            if paragraph.text.startswith('Choose a person with the arrow buttons,'):
+                paragraph.text = ('Choose a person with the arrow buttons, press green to call and '
+                    'press red to finish. Green Available means recently active; blue Try calling '
+                    'means push may reach the phone, but this is unconfirmed. Either can be called. '
+                    'Red Offline means no current connection or usable push registration. '
+                    'This guide covers everyday calls with the Presenter remote after setup.')
+            if paragraph.text.startswith('Contacts appear as compact rows with rounded photos'):
+                paragraph.text = ('Contacts appear as compact rows with rounded photos beside their names. '
+                    'Green Available means recently active. Blue Try calling means push may work, '
+                    'but availability is unconfirmed. Tap either name to call. Red Offline names '
+                    'cannot start a call. Check sound, moving video, mute, camera switching and '
+                    'hangup in both directions before relying on the phone. The Pi remote workflow is unchanged.')
+            if paragraph.text == 'Point the C20 at the seating area. Call another permitted, online contact.':
+                paragraph.text = 'Point the C20 at the seating area. Call a permitted green Available or blue Try calling contact.'
+        doc.core_properties.author = 'ZmalaCall'
+        doc.core_properties.last_modified_by = ''
+        doc.save(path)
+
+
 if __name__ == '__main__':
     update_existing()
     update_c20_guide()
     build_phone()
+    update_presence_guides()

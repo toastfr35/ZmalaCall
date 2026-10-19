@@ -1,7 +1,7 @@
 // @test S-HLT-032
 // @requirements HLR-SRV-APP-004
 // @environment portable
-// @plan Use a disposable HTTP server and SIP router with captured push delivery. Register an App token through bearer auth, verify live terminal availability without a SIP registration, and hold an authorized INVITE until fresh registration. Deny terminal/admin token mutation, decline a waiting call through its recipient API, and prevent resumption after enrollment revocation. Exercise real UDP Digest INVITE/CANCEL transactions and require 200 for CANCEL plus 487 for the waiting INVITE, without late forwarding.
+// @plan Use a disposable HTTP server and SIP router with captured push delivery. Register an App token through bearer auth, verify blue/push terminal availability without a SIP registration, and hold an authorized INVITE until fresh registration. Deny terminal/admin token mutation, decline a waiting call through its recipient API, and prevent resumption after enrollment revocation. Exercise real UDP Digest INVITE/CANCEL transactions and require 200 for CANCEL plus 487 for the waiting INVITE, without late forwarding.
 // @pass Only the App bearer manages its destination; permitted offline calls resume once, cancelled or revoked calls never forward, and availability follows token enrollment. Cloud delivery is separate.
 'use strict';
 const test = require('node:test');
@@ -109,7 +109,9 @@ test('HTTP enrollment and offline SIP wake, decline and revocation', async (t) =
     null,
     store.value.users.term1.device_token,
   );
-  assert.equal((await r.json()).live.contacts.find((c) => c.id === 'phone1').online, true);
+  const pushContact = (await r.json()).live.contacts.find((c) => c.id === 'phone1');
+  assert.equal(pushContact.online, true);
+  assert.equal(pushContact.presence, 'push');
   const revision = store.value.configuration_version;
   let pending = s.request(req('wake-1'), peer);
   await new Promise(setImmediate);

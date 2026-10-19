@@ -1,7 +1,8 @@
 # @test T-LLT-048
-# @requirements LLR-TERM-CONFIG-020, LLR-TERM-UI-014, LLR-TERM-UI-015, LLR-TERM-UI-016, LLR-TERM-UI-017, LLR-TERM-UI-019, LLR-TERM-UI-024, LLR-TERM-HISTORY-016, LLR-TERM-HISTORY-022
+# @requirements LLR-TERM-NAV-005, LLR-TERM-CONFIG-020, LLR-TERM-UI-014, LLR-TERM-UI-015, LLR-TERM-UI-016, LLR-TERM-UI-017, LLR-TERM-UI-019, LLR-TERM-UI-024, LLR-TERM-HISTORY-016, LLR-TERM-HISTORY-022
 # @environment portable
 # @plan Record drawing calls at small and full-HD dimensions; check the selected-to-adjacent portrait size ratio, in-frame contact labels, portrait margins, localized rounded affirmative/negative controls, settings-only chrome and serial footer. Inject Pango to verify unchanged Unicode text and bounded shaping; force a tall translated settings label to check minimum-font ellipsis and intact combining marks. Test absolute carousel deadlines under delayed frames. Exercise real carousel composition with recording widgets, controlled shaped-label metrics and image failures; assert pending/missed badges, logo restoration, bounded labels and placeholder/ringing redraws.
+# Check three-state contact colours, labels and symbols; expire a six-second live snapshot and confirm push remains callable only while fresh. Change presence at the same configuration version and assert redraws without reconfiguration.
 # @pass Geometry, color, text and timing assertions must pass; these unit checks do not replace physical display or font-rendering acceptance.
 
 import importlib.util
@@ -24,6 +25,39 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class ViewContractTests(unittest.TestCase):
+    def test_same_revision_presence_change_redraws_without_reconfiguring(self):
+        import copy
+        from zmala_terminal.common.management import ManagementLoop
+        loop = ManagementLoop(); loop.model = TerminalModel(); loop.model.configure(config())
+        loop.render = Mock(); loop.apply_config = Mock(); loop.callback_requests = []
+        original_version = loop.model.config['configuration_version']
+        for state in ('push', 'available', 'offline'):
+            update = copy.deepcopy(loop.model.config)
+            update['contacts'][0].update(online=state != 'offline', presence=state)
+            loop.apply_poll_config(update)
+            self.assertEqual(loop.model.contacts[0]['presence'], state)
+            self.assertEqual(loop.model.config['configuration_version'], original_version)
+        self.assertEqual(loop.render.call_count, 3)
+        loop.apply_config.assert_not_called()
+
+    def test_three_state_presence_and_stale_snapshot(self):
+        from zmala_terminal.common.call_control import CallControl
+        from zmala_terminal.common.theme import GREEN, RED
+        c = CallControl(); c.server_seen = 100
+        view = CarouselView(); view.avatar = Mock(); view.font_family = 'Sans'
+        view.carousel_motion = None; view.current_text_images = []; view.text = lambda key: key
+        view.text_renderer = Mock(); view.text_renderer.photo.return_value.height.return_value = 20
+        for state, color, label in [('available', GREEN, 'available'), ('push', '#388bff', 'try_calling'), ('offline', RED, 'offline')]:
+            contact = {'online': state != 'offline', 'presence': state}
+            with patch('zmala_terminal.common.call_control.time.monotonic', return_value=105):
+                self.assertEqual(c.contact_presence(contact), state)
+                self.assertEqual(c.contact_online(contact), state != 'offline')
+            with patch('zmala_terminal.common.call_control.time.monotonic', return_value=106):
+                self.assertEqual(c.contact_presence(contact), 'offline')
+            view.draw_contact_status(200, 300, 180, 12, True, state != 'offline', presence=state)
+            self.assertEqual(view.avatar.create_text.call_args.kwargs['fill'], color)
+            self.assertEqual(view.text_renderer.photo.call_args.args[0], label)
+
     def test_settings_labels_elide_without_splitting_combining_marks(self):
         view = SettingsView(); view.language = 'en'; view.available_fonts = ['Sans']
         view.settings_images = []; view.settings_canvas = Mock(); view.text_renderer = Mock()
@@ -53,6 +87,7 @@ class ViewContractTests(unittest.TestCase):
         view.language = 'en'; view.font_family = 'Sans'; view.available_fonts = ['Segoe UI Symbol']
         view.ringing_started = None; view.setup_stage = None
         view.carousel_motion = CarouselMotion(view.model.contacts, 0, 1, 10)
+        view.contact_presence = lambda person: 'available' if view.contact_online(person) else 'offline'
         view.contact_online = lambda person: bool(person and person.get('online'))
         view.icon_renderer = Mock(); view.text_renderer = Mock()
         view.text = lambda key: key
@@ -105,6 +140,7 @@ class ViewContractTests(unittest.TestCase):
         view.avatar = Mock()
         view.current_photos = []; view.current_text_images = []
         view.font_family = 'Sans'; view.ringing_started = None; view.carousel_motion = None
+        view.contact_presence = lambda person: 'available' if view.contact_online(person) else 'offline'
         view.contact_online = lambda person: True
         view.contact_image = Mock(return_value=object())
         view.draw_contact_status = Mock()

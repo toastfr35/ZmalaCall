@@ -72,4 +72,16 @@ class RegistrationMonitor {
     for (const user of this.probes.keys()) this.cancel(user);
   }
 }
-module.exports = { RegistrationMonitor, registrationOnline };
+// @llr LLR-SRV-PRESENCE-005
+/** Keep call eligibility compatible while distinguishing confirmed activity from push.
+ * @param {import('./types/http').SipApi} server @param {string} id
+ * @returns {{presence: 'available' | 'push' | 'offline', online: boolean}} */
+function contactPresence(server, id) {
+  const presence = registrationOnline(server.registrations.get(id))
+    ? 'available'
+    : server.appCalls?.push.available(id)
+      ? 'push'
+      : 'offline';
+  return { presence, online: presence !== 'offline' };
+}
+module.exports = { RegistrationMonitor, registrationOnline, contactPresence };

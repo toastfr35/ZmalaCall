@@ -9,6 +9,12 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/management.py
+  type: file
+- path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+- path: zmala_terminal/common/localization.py
+  type: file
 - path: tests/terminal/LLT/test_input_dispatch.py
   type: file
 - path: tests/terminal/LLT/test_terminal.py
@@ -26,9 +32,11 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Cards shall show online or offline state from live server information. Online shall
-  use green and a check symbol; offline shall use red and a cross. After six seconds
+  Cards shall show Available in green with a check for confirmed live availability,
+  Try calling in blue with a question mark for unconfirmed push eligibility, and
+  Offline in red with a cross otherwise. Both available and push contacts shall
+  permit call confirmation. After six seconds
   without successful refresh, contacts shall be treated as unavailable.
 verification: |
   Advance the live-refresh clock across six seconds and restore updates. Check
-  availability, symbols and call eligibility.
+  all three colours, labels, symbols and call eligibility.

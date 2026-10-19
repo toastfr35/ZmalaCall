@@ -895,4 +895,20 @@ certificates, coturn configuration and network limitations.
 
 ## Android companion accounts
 
-ZmalaPhone uses the same palette and logo with an **App** account. Pi enrollment still requires a **Terminal** account. An account cannot belong to both; changing its type revokes its previous device and SIP credentials and requires a fresh setup QR. ZmalaPhone supports LAN or encrypted relay calls and Firebase incoming alerts while closed. A green App contact can be reached through push without an active SIP registration; delivery still depends on notification permission and connectivity. Both clients must use HTTPS enrollment when secure mode is enabled. See [Android implementation](android.md) for build and qualification status.
+ZmalaPhone uses the same palette and logo with an **App** account. Pi enrollment still requires a **Terminal** account. An account cannot belong to both; changing its type revokes its previous device and SIP credentials and requires a fresh setup QR. ZmalaPhone supports LAN or encrypted relay calls and Firebase incoming alerts while closed. A blue App contact can be reached through push without an active SIP registration; delivery still depends on notification permission and connectivity. Both clients must use HTTPS enrollment when secure mode is enabled. See [Android implementation](android.md) for build and qualification status.
+
+
+### Contact presence colours
+
+Contacts distinguish confirmed activity from unconfirmed push delivery: **Available**
+(green) means a current SIP registration remains reachable under the server's
+five-second checks; **Try calling** (blue) means only push eligibility remains;
+**Offline** (red) means neither. Both green and blue permit an attempted call.
+A push registration is not proof that the app is installed, online or ready to answer.
+The API adds `presence` (`available`, `push`, `offline`) to full, delta and preflight
+responses; `online` remains true for both callable states for older clients.
+Terminal live information expires after six seconds without a successful refresh,
+and cached configurations discard both live fields. Android clears the directory
+when a configuration refresh fails. Name buttons show a smaller status line;
+terminal cards show the status with a check, question mark or cross. New terminal
+labels are translated in English and French, with English fallback elsewhere.

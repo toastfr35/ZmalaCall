@@ -26,15 +26,18 @@ references:
   type: file
 reviewed: null
 scope: Experimental
-text: The interface shall present labeled controls for setup, permitted outgoing contacts and current
+text: |
+  The interface shall present labeled controls for setup, permitted outgoing contacts and current
   call actions, use at least 60 dp action heights, dark terminal background and panels, green call/answer
   and red decline/end controls, and preserve readable layout within system insets.
   Welcome instructions shall describe scanning a supplied setup QR code, received by email or on paper,
   without requiring the phone user to access server administration.
-  Contacts shall use compact horizontal rows with a rounded portrait beside the name. Online names
-  shall have a green background and initiate a call when tapped while registered; offline names
-  shall have a gray background and be disabled. Availability shall also be exposed to accessibility
-  services. Rows shall omit separate availability labels and call buttons to show more contacts.
+  Contacts shall use compact horizontal rows with a rounded portrait beside the name.
+  Name buttons shall include a smaller status label: Available on green for confirmed live
+  availability, Try calling on blue for unconfirmed push eligibility, and Offline on red
+  otherwise. Green and blue buttons shall initiate a call when tapped while registered;
+  red buttons shall be disabled. Status shall also be exposed to accessibility services.
+  Rows shall omit a separate call button to show more contacts.
   The contact screen shall stay in portrait orientation; starting a call shall restore display rotation and returning to contacts shall restore portrait.
   The contact screen shall omit the phone account name, the ready-to-call status line and any in-app reset action.
   Contact rows shall be vertically centered in the available contact area when they fit;
@@ -53,7 +56,7 @@ text: The interface shall present labeled controls for setup, permitted outgoing
 verification: Exercise labels and actions on an Android display, check minimum touch size and absence of in-app reset actions,
   check that setup describes using a supplied QR without administrator access, and visually inspect
   screenshots for clipping.
-  Verify online/offline row styling, disabled offline actions and calling by tapping an online name.
+  Verify all three row colours and status labels, disabled offline actions, and callable available and push names.
   Supply a non-slot camera aspect ratio and all four preview rotations; assert fitted bounds, preserved ratio and texture matrix orientation in both layouts.
   Repeat portrait-landscape-portrait transitions and assert current preview dimensions and rendered aspect ratio on the first layout pass, without a corrective layout or transform from the test.
   Assert that the phone account name and ready-to-call status are absent from the contact screen.

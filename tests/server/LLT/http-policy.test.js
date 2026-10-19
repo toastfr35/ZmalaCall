@@ -4,6 +4,7 @@
 // @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, authenticated callback creation/cancellation and enrollment identity persistence, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection.
 // Supply explicit interface subnets and TCP peer addresses to check LAN-only administration,
 // including mapped IPv4, IPv6, spoofed forwarding headers and valid remote admin credentials.
+// Exercise live, push-only and unavailable contacts through full configuration, delta and preflight routes at the same revision.
 // @pass Every allowed and denied request must produce the expected status and state; no sockets, actual commands or remote devices are used.
 
 'use strict';
@@ -79,7 +80,13 @@ test('device callback, availability and command routes bind identity and await d
   assert.equal(allowed.ring_timeout, store.ringTimeout('phone1'));
   store.deleteGroup('family');
   const denied = (await call('/api/contacts/phone1/availability', { headers: device })).json();
-  assert.deepEqual(denied, { id: 'phone1', online: false, can_call: false, ring_timeout: 60 });
+  assert.deepEqual(denied, {
+    id: 'phone1',
+    online: false,
+    presence: 'offline',
+    can_call: false,
+    ring_timeout: 60,
+  });
   for (const value of [
     {},
     { settings: [], expected: {} },
@@ -393,4 +400,36 @@ test('reassociation during an active call is rejected before any ownership mutat
     409,
   );
   assert.equal(JSON.stringify(store.value), before);
+});
+
+test('contact presence distinguishes live activity, push eligibility and offline without changing revision', async (t) => {
+  const { store, ctx, call, device } = fixture(t);
+  const version = store.value.configuration_version;
+  let push = false;
+  ctx.sipServer.appCalls = { push: { available: (id) => id === 'phone1' && push } };
+  for (const [presence, registration, canPush] of [
+    ['offline', undefined, false],
+    ['push', undefined, true],
+    ['available', { expires: Date.now() + 60000 }, true],
+    ['push', { expires: Date.now() + 60000, reachable: false }, true],
+    ['offline', { expires: Date.now() - 1 }, false],
+  ]) {
+    push = canPush;
+    ctx.sipServer.registrations.delete('phone1');
+    if (registration) ctx.sipServer.registrations.set('phone1', registration);
+    const full = (await call('/api/config', { headers: device })).json();
+    const delta = (
+      await call(`/api/config?delta=1&version=${version}`, { headers: device })
+    ).json();
+    const check = (await call('/api/contacts/phone1/availability', { headers: device })).json();
+    for (const contact of [
+      full.contacts.find((c) => c.id === 'phone1'),
+      delta.live.contacts.find((c) => c.id === 'phone1'),
+      check,
+    ]) {
+      assert.equal(contact.presence, presence);
+      assert.equal(contact.online, presence !== 'offline');
+    }
+    assert.equal(store.value.configuration_version, version);
+  }
 });

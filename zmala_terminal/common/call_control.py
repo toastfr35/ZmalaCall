@@ -185,6 +185,12 @@ class CallControl:
     def contact_online(self, contact):
         return bool(contact and contact.get('online') is True and time.monotonic() - self.server_seen < 6)
 
+    # @llr LLR-TERM-NAV-005
+    def contact_presence(self, contact):
+        if not self.contact_online(contact):
+            return 'offline'
+        return 'push' if contact.get('presence') == 'push' else 'available'
+
     # @llr LLR-TERM-NAV-007
     def dial_ready(self, generation, serial, contact, available, ring_timeout=60):
         """A preflight reply may arrive after cancel/reset; verify both tokens before dialing."""

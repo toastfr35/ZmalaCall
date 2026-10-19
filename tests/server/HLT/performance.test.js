@@ -1,7 +1,7 @@
 // @test S-HLT-013
 // @requirements HLR-SRV-DIR-019, HLR-SRV-PRESENCE-001, HLR-SRV-MAINT-011, HLR-SRV-DATA-012, HLR-SRV-MAINT-012, HLR-SRV-CALLBACK-013
 // @environment portable
-// @plan Use HTTP device/admin polling while delaying persistence; assert live state remains responsive, cached contacts cannot leak mutations, claims wait for durable leases and callback notifications follow commit.
+// @plan Use HTTP device/admin polling while delaying persistence; assert full and delta contact presence agree, live registration changes offline to available without changing the configuration version, live state remains responsive, cached contacts cannot leak mutations, claims wait for durable leases and callback notifications follow commit.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -27,10 +27,20 @@ test('versioned device polling keeps live updates separate and falls back after 
     assert.deepEqual(Object.keys(delta).sort(), ['configuration_version', 'live']);
     assert.deepEqual(
       delta.live.contacts,
-      full.contacts.map(({ id, online }) => ({ id, online })),
+      full.contacts.map(({ id, online, presence }) => ({ id, online, presence })),
     );
     fixture.sipServer.registrations.set('phone1', { expires: Date.now() + 60000 });
-    assert.equal((await get(route)).live.contacts.find((c) => c.id === 'phone1').online, true);
+    assert.equal(delta.live.contacts.find((c) => c.id === 'phone1').presence, 'offline');
+    const registered = await get(route);
+    assert.equal(registered.configuration_version, full.configuration_version);
+    assert.deepEqual(
+      registered.live.contacts.find((c) => c.id === 'phone1'),
+      {
+        id: 'phone1',
+        online: true,
+        presence: 'available',
+      },
+    );
     fixture.callbacks.create('term1', 'phone1');
     assert.equal((await get(route)).live.callbacks.length, 1);
     fixture.store.updateGroup('family', {

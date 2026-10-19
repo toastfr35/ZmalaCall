@@ -21,5 +21,11 @@ reviewed: null
 scope: Core
 text: |
   Full configuration and same-revision delta responses shall include current contact availability and callback state. Availability checks shall apply current permission and reachability independently of the configuration revision.
+  Each permitted contact shall expose presence as available for an unexpired SIP
+  registration not marked unreachable by the five-second reachability checks,
+  push for an eligible push registration without that live connection, or offline
+  otherwise. Available takes precedence over push. The compatibility online field
+  shall be true for available and push, allowing an attempted call in either state.
+  A denied preflight shall disclose only offline and online false.
 verification: |
-  Change only reachability or callbacks and poll with an unchanged version. Check permission-limited availability responses.
+  Change only reachability or callbacks and poll with an unchanged version. Check permission-limited availability responses. Exercise all three presence states in full, delta and preflight responses without changing the configuration revision.
