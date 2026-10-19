@@ -1,22 +1,26 @@
 name: Publish release
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'New release tag matching the Android version, for example v0.3.6'
-        required: true
+        description: 'Optional tag check; leave blank to use the committed Android version'
+        required: false
         type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ inputs.tag }}
+  # Different merged commits must each publish, even if builds overlap.
+  group: release-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
   windows:
+    if: github.ref == 'refs/heads/main'
     runs-on: windows-latest
     timeout-minutes: 35
     steps:
@@ -36,7 +40,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m unittest discover -s tests/adhoc/server_installer -t . -p 'test_*.py'
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -m unittest tests.adhoc.test_release_assets tests.adhoc.test_android_release
+          python -m unittest tests.adhoc.test_release_assets tests.adhoc.test_release_automation tests.adhoc.test_android_release
       - name: Build the two Pi installers
         run: |
           python build_tools/windows_installer/build.py
@@ -70,6 +74,7 @@ jobs:
           retention-days: 7
 
   android:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:

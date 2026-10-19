@@ -539,11 +539,11 @@ ZmalaCall supports UDP-blocked networks. The report is written separately to
 
 ## Distribution and third-party components
 
-The Windows installer workflows build self-contained executables and perform
+The release workflow builds self-contained Windows executables and performs
 GUI/headless smoke tests. Download published assets from the
 [latest release](https://github.com/toastfr35/ZmalaCall/releases/latest), or an
 artifact from the [workflow runs](https://github.com/toastfr35/ZmalaCall/actions)
-for unreleased builds. Artifacts expire after 90 days. The executables are unsigned;
+for build inspection. Release artifacts expire after seven days. The executables are unsigned;
 checksums detect transfer corruption, not an untrusted publisher.
 
 ### Release download layout
@@ -581,14 +581,28 @@ see `zmala_phone/NOTICE.md`.
 
 ### GitHub Actions publication
 
-Run **Publish release** (`.github/workflows/release.yml`) manually, selecting the
-intended source branch and a new tag matching the Android version, such as
-`v0.3.7`. Windows builds both Pi installers and all PDFs; Linux builds and verifies
-the signed APK. The publication job waits for both, collects the nine named files,
-creates a draft, uploads and checks its assets, then publishes it as Latest.
+Work is tracked in issues and pull requests. **Verify** runs for pull requests
+targeting `main` (or by manual dispatch), cancelling superseded runs for the same
+pull request. It does not also run on branch pushes. Its version check requires
+both Android version fields to increase above the PR base and the proposed tag
+to be unused. Protected `main` requires up-to-date passing platform checks and
+a pull request; each change, including documentation, carries a version bump.
+
+**Publish release** (`.github/workflows/release.yml`) starts on each merge into
+`main`. The tag comes from the committed Android version. Manual dispatch on
+`main` remains available for recovery, with an optional matching tag check.
+Windows builds both Pi installers and all PDFs; Linux builds and verifies the
+signed APK. The publication job waits for both, collects the nine named files,
+creates a draft, uploads and checks its assets, then publishes it. GitHub selects
+Latest using its semantic-version policy, so an older overlapping build does not
+explicitly replace a newer release. Concurrency is scoped to the source commit;
+separate merged commits are not cancelled. The old standalone installer workflows
+are removed; their packaging checks are retained in Verify and the release build.
 The Android artifact may retain its version directory. The collector accepts that
 artifact root and requires exactly one `ZmalaPhone.apk`; ambiguous APK inputs fail.
 Existing releases are never overwritten. A failed upload leaves a draft for review.
+Inspect and remove only the failed unpublished draft/tag before rerunning that
+commit's workflow. Re-running an already published release fails without replacing it.
 
 Configure these repository **Actions secrets**, never repository files:
 

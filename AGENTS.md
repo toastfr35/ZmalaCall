@@ -1,5 +1,13 @@
 # Repository working instructions
 
+Use a GitHub issue and a feature branch for each change. Open a pull request to
+`main`; do not push directly to `main` or mirror commits onto another branch.
+Before merging, wait for the required Verify checks and resolve failures. Each
+pull request, including documentation changes, must raise Android `versionName`
+and `versionCode` above current `main` (normally the next patch and code + 1).
+Merge through GitHub so the main-branch update publishes a new nine-asset release.
+Keep release credentials confined to the release workflow.
+
 Keep code, documentation and requirements synchronized in every change.
 
 - Before editing, identify the affected behavior, Doorstop items, code trace
