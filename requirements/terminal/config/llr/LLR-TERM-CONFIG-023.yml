@@ -28,7 +28,8 @@ scope: Core
 text: |
   Changes that require media-engine replacement shall wait until idle. The applied
   revision shall change only after engine setup succeeds. Failed setup shall release
-  the engine and retry the latest desired configuration after five idle seconds.
+  the engine and retry the latest desired configuration after five idle seconds,
+  or after one idle second when the required C20 is still waking.
 verification: |
   Fail and delay replacement during a call and at idle. Check retry timing, released
   resources and reported revision.

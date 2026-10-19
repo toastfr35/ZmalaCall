@@ -1,7 +1,7 @@
 // @test S-LLT-027
-// @requirements LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015
+// @requirements LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015, LLR-SRV-CONFIG-018
 // @environment display
-// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation.
+// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Verify fixed C20 media information without camera, microphone or speaker selectors. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation.
 // @pass All computed layout and interaction assertions must pass against the mocked API; no live service or account is changed.
 
 'use strict';
@@ -39,6 +39,12 @@ test('admin component fits phones and desktop and preserves modal drafts', async
     callbacks: [],
   };
   let signedIn = true;
+  let savedSettings;
+  model.profiles.term1.terminal_settings = {
+    camera: 'old camera',
+    microphone: 'old microphone',
+    speaker: 'HDMI',
+  };
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url()),
       name = url.pathname;
@@ -50,6 +56,7 @@ test('admin component fits phones and desktop and preserves modal drafts', async
         status = 401;
         body = { error: 'Sign in' };
       } else if (route.request().method() !== 'GET') {
+        if (name === '/api/settings') savedSettings = route.request().postDataJSON();
         status = 409;
         body = { error: 'Fixture conflict: reopen editor' };
       } else if (name.startsWith('/api/admin')) body = model;
@@ -112,6 +119,12 @@ test('admin component fits phones and desktop and preserves modal drafts', async
           'Account',
         );
       }
+      if (route === '/terminals') {
+        await page.getByText('Nuroum C20 supplies', { exact: false }).waitFor();
+        for (const label of ['Camera', 'Microphone', 'Speaker']) {
+          assert.equal(await page.getByLabel(label, { exact: true }).count(), 0);
+        }
+      }
       if (width <= 700) {
         const sizes = await page
           .locator('nav a, #page-actions button, .icon-button:visible')
@@ -123,6 +136,11 @@ test('admin component fits phones and desktop and preserves modal drafts', async
       }
     }
   }
+  await page.goto('http://zmala.test/terminals');
+  await page.locator('form[data-kind=devices] button[type=submit]').click();
+  await page.getByText('Fixture conflict: reopen editor', { exact: true }).waitFor();
+  assert.ok(savedSettings);
+  for (const key of ['camera', 'microphone', 'speaker']) assert.equal(savedSettings[key], '');
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto('http://zmala.test/accounts');
   await page.getByRole('button', { name: 'New account', exact: true }).click();

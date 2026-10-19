@@ -1,30 +1,78 @@
 # @test T-LLT-023
 # @requirements LLR-TERM-AUDIO-005
 # @environment portable
-# @plan Reconfigure a fake native core first without and then with a capture device; assert microphone capture can recover on the next call.
-# @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
+# @plan Fail C20 discovery before native call allocation, then restore it. Exercise incoming and outgoing orchestration with a retryable media error, assert a one-second retry, successful recovery and cancellation/generation guards. No receive-only or HDMI fallback is accepted.
+# @pass Calls start only after recovery; cancelled or superseded calls never resume.
 
-"""A video-only webcam must not create an outgoing audio capture stream."""
-from pathlib import Path
-import sys
 import unittest
-from unittest.mock import Mock
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from unittest.mock import Mock, patch
 from zmala_terminal.common.engine import Engine
+from zmala_terminal.common.call_control import CallControl
+from zmala_terminal.common.model import State
+from zmala_terminal.common.media_errors import MediaNotReady
 
 
 class MissingMicrophoneTests(unittest.TestCase):
-    def test_capture_returns_on_the_next_call_after_reconnection(self):
-        engine = Engine.__new__(Engine)
-        engine.devices = Mock(side_effect=[{'microphone': []}, {'microphone': ['USB microphone']}])
-        engine.call_params_enable_mic = Mock()
-        engine.call_params_set_audio_direction = Mock()
-        with self.assertLogs(level='WARNING'):
-            engine.configure_call_audio('first-call')
-        engine.call_params_enable_mic.assert_called_once_with('first-call', 0)
-        engine.call_params_set_audio_direction.assert_called_once_with('first-call', 2)
-        engine.configure_call_audio('second-call')
-        # The second call retains the SDK's negotiated direction and microphone defaults.
-        self.assertEqual(engine.call_params_set_audio_direction.call_count, 1)
-        self.assertEqual(engine.call_params_enable_mic.call_count, 1)
+    def test_missing_c20_blocks_native_answer_and_invite_before_allocation(self):
+        e = Engine.__new__(Engine)
+        e.call = 42
+        e.refresh_usb_devices = Mock(side_effect=MediaNotReady('microphone waking'))
+        e.address_new = Mock()
+        e.core_create_call_params = Mock()
+        with patch('zmala_terminal.common.engine.WINDOWS', False):
+            for action in (lambda: e.dial('sip:peer@example.test'), e.answer):
+                with self.assertRaises(MediaNotReady):
+                    action()
+            e.address_new.assert_not_called()
+            e.core_create_call_params.assert_not_called()
+            e.refresh_usb_devices.side_effect = None
+            e.prepare_call_media()
+        self.assertEqual(e.refresh_usb_devices.call_count, 3)
+
+    def app(self):
+        app = CallControl()
+        app.root, app.engine, app.model, app.render = Mock(), Mock(), Mock(), Mock()
+        app.usb_media_ready = Mock(return_value=True)
+        app.generation, app.dial_serial, app.closed, app.setup_stage = 1, 2, False, None
+        app.engine.call = 42
+        app.engine.registered = True
+        app.model.state = State.CONNECTING
+        return app
+
+    def test_answer_waits_one_second_and_recovers(self):
+        app = self.app()
+        app.engine.answer.side_effect = [MediaNotReady('waking'), None]
+        app.answer_when_ready()
+        delay, retry = app.root.after.call_args.args
+        self.assertEqual(delay, 1000)
+        app.engine.end.assert_not_called()
+        retry()
+        self.assertEqual(app.engine.answer.call_count, 2)
+
+    def test_answer_retry_ignores_cancellation_replacement_and_shutdown(self):
+        for change in ('cancel', 'generation', 'call', 'closed'):
+            app = self.app()
+            app.engine.answer.side_effect = MediaNotReady('waking')
+            app.answer_when_ready()
+            retry = app.root.after.call_args.args[1]
+            if change == 'cancel': app.model.state = State.HOME
+            elif change == 'generation': app.generation += 1
+            elif change == 'call': app.engine.call = 99
+            else: app.closed = True
+            retry()
+            self.assertEqual(app.engine.answer.call_count, 1)
+
+    def test_outgoing_waits_then_recovers_unless_cancelled(self):
+        for cancel in (False, True):
+            app = self.app()
+            contact = {'id': 'peer', 'sip_uri': 'sip:peer@example.test'}
+            app.model.contacts = [contact]
+            app.model.state = State.CALLING
+            app.engine.dial.side_effect = [MediaNotReady('waking'), None]
+            app.dial_ready(1, 2, contact, True)
+            delay, retry = app.root.after.call_args.args
+            self.assertEqual(delay, 1000)
+            app.model.ended.assert_not_called()
+            if cancel: app.dial_serial += 1
+            retry()
+            self.assertEqual(app.engine.dial.call_count, 1 if cancel else 2)

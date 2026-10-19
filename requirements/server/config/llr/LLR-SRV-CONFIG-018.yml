@@ -9,6 +9,12 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/LLT/admin-view.test.js
+  type: file
+- path: zmala_server/web/admin-terminals.js
+  type: file
+- path: zmala_server/web/admin-terminalfields.js
+  type: file
 - path: tests/server/LLT/configuration-policy.test.js
   type: file
 - path: zmala_server/http/device-routes.js
@@ -22,6 +28,14 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Profiles shall accept normal or speech audio processing. Camera, microphone and speaker selectors shall be strings of at most 256 characters. Omitted optional settings shall retain existing values; explicit invalid values shall be rejected.
+  The terminal settings page shall identify the fixed Nuroum C20 camera, microphone
+  and speaker without offering alternative hardware selectors. Profiles shall
+  accept normal or speech audio processing. Legacy API device selectors shall
+  remain strings of at most 256 characters for compatibility; Pi terminals shall
+  ignore them and the browser shall clear them when saving. Omitted optional
+  settings shall retain existing values; explicit invalid values shall be rejected.
 verification: |
-  Validate selector lengths and audio choices with omitted, null and invalid values. Check atomic updates.
+  Render terminal settings with stale device values and verify C20 information
+  without hardware selectors. Check cleared device values on browser save. Validate
+  legacy selector lengths and audio choices with omitted, null and invalid values;
+  check atomic updates.

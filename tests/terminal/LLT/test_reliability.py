@@ -1,7 +1,7 @@
 # @test T-LLT-044
 # @requirements LLR-TERM-COM-003, LLR-TERM-COM-006, LLR-TERM-COM-008, LLR-TERM-CONFIG-023, LLR-TERM-CONFIG-024, LLR-TERM-UI-020, LLR-TERM-UI-021, LLR-TERM-AUDIO-007, LLR-TERM-HISTORY-018, LLR-TERM-MAINT-016, LLR-TERM-MAINT-017
 # @environment portable
-# @plan Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled-photo fencing and coalesced mixer writes. Bound the portrait queue and retry delay; exercise the real worker with cached, invalid and cancelled data. Gate reconfiguration during setup/calls and verify bounded authenticated HTTP requests and deactivation.
+# @plan Check one-second C20 setup retry versus five-second general failures. Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled-photo fencing and coalesced mixer writes. Bound the portrait queue and retry delay; exercise the real worker with cached, invalid and cancelled data. Gate reconfiguration during setup/calls and verify bounded authenticated HTTP requests and deactivation.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Regression coverage for unattended recovery, with no native devices or live server."""
@@ -88,6 +88,12 @@ class ReliabilityTests(unittest.TestCase):
         self.assertIsNone(app.engine)
         self.assertEqual(app.engine_retry_at, 105)
         self.assertEqual(app.diagnostics, {'registered':False})
+        from zmala_terminal.common.media_errors import MediaNotReady
+        app.configure_engine.side_effect = MediaNotReady('C20 waking')
+        with patch('time.monotonic', return_value=106):
+            app.apply_config(desired)
+        self.assertEqual(app.engine_retry_at, 107)
+        self.assertEqual(app.pending_config, desired)
 
     def test_configuration_refresh_updates_devices_without_replacing_same_native_graph(self):
         from zmala_terminal.common.configuration_control import ConfigurationControl

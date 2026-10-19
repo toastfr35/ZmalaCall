@@ -3,6 +3,7 @@ import logging
 import time
 from zmala_terminal.common.localization import font_family
 from zmala_terminal.common.model import State
+from zmala_terminal.common.media_errors import MediaNotReady
 
 
 class ConfigurationControl:
@@ -47,8 +48,9 @@ class ConfigurationControl:
         # pending above, and a new core restores the default canceller cleanly.
         try:
             self.configure_engine(config, old_sip, requested_profile(config))
-        except Exception:
-            logging.exception('Could not apply media configuration; retrying in five seconds')
+        except Exception as error:
+            retry = 1 if isinstance(error, MediaNotReady) else 5
+            logging.warning('Could not apply media configuration; retrying in %s seconds: %s', retry, error)
             old, self.engine = self.engine, None
             if old:
                 try:
@@ -56,7 +58,7 @@ class ConfigurationControl:
                 except Exception:
                     logging.exception('Could not release failed media engine')
             self.pending_config = config
-            self.engine_retry_at = time.monotonic() + 5
+            self.engine_retry_at = time.monotonic() + retry
             self.diagnostics = {'registered': False}
             self.notice = 'unavailable'
             self.render()

@@ -31,6 +31,15 @@ ListNode._fields_ = [('next', C.POINTER(ListNode)), ('prev', C.POINTER(ListNode)
 
 
 SIGNATURES = {
+    # @llr LLR-TERM-POWER-010
+    'core_set_default_input_audio_device': (None, [P, P]),
+    'core_set_default_output_audio_device': (None, [P, P]),
+    'core_get_default_input_audio_device': (P, [P]),
+    'core_get_default_output_audio_device': (P, [P]),
+    'call_set_input_audio_device': (None, [P, P]),
+    'call_set_output_audio_device': (None, [P, P]),
+    'call_get_input_audio_device': (P, [P]),
+    'call_get_output_audio_device': (P, [P]),
     'factory_get': (P, []), 'factory_create_core_3': (P, [P, S, S, P]),
     'factory_create_core_cbs': (P, [P]),
     'core_cbs_set_call_state_changed': (None, [P, CALL_CB]),

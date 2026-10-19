@@ -131,12 +131,14 @@ normal call completion return the terminal to the appropriate idle state.
 ### 10. Audio
 
 The terminal uses the C20 microphone and speaker for calls. It plays an incoming
-ringtone and an outgoing waiting tone on the selected speaker. Speaker volume can
+ringtone and an outgoing waiting tone on the C20 speaker. Speaker volume can
 change without changing microphone gain or television volume.
 
-Audio processing provides the configured echo-control behavior. Missing microphone
-capture does not prevent available received audio and video. A device restart
-restores the requested speaker level before the terminal treats media as ready.
+Audio processing provides the configured echo-control behavior. The Pi waits for
+all C20 media instead of starting a receive-only call or selecting TV audio.
+Missing devices or rejected routes retry once per second while SIP and remote
+buttons remain responsive. A cancelled or superseded call cannot resume.
+USB wake restores the requested speaker level before media is ready.
 
 ### 11. Video
 
@@ -570,7 +572,8 @@ negotiated and decoded dimensions/rates, not just configuration or transmit coun
 Linux uses explicit C20 MJPEG capture, Pi `bcm2835-codec` H.264 encoding and
 FFmpeg software H.264 decoding. It does not silently choose another camera or
 HDMI audio when the C20 is absent. Camera format/size checks avoid the SDK's
-YUYV/VGA fallback. Windows retains server-selected SDK devices and H.264/VP8;
+YUYV/VGA fallback. The admin page offers no camera, microphone or speaker selector for the Pi.
+Legacy Windows compatibility retains SDK devices and H.264/VP8;
 its local OpenH264 receive adapter preserves valid NAL bytes that the bundled
 adapter corrupted. Pi peers use H.264. Hardware decoding is not the current path.
 
@@ -606,6 +609,22 @@ Current short Pi 4 checks established two-way 1080p20 when the peer camera expos
 could supply 20 fps; they do not qualify sustained 30 fps or uniformly low latency.
 An old 15 fps observation is not a hard limit. Low-light exposure can limit capture
 below its advertised format rate; a faster server does not fix that bottleneck.
+
+C20 routing uses both core default audio-device objects and the pending call's
+input/output objects, with readback validation. This matters when an incoming
+call is created while USB is off: changing only core defaults leaves that call's
+old HDMI route intact. Native references remain owned until all setters/readbacks
+finish, then are released. Dial/answer refresh the devices before allocating call
+parameters. Setup also retries missing C20 hardware after one second (other
+engine failures retain the five-second retry).
+
+On 19 October 2026, `tests/terminal/HLT/c20_audio_native.py` passed on term2
+with its installed Debian SDK: a loopback incoming call initially selected HDMI,
+then reported C20 input and output after rebinding and reaching StreamsRunning.
+This checks native route selection; physical listening and USB wake timing are
+separate checks. Run this opt-in test only with the terminal service stopped and
+the C20 powered on; it uses temporary SDK data, no account credentials, external
+peer or recording, and releases both cores afterwards.
 
 C20 microphone input is 16 kHz stereo; playback is 48 kHz stereo. The speech
 profile limits echo processing to the native input rate while retaining the
@@ -830,7 +849,7 @@ record their IDs/platform/results; a portable pass does not qualify them.
 | Server QR rejected | Current URL/token/ID, reachable server, correct QR and account association |
 | Pixelated/slow video | Actual negotiated/captured dimensions, exposure, bitrate, CPU/thermal state, jitter/loss |
 | No C20 audio and video | Kernel USB errors and independent capture/audio probes before blaming SIP or codecs |
-| Call connected but no sound | Selected devices, actual decoded levels and physical listening in both directions |
+| Call connected but no sound | C20 connection and effective call routes, actual decoded levels and physical listening in both directions |
 | Old backup rejected | Follow server re-enrollment recovery; do not disable revision checks |
 
 Long idle/repeated calls, USB reconnect/power faults, network loss, CEC across TV

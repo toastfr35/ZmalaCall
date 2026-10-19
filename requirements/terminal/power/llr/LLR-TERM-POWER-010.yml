@@ -5,10 +5,14 @@ header: |
   C20 identity after reconnection
 level: 109.0
 links:
-- HLR-TERM-POWER-008: 35cBTKX3R_qHYmXB8VF639bs2vG63ISfQ1HlOVVGPVg=
+- HLR-TERM-POWER-008: NaYlkYrPCqDJ7i4TbCec4XByycLyQ74SdjO_px4m5Ms=
 normative: true
 ref: ''
 references:
+- path: tests/terminal/LLT/test_audio_routing.py
+  type: file
+- path: zmala_terminal/common/linphone_api.py
+  type: file
 - path: tests/terminal/LLT/test_linux_media.py
   type: file
 - path: zmala_terminal/common/engine.py
@@ -26,9 +30,13 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The Pi shall rediscover C20 capture and playback by device identity after USB
-  enumeration changes. Missing C20 devices shall produce diagnostics. The Pi shall not
-  silently select unrelated hardware or use a stale server device identifier.
+  The Pi shall use only the Nuroum C20 camera, microphone and speaker, rediscovered
+  by identity after USB enumeration changes. It shall bind both future calls and
+  an incoming call waiting during wake to the C20 input and output before answering.
+  Missing devices or rejected routes shall keep media unready, with diagnostics;
+  HDMI, unrelated hardware and stale server identifiers shall never be substitutes.
 verification: |
-  Renumber C20 nodes, provide stale configured names and remove the C20. Check
-  selected identities and missing-device diagnostics.
+  Renumber C20 nodes and supply stale configured names. Start a pending call with
+  HDMI routes, then restore C20 discovery and verify both call routes and defaults.
+  Inject missing capabilities, setter failure and wrong readback; check retryable
+  failure and release of native references.
