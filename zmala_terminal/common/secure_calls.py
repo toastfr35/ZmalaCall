@@ -17,10 +17,12 @@ def validate(config, now=None):
     if not isinstance(policy, dict) or policy.get('mode') != 'tls-relay':
         raise ValueError('Unsupported secure-call policy')
     host = r'[a-zA-Z0-9][a-zA-Z0-9.-]{0,252}'
-    if not re.fullmatch(r'sip:' + host + r':443;transport=tls', (config.get('sip') or {}).get('proxy', '')):
-        raise ValueError('Secure calls require SIP TLS on port 443')
-    if not isinstance(policy.get('turn_server'), str) or not re.fullmatch(host + ':443', policy['turn_server']):
-        raise ValueError('Secure calls require TURN TLS on port 443')
+    sip = re.fullmatch(r'sip:' + host + r':([0-9]{1,5});transport=tls', (config.get('sip') or {}).get('proxy', ''))
+    turn = re.fullmatch(host + r':([0-9]{1,5})', policy.get('turn_server', '')) if isinstance(policy.get('turn_server'), str) else None
+    if not sip or not 1 <= int(sip[1]) <= 65535:
+        raise ValueError('Secure calls require a valid SIP TLS endpoint')
+    if not turn or not 1 <= int(turn[1]) <= 65535:
+        raise ValueError('Secure calls require a valid TURN TLS endpoint')
     for field in ('turn_username', 'turn_password', 'turn_realm'):
         value = policy.get(field)
         if not isinstance(value, str) or not 1 <= len(value) <= 512 or any(c.isspace() for c in value):

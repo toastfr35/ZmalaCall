@@ -39,7 +39,7 @@ test('command ownership cannot follow a recycled username or account type', asyn
         );
       } else {
         assert.equal(
-          (await request('PUT', '/api/users/term1', { name: 'Phone', type: 'linphone' })).status,
+          (await request('PUT', '/api/users/term1', { name: 'Phone', type: 'app' })).status,
           200,
         );
         assert.equal(

@@ -22,7 +22,7 @@ class AccountStore {
       this.value.users[id].type === 'terminal'
     );
   }
-  // @llr LLR-SRV-DIR-021
+  // @llr LLR-SRV-DIR-021, LLR-SRV-APP-002
   /** @param {import('./types/contracts').JsonObject} update @returns {string} */
   createAccount(update) {
     const v = this.value,
@@ -40,7 +40,7 @@ class AccountStore {
     v.users[id] =
       fields.type === 'terminal'
         ? this.makeTerminal(id, { ...fields, ...details })
-        : { ...details, type: 'linphone' };
+        : { ...details, type: 'app', device_id: 'ZP-' + randomUUID(), device_token: random() };
     this.changed();
     return id;
   }
@@ -78,11 +78,13 @@ class AccountStore {
       password: (typeof update.password === 'string' && update.password) || u.password,
       photo: fields.photo ?? u.photo,
     };
+    // @llr LLR-SRV-APP-002
+    if (fields.type !== u.type) details.password = random();
     if (fields.type === 'terminal') {
       if (u.type === 'terminal') Object.assign(u, fields, details);
       else v.users[id] = this.makeTerminal(id, { ...fields, ...details });
       v.profiles[id].display_name = details.name;
-    } else if (u.type === 'linphone') Object.assign(u, details);
+    } else if (u.type === 'app') Object.assign(u, details);
     else {
       // Replacing the discriminator also removes enrollment and auto-answer fields.
       const {
@@ -92,7 +94,13 @@ class AccountStore {
         auto_answer_seconds: _delay,
         ...phone
       } = u;
-      v.users[id] = { ...phone, ...details, type: 'linphone' };
+      v.users[id] = {
+        ...phone,
+        ...details,
+        type: 'app',
+        device_id: 'ZP-' + randomUUID(),
+        device_token: random(),
+      };
       delete v.profiles[id];
       if (v.local_terminal_id === id)
         v.local_terminal_id = Object.keys(v.users).find((key) => this.terminal(key)) || null;

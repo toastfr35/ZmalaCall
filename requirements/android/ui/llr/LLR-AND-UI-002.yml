@@ -1,0 +1,64 @@
+active: true
+area: Portrait interface and controls
+derived: false
+header: Accessible contact and call screens
+level: 2
+links:
+- HLR-AND-UI-001: null
+normative: true
+ref: ''
+references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallScreen.java
+  type: file
+- path: zmala_phone/app/src/main/res/drawable/zmala_logo.xml
+  type: file
+- path: tests/android/LLT/device/InterfaceTest.java
+  type: file
+- path: tests/android/LLT/device/CallScreenTest.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallEngine.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/VideoStartup.java
+  type: file
+- path: tests/android/LLT/unit/VideoStartupTest.java
+  type: file
+reviewed: null
+scope: Experimental
+text: The interface shall present labeled controls for setup, permitted outgoing contacts and current
+  call actions, use at least 60 dp action heights, dark terminal background and panels, green call/answer
+  and red decline/end controls, and preserve readable layout within system insets.
+  Welcome instructions shall describe scanning a supplied setup QR code, received by email or on paper,
+  without requiring the phone user to access server administration.
+  Contacts shall use compact horizontal rows with a rounded portrait beside the name. Online names
+  shall have a green background and initiate a call when tapped while registered; offline names
+  shall have a gray background and be disabled. Availability shall also be exposed to accessibility
+  services. Rows shall omit separate availability labels and call buttons to show more contacts.
+  The contact screen shall omit the phone account name, the ready-to-call status line and any in-app reset action.
+  Contact rows shall be vertically centered in the available contact area when they fit;
+  longer lists shall scroll from the top without clipping or inaccessible rows.
+  The outgoing and connected call view shall devote the screen to video without a logo banner or
+  contact name, with the local preview at bottom right. Four round icon controls for microphone,
+  audio output, camera switching and hangup shall share one row with accessible action labels.
+  Controls shall start hidden, appear on a video tap, and hide after five seconds without interaction.
+  The preview shall move above visible controls to avoid overlap and return to the corner when hidden.
+  Portrait and landscape layouts shall retain the same video surfaces and call. The local preview shall preserve the captured image aspect ratio and apply camera sensor/display rotation without stretching or showing a sideways image. A pulsing phone
+  indicator shall show outgoing calling/ringing progress and stop on connection or leaving the view.
+  After answer, a Connecting video indicator shall remain visible until the current call
+  decodes a remote video frame, including through initial stream restarts. Stale callbacks
+  from earlier calls shall not hide it. Its full label shall fit in portrait and landscape. Ringing animation shall give way to a connecting spinner.
+  Its full circular perimeter shall remain visible throughout the pulse in both orientations.
+verification: Exercise labels and actions on an Android display, check minimum touch size and absence of in-app reset actions,
+  check that setup describes using a supplied QR without administrator access, and visually inspect
+  screenshots for clipping.
+  Verify online/offline row styling, disabled offline actions and calling by tapping an online name.
+  Supply a non-slot camera aspect ratio and all four preview rotations; assert fitted bounds, preserved ratio and texture matrix orientation in both layouts.
+  Repeat portrait-landscape-portrait transitions and assert current preview dimensions and rendered aspect ratio on the first layout pass, without a corrective layout or transform from the test.
+  Assert that the phone account name and ready-to-call status are absent from the contact screen.
+  Check balanced space above and below a short list, and top alignment and scrolling for a long list.
+  Test icon actions, timed visibility, ringing-animation lifecycle and both call layouts; inspect
+  preview placement and preserve the video surfaces across a rotation during a native fixture call.
+  Render the pulse at several animation phases and verify a full circular perimeter with clear margins.
+
+  Test answered-but-no-frame progress, decoder re-arming, stale callbacks and cleanup.

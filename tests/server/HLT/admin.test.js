@@ -36,14 +36,8 @@ test('admin account and group CRUD, membership validation, terminal provisioning
     assert.equal(redirect.status, 302);
     assert.equal(redirect.headers.get('location'), '/groups');
     assert.equal(
-      (
-        await request(
-          '/api/users',
-          'POST',
-          { id: 'alice', name: 'Alice', type: 'linphone' },
-          'wrong',
-        )
-      ).status,
+      (await request('/api/users', 'POST', { id: 'alice', name: 'Alice', type: 'app' }, 'wrong'))
+        .status,
       401,
     );
     assert.equal(
@@ -51,7 +45,7 @@ test('admin account and group CRUD, membership validation, terminal provisioning
         await request('/api/users', 'POST', {
           id: 'alice',
           name: 'Alice',
-          type: 'linphone',
+          type: 'app',
           password: 'test',
         })
       ).status,
@@ -168,7 +162,7 @@ test('admin account and group CRUD, membership validation, terminal provisioning
       (
         await request('/api/users/alice', 'PUT', {
           name: 'Alice',
-          type: 'linphone',
+          type: 'app',
           photo: '/photos/abcd.png',
         })
       ).status,
@@ -420,7 +414,7 @@ test('admin account and group CRUD, membership validation, terminal provisioning
     assert.equal((await request('/api/users/lounge', 'DELETE')).status, 409);
     assert.equal(store.terminal('lounge'), true);
     assert.equal(
-      (await request('/api/users/lounge', 'PUT', { name: 'New name', type: 'linphone' })).status,
+      (await request('/api/users/lounge', 'PUT', { name: 'New name', type: 'app' })).status,
       409,
     );
     sipServer.dialogs.clear();
@@ -458,7 +452,7 @@ test('admin account and group CRUD, membership validation, terminal provisioning
       ).status,
       200,
     );
-    assert.equal(store.config('alice').sip.password, 'replacement');
+    assert.notEqual(store.config('alice').sip.password, 'replacement');
     assert.equal((await request('/api/users/alice', 'DELETE')).status, 200);
     assert.equal((await request('/api/users/term1', 'DELETE')).status, 200);
     assert.equal(store.value.local_terminal_id, null);

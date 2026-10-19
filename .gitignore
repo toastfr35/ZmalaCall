@@ -36,6 +36,9 @@ build_tools/dist/
 *.pfx
 *.p12
 *.key
+*.jks
+*.keystore
+**/*release-signing*.json
 
 # Personal portrait drafts are local account assets, not application source.
 /zmala_server/assets/account-pictures/
@@ -45,3 +48,13 @@ build_tools/dist/
 
 # Native TURN correction and retained upstream build sources
 zmala_terminal/linux/turn-runtime/
+
+# Android machine configuration and generated outputs.
+/zmala_phone/.gradle/
+/zmala_phone/**/build/
+/zmala_phone/local.properties
+/zmala_phone/.idea/
+
+# Firebase application configuration and server credentials remain local.
+/zmala_phone/app/google-services.json
+**/*service-account*.json

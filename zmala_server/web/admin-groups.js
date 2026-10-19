@@ -48,7 +48,7 @@ export function renderGroups() {
         avatar(u),
         names,
         badge(
-          u.type === 'terminal' ? 'Terminal' : 'Linphone',
+          u.type === 'terminal' ? 'Terminal' : 'App',
           u.type === 'terminal' ? 'accent' : 'neutral',
         ),
       );
@@ -103,7 +103,7 @@ export function openGroup(id = '') {
     const names = el('span');
     names.append(
       el('strong', u.name),
-      el('small', `${user} · ${u.type === 'terminal' ? 'Terminal' : 'Linphone'}`),
+      el('small', `${user} · ${u.type === 'terminal' ? 'Terminal' : 'App'}`),
     );
     row.append(box, avatar(u), names);
     $('group-members').append(row);

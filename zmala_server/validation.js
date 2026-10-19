@@ -42,8 +42,8 @@ function validPhoto(photo) {
 function accountFields(update) {
   if (typeof update.name !== 'string' || !update.name.trim() || update.name.length > 80)
     throw Error('Enter an account name (1–80 characters).');
-  if (update.type !== 'linphone' && update.type !== 'terminal')
-    throw Error('Account type must be Linphone or Terminal.');
+  if (update.type !== 'app' && update.type !== 'terminal')
+    throw Error('Account type must be App or Terminal.');
   if (
     update.password !== undefined &&
     (typeof update.password !== 'string' ||
@@ -59,7 +59,7 @@ function accountFields(update) {
     fields.photo = update.photo;
   }
   if (
-    update.type === 'linphone' &&
+    update.type === 'app' &&
     (update.auto_answer !== undefined || update.auto_answer_seconds !== undefined)
   )
     throw Error('Auto-answer is available for terminal accounts only.');

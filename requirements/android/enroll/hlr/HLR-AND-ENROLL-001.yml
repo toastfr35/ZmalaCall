@@ -1,0 +1,19 @@
+active: true
+area: QR enrollment and configuration
+derived: false
+header: QR configured app identity
+level: 1
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/android/HLT/EnrollmentFlowTest.java
+  type: file
+reviewed: null
+scope: Experimental
+text: ZmalaPhone shall enroll from an App QR code and obtain its identity and permitted contacts from
+  the associated server without manual SIP configuration.
+verification: Open the real scanner from the setup action, verify its active camera preview and cancel
+  without enrollment. Use an Android activity and disposable HTTP fixture to enroll, display contacts
+  and call; reject a Terminal QR. Optical decoding remains a separate physical check.

@@ -155,3 +155,15 @@ and an explicit compatibility policy for unversioned writes, with concurrent-edi
 tests that preserve newer values. For terminal controller refactors, introduce
 explicit host interfaces only where they clarify actual dependencies; keep state
 ownership in `Terminal` and avoid a wholesale rewrite without a demonstrated need.
+
+## ZmalaPhone preview acceptance
+
+The Android companion has QR enrollment, authenticated Firebase notification handling
+and encrypted SIP/SRTP/TURN relay calls. Bounded checks on two phone models include
+foreground/background starts, camera switching and rotation; repeated Pi/phone
+calls also passed with alternating caller roles. See `docs/android.md` for evidence
+and limits. Sustained reliability, broader OEM/power-policy compatibility, Bluetooth
+routing and acoustic quality still need qualification. A C20 USB timeout's trigger
+remains undetermined. Signed release packaging is separate from hardware acceptance;
+do not infer complete qualification from APK assembly or signalling tests. Public
+binary distribution also needs complete corresponding dependency source and notices.

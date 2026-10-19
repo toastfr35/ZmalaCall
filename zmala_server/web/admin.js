@@ -527,7 +527,9 @@ async function downloadPdf(route, filename, value) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
-  notice('PDF downloaded. Print at actual size, then show the code to the terminal camera.');
+  notice(
+    'PDF downloaded. Print at actual size, then scan it with the assigned terminal or ZmalaPhone app.',
+  );
 }
 /** @param {string} id */
 function serverPdf(id) {
@@ -634,7 +636,7 @@ function accountRows() {
     const type = el('td');
     type.append(
       badge(
-        u.type === 'terminal' ? 'Terminal' : 'Linphone',
+        u.type === 'terminal' ? 'Terminal' : 'App',
         u.type === 'terminal' ? 'accent' : 'neutral',
       ),
     );
@@ -693,7 +695,7 @@ function renderAccounts() {
   filter.setAttribute('aria-label', 'Filter account type');
   for (const [value, text] of [
     ['all', 'All account types'],
-    ['linphone', 'Linphone'],
+    ['app', 'App'],
     ['terminal', 'Terminal'],
   ]) {
     const o = el('option', text);
@@ -748,7 +750,7 @@ function openAccount(id = '') {
   const u = state.model.users[id];
   $('account-form').reset();
   state.accountPhoto = u?.photo || '';
-  $('account-picture-preview').replaceChildren(avatar(u || { name: '?', type: 'linphone' }));
+  $('account-picture-preview').replaceChildren(avatar(u || { name: '?', type: 'app' }));
   $('edit-remove-photo').disabled = !state.accountPhoto;
   message('account-error', '');
   $('account-title').textContent = u ? 'Edit account' : 'New account';
@@ -756,7 +758,7 @@ function openAccount(id = '') {
   $('edit-id').value = id;
   $('edit-name').value = u?.name || '';
   $('edit-emails').value = (u?.emails || []).join(', ');
-  $('edit-type').value = u?.type || 'linphone';
+  $('edit-type').value = u?.type || 'app';
   $('edit-password').placeholder = u ? 'Leave blank to keep current' : 'Leave blank to generate';
   $('password-help').textContent = u
     ? 'Leave blank to keep the current password.'
@@ -888,7 +890,7 @@ function renderConnection() {
   $('details-title').textContent = u.name;
   const container = $('details-content');
   container.replaceChildren(
-    badge(u.type === 'terminal' ? 'Terminal account' : 'Linphone account', 'accent'),
+    badge(u.type === 'terminal' ? 'Terminal account' : 'App account', 'accent'),
   );
   const list = el('div', null, 'credential-list');
   for (const [name, value, secret] of /** @type {const} */ ([
@@ -900,13 +902,11 @@ function renderConnection() {
   ]))
     list.append(credential(name, value, secret));
   container.append(list);
-  if (u.type === 'linphone')
+  if (u.type === 'app')
     container.append(
       el(
         'p',
-        state.model.sip_proxy.includes('transport=tls')
-          ? 'This deployment uses TLS and TURN. Use a Zmala terminal enrolled with an HTTPS QR code. Manual phone provisioning is not supported in secure relay mode.'
-          : 'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
+        'ZmalaPhone preview supports LAN calling only, while the app is open. Install ZmalaPhone, choose Scan setup QR, and scan this account’s server QR code. This account belongs to an app; it cannot also be assigned to a Pi terminal.',
         'info-box',
       ),
     );
@@ -960,10 +960,7 @@ function renderConnection() {
     );
     container.append(actions);
   }
-  if (u.type === 'terminal')
-    container.append(
-      actionButton('Download server QR PDF', () => serverPdf(id), 'primary', 'down'),
-    );
+  container.append(actionButton('Download server QR PDF', () => serverPdf(id), 'primary', 'down'));
 }
 /** @param {string} id */
 function openConnection(id) {
@@ -1156,7 +1153,7 @@ function renderGroups() {
         avatar(u),
         names,
         badge(
-          u.type === 'terminal' ? 'Terminal' : 'Linphone',
+          u.type === 'terminal' ? 'Terminal' : 'App',
           u.type === 'terminal' ? 'accent' : 'neutral',
         ),
       );
@@ -1211,7 +1208,7 @@ function openGroup(id = '') {
     const names = el('span');
     names.append(
       el('strong', u.name),
-      el('small', `${user} · ${u.type === 'terminal' ? 'Terminal' : 'Linphone'}`),
+      el('small', `${user} · ${u.type === 'terminal' ? 'Terminal' : 'App'}`),
     );
     row.append(box, avatar(u), names);
     $('group-members').append(row);
@@ -1987,7 +1984,7 @@ function renderCallbacks() {
   policy.append(policyBody);
   const p = panel(
       'Callback requests',
-      'Linphone notifications are sent when the contact reconnects. Calls always start manually.',
+      'Calls always start manually. The ZmalaPhone preview does not yet display callback notifications.',
     ),
     list = el('div', null, 'registration-list');
   for (const request of state.model.callbacks || []) {
@@ -2008,9 +2005,9 @@ function renderCallbacks() {
           state.model.users[request.to]?.type === 'terminal'
             ? 'Shown on the receiving terminal when both people are available.'
             : request.notified_at
-              ? 'Linphone accepted the chat message.'
+              ? 'The calling app acknowledged the notification.'
               : registered(request.to)
-                ? 'Waiting for Linphone to accept the chat message.'
+                ? 'Waiting for the calling app to acknowledge the notification.'
                 : 'Waiting for the phone to reconnect.',
         ),
         el('small', callbackEmailStatus(request)),

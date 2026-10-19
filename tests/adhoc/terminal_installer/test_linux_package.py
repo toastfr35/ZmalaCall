@@ -26,6 +26,7 @@ class LinuxPackageTests(unittest.TestCase):
                 'build_tools/linux/test.conf': b'[Journal]\r\nStorage=volatile\r\n',
                 'zmala_terminal/common/image.bin': b'asset\r\nbytes',
                 'tests/terminal/LLT/turn_parser.cpp': b'// regression\r\n',
+                'tests/support/native/turn-write-cases.h': b'// write regression\r\n',
                 'zmala_terminal/linux/turn-runtime/sdk-version': b'generated',
                 'docs/general.md': b'Project guide',
                 'docs/server.md': b'Server guide',
@@ -54,6 +55,7 @@ class LinuxPackageTests(unittest.TestCase):
                     digest, name = line.split('  ', 1)
                     self.assertEqual(hashlib.sha256(archive.extractfile(name).read()).hexdigest(), digest)
                 self.assertEqual(archive.extractfile('tests/terminal/LLT/turn_parser.cpp').read(), b'// regression\n')
+                self.assertEqual(archive.extractfile('tests/support/native/turn-write-cases.h').read(), b'// write regression\n')
                 self.assertFalse(any('framing-runtime' in name or 'turn-runtime' in name or name.endswith('.tflite')
                                      for name in archive.getnames()))
 
@@ -67,6 +69,8 @@ class LinuxPackageTests(unittest.TestCase):
                 self.assertIn('zmala_terminal/linux/media/video/codec.c', names)
                 self.assertIn('zmala_terminal/linux/media/video/filters.c', names)
                 self.assertIn('build_tools/linux/build-media.sh', names)
+                self.assertIn('zmala_terminal/common/native/turn-write.h', names)
+                self.assertIn('tests/support/native/turn-write-cases.h', names)
                 self.assertFalse(any(name.startswith('zmala_terminal/windows/') for name in names))
                 self.assertFalse(any(name.startswith('zmala_terminal/windows/') for name in names))
                 self.assertFalse(any('experimental' in Path(name).parts for name in names))

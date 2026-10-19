@@ -85,13 +85,14 @@ async function adminRoutes(req, res, url, context) {
   }
   if (url.pathname === '/api/setup/server.pdf' && req.method === 'GET') {
     const id = url.searchParams.get('id') || '';
-    store.requireTerminal(id);
+    if (!store.enrolledAccount(id)) throw Error('Choose an app or terminal account.');
     const bootstrap = store.bootstrap(id, true),
       pdf = await setupPdf({
         kind: 'server',
         label: `${store.value.users[id].name} (${id})`,
         payload: serverPayload(bootstrap),
         serverUrl: bootstrap.server_url,
+        app: bootstrap.account_type === 'app',
       });
     res.setHeader('Content-Disposition', `attachment; filename="zmalacall-server-${id}.pdf"`);
     return send(res, 200, pdf, 'application/pdf');

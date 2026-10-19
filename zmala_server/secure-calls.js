@@ -21,9 +21,16 @@ class SecureCalls {
     this.sipHost = host('sip_host');
     this.turnHost = host('turn_host');
     this.realm = host('turn_realm');
-    this.listenPort = value.sip_listen_port ?? 5061;
-    if (!Number.isInteger(this.listenPort) || this.listenPort < 1 || this.listenPort > 65535)
-      throw Error('Invalid secure-call SIP listener');
+    /** @param {string} name @param {number} fallback */
+    const port = (name, fallback) => {
+      const result = value[name] ?? fallback;
+      if (!Number.isInteger(result) || result < 1 || result > 65535)
+        throw Error(`Invalid secure-call ${name}`);
+      return result;
+    };
+    this.listenPort = port('sip_listen_port', 5061);
+    this.sipPort = port('sip_public_port', 443);
+    this.turnPort = port('turn_public_port', 443);
     const url = new URL(value.https_url);
     if (
       url.protocol !== 'https:' ||
@@ -53,7 +60,7 @@ class SecureCalls {
     const username = `${expires}:${identity}`;
     return {
       mode: 'tls-relay',
-      turn_server: `${this.turnHost}:443`,
+      turn_server: `${this.turnHost}:${this.turnPort}`,
       turn_realm: this.realm,
       turn_username: username,
       turn_password: crypto.createHmac('sha1', this.secret).update(username).digest('base64'),
@@ -64,7 +71,7 @@ class SecureCalls {
   listener() {
     return {
       publicAddress: this.sipHost,
-      port: 443,
+      port: this.sipPort,
       udp: false,
       tcp: false,
       tls_port: this.listenPort,
@@ -72,7 +79,7 @@ class SecureCalls {
     };
   }
   proxy() {
-    return `sip:${this.sipHost}:443;transport=tls`;
+    return `sip:${this.sipHost}:${this.sipPort};transport=tls`;
   }
 }
 

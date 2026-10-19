@@ -15,11 +15,15 @@ references:
   type: file
 - path: tests/server/HLT/http-boundary.test.js
   type: file
+- path: tests/server/HLT/admin_network_live.py
+  type: file
 - path: tests/server/HLT/server-ssh.test.js
   type: file
 reviewed: null
 scope: Core
 text: |
   The server shall check request addresses, browser origins and input limits before applying an HTTP operation. Public responses shall not disclose private application data.
+  Administration shall be accessible only from the server itself or its local network, while authenticated phone and terminal services remain available from other networks.
 verification: |
   Send valid and invalid requests through the assembled HTTP boundary. Inspect response content, status and browser security headers.
+  Exercise local and external administration attempts, including valid sessions, and verify external device access remains available.

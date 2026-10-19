@@ -5,18 +5,18 @@ Keep code, documentation and requirements synchronized in every change.
 - Before editing, identify the affected behavior, Doorstop items, code trace
   comments and documentation. Update affected artifacts in the same change set;
   a change is not complete while they disagree.
-- Keep normative product, server and Raspberry Pi terminal requirements only in
+- Keep normative product, server, Raspberry Pi terminal and Android requirements only in
   `requirements/`. Maintain PROD → HLR → LLR within each component/theme,
-  using `<HLR|LLR>-<SRV|TERM>-<GROUP>-NNN` IDs. Numbers are unique across
+  using `<HLR|LLR>-<SRV|TERM|AND>-<GROUP>-NNN` IDs. Numbers are unique across
   both levels in each component/theme; use `--next-id` in the requirements tool.
   Keep IDs stable and maintain implementation references and verification guidance.
-  Scope requirements to the Pi server and Pi terminal runtime and host policies;
+  Scope requirements to the Pi server, Pi terminal and Android runtime and host policies;
   keep installers, packaging and deployment checks outside the baseline. Preserve
   installer tests under `tests/adhoc/` and run them independently in CI.
 - Maintain standalone `@llr` comments beside the owning implementation. When
   moving, adding or removing code, update both the comments and the corresponding
   Doorstop references. Follow the format documented in `docs/general.md`.
-- Keep `docs/general.md`, `docs/server.md` and `docs/terminal.md` accurate as
+- Keep `docs/general.md`, `docs/server.md`, `docs/terminal.md` and `docs/android.md` accurate as
   technical implementation guides. Update affected Word user guides and their
   authoring sources when installation, configuration or user workflows change;
   distribute those guides beside the installers.
@@ -31,11 +31,11 @@ Review impact even for refactoring and documentation-only changes. Artifacts tha
 remain accurate need no gratuitous edits. Report any unresolved inconsistency.
 
 Tests belong in the top-level `tests/` tree. Product verification is requirement
-based: `tests/server/LLT/` and `tests/terminal/LLT/` contain unit tests linked to
+based: `tests/server/LLT/`, `tests/terminal/LLT/` and `tests/android/LLT/` contain unit tests linked to
 component LLRs; `HLT/` contains system/integration scenarios linked to component HLRs.
 Every LLT/HLT scenario starts with the stable `@test`, `@requirements`,
 `@environment`, `@plan` and `@pass` comments documented in `docs/general.md`.
-Every server and Pi terminal LLR must have one or more direct LLT verification
+Every server, Pi terminal and Android LLR must have one or more direct LLT verification
 plans and assertions; every HLR must have a direct HLT plan. Missing LLR or HLR
 test links fail `make requirements`. A hardware plan is not a passed hardware run.
 Keep reciprocal Doorstop references synchronized. Plans explain the inputs,

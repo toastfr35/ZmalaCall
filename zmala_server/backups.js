@@ -57,6 +57,8 @@ class ServerBackups {
     if (
       this.requests > 1 ||
       this.sip.dialogs.size ||
+      // @llr LLR-SRV-APP-005
+      this.sip.appCalls?.waiting.size ||
       this.callbacks.sending.size ||
       this.callbacks.email.sending.size ||
       this.consoleJobs.jobs.some((j) => j.status === 'running')

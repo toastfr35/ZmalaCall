@@ -8,6 +8,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/native/turn-write.h
+  type: file
+- path: zmala_terminal/linux/native/turn-write.patch
+  type: file
 - path: zmala_terminal/common/secure_calls.py
   type: file
 - path: zmala_terminal/common/engine.py
@@ -22,12 +26,18 @@ references:
   type: file
 reviewed: null
 scope: Core
-text: In secure relay mode, the terminal shall use SIP TLS and TURN TLS on port 443, local trusted
+text: In secure relay mode, the terminal shall use SIP TLS and TURN TLS on the configured ports (443 by default), local trusted
   CA certificates, certificate name checks, ICE relay selection and mandatory SRTP. It shall reject
   invalid or expired relay credentials and require HTTPS enrollment. It shall apply changed credentials
   only while idle. The TURN stream parser shall retain incomplete frames and remove ChannelData padding
   before delivering each complete frame. The Pi shall load the parser correction only with the matching
   installed SDK version.
+  TURN TLS writes shall retain a frame through short writes and temporary socket backpressure.
+  A write that cannot complete within three seconds shall fail and shut down the connection so a
+  partial frame is not followed by another frame on the same stream.
 verification: Unit-test configuration rejection, native policy calls, encryption and resource cleanup.
+  Accept separate valid SIP and TURN ports for a shared public IP; reject out-of-range or malformed ports.
   Feed fragmented and coalesced TURN frames at every byte boundary; compare exact payload bytes and
   lengths.
+  Inject short writes, WANT_READ/WANT_WRITE, timeout, peer closure and poll failure; assert exact
+  output bytes, stable retry buffers and bounded failure.

@@ -1,8 +1,9 @@
 // @test S-LLT-023
-// @requirements LLR-SRV-BACKUP-003, LLR-SRV-BACKUP-004, LLR-SRV-BACKUP-005, LLR-SRV-BACKUP-006, LLR-SRV-BACKUP-007, LLR-SRV-BACKUP-008, LLR-SRV-BACKUP-009, LLR-SRV-BACKUP-010, LLR-SRV-BACKUP-011, LLR-SRV-BACKUP-012
+// @requirements LLR-SRV-BACKUP-003, LLR-SRV-BACKUP-004, LLR-SRV-BACKUP-005, LLR-SRV-BACKUP-006, LLR-SRV-BACKUP-007, LLR-SRV-BACKUP-008, LLR-SRV-BACKUP-009, LLR-SRV-BACKUP-010, LLR-SRV-BACKUP-011, LLR-SRV-BACKUP-012, LLR-SRV-APP-005
 // @environment portable
 // @plan Use isolated backup maps with fake live services; corrupt versions, schemas, hashes and sizes before decoding, then inject apply/rollback failures into journal recovery. Check unsafe photo types and exact byte/count limits before reading, preserve destinations on failed durable writes, and reject corrupt recovery journals. Check snapshot isolation, restore exclusion gates and revision/network preservation. Dispatch backup routes using bounded byte streams; verify busy gates, archive metadata, explicit restore confirmation, revision forwarding, durable stage before delayed restart and lock release on failure.
 // @pass Rejections must leave live files unchanged; accepted snapshots and recovered transactions must match expected state without replaying commands.
+// Push-specific assertion scope: exported snapshots omit app-push.json and restore rejects a pending app wake.
 
 'use strict';
 const { test } = require('node:test');
@@ -113,6 +114,7 @@ test('backup HTTP routes serialize work, validate confirmation and restart after
 test('snapshot freezes all in-memory records and excludes operational files', async (t) => {
   const app = await fixture(t);
   fs.writeFileSync(path.join(app.directory, 'server.log'), 'private log');
+  fs.writeFileSync(path.join(app.directory, 'app-push.json'), '{"private":"push-token"}');
   const before = structuredClone(app.store.value);
   const pending = app.backups.snapshot();
   app.store.value.users.term1.name = 'Changed after snapshot';
@@ -150,6 +152,14 @@ test('restore gates reject unsafe activity; failed flush reopens service without
       },
     ],
     [() => app.sipServer.dialogs.set('call', {}), () => app.sipServer.dialogs.clear()],
+    [
+      () => {
+        app.sipServer.appCalls = { waiting: new Map([['pending', {}]]) };
+      },
+      () => {
+        delete app.sipServer.appCalls;
+      },
+    ],
     [() => app.callbacks.sending.add('request'), () => app.callbacks.sending.clear()],
     [() => app.callbacks.email.sending.add('email'), () => app.callbacks.email.sending.clear()],
     [

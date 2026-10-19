@@ -147,7 +147,10 @@ test('password file migrates once and deletion resets only authentication after 
   }
 });
 
-test('remote first setup is allowed once, including simultaneous requests; TLS sessions use secure cookies', async () => {
+test('LAN first setup is allowed once, including simultaneous requests; TLS sessions use secure cookies', async (t) => {
+  t.mock.method(require('node:os'), 'networkInterfaces', () => ({
+    eth0: [{ address: '192.168.1.10', cidr: '192.168.1.10/24', internal: false }],
+  }));
   const fixture = await httpFixture();
   try {
     const handler = createHandler({ ...fixture, terminalStatuses: {} });
@@ -156,7 +159,7 @@ test('remote first setup is allowed once, including simultaneous requests; TLS s
       Object.assign(req, {
         method: 'POST',
         url: '/api/auth/setup',
-        socket: { remoteAddress: '192.168.1.45', encrypted: true },
+        socket: { remoteAddress: '192.168.1.45', localAddress: '192.168.1.10', encrypted: true },
         headers: {
           host: `${fixture.store.value.host}:${fixture.store.value.http_port}`,
           origin: `https://${fixture.store.value.host}:${fixture.store.value.http_port}`,

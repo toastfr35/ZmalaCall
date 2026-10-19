@@ -50,7 +50,7 @@ class CallbackMailer {
         to: address,
         subject: 'ZmalaCall: callback requested',
         messageId: `<${request.id}.${recipientHash}@zmalacall.local>`,
-        text: `${name} would like you to call back.\n\nOpen Linphone and call sip:${request.from}@${v.host}.\nRequested: ${request.created_at}\nThis callback request will be removed at ${request.expires_at}.\n\nZmalaCall`,
+        text: `${name} would like you to call back.\n\nOpen your calling app and call ${name} (sip:${request.from}@${v.host}).\nRequested: ${request.created_at}\nThis callback request will be removed at ${request.expires_at}.\n\nZmalaCall`,
         disableFileAccess: true,
         disableUrlAccess: true,
       });

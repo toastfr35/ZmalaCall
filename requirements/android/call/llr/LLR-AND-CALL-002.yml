@@ -1,0 +1,44 @@
+active: true
+area: Audio and video calls
+derived: false
+header: Native call ownership and admission
+level: 2
+links:
+- HLR-AND-CALL-001: null
+normative: true
+ref: ''
+references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallEngine.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/Enrollment.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
+  type: file
+- path: tests/android/LLT/unit/CallAdmissionTest.java
+  type: file
+- path: tests/android/LLT/device/CallEngineTest.java
+  type: file
+- path: tests/android/LLT/unit/CameraSwitchTest.java
+  type: file
+reviewed: null
+scope: Experimental
+text: The app shall own at most one foreground Linphone call, use the configured SIP proxy and credentials,
+  negotiate audio and video without RTP bundle in LAN mode, and reject incoming calls unless the contact
+  permits reception and X-Family-Auth matches the HMAC over call ID and caller. Answer, hangup, mute,
+  speaker and camera controls shall operate on the current call, and stopping shall release registration
+  and media.
+  Camera switching shall alternate the available front and back cameras without starting a new
+  SIP offer/answer; two successive switches shall restore the original camera.
+  The native core shall enable AVPF feedback and NACK retransmission so peers can request recovery
+  from lost video packets and decoder initialization data.
+  The foreground-owned core shall explicitly enter foreground mode after startup so active
+  signalling and media negotiation use the SDK foreground iteration cadence.
+  Display rotation shall update the native video orientation without recreating the core or call.
+verification: Test valid and forged HMACs and permission/directory mismatch; exercise native registration
+  and assert AVPF feedback and NACK policy on the real core,
+  and call state with bounded waits, then perform physical camera/audio control checks before release.
+  Verify orientation updates on the same native core and retain the call through display rotation;
+  qualify remote video orientation with physical devices separately.
+  Exercise two camera switches and reject non-local call updates; on the native SDK assert that
+  switching preserves the call and sends no new INVITE to the fixture peer.
+  Verify foreground state and the native 20 ms iteration timer after the SDK startup boost expires.

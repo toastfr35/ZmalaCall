@@ -23,7 +23,7 @@ function callbackFixture(t, mailer) {
   const store = new Store(directory);
   store.updateAccount('phone1', {
     name: 'Noah',
-    type: 'linphone',
+    type: 'app',
     emails: ['daniel@example.test', 'family@example.test'],
   });
   store.setCallbackSettings({ email_after_hours: 1 / 60, remove_after_hours: 3 / 60 });
@@ -34,7 +34,7 @@ function callbackFixture(t, mailer) {
 test('account emails validate atomically, survive rename/restart and stay out of terminal config', (t) => {
   const { store } = callbackFixture(t, { enabled: () => false });
   assert.throws(
-    () => store.createAccount({ id: 'missing', name: 'Missing', type: 'linphone' }),
+    () => store.createAccount({ id: 'missing', name: 'Missing', type: 'app' }),
     /email addresses/,
   );
   const original = JSON.stringify(store.value);
@@ -47,14 +47,14 @@ test('account emails validate atomically, survive rename/restart and stay out of
     Array(11).fill('a@example.test'),
   ])
     assert.throws(
-      () => store.updateAccount('phone1', { name: 'Changed', type: 'linphone', emails }),
+      () => store.updateAccount('phone1', { name: 'Changed', type: 'app', emails }),
       /email/,
     );
   assert.equal(JSON.stringify(store.value), original);
   store.updateAccount('phone1', {
     id: 'daniel',
     name: 'Noah',
-    type: 'linphone',
+    type: 'app',
     emails: ['Noah@EXAMPLE.TEST', 'family@example.test'],
   });
   assert.deepEqual(new Store(store.dir).value.users.daniel.emails, [
@@ -260,5 +260,5 @@ test('earlier minute-based deadline settings migrate to hours without changing d
     remove_after_hours: 5,
   });
   assert.equal(restored.value.users.phone1.password, password);
-  assert.equal(restored.value.schema_version, 6);
+  assert.equal(restored.value.schema_version, 7);
 });

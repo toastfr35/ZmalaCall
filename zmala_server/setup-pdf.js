@@ -49,9 +49,9 @@ function serverPayload(bootstrap) {
   return JSON.stringify({ type: 'family-call-server', version: 1, ...bootstrap });
 }
 // @llr LLR-SRV-ENROLL-002
-/** @param {{kind: 'wifi' | 'server', label: string, payload: string, serverUrl?: string}} options
+/** @param {{kind: 'wifi' | 'server', label: string, payload: string, serverUrl?: string, app?: boolean}} options
  * @returns {Promise<Buffer>} */
-async function setupPdf({ kind, label, payload, serverUrl }) {
+async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
   const qr = QRCode.create(payload, { errorCorrectionLevel: 'M' }),
     doc = new PDFDocument({
       size: 'A4',
@@ -67,7 +67,12 @@ async function setupPdf({ kind, label, payload, serverUrl }) {
     doc.on('error', reject);
   });
   const width = doc.page.width - 96;
-  doc.fillColor('#586276').fontSize(11).text('ZMALACALL  /  TERMINAL SETUP', 48, 48, { width });
+  doc
+    .fillColor('#586276')
+    .fontSize(11)
+    .text(app ? 'ZMALACALL  /  ZMALAPHONE SETUP' : 'ZMALACALL  /  TERMINAL SETUP', 48, 48, {
+      width,
+    });
   doc
     .fillColor('#111827')
     .fontSize(30)
@@ -87,14 +92,21 @@ async function setupPdf({ kind, label, payload, serverUrl }) {
   doc
     .fillColor('#111827')
     .fontSize(17)
-    .text('Show this QR code to the terminal camera.', 48, 595, { width, align: 'center' });
+    .text(
+      app ? 'Scan this code in ZmalaPhone.' : 'Show this QR code to the terminal camera.',
+      48,
+      595,
+      { width, align: 'center' },
+    );
   doc
     .fillColor('#586276')
     .fontSize(11)
     .text(
       kind === 'wifi'
         ? 'Use when the screen says "Scan the Wi-Fi QR code".'
-        : 'Use after Wi-Fi setup, when the screen says "Scan the server QR code".',
+        : app
+          ? 'Open ZmalaPhone and choose Scan setup QR.'
+          : 'Use after Wi-Fi setup, when the screen says "Scan the server QR code".',
       48,
       630,
       { width, align: 'center' },
@@ -113,7 +125,7 @@ async function setupPdf({ kind, label, payload, serverUrl }) {
     .text(
       kind === 'wifi'
         ? 'This code contains the Wi-Fi password. Keep this page private.'
-        : 'This code grants access to this terminal account. Keep this page private.',
+        : 'This code grants access to this account. Keep this page private.',
       48,
       742,
       { width, align: 'center' },

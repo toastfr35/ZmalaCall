@@ -6,9 +6,9 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-COMPONENTS = {'SRV': 'server', 'TERM': 'terminal'}
-ITEM = r'(?:HLR|LLR)-(?:SRV|TERM)-[A-Z][A-Z0-9]{1,11}-[0-9]{3}'
-LLR = r'LLR-(?:SRV|TERM)-[A-Z][A-Z0-9]{1,11}-[0-9]{3}'
+COMPONENTS = {'SRV': 'server', 'TERM': 'terminal', 'AND': 'android'}
+ITEM = r'(?:HLR|LLR)-(?:SRV|TERM|AND)-[A-Z][A-Z0-9]{1,11}-[0-9]{3}'
+LLR = r'LLR-(?:SRV|TERM|AND)-[A-Z][A-Z0-9]{1,11}-[0-9]{3}'
 
 
 def document_prefix(uid: str) -> str:
@@ -26,8 +26,8 @@ def category(prefix: str) -> str:
 
 def groups(root: Path = ROOT) -> dict:
     value = json.loads((root / 'requirements/groups.json').read_text(encoding='utf-8'))
-    if set(value) != set(COMPONENTS):
-        raise ValueError('Requirement catalogue must contain SRV and TERM groups')
+    if not {'SRV', 'TERM'}.issubset(value) or set(value) - set(COMPONENTS):
+        raise ValueError('Requirement catalogue requires SRV and TERM and permits AND groups')
     for component, themes in value.items():
         if not isinstance(themes, dict) or not themes:
             raise ValueError(f'{component}: missing theme catalogue')

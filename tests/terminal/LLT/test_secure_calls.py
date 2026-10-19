@@ -1,7 +1,7 @@
 # @test T-LLT-077
 # @requirements LLR-TERM-COM-010
 # @environment portable
-# @plan Validate complete, expired and malformed secure profiles with a fixed clock. Substitute only native ABI functions and local CA discovery; verify TLS TURN, ICE, forced relay, certificate/hostname checks and mandatory SRTP. Inject allocation failure and verify owned policy release. Check outgoing call encryption in the existing Engine adapter tests.
+# @plan Validate complete, expired and malformed secure profiles with a fixed clock, including default 443 and separate 5061/5349 endpoints and invalid port bounds. Substitute only native ABI functions and local CA discovery; verify TLS TURN, ICE, forced relay, certificate/hostname checks and mandatory SRTP. Inject allocation failure and verify owned policy release. Check outgoing call encryption in the existing Engine adapter tests.
 # @pass Invalid profiles fail before native configuration; valid profiles request the stated secure policy and release references. Real handshakes and decoded media are verified by the network HLT.
 import copy
 import unittest
@@ -44,9 +44,13 @@ class SecureCallTests(unittest.TestCase):
         value = config()
         self.assertEqual(secure_calls.validate(value, 1000), value['secure_calls'])
         self.assertIsNone(secure_calls.validate({}))
+        shared = copy.deepcopy(value)
+        shared['sip']['proxy'] = 'sip:calls.example.org:5061;transport=tls'
+        shared['secure_calls']['turn_server'] = 'calls.example.org:5349'
+        self.assertEqual(secure_calls.validate(shared, 1000), shared['secure_calls'])
         with self.assertRaises(ValueError):
             secure_calls.validate({'sip':value['sip']})
-        for field, invalid in [('mode','udp'), ('turn_server','host:3478'), ('turn_username','a\nb'),
+        for field, invalid in [('mode','udp'), ('turn_server','host:0'), ('turn_server','host:65536'), ('turn_username','a\nb'),
                                ('turn_password',''), ('expires',1000), ('expires',True)]:
             bad = copy.deepcopy(value)
             bad['secure_calls'][field] = invalid

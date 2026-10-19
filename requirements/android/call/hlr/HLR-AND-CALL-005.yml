@@ -1,0 +1,26 @@
+active: true
+derived: false
+doc:
+  name: HLR-AND-CALL
+  title: Audio and video calls — HLR
+header: Encrypted calls across separate networks
+level: 3
+links:
+- PROD015: null
+normative: true
+ref: ''
+reviewed: null
+text: When secure relay mode is configured, ZmalaPhone shall call and receive calls from permitted terminals
+  on separate NAT networks through the Zmala deployment. It shall use authenticated encrypted signalling
+  and relayed encrypted media, without requiring inbound router rules at the phone or terminal or falling
+  back to plaintext.
+area: Audio and video calls
+scope: Experimental
+references:
+- path: tests/android/HLT/secure_remote.py
+  type: file
+- path: tests/android/HLT/RemoteMediaTest.java
+  type: file
+verification: Use the enrolled physical phone on mobile data and the Pi terminal on a separate network.
+  Check HTTPS configuration, SIP TLS, relay media counters, moving video and speech in both directions,
+  incoming push wake, cancellation and hangup. Record actual hardware results separately from the plan.

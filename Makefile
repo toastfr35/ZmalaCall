@@ -92,3 +92,15 @@ coverage-llt:
 
 coverage-check:
 	$(REQUIREMENTS_PYTHON) build_tools/rbt_coverage.py --check
+
+# Android uses its pinned Gradle wrapper. Select one device with ANDROID_SERIAL.
+GRADLE_PHONE := $(if $(filter Windows_NT,$(OS)),./zmala_phone/gradlew.bat,sh zmala_phone/gradlew)
+.PHONY: phone test-android test-android-device
+phone:
+	$(GRADLE_PHONE) -p zmala_phone :app:assembleDebug
+
+test-android:
+	$(GRADLE_PHONE) -p zmala_phone :app:testDebugUnitTest :app:lintDebug
+
+test-android-device:
+	$(GRADLE_PHONE) -p zmala_phone :app:connectedDebugAndroidTest

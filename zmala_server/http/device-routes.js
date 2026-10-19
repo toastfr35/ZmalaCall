@@ -3,7 +3,7 @@
 // Device API routes use the bearer token identity, not a terminal ID supplied by the request.
 const { terminalStatus } = require('../validation');
 const { registrationOnline } = require('../registrations');
-const { send, readJson, requireDevice } = require('./responses');
+const { send, readJson, requireDevice, httpError } = require('./responses');
 // @llr LLR-SRV-CONFIG-022
 /** Full snapshots after reads and writes must expose the same live fields.
  * @param {string} id @param {import('../types/http').DeviceContext} context */
@@ -11,7 +11,9 @@ function liveConfiguration(id, { store, sipServer, callbacks }) {
   const config = store.config(id);
   config.contacts = config.contacts.map((contact) => ({
     ...contact,
-    online: registrationOnline(sipServer.registrations.get(contact.id)),
+    online:
+      registrationOnline(sipServer.registrations.get(contact.id)) ||
+      !!sipServer.appCalls?.push.available(contact.id),
   }));
   config.callbacks = callbacks.list(id);
   return config;
@@ -24,6 +26,39 @@ function liveConfiguration(id, { store, sipServer, callbacks }) {
 async function deviceRoutes(req, res, url, context) {
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses } = context;
   let { deviceId } = context;
+  // @llr LLR-SRV-APP-005
+  if (['/api/app/push', '/api/app/call/decline'].includes(url.pathname) && req.method === 'POST') {
+    const id = requireDevice(deviceId);
+    if (store.enrolledAccount(id)?.type !== 'app')
+      throw httpError(403, 'An app account is required.');
+    if (!sipServer.appCalls) throw httpError(503, 'Push calling is unavailable.');
+    const update = await readJson(req, 8192);
+    if (url.pathname === '/api/app/push') sipServer.appCalls.push.register(id, update.token);
+    else sipServer.appCalls.decline(id, update.call_id);
+    return send(res, 200, { ok: true, push_enabled: sipServer.appCalls.push.sender.enabled });
+  }
+  // @llr LLR-SRV-APP-003
+  if (url.pathname === '/api/app/config' && req.method === 'GET') {
+    const id = requireDevice(deviceId);
+    if (store.enrolledAccount(id)?.type !== 'app')
+      throw httpError(403, 'An app account is required.');
+    const config = store.appConfig(id);
+    config.contacts = config.contacts.map((contact) => ({
+      ...contact,
+      online:
+        registrationOnline(sipServer.registrations.get(contact.id)) ||
+        !!sipServer.appCalls?.push.available(contact.id),
+    }));
+    return send(res, 200, { ...config, push_enabled: !!sipServer.appCalls?.push.sender.enabled });
+  }
+  if (
+    deviceId &&
+    store.enrolledAccount(deviceId)?.type === 'app' &&
+    url.pathname.startsWith('/api/') &&
+    !url.pathname.startsWith('/api/contacts/')
+  ) {
+    throw httpError(403, 'This API is not available to app accounts.');
+  }
   if (url.pathname === '/api/config' && req.method === 'GET') {
     deviceId = requireDevice(deviceId);
     if (
@@ -37,7 +72,9 @@ async function deviceRoutes(req, res, url, context) {
         live: {
           contacts: store.contacts(deviceId).map(({ id }) => ({
             id,
-            online: registrationOnline(sipServer.registrations.get(id)),
+            online:
+              registrationOnline(sipServer.registrations.get(id)) ||
+              !!sipServer.appCalls?.push.available(id),
           })),
           callbacks: callbacks.list(deviceId),
         },
@@ -88,7 +125,10 @@ async function deviceRoutes(req, res, url, context) {
       allowed = store.permitted(deviceId, id);
     return send(res, 200, {
       id,
-      online: allowed && registrationOnline(sipServer.registrations.get(id)),
+      online:
+        allowed &&
+        (registrationOnline(sipServer.registrations.get(id)) ||
+          !!sipServer.appCalls?.push.available(id)),
       can_call: allowed,
       ring_timeout: allowed ? store.ringTimeout(id) : 60,
     });

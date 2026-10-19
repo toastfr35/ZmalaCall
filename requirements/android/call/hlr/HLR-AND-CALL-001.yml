@@ -1,0 +1,23 @@
+active: true
+area: Audio and video calls
+derived: false
+header: Foreground LAN video calling
+level: 1
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/android/HLT/EnrollmentFlowTest.java
+  type: file
+- path: tests/android/HLT/NativeCallingTest.java
+  type: file
+reviewed: null
+scope: Experimental
+text: The Android preview shall register with the configured LAN SIP server, initiate video calls to permitted
+  contacts, allow a user to answer or decline authenticated incoming calls and end calls while the app
+  is visible. Leaving the app shall stop calling. Physical audio and video interoperability shall be qualified
+  separately.
+verification: Use the native SDK with a disposable SIP endpoint to exercise registration, video INVITE,
+  signed incoming admission, rejection and termination. Verify physical Pi media in the documented hardware
+  procedure.

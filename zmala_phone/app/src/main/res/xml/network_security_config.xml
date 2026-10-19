@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @llr LLR-AND-ENROLL-002 -->
+<!-- LAN servers have administrator-assigned addresses; enrollment explicitly confirms HTTP use. -->
+<network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>

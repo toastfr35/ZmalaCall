@@ -9,6 +9,7 @@ const { backupRoutes } = require('./backup-routes');
 const { adminRoutes } = require('./admin-routes');
 const { PhotoStore } = require('../photos');
 const { authRoutes } = require('./auth-routes');
+const { localAdmin } = require('./admin-network');
 const WEB = path.resolve(__dirname, '../web');
 const assets = Object.fromEntries(
   ['/', '/accounts', '/groups', '/terminals', '/activity', '/callbacks'].map((route) => [
@@ -58,9 +59,10 @@ function createHandler(context) {
       const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(
         req.socket.remoteAddress || '',
       );
+      const onAdminNetwork = localAdmin(req.socket);
       const cookie = context.adminSessions.cookie(req);
       const admin =
-          context.adminSessions.valid(cookie || token) ||
+          (onAdminNetwork && context.adminSessions.valid(cookie || token)) ||
           // Compatibility for existing local maintenance tools during initial
           // setup only. The old shortcut token stops working once a password exists.
           (!store.adminPassword.hash && local && token === v.admin_token),
@@ -74,31 +76,6 @@ function createHandler(context) {
       // including logout/login. Non-browser terminal clients use bearer tokens.
       if (cookie && !['GET', 'HEAD'].includes(req.method || '') && !req.headers.origin)
         return send(res, 403, { error: 'A same-origin request is required.' });
-      if (
-        await authRoutes(req, res, url, context, {
-          local,
-          admin,
-          secure,
-          token: cookie || token,
-        })
-      )
-        return;
-      if (req.method === 'GET' && url.pathname === '/permissions') {
-        res.writeHead(302, { Location: '/groups' });
-        return res.end();
-      }
-      if (req.method === 'GET' && url.pathname === '/zmala-icon.svg')
-        return send(
-          res,
-          200,
-          await asyncFs.readFile(path.resolve(__dirname, '../assets/zmala-icon.svg')),
-          'image/svg+xml',
-        );
-      // @llr LLR-SRV-AUTH-023
-      if (req.method === 'GET' && assets[url.pathname]) {
-        const [file, type] = assets[url.pathname];
-        return send(res, 200, await asyncFs.readFile(path.join(WEB, file)), type);
-      }
       if (url.pathname === '/health') return send(res, 200, { ok: true });
       // @llr LLR-SRV-START-010
       if (url.pathname === '/ready') {
@@ -128,6 +105,36 @@ function createHandler(context) {
           file.endsWith('.png') ? 'image/png' : 'image/jpeg',
           'private, max-age=31536000, immutable',
         );
+      }
+      // @llr LLR-SRV-AUTH-021
+      if (!onAdminNetwork)
+        return send(res, 403, {
+          error: 'Administration is only available on the server local network.',
+        });
+      if (
+        await authRoutes(req, res, url, context, {
+          local,
+          admin,
+          secure,
+          token: cookie || token,
+        })
+      )
+        return;
+      if (req.method === 'GET' && url.pathname === '/permissions') {
+        res.writeHead(302, { Location: '/groups' });
+        return res.end();
+      }
+      if (req.method === 'GET' && url.pathname === '/zmala-icon.svg')
+        return send(
+          res,
+          200,
+          await asyncFs.readFile(path.resolve(__dirname, '../assets/zmala-icon.svg')),
+          'image/svg+xml',
+        );
+      // @llr LLR-SRV-AUTH-023
+      if (req.method === 'GET' && assets[url.pathname]) {
+        const [file, type] = assets[url.pathname];
+        return send(res, 200, await asyncFs.readFile(path.join(WEB, file)), type);
       }
       if (!admin) return send(res, 401, { error: 'Sign in with the admin password.' });
       if (await backupRoutes(req, res, url, context)) return;

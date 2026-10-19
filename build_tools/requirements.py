@@ -23,13 +23,13 @@ from test_trace import audit_tests, write_test_report
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOTS = (
-    'zmala_server', 'zmala_terminal/common', 'zmala_terminal/linux',
+    'zmala_server', 'zmala_terminal/common', 'zmala_terminal/linux', 'zmala_phone/app/src/main',
     'build_tools/linux', 'build_tools/windows_installer', 'build_tools/server_installer',
 )
 # Runtime helpers outside the component trees still belong in trace and coverage.
 SOURCE_FILES = ('build_tools/convert-photo.py',)
 SOURCE_SUFFIXES = {'.py', '.js', '.ts', '.c', '.h', '.css', '.html', '.json', '.sh',
-                   '.service', '.conf', '.rules', '.script', '.plymouth'}
+                   '.service', '.conf', '.rules', '.script', '.plymouth', '.kt', '.java', '.xml'}
 INSTALLER_HELPERS = {
     'boot-branding.py', 'build-turn.py', 'build-media.sh', 'check-low-wear.py', 'check-server.py',
     'download-framing-model.py', 'setup-auto-framing.sh',

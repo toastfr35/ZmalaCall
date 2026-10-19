@@ -116,7 +116,7 @@ function server() {
   const s = new SipServer({
     value: { host: '127.0.0.1', users: {} },
     terminal: () => false,
-    terminalAccount: () => null,
+    enrolledAccount: () => null,
   });
   const dialog = {
     peers: [

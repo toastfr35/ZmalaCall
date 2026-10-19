@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/linux/media/video/filters.c
+  type: file
 - path: tests/terminal/LLT/test-codec-boundaries.c
   type: file
 - path: tests/terminal/LLT/test-video-filters.c
@@ -33,6 +35,15 @@ text: |
   The H.264 path shall preserve compressed frame and reference order. Overflow
   recovery shall combine pending recovery work and restore required codec headers. It
   shall not apply independent-JPEG dropping to dependent H.264 frames.
+  Received SPS/PPS parameter NALs shall remain available when a damaged access unit
+  is discarded, so later intact access units can recover their decoder setup.
+  Until the first picture is decoded, the receiver shall repeat keyframe recovery
+  requests no faster than once per second, including when no new decode error is
+  reported. A reset of the first-picture notification shall restart this recovery.
 verification: |
   Submit ordered compressed references and overflow the queue. Check decode order,
   combined recovery and restored headers.
+  Inject SPS/PPS in damaged input, assert no damaged slices reach the worker, and
+  verify the cached parameter NALs precede the next intact access unit.
+  Tick a receiver without frames or errors, assert bounded repeated PLI, then
+  provide a decoded picture and verify retries stop until notification reset.

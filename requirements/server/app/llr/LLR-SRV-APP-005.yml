@@ -1,0 +1,40 @@
+active: true
+area: Authenticated push and bounded call waiting
+derived: false
+header: Authenticated push and bounded call waiting
+level: 4
+links:
+- HLR-SRV-APP-004: null
+normative: true
+ref: ''
+references:
+- path: zmala_server/app-push.js
+  type: file
+- path: zmala_server/app-calls.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/backups.js
+  type: file
+- path: tests/server/LLT/app-push.test.js
+  type: file
+- path: tests/server/LLT/backup-components.test.js
+  type: file
+reviewed: null
+scope: Experimental
+text: The server shall bind each push token to its authenticated App enrollment, accept replacement or
+  removal only from that bearer, and expire unused tokens after 30 days. Tokens shall be stored separately
+  from exported backups; the FCM sender credential shall remain server-side. FCM HTTP v1 requests shall
+  use scoped service-account OAuth and high-priority data messages containing an enrollment HMAC over
+  event, call ID, caller ID, deadline and device ID. Invalid destinations shall be removed. Push-eligible
+  Apps shall be callable in live availability without a SIP registration. Only authorized INVITEs shall
+  wait for fresh registration, at most 24 active or waiting calls and one per participant, for at most
+  60 seconds. Resume shall recheck permissions, enrollment and caller credentials. Authenticated matching
+  CANCEL, recipient decline, timeout, send failure and shutdown shall invalidate waiting work; cancellation
+  shall dismiss the remote alert. Restore shall reject waiting calls.
+verification: Assert token ownership, rotation, expiry, invalidation and canonical payloads; inspect scoped
+  signed OAuth and data-only FCM sends. Exercise fresh registration, foreign and valid CANCEL, duplicate
+  IDs, recipient decline, expiry, changed identity/permissions, failure, shutdown and idle restore guarding.
+  Qualify Google delivery separately.

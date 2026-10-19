@@ -71,7 +71,7 @@ function fixture() {
         from: 'sender@example.test',
       },
       users: {
-        target: { name: 'Target', type: 'linphone', emails: ['a@example.test', 'B@example.test'] },
+        target: { name: 'Target', type: 'app', emails: ['a@example.test', 'B@example.test'] },
       },
       callbacks: [],
     },
@@ -258,9 +258,9 @@ test('callback rows distinguish delivery progress, cancellation and connection-o
   f.state.model.users.target.emails = [];
   assert.match(f.callbackEmailStatus(base), /needs an email address/);
   for (const [kind, connected, notified, ready, status, expected] of [
-    ['linphone', false, null, false, 'pending', 'phone to reconnect'],
-    ['linphone', true, null, false, 'pending', 'Waiting for Linphone'],
-    ['linphone', true, 'now', true, 'pending', 'Linphone accepted'],
+    ['app', false, null, false, 'pending', 'phone to reconnect'],
+    ['app', true, null, false, 'pending', 'Waiting for the calling app'],
+    ['app', true, 'now', true, 'pending', 'calling app acknowledged'],
     ['terminal', true, null, true, 'pending', 'receiving terminal'],
     ['terminal', true, null, false, 'completed', 'completed'],
   ]) {

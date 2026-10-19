@@ -29,6 +29,7 @@ export interface Registration {
   reachable?: boolean;
 }
 export interface SipApi {
+  appCalls?: InstanceType<typeof import('../app-calls').AppCalls>;
   maintenance?: boolean;
   registrations: Map<string, Registration>;
   dialogs: Map<string, { peers: { user: string }[] }>;

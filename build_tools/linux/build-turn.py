@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import resource
 import signal
+import shutil
 import subprocess
 import urllib.request
 
@@ -30,6 +31,8 @@ def main():
         (SOURCE/name).write_bytes(data)
     (SOURCE/'original.cpp').write_bytes((SOURCE/'turn_tcp.cpp').read_bytes())
     subprocess.run(['patch', '--batch', '-p0', '-i', str(Path(__file__).resolve().parents[2]/'zmala_terminal/linux/native/turn-framing.patch')], cwd=SOURCE, check=True)
+    shutil.copyfile(Path(__file__).resolve().parents[2]/'zmala_terminal/common/native/turn-write.h', SOURCE/'turn-write.h')
+    subprocess.run(['patch', '--batch', '-p0', '-i', str(Path(__file__).resolve().parents[2]/'zmala_terminal/linux/native/turn-write.patch')], cwd=SOURCE, check=True)
     subprocess.run(['g++', '-shared', '-fPIC', '-std=c++17', str(SOURCE/'turn_tcp.cpp'),
                     '-o', str(ROOT/'turn-fix.so'), '-lmediastreamer2', '-lortp', '-lbctoolbox'], check=True)
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))

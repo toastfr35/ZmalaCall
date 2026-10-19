@@ -86,7 +86,7 @@ test('legacy migrations retain credentials and metadata, and convert only mutual
     };
     fs.writeFileSync(path.join(dir, 'server.json'), JSON.stringify(legacy));
     const s = new Store(dir);
-    assert.equal(s.value.schema_version, 6);
+    assert.equal(s.value.schema_version, 7);
     assert.equal(s.value.users.test.password, 'test');
     assert.equal(s.config().sip.password, 'terminal-secret');
     assert.equal(s.config().device_id, 'existing-device');
@@ -96,14 +96,14 @@ test('legacy migrations retain credentials and metadata, and convert only mutual
     assert.equal(s.config().auto_answer_seconds, 8);
     assert.equal(s.permitted('test', 'terminal'), true);
     assert.equal(s.config().video_fps, 15);
-    assert.equal(s.value.configuration_version, 11);
-    assert.equal(new Store(dir).value.configuration_version, 11);
-    s.createAccount({ emails: ['fixture@example.test'], id: 'bob', name: 'Bob', type: 'linphone' });
+    assert.equal(s.value.configuration_version, 12);
+    assert.equal(new Store(dir).value.configuration_version, 12);
+    s.createAccount({ emails: ['fixture@example.test'], id: 'bob', name: 'Bob', type: 'app' });
     s.createAccount({
       emails: ['fixture@example.test'],
       id: 'carol',
       name: 'Carol',
-      type: 'linphone',
+      type: 'app',
     });
     const v = s.value;
     v.schema_version = 3;
@@ -136,10 +136,10 @@ test('overlapping groups allow direct shared membership, all types, removal, ren
       emails: ['fixture@example.test'],
       id: 'alice',
       name: 'Alice',
-      type: 'linphone',
+      type: 'app',
       photo: '/photos/abcd.png',
     });
-    s.createAccount({ emails: ['fixture@example.test'], id: 'bob', name: 'Bob', type: 'linphone' });
+    s.createAccount({ emails: ['fixture@example.test'], id: 'bob', name: 'Bob', type: 'app' });
     s.createAccount({
       emails: ['fixture@example.test'],
       id: 'lounge',
@@ -172,7 +172,7 @@ test('overlapping groups allow direct shared membership, all types, removal, ren
       token = s.value.users.lounge.device_token,
       password = s.value.users.lounge.password;
     const before = JSON.stringify(s.value);
-    assert.throws(() => s.updateAccount('lounge', { id: 'alice', name: 'Bad', type: 'linphone' }));
+    assert.throws(() => s.updateAccount('lounge', { id: 'alice', name: 'Bad', type: 'app' }));
     assert.equal(JSON.stringify(s.value), before);
     s.updateAccount('lounge', { id: 'livingroom', name: 'Living room', type: 'terminal' });
     assert.equal(s.deviceAccount(token), 'livingroom');
@@ -193,7 +193,7 @@ test('overlapping groups allow direct shared membership, all types, removal, ren
     assert.equal(new Store(dir).config().sip.username, 'livingroom');
     s.updateAccount('bob', { name: 'Bob terminal', type: 'terminal' });
     const bobToken = s.value.users.bob.device_token;
-    s.updateAccount('bob', { name: 'Bob phone', type: 'linphone' });
+    s.updateAccount('bob', { name: 'Bob phone', type: 'app' });
     assert.equal(s.deviceAccount(bobToken), undefined);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
@@ -217,7 +217,7 @@ test('invalid groups and account settings do not partially change permissions or
     assert.throws(() => s.updateGroup('family', { name: 'Bad', members: ['unknown'] }));
     assert.throws(() => s.deleteGroup('constructor'));
     assert.throws(() =>
-      s.updateAccount('phone1', { name: 'phone1', type: 'linphone', auto_answer: true }),
+      s.updateAccount('phone1', { name: 'phone1', type: 'app', auto_answer: true }),
     );
     assert.throws(() =>
       s.updateAccount('term1', { name: 'term1', type: 'terminal', auto_answer_seconds: 2 }),
@@ -225,18 +225,18 @@ test('invalid groups and account settings do not partially change permissions or
     assert.throws(() =>
       s.updateAccount('phone1', {
         name: 'phone1',
-        type: 'linphone',
+        type: 'app',
         photo: 'https://example.com/photo.png',
       }),
     );
     assert.equal(JSON.stringify(s.value), before);
     const empty = s.createGroup({ name: 'Empty', members: [] });
     assert.deepEqual(s.value.groups[empty].members, []);
-    s.updateAccount('phone1', { name: 'phone1', type: 'linphone', photo: '/photos/abcd.png' });
+    s.updateAccount('phone1', { name: 'phone1', type: 'app', photo: '/photos/abcd.png' });
     assert.equal(s.config().contacts[0].photo, '/photos/abcd.png');
-    s.updateAccount('phone1', { name: 'phone1', type: 'linphone', photo: '/photos/ffff.png' });
+    s.updateAccount('phone1', { name: 'phone1', type: 'app', photo: '/photos/ffff.png' });
     assert.equal(s.config().contacts[0].photo, '/photos/ffff.png');
-    s.updateAccount('phone1', { name: 'phone1', type: 'linphone', photo: '' });
+    s.updateAccount('phone1', { name: 'phone1', type: 'app', photo: '' });
     assert.equal(s.config().contacts[0].photo, '');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
@@ -251,26 +251,26 @@ test('contacts always follow account names and pictures, sort alphabetically, an
       emails: ['fixture@example.test'],
       id: 'zoe',
       name: 'Zoë',
-      type: 'linphone',
+      type: 'app',
       photo: '/photos/abcd.png',
     });
     s.createAccount({
       emails: ['fixture@example.test'],
       id: 'alice',
       name: 'alice',
-      type: 'linphone',
+      type: 'app',
     });
     s.createAccount({
       emails: ['fixture@example.test'],
       id: 'emile',
       name: 'Émile',
-      type: 'linphone',
+      type: 'app',
     });
     s.createAccount({
       emails: ['fixture@example.test'],
       id: 'alicia',
       name: 'Alice',
-      type: 'linphone',
+      type: 'app',
     });
     s.createGroup({ name: 'Contacts', members: ['term1', 'zoe', 'alice', 'emile', 'alicia'] });
     s.value.profiles.term1.contacts = [
@@ -288,10 +288,10 @@ test('contacts always follow account names and pictures, sort alphabetically, an
     assert.equal(zoe.photo, '/photos/abcd.png');
     assert.equal('photo_override' in zoe, false);
     assert.equal(config.contacts.find((c) => c.id === 'alice').photo, '');
-    s.updateAccount('zoe', { name: 'Aaron', type: 'linphone', photo: '/photos/bbbb.png' });
+    s.updateAccount('zoe', { name: 'Aaron', type: 'app', photo: '/photos/bbbb.png' });
     assert.equal(s.config().contacts[0].name, 'Aaron');
     assert.equal(s.config().contacts[0].photo, '/photos/bbbb.png');
-    s.updateAccount('zoe', { name: 'Aaron', type: 'linphone', photo: '' });
+    s.updateAccount('zoe', { name: 'Aaron', type: 'app', photo: '' });
     assert.equal(s.config().contacts[0].photo, '');
     s.deleteAccount('emile');
     assert.equal(

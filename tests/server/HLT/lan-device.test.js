@@ -10,7 +10,10 @@ const assert = require('node:assert/strict');
 const { httpFixture } = require('../../support/server/http-fixture');
 const { createHandler } = require('../../../zmala_server/http/handler');
 
-test('LAN terminals can fetch config; administration requires an admin session', async () => {
+test('LAN terminals can fetch config; administration requires an admin session', async (t) => {
+  t.mock.method(require('node:os'), 'networkInterfaces', () => ({
+    eth0: [{ address: '192.168.1.10', cidr: '192.168.1.10/24', internal: false }],
+  }));
   const fixture = await httpFixture();
   try {
     const handler = createHandler({ ...fixture, terminalStatuses: {} });
@@ -18,7 +21,7 @@ test('LAN terminals can fetch config; administration requires an admin session',
       const req = {
         method: 'GET',
         url,
-        socket: { remoteAddress: remote },
+        socket: { remoteAddress: remote, localAddress: '192.168.1.10' },
         headers: {
           host: host || `${fixture.store.value.host}:${fixture.store.value.http_port}`,
           authorization: token ? `Bearer ${token}` : undefined,
@@ -48,7 +51,7 @@ test('LAN terminals can fetch config; administration requires an admin session',
       403,
     );
     assert.equal((await request('/', undefined, '127.0.0.1')).status, 200);
-    assert.equal((await request('/')).status, 200, 'Remote browsers can reach the sign-in page');
+    assert.equal((await request('/')).status, 200, 'LAN browsers can reach the sign-in page');
     const session = fixture.adminSessions.create();
     assert.equal((await request('/api/admin', session)).status, 200);
     assert.match(

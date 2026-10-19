@@ -14,7 +14,7 @@ export type MigrationState = Omit<ServerState, 'users' | 'profiles' | 'callback_
     string,
     AccountDetails &
       Partial<Omit<TerminalAccount, keyof AccountDetails | 'type'>> & {
-        type?: 'terminal' | 'linphone';
+        type?: 'terminal' | 'linphone' | 'app';
       }
   >;
   profiles: Record<

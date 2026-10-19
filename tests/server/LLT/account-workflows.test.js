@@ -16,7 +16,7 @@ test('group editor preserves opening revisions, selected members and explicit de
       model: {
         configuration_version: 4,
         groups: { family: { name: 'Family', members: ['a'] } },
-        users: { a: { name: 'Alice', type: 'terminal' }, b: { name: 'Bob', type: 'linphone' } },
+        users: { a: { name: 'Alice', type: 'terminal' }, b: { name: 'Bob', type: 'app' } },
       },
       refresh: async () => {},
     };
@@ -101,7 +101,7 @@ function accounts() {
             photo: '/photos/a.png',
             emails: ['alice@example.test'],
           },
-          bob: { name: 'Bob', type: 'linphone', password: 'phone' },
+          bob: { name: 'Bob', type: 'app', password: 'phone' },
         },
         account_groups: { alice: ['family'], bob: [] },
         groups: { family: { name: 'Family' } },
@@ -156,7 +156,7 @@ test('account filters retain input state and expose responsive column labels', (
   input.oninput();
   assert.equal(f.$('account-count').textContent, '1 account');
   const filter = f.find('select');
-  filter.value = 'linphone';
+  filter.value = 'app';
   filter.onchange();
   assert.equal(f.$('account-count').textContent, '0 accounts');
   assert.match(text(f.$('account-rows')), /No accounts found/);
@@ -328,10 +328,13 @@ test('connection view handles terminal assignment downloads and removed accounts
   await f.button('Download server QR PDF').click();
   assert.deepEqual(f.pdfs, ['alice']);
   f.openConnection('bob');
-  assert.match(text(f.$('details-content')), /third-party SIP.*same LAN/);
+  assert.match(
+    text(f.$('details-content')),
+    /Install ZmalaPhone.*cannot also be assigned to a Pi terminal/,
+  );
   f.state.model.sip_proxy = 'sip:secure.example.org:443;transport=tls';
   f.renderConnection();
-  assert.match(text(f.$('details-content')), /Manual phone provisioning is not supported/);
+  assert.match(text(f.$('details-content')), /ZmalaPhone preview supports LAN calling only/);
   assert.ok(!text(f.$('details-content')).includes('Use UDP'));
   delete f.state.model.users.bob;
   f.renderConnection();

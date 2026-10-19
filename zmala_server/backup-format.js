@@ -47,7 +47,7 @@ const date = (value) => text(value, 40) && Number.isFinite(Date.parse(String(val
 function validateFiles(files) {
   for (const name of FILES) requireValue(files.has(name), 'Backup is missing ' + name);
   const state = object(parse(files.get('server.json') || ''));
-  requireValue(state.schema_version === 6, 'Unsupported server configuration version.');
+  requireValue([6, 7].includes(state.schema_version), 'Unsupported server configuration version.');
   requireValue(
     Number.isSafeInteger(state.configuration_version) && state.configuration_version >= 0,
   );
@@ -64,13 +64,17 @@ function validateFiles(files) {
   for (const [id, raw] of Object.entries(users)) {
     requireValue(accountId(id));
     const user = object(raw);
-    accountFields({ ...user, emails: undefined });
+    accountFields({
+      ...user,
+      type: state.schema_version === 6 && user.type === 'linphone' ? 'app' : user.type,
+      emails: undefined,
+    });
     requireValue(Array.isArray(user.emails));
     if (user.emails.length) validateEmails(user.emails);
     requireValue(text(user.password, 128) && user.password.length > 0);
     if (user.photo)
       requireValue(files.has(user.photo.slice(1)), 'A referenced picture is missing.');
-    if (user.type === 'terminal') {
+    if (user.type === 'terminal' || (state.schema_version === 7 && user.type === 'app')) {
       requireValue(
         text(user.device_id, 128) && user.device_id.length > 0 && !identities.has(user.device_id),
       );
@@ -79,6 +83,8 @@ function validateFiles(files) {
       );
       identities.add(user.device_id);
       tokens.add(user.device_token);
+    }
+    if (user.type === 'terminal') {
       requireValue(
         typeof user.auto_answer === 'boolean' && typeof user.auto_answer_seconds === 'number',
       );

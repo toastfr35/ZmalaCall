@@ -70,7 +70,7 @@ test('SMTP settings and deadlines require admin; secrets are retained privately 
   assert.equal(smtp.messages.length, 0);
   store.updateAccount('phone1', {
     name: 'Noah',
-    type: 'linphone',
+    type: 'app',
     emails: ['daniel@example.test'],
   });
   const pending = callbacks.create('term1', 'phone1');
@@ -108,7 +108,7 @@ test('SMTP settings and deadlines require admin; secrets are retained privately 
       Authorization: 'Bearer ' + store.value.admin_token,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ id: 'noemail', name: 'No email', type: 'linphone' }),
+    body: JSON.stringify({ id: 'noemail', name: 'No email', type: 'app' }),
   });
   assert.equal(missingEmail.status, 400);
   assert.equal(store.value.users.noemail, undefined);

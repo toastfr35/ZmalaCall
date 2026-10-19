@@ -14,6 +14,7 @@ const { RegistrationMonitor, registrationOnline } = require('./registrations');
 const { SipMessages } = require('./sip-messages');
 const { validRequest, maxForwards } = require('./sip-guards');
 const { startProxy } = require('./sip-transport');
+const { AppCalls } = require('./app-calls');
 /** SIP transport and dialog ownership. Presence and messaging have separate controllers. */
 class SipServer extends SipMessages {
   /** @param {import('./types/contracts').StoreInstance} store */
@@ -21,6 +22,7 @@ class SipServer extends SipMessages {
     super(store);
     /** @type {Map<string, import('./types/contracts').Dialog>} */
     this.dialogs = new Map();
+    this.appCalls = new AppCalls(this);
     this.maintenance = false;
     /** @type {{time: string; message: string}[]} */
     this.events = [];
@@ -99,7 +101,7 @@ class SipServer extends SipMessages {
     }, 5000);
     this.log(
       this.store.secureCalls
-        ? `SIP TLS listener ${this.store.secureCalls.listenPort}; public ${this.store.secureCalls.sipHost}:443; ICE/SRTP media`
+        ? `SIP TLS listener ${this.store.secureCalls.listenPort}; public ${this.store.secureCalls.sipHost}:${this.store.secureCalls.sipPort}; ICE/SRTP media`
         : `SIP listening on ${v.host}:${v.sip_port} (UDP/TCP)`,
     );
   }
@@ -117,6 +119,9 @@ class SipServer extends SipMessages {
   /** @param {import('sip').Message} rq @param {import('sip').Remote} remote */
   cancelStatus(rq, remote) {
     if (!validRequest(rq)) return 400;
+    // @llr LLR-SRV-APP-005
+    const waitingStatus = this.appCalls.cancel(rq, remote);
+    if (waitingStatus !== null) return waitingStatus;
     const dialog = this.dialogs.get(rq.headers['call-id']);
     if (!dialog) return 481;
     const side = dialog.peers.findIndex(
@@ -176,7 +181,10 @@ class SipServer extends SipMessages {
     }
     proxy.send(rs);
     if (contact && expires && contact.uri !== '*')
-      setImmediate(() => this.callbacks?.deliver(user));
+      setImmediate(() => {
+        this.appCalls.registered(user);
+        this.callbacks?.deliver(user);
+      });
     return;
   }
   /** @param {import('sip').Message} rq @param {import('sip').Remote} remote */
@@ -249,16 +257,13 @@ class SipServer extends SipMessages {
         this.reply(rq, 403, 'Calling Not Permitted');
         return;
       }
-      const target = this.registrations.get(to);
-      if (!registrationOnline(target)) {
-        this.reply(rq, 480, 'Temporarily Unavailable');
-        return;
-      }
-      if (this.dialogs.size >= 24) {
+      if (this.dialogs.size + this.appCalls.waiting.size >= 24) {
         this.reply(rq, 486, 'Busy Here');
         return;
       }
       if (
+        this.appCalls.busy(from) ||
+        this.appCalls.busy(to) ||
         [...this.dialogs.values()].some((d) =>
           d.peers.some((p) => p.user === from || p.user === to),
         )
@@ -269,6 +274,16 @@ class SipServer extends SipMessages {
       const fromContact = rq.headers.contact?.[0];
       if (!fromContact) {
         this.reply(rq, 400, 'Contact Required');
+        return;
+      }
+      // @llr LLR-SRV-APP-005
+      // Even a stale registration must not hide a sleeping app from FCM.
+      if (this.appCalls.push.available(to)) {
+        if (!(await this.appCalls.wait(rq, remote, from, to))) return;
+      }
+      const target = this.registrations.get(to);
+      if (!registrationOnline(target) || this.maintenance || !this.store.permitted(from, to)) {
+        this.reply(rq, 480, 'Temporarily Unavailable');
         return;
       }
       side = 0;
@@ -336,7 +351,7 @@ class SipServer extends SipMessages {
     delete forward.headers.authorization;
     // @llr LLR-SRV-CALL-005
     delete forward.headers['x-family-auth'];
-    const terminal = this.store.terminalAccount(target.user);
+    const terminal = this.store.enrolledAccount(target.user);
     if (terminal)
       forward.headers['x-family-auth'] = crypto
         .createHmac('sha256', terminal.device_token)
@@ -463,12 +478,13 @@ class SipServer extends SipMessages {
           address: r.remote.address,
           expires_at: new Date(r.expires).toISOString(),
         })),
-      active_calls: this.dialogs.size,
+      active_calls: this.dialogs.size + this.appCalls.waiting.size,
       relay_sessions: this.media.sessions.size,
       events: this.events,
     };
   }
   close() {
+    this.appCalls.close();
     clearInterval(this.sweep);
     this.presence.close();
     // Invalidate dialog ownership before releasing relays: pending SDP work can

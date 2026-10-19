@@ -2,6 +2,8 @@
 // @requirements LLR-SRV-START-006, LLR-SRV-START-010, LLR-SRV-AUTH-019, LLR-SRV-AUTH-020, LLR-SRV-AUTH-021, LLR-SRV-AUTH-022, LLR-SRV-AUTH-023, LLR-SRV-AUTH-024, LLR-SRV-DIR-026, LLR-SRV-DIR-027, LLR-SRV-CONFIG-021, LLR-SRV-CONFIG-022, LLR-SRV-ENROLL-005, LLR-SRV-PRESENCE-005, LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-020, LLR-SRV-MAINT-013, LLR-SRV-MAINT-016, LLR-SRV-MAINT-018, LLR-SRV-MAINT-019, LLR-SRV-MAINT-020
 // @environment portable
 // @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, authenticated callback creation/cancellation and enrollment identity persistence, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection.
+// Supply explicit interface subnets and TCP peer addresses to check LAN-only administration,
+// including mapped IPv4, IPv6, spoofed forwarding headers and valid remote admin credentials.
 // @pass Every allowed and denied request must produce the expected status and state; no sockets, actual commands or remote devices are used.
 
 'use strict';
@@ -11,6 +13,13 @@ const { storeFixture, request, response, context } = require('../../support/serv
 const { createHandler } = require('../../../zmala_server/http/handler');
 const { readJson } = require('../../../zmala_server/http/responses');
 const { terminalStatus } = require('../../../zmala_server/validation');
+const os = require('node:os');
+const fs = require('node:fs');
+const path = require('node:path');
+const { localAdmin } = require('../../../zmala_server/http/admin-network');
+const lanInterfaces = {
+  eth0: [{ address: '192.168.1.10', cidr: '192.168.1.10/24', internal: false }],
+};
 
 function fixture(t) {
   const store = storeFixture(t),
@@ -84,6 +93,7 @@ test('device callback, availability and command routes bind identity and await d
 });
 
 test('Host, Origin, cookie mutations and HTTPS policy reject before dispatch', async (t) => {
+  t.mock.method(os, 'networkInterfaces', () => lanInterfaces);
   const { ctx, call, device } = fixture(t);
   assert.equal((await call('/health', { headers: { host: 'attacker:8080' } })).status, 403);
   assert.equal((await call('/health', { headers: { origin: 'https://elsewhere' } })).status, 403);
@@ -102,13 +112,106 @@ test('Host, Origin, cookie mutations and HTTPS policy reject before dispatch', a
     200,
   );
   ctx.requireSecureAdmin = true;
-  const socket = { remoteAddress: '192.168.1.20' };
+  const socket = { remoteAddress: '192.168.1.20', localAddress: '192.168.1.10' };
   assert.equal((await call('/api/auth/status', { socket })).status, 403);
   assert.equal(
     (await call('/api/auth/status', { socket: { ...socket, encrypted: true } })).status,
     200,
   );
   assert.equal((await call('/api/config', { socket, headers: device })).status, 200);
+});
+
+test('admin network matches the receiving private subnet and fails closed', () => {
+  for (const peer of ['192.168.1.20', '::ffff:192.168.1.20'])
+    assert.equal(
+      localAdmin({ remoteAddress: peer, localAddress: '::ffff:192.168.1.10' }, lanInterfaces),
+      true,
+    );
+  for (const peer of ['192.168.2.20', '10.0.0.2', '203.0.113.2', '', 'invalid'])
+    assert.equal(
+      localAdmin({ remoteAddress: peer, localAddress: '192.168.1.10' }, lanInterfaces),
+      false,
+      peer,
+    );
+  assert.equal(localAdmin({ remoteAddress: '192.168.1.20' }, lanInterfaces), false);
+  assert.equal(
+    localAdmin({ remoteAddress: '192.168.1.20', localAddress: '192.168.1.10' }, {}),
+    false,
+  );
+  for (const peer of ['127.0.0.1', '::1', '::ffff:127.0.0.1'])
+    assert.equal(localAdmin({ remoteAddress: peer }, {}), true);
+  const ipv6 = { eth0: [{ address: 'fd12:3456::1', cidr: 'fd12:3456::1/64', internal: false }] };
+  assert.equal(
+    localAdmin({ remoteAddress: 'fd12:3456::2', localAddress: 'fd12:3456::1' }, ipv6),
+    true,
+  );
+  assert.equal(
+    localAdmin({ remoteAddress: 'fd12:3457::2', localAddress: 'fd12:3456::1' }, ipv6),
+    false,
+  );
+  assert.equal(
+    localAdmin({ remoteAddress: '2001:db8::2', localAddress: 'fd12:3456::1' }, ipv6),
+    false,
+  );
+});
+
+test('remote HTTPS blocks admin UI, authentication and APIs even with a valid session', async (t) => {
+  t.mock.method(os, 'networkInterfaces', () => lanInterfaces);
+  const { call, admin, device, ctx, store } = fixture(t);
+  const socket = { remoteAddress: '203.0.113.2', localAddress: '192.168.1.10', encrypted: true };
+  for (const route of [
+    '/',
+    '/accounts',
+    '/permissions',
+    '/admin.js',
+    '/admin.css',
+    '/zmala-icon.svg',
+    '/api/auth/status',
+    '/api/admin',
+    '/api/backups/export',
+    '/api/users',
+  ]) {
+    for (const credential of [
+      admin,
+      device,
+      { cookie: `zmala-admin=${ctx.adminSessions.create()}` },
+    ])
+      assert.equal(
+        (
+          await call(route, {
+            socket,
+            headers: {
+              ...credential,
+              'x-forwarded-for': '192.168.1.20',
+              forwarded: 'for=127.0.0.1',
+            },
+          })
+        ).status,
+        403,
+        route,
+      );
+  }
+  for (const route of ['/api/auth/login', '/api/auth/setup', '/api/auth/password', '/api/users'])
+    assert.equal(
+      (await call(route, { socket, method: 'POST', headers: admin, value: {} })).status,
+      403,
+      route,
+    );
+  assert.equal((await call('/api/config', { socket, headers: device })).status, 200);
+  const app = { authorization: `Bearer ${store.value.users.phone1.device_token}` };
+  assert.equal((await call('/api/app/config', { socket, headers: app })).status, 200);
+  fs.mkdirSync(path.join(store.dir, 'photos'), { recursive: true });
+  fs.writeFileSync(path.join(store.dir, 'photos/abcd.png'), 'portrait-fixture');
+  assert.equal((await call('/photos/abcd.png', { socket, headers: app })).status, 200);
+  assert.equal((await call('/photos/abcd.png', { socket, headers: admin })).status, 401);
+  assert.equal((await call('/api/config', { socket, headers: admin })).status, 401);
+  assert.equal((await call('/health', { socket })).status, 200);
+  assert.equal((await call('/ready', { socket })).status, 200);
+  assert.equal(
+    (await call('/api/auth/status', { socket: { ...socket, remoteAddress: '192.168.1.20' } }))
+      .status,
+    200,
+  );
 });
 
 test('private endpoints reject device tokens while health stays minimal and security headers apply', async (t) => {

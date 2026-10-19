@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @llr LLR-AND-UI-002 -->
+<!-- Vector translation of zmala_server/assets/zmala-icon.svg. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt" android:width="128dp" android:height="128dp" android:viewportWidth="128" android:viewportHeight="128">
+ <path android:fillColor="#141d2b" android:pathData="M32,0H96Q128,0 128,32V96Q128,128 96,128H32Q0,128 0,96V32Q0,0 32,0Z"/>
+ <path android:pathData="M43,24h42c14,0 23,10 23,23v24c0,14 -9,23 -23,23H56l-22,15V91C23,87 20,79 20,69V47c0,-13 9,-23 23,-23Z" android:fillColor="#00000000" android:strokeWidth="8" android:strokeLineJoin="round">
+  <aapt:attr name="android:strokeColor"><gradient android:startX="22" android:startY="24" android:endX="104" android:endY="102" android:startColor="#85e8c3" android:endColor="#b6a4ff" android:type="linear"/></aapt:attr>
+ </path>
+ <path android:pathData="M45,46h38L45,73h38" android:strokeColor="#edf4ff" android:strokeWidth="8" android:strokeLineJoin="round" android:strokeLineCap="round"/>
+ <path android:pathData="M114,27a12,12 0,1 1,-24,0a12,12 0,1 1,24,0" android:fillColor="#85e8c3" android:strokeColor="#141d2b" android:strokeWidth="5"/>
+</vector>

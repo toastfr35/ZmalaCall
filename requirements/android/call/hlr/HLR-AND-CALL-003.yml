@@ -1,0 +1,22 @@
+active: true
+area: Background incoming call alerts
+derived: false
+header: Background incoming call alerts
+level: 2
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/android/HLT/BackgroundCallingTest.java
+  type: file
+- path: tests/android/HLT/background_push.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The Android app shall present authenticated, expiring incoming-call notifications through Firebase
+  when its activity is not open. Answer shall reconnect and accept only the matching authorized SIP call;
+  decline, cancellation and expiry shall dismiss the alert. Notification permission denial and Android
+  force-stop restrictions shall be explained.
+verification: Exercise background notification delivery, answer, decline, expiry and forged/stale messages;
+  qualify actual FCM delivery with the phone asleep.

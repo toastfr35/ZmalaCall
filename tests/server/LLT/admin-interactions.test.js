@@ -717,8 +717,8 @@ test('account drafts keep their opening revision and a late photo cannot save a 
       model: {
         configuration_version: 1,
         users: {
-          one: { name: 'First', type: 'linphone', emails: ['one@example.test'] },
-          two: { name: 'Second', type: 'linphone', emails: ['two@example.test'] },
+          one: { name: 'First', type: 'app', emails: ['one@example.test'] },
+          two: { name: 'Second', type: 'app', emails: ['two@example.test'] },
         },
       },
       refresh: async () => {},

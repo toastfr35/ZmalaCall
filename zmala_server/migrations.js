@@ -1,10 +1,12 @@
 'use strict';
 // Upgrade persisted snapshots in place before Store exposes them; preserve existing identities and credentials.
+const { randomUUID } = require('node:crypto');
+const { random } = require('./defaults');
 const { own } = require('./validation');
 const { defaultCallbackSettings, defaultSmtpSettings } = require('./callback-settings');
 /** @param {import('./types/migrations').MigrationState} v */
 function migrateLegacy(v) {
-  if ([4, 5, 6].includes(v.schema_version)) return;
+  if ([4, 5, 6, 7].includes(v.schema_version)) return;
   if (v.schema_version === 3) {
     migrateGroups(v);
     v.configuration_version++;
@@ -125,6 +127,18 @@ function migrate(state) {
     v.callback_settings = defaultCallbackSettings();
     v.smtp = defaultSmtpSettings();
     v.schema_version = 6;
+    v.configuration_version++;
+  }
+  // @llr LLR-SRV-APP-002
+  if (v.schema_version === 6) {
+    for (const account of Object.values(v.users)) {
+      if (account.type === 'linphone' || account.type === 'app') {
+        account.type = 'app';
+        account.device_id = 'ZP-' + randomUUID();
+        account.device_token = random();
+      }
+    }
+    v.schema_version = 7;
     v.configuration_version++;
   }
   if (v.callback_settings.email_after_minutes !== undefined) {

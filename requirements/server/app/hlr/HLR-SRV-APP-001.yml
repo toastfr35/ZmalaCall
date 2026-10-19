@@ -1,0 +1,19 @@
+active: true
+area: Android app accounts and enrollment
+derived: false
+header: Exclusive app enrollment
+level: 1
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/app-enrollment.test.js
+  type: file
+reviewed: null
+scope: Core
+text: The server shall manage App and Terminal as exclusive account types and provide app-specific QR
+  enrollment and a private app configuration API. Converting account type shall revoke the previous enrollment
+  and SIP password.
+verification: Exercise authenticated enrollment, forbidden terminal/admin access and conversion with old
+  and new credentials.

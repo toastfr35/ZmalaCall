@@ -81,7 +81,7 @@ class SipMessages {
     if (
       !to ||
       from !== user ||
-      v.users[user].type !== 'linphone' ||
+      v.users[user].type !== 'app' ||
       !this.store.terminal(to) ||
       !this.store.permitted(from, to)
     ) {

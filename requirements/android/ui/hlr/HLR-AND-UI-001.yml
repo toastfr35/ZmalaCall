@@ -1,0 +1,22 @@
+active: true
+area: Portrait interface and controls
+derived: false
+header: Terminal visual identity
+level: 1
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/android/HLT/EnrollmentFlowTest.java
+  type: file
+reviewed: null
+scope: Experimental
+text: The app shall use the existing ZmalaCall logo and terminal palette with large contact and call controls,
+  compact portrait-and-name contact rows, QR setup and a visible indication of incoming-alert availability. Online names shall be green call targets and offline names gray.
+  The contact screen shall omit the phone account name and routine ready status.
+  Calls shall use a video-first view with a bottom-right local preview, temporary icon controls,
+  portrait/landscape adaptation and animated outgoing ringing feedback. After answer, the app shall
+  indicate that video is connecting until a remote frame is decoded.
+verification: Inspect enrollment, contacts and incoming/active call screens on Android and compare with
+  the terminal palette and shared logo.

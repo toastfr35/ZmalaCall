@@ -57,7 +57,7 @@ test('stable contact cache cannot leak live mutations and invalidates on account
     assert.equal('online' in fixture.store.contacts('term1')[0], false);
     fixture.store.updateAccount('phone1', {
       name: 'Renamed',
-      type: 'linphone',
+      type: 'app',
       emails: ['a@example.test'],
     });
     assert.equal(fixture.store.contacts('term1').find((c) => c.id === 'phone1').name, 'Renamed');

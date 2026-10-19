@@ -3,7 +3,7 @@ const { send, readJson, httpError } = require('./responses');
 const { hashPassword, verifyPassword } = require('../admin-sessions');
 
 /** Public login routes are bounded and never disclose password hashes.
- * Initial setup works remotely once; changing a password requires the current one.
+ * Initial setup works from the server LAN once; changing a password requires the current one.
  * @param {import('node:http').IncomingMessage} req
  * @param {import('node:http').ServerResponse} res
  * @param {URL} url @param {import('../types/http').HttpContext} context

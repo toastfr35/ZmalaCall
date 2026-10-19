@@ -14,7 +14,8 @@
     "DATA": "Saved state",
     "BACKUP": "Backup and restore",
     "UI": "Administration interface",
-    "HOST": "Host access and storage"
+    "HOST": "Host access and storage",
+    "APP": "Android app accounts and enrollment"
   },
   "TERM": {
     "START": "Startup and shutdown",
@@ -32,5 +33,10 @@
     "TV": "TV control",
     "POWER": "Connected devices and power",
     "MAINT": "Maintenance and diagnostics"
+  },
+  "AND": {
+    "ENROLL": "QR enrollment and configuration",
+    "CALL": "Audio and video calls",
+    "UI": "Portrait interface and controls"
   }
 }

@@ -56,7 +56,7 @@ test('derived views reuse stable computation and invalidate after edits without 
   assert.equal(s.contacts('term1')[0].name, 'phone1');
   assert.equal(s.contacts('term1')[0].online, undefined);
   assert.equal(build.mock.callCount(), 1);
-  s.updateAccount('phone1', { name: 'Changed', type: 'linphone' });
+  s.updateAccount('phone1', { name: 'Changed', type: 'app' });
   assert.equal(s.contacts('term1')[0].name, 'Changed');
   assert.equal(build.mock.callCount(), 2);
   s.deleteGroup('family');

@@ -87,7 +87,13 @@ function request(peer, method, from, to = from, content = '') {
 
 async function authenticate(peer, message, port, credentials) {
   const response = () =>
-    peer.wait((m) => m.status >= 200 && m.headers['call-id'] === message.headers['call-id']);
+    peer.wait(
+      (m) =>
+        m.status >= 200 &&
+        m.headers['call-id'] === message.headers['call-id'] &&
+        m.headers.cseq.method === message.method &&
+        m.headers.cseq.seq === message.headers.cseq.seq,
+    );
   let reply = response();
   peer.send(message, port);
   const challenge = await reply;

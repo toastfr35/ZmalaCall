@@ -1,0 +1,19 @@
+active: true
+area: Push-assisted app calling
+derived: false
+header: Push-assisted app calling
+level: 2
+links:
+- PROD015: null
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/app-push.test.js
+  type: file
+reviewed: null
+scope: Experimental
+text: The server shall make push-enabled App accounts callable without a live SIP registration, securely
+  store their push destinations, and hold authorized calls within a bounded window for app reconnection.
+  Cancellation, revocation and expiry shall prevent late calls.
+verification: Exercise token ownership, offline call admission, registration resumption, cancellation,
+  expiry and revocation with disposable peers, then qualify Firebase delivery on the Pi.

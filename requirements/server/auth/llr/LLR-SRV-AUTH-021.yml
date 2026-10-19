@@ -5,7 +5,7 @@ header: |
   Host and browser-origin checks
 level: 15.0
 links:
-- HLR-SRV-AUTH-013: eZZKb2Z8txA9h8r8PE8NhnyDHG_K8qTxv2WPWZqUdTQ=
+- HLR-SRV-AUTH-013: OBBLTWTh6fZPeMulmjn7wIxaOIN7aq148URF176CiFw=
 normative: true
 ref: ''
 references:
@@ -19,9 +19,13 @@ references:
   type: file
 - path: zmala_server/http/handler.js
   type: file
+- path: zmala_server/http/admin-network.js
+  type: file
 reviewed: null
 scope: Core
 text: |
   HTTP requests shall use an allowed server Host value. A supplied Origin shall match the request scheme and Host. Cookie-authenticated mutations shall require that matching Origin, including authentication actions.
+  Administrator pages, assets, authentication and management APIs shall require a loopback TCP peer or a peer in the receiving interface's private IPv4, IPv6 ULA or IPv6 link-local subnet. Missing or unmatched interface information shall deny administration. Forwarding headers and valid administrator credentials shall not bypass this check. Authenticated device APIs and device portrait reads shall remain available across networks.
 verification: |
   Vary configured host, listener address, explicit hostname, origin, scheme and cookie mutation headers before route dispatch.
+  Supply local, external, other-private-subnet, mapped IPv4 and IPv6 peers, missing interfaces, forged forwarding headers and valid sessions. Assert remote administration denial and continued device access.

@@ -31,14 +31,14 @@ test('account type changes preserve personal details and revoke terminal enrollm
     account.emails = ['family@example.test'];
     account.photo = '/photos/abcd.png';
     assert.equal(
-      (await request('/api/users/term1', 'PUT', { name: 'Family', type: 'linphone' })).status,
+      (await request('/api/users/term1', 'PUT', { name: 'Family', type: 'app' })).status,
       200,
     );
     const phone = store.value.users.term1;
-    assert.equal(phone.password, password);
+    assert.notEqual(phone.password, password);
     assert.deepEqual(phone.emails, ['family@example.test']);
     assert.equal(phone.photo, '/photos/abcd.png');
-    for (const field of ['device_id', 'device_token', 'auto_answer', 'auto_answer_seconds'])
+    for (const field of ['auto_answer', 'auto_answer_seconds'])
       assert.equal(Object.hasOwn(phone, field), false);
     assert.equal(store.deviceAccount(token), undefined);
     assert.equal(store.value.local_terminal_id, null);
@@ -60,7 +60,9 @@ test('account type changes preserve personal details and revoke terminal enrollm
     const terminal = store.value.users.term1;
     assert.notEqual(terminal.device_id, serial);
     assert.notEqual(terminal.device_token, token);
-    assert.equal(terminal.password, password);
+    assert.notEqual(terminal.password, password);
+    assert.notEqual(terminal.password, phone.password);
+    assert.equal(store.deviceAccount(phone.device_token), undefined);
     assert.equal(terminal.photo, phone.photo);
     assert.deepEqual(terminal.emails, phone.emails);
     assert.equal(store.config().auto_answer_seconds, 12);

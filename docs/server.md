@@ -48,6 +48,15 @@ The first administrator sets a shared password. Later administration requires a
 valid session. Password replacement ends existing sessions, and sign-out ends the
 selected session. Password hashes and session credentials remain private.
 
+Administration is restricted to loopback or the receiving interface's private local
+subnet. Internet clients cannot load the admin pages, sign in, or use a saved admin
+session. Authenticated device APIs remain reachable for remote calls.
+`http/admin-network.js` compares the TCP peer to the private subnet of the
+receiving interface reported by the operating system. It supports IPv4, mapped
+IPv4, IPv6 ULA and IPv6 link-local addresses. Unknown interfaces fail closed;
+`Forwarded` and `X-Forwarded-For` do not grant access. Keep public traffic directly
+forwarded to this listener: a reverse proxy that replaces the source with a LAN
+address would need its own equivalent administration restriction.
 The server separates administrator sessions, terminal device tokens and SIP account
 credentials. Each credential grants only its intended access. Browser requests
 also pass address and origin checks. Optional HTTPS protects administration traffic.
@@ -325,8 +334,9 @@ Environment=ZMALA_HTTPS_PORT=8443
 
 Make the key readable only by the service user, reload systemd and restart the
 service. Open `https://<server-address>:8443/`; the HTTPS and HTTP ports differ.
-With HTTPS configured, remote HTTP administration is rejected, while local
-administration and authenticated terminal HTTP traffic remain available.
+Administration requires the server's local network on both HTTP and HTTPS.
+With HTTPS configured, non-loopback HTTP administration is also rejected;
+authenticated terminal HTTP traffic remains available only outside secure relay mode.
 SIP/RTP remains unencrypted.
 
 ### Password recovery
@@ -347,7 +357,7 @@ different accounts can call when they share a group. Membership is symmetric,
 not transitive. Contacts are sorted by display name and use account portraits;
 terminals do not override those names or ordering.
 
-Accounts can be phones or terminals. Terminal enrollment has a stable device ID
+Accounts have exactly one type: **App** or **Terminal**. Schema 7 migrates legacy `linphone` accounts to `app`, preserving their SIP credentials and adding independent app enrollment. Type conversion replaces the device ID, token and SIP password; personal details and groups remain. Terminal enrollment has a stable device ID
 and token distinct from SIP identity. On Terminals, associating a device with an
 occupied terminal account swaps device associations: serial, token, device
 settings and console history follow the device; SIP credentials, names, pictures
@@ -380,6 +390,8 @@ Reachable phones receive server-generated SIP MESSAGE notifications over their
 registration flow. SIP success means accepted, not read; there is no offline push
 service. Failed deliveries retry at most once/minute, with pending work checked
 every five seconds and on registration/recovery. Terminal recipients use polling.
+The administration page distinguishes acknowledgement from reading and notes that
+the ZmalaPhone preview does not yet display callback notifications.
 
 Callbacks defaults to email after one hour and removal after four hours, both
 from creation; fractional hours are supported and removal follows email.
@@ -442,10 +454,48 @@ targets and accepted port-zero streams release sockets. In-dialog INVITE needs
 an SDP offer (488 otherwise); overlapping negotiations return 491. BUNDLE/ICE
 is unsupported. Closed dialogs cannot be revived by pending asynchronous work.
 
-For a LAN phone client use the reachable server, shared SIP domain, its account
-credentials, video enabled, no media encryption and no ICE/STUN. Enable H.264
+For ZmalaPhone, download the App account server QR and scan it in the app.
+`GET /api/app/config` authenticates with that app bearer token, returns only its
+identity and permitted contacts, and excludes Pi settings and other account secrets.
+App tokens cannot use terminal APIs. The app supports LAN and secure relay calls with Firebase incoming alerts; see [Android implementation](android.md). Legacy SIP clients keep
+their migrated credentials; LAN calling uses video, no media encryption and no ICE/STUN. Enable H.264
 for Pi calls. Video targets are settings, not delivered-frame guarantees;
 the relay does not reduce the terminal's camera/codec workload.
+
+## ZmalaPhone push sender
+
+`app-push.js` uses FCM HTTP v1 with an OAuth JWT scoped to Firebase Messaging.
+Install a dedicated service-account key outside the release and server data,
+owned by root and readable only by the server service group (0640). The dedicated
+`push-sender@YOUR_PROJECT_ID.iam.gserviceaccount.com` account has the Firebase Cloud
+Messaging API Admin role. Set `ZMALA_FCM_CREDENTIALS` to its absolute JSON path in
+a systemd service drop-in and restart when no call is active. On this Pi the path
+is `/etc/zmalacall-server/fcm-sender.json` and the drop-in is
+`/etc/systemd/system/zmalacall-server.service.d/firebase.conf`. The key is never
+included in an APK, repository, installer or exported application backup. A new
+installation needs its own private sender configuration. Without this setting,
+push is disabled and foreground SIP remains available. Enable Firebase Cloud
+Messaging API in the matching Firebase project; phone and Pi require internet.
+
+`POST /api/app/push` accepts the current App bearer's token or null to revoke it.
+The server retains one destination per enrollment in private `app-push.json`,
+separate from exported backups. Device replacement/type conversion invalidates
+old enrollment bindings; stale registrations expire after 30 days and FCM
+UNREGISTERED responses remove their destination. `POST /api/app/call/decline`
+cancels only a waiting call addressed to that bearer. Administrators and Terminal
+bearers cannot use these App APIs as another device.
+
+`app-calls.js` holds authenticated, permitted INVITEs until fresh registration,
+without allocating relay media. Waiting and active calls share the 24-call limit
+and one-call-per-participant policy. The wait is bounded to 60 seconds; failure,
+CANCEL, recipient decline, revocation and expiry invalidate it. Restore refuses
+pending calls. Fresh registration rechecks caller credentials, App enrollment and
+current permission before forwarding. Signed high-priority data messages contain
+no SIP password or caller display name. Cancellation carries the same enrollment
+proof. Live contact availability includes current push-eligible App accounts even
+without a live SIP registration; green means callable, not guaranteed delivery.
+After the alert, the app connects through the enrolled server's call transport:
+LAN HTTP/SIP/RTP or publicly reachable HTTPS/SIP TLS/TURN TLS with SRTP.
 
 ## Persistence and backup
 
@@ -600,7 +650,7 @@ contribute to server coverage even though the file is outside `zmala_server/`.
 
 ## Secure calls when a terminal network blocks UDP
 
-Secure relay mode is an explicit deployment choice for all terminal accounts.
+Secure relay mode is an explicit deployment choice for all Terminal and App accounts.
 The default remains the existing LAN SIP/UDP relay. Secure mode uses HTTPS for
 configuration, SIP over TLS, and endpoint ICE/SRTP through coturn over TLS. It
 keeps SIP Digest authentication and signed caller proofs. The signalling server
@@ -608,13 +658,47 @@ can read the SDES media keys; this is not end-to-end encryption against the serv
 Plain SIP phones must support this secure ICE/SRTP policy to join this deployment.
 There is no silent downgrade and no automatic retry of a failed call over plaintext.
 
-Provide three reachable TLS endpoints on TCP 443: configuration, SIP and TURN.
-The tested topology uses separate public IPs for these endpoints. Three DNS names
+Provide three reachable TLS endpoints: configuration, SIP and TURN. SIP and TURN
+default to public TCP 443. The original tested topology uses separate public IPs
+for these endpoints. Three DNS names
 on one IP do not by themselves provide three listeners on port 443. TLS/SNI
 multiplexing is not qualified. A normal HTTP reverse proxy cannot proxy SIP or
 TURN; use TCP forwarding without terminating SIP/TURN TLS. These connections also
 need working DNS and a correct system clock. A firewall that permits only browser
 HTTPS through a proxy can still block SIP/TURN on port 443.
+
+For a home server with one public IP and one hostname, use HTTPS on TCP 443,
+SIP TLS on TCP 5061 and TURN TLS on TCP 5349. Set `sip_public_port: 5061` and
+`turn_public_port: 5349` in the policy below, and set coturn's `tls-listening-port`
+to 5349. The defaults remain 443 for existing deployments. Client networks must
+allow outbound TCP to the selected ports; a network allowing only port 443 still
+needs the original separate-endpoint deployment. Configure the router to forward
+443 to the Pi's 8443, 5061 to 5061, 5349 to 5349, and the selected coturn UDP
+relay range to the Pi. Reserve the Pi's wired LAN address in DHCP. Port 80 can
+be forwarded to an ACME challenge responder for certificate issuance/renewal.
+Use the same trusted hostname certificate for all three TLS services. All client
+connections are outbound; the phone and terminal routers need no port forwarding.
+
+One reference Pi deployment uses a wired DHCP reservation and relay UDP ports
+`30000–30199`. A router DDNS updater maintains its public A record. In that deployment, `zmala-turn-address.timer`
+checks the A record every five minutes and updates coturn's external-address
+mapping and public peer allowlist after an address change. DNS failure leaves
+the existing mapping intact. This is site deployment configuration, not part of
+an account backup; preserve it when replacing the server. An IP change can
+interrupt existing calls while DNS and the relay converge.
+
+Certbot's standalone HTTP challenge owns port 80 only during issuance or renewal.
+`certbot.timer` renews the certificate; its `zmala-certificates` deploy hook copies
+the renewed chain/key into the server and coturn service directories with group
+read access and restarts both listeners. That restart briefly interrupts service,
+including any current call. Keys and the TURN signing secret stay private on the
+Pi. Inspect `systemctl list-timers`, the Certbot journal and certificate expiry as
+part of deployment maintenance. The administration URL is
+`https://YOUR_PUBLIC_HOSTNAME/`, accessible only while connected to the server's LAN
+(use the actual receiving interface subnet). External requests receive HTTP 403,
+including login and requests with valid administrator sessions. Remote phone and
+terminal APIs still use the same HTTPS hostname. The previous HTTP administration URL is refused in
+secure mode. Existing devices need an HTTPS enrollment address.
 
 On the server, create a private JSON policy file readable by the service account:
 
@@ -649,7 +733,7 @@ to 5061. The Host check accepts the policy's public HTTPS origin. SIP Via and
 Record-Route advertise the public TLS endpoint, not the internal listener port.
 Run `systemctl daemon-reload` and restart `zmalacall-server`. Invalid policy or
 missing certificates stops startup. HTTP remains available only for health/readiness
-checks in secure mode. Use the HTTPS address for administration and print new server
+checks in secure mode. Use the HTTPS address from the server LAN for administration and print new server
 QR codes: existing HTTP enrollment is not automatically changed.
 
 Configure an Internet-reachable coturn host with its own certificate and key:
@@ -701,3 +785,15 @@ Secure mode validates every active SDP media section for ICE credentials and
 supported SRTP key sizes, then preserves it. It creates no legacy UDP relay
 sockets. LAN mode retains its source-address pinning and SDP rewrite unchanged.
 No mixed legacy/secure media gateway or transcoding is implemented.
+
+
+On 19 October 2026 the LAN administration restriction was deployed to a test Pi server.
+S-HLT-033 passed using the OnePlus over cellular data with Wi-Fi disabled:
+admin HTML, JavaScript, authentication status/login and the admin API returned
+403 even with a valid session and forged forwarding headers. The enrolled app
+configuration and health endpoints returned 200. LAN administration returned
+200. The phone's starting Wi-Fi setting was restored. The first live attempt
+was interrupted by USB disconnection and is not counted as a pass. A subsequent
+idle service restart expired the diagnostic sessions, including that interrupted
+attempt. The server suite passed 199 tests with four opt-in/hardware skips;
+unit policy checks also cover remote app/terminal configuration and portraits.

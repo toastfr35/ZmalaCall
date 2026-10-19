@@ -94,9 +94,9 @@ test('SIP routing enforces groups and authenticates every terminal recipient', a
       emails: ['fixture@example.test'],
       id: 'alice',
       name: 'Alice',
-      type: 'linphone',
+      type: 'app',
     });
-    s.createAccount({ emails: ['fixture@example.test'], id: 'bob', name: 'Bob', type: 'linphone' });
+    s.createAccount({ emails: ['fixture@example.test'], id: 'bob', name: 'Bob', type: 'app' });
     s.createAccount({
       emails: ['fixture@example.test'],
       id: 'lounge',
@@ -136,7 +136,13 @@ test('SIP routing enforces groups and authenticates every terminal recipient', a
     await server.request(request('bob'), peer);
     const phone = sent.pop();
     assert.equal(phone.method, 'INVITE');
-    assert.equal(phone.headers['x-family-auth'], undefined);
+    assert.equal(
+      phone.headers['x-family-auth'],
+      crypto
+        .createHmac('sha256', s.value.users.bob.device_token)
+        .update('test-bob:alice')
+        .digest('hex'),
+    );
     await server.request(request('lounge'), peer);
     assert.equal(sent.pop().status, 486);
     server.dialogs.clear();

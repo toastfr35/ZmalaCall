@@ -16,7 +16,7 @@ from requirement_ids import ITEM, category, document_prefix
 
 FIELDS = {'test', 'requirements', 'environment', 'plan', 'pass'}
 ENVIRONMENTS = {'portable', 'display', 'native-sdk', 'native-display', 'hardware', 'linux-root'}
-TEST_SUFFIXES = {'.py', '.js', '.cjs', '.c', '.cpp', '.sh', '.ps1'}
+TEST_SUFFIXES = {'.py', '.js', '.cjs', '.c', '.cpp', '.sh', '.ps1', '.kt', '.java'}
 
 
 def read_plan(path: Path) -> dict:
@@ -41,7 +41,7 @@ def read_plan(path: Path) -> dict:
     missing = FIELDS - fields.keys()
     if missing:
         raise ValueError(f'{path}: missing leading test-plan fields: {sorted(missing)}')
-    if not re.fullmatch(r'[ST]-(?:LLT|HLT)-\d{3}', fields['test']):
+    if not re.fullmatch(r'[STA]-(?:LLT|HLT)-\d{3}', fields['test']):
         raise ValueError(f'{path}: invalid stable test ID')
     if not re.fullmatch(ITEM + '(?:, ' + ITEM + ')*', fields['requirements']):
         raise ValueError(f'{path}: malformed requirement list')
@@ -59,7 +59,7 @@ def read_plan(path: Path) -> dict:
 def audit_tests(root: Path, records: dict) -> dict:
     """Reject orphan IDs/levels and missing plans; expose untested requirements."""
     errors, tests, by_requirement = [], {}, defaultdict(list)
-    for component, prefix in (('server', 'S'), ('terminal', 'T')):
+    for component, prefix in (('server', 'S'), ('terminal', 'T'), ('android', 'A')):
         for level, reqlevel in (('LLT', 'LLR'), ('HLT', 'HLR')):
             directory = root / 'tests' / component / level
             for path in sorted(directory.rglob('*')):
@@ -78,7 +78,7 @@ def audit_tests(root: Path, records: dict) -> dict:
                     for requirement in plan['requirements']:
                         if requirement not in records:
                             raise ValueError(f'{name}: unknown requirement {requirement}')
-                        expected = reqlevel + '-' + ('SRV' if prefix == 'S' else 'TERM')
+                        expected = reqlevel + '-' + {'S': 'SRV', 'T': 'TERM', 'A': 'AND'}[prefix]
                         if category(records[requirement]['prefix']) != expected:
                             raise ValueError(f'{name}: {level} must trace to {expected}, not {requirement}')
                         references = [ref.get('path') for ref in records[requirement].get('references', [])]
@@ -97,9 +97,9 @@ def audit_tests(root: Path, records: dict) -> dict:
                     test['path'] == name and uid in test['requirements'] for test in tests.values()):
                 errors.append(f'{uid}: test reference has no reciprocal requirement trace: {name}')
     # Test sources cannot drift back into implementation directories.
-    for folder in ('zmala_server', 'zmala_terminal', 'build_tools'):
+    for folder in ('zmala_server', 'zmala_terminal', 'zmala_phone', 'build_tools'):
         for path in (root / folder).rglob('*'):
-            if any(part in {'node_modules', 'runtime', 'tmp', 'dist', '__pycache__', 'data', 'framing-runtime', 'turn-runtime'}
+            if any(part in {'node_modules', 'runtime', 'tmp', 'dist', '__pycache__', 'data', 'framing-runtime', 'turn-runtime', 'build', '.gradle'}
                    for part in path.relative_to(root).parts):
                 continue
             if path.is_file() and (path.name.startswith(('test_', 'test-', 'probe-'))
@@ -111,8 +111,8 @@ def audit_tests(root: Path, records: dict) -> dict:
                 errors.append(f'Test/probe outside tests/: {path.relative_to(root).as_posix()}')
     missing = {prefix: sorted(uid for uid, record in records.items()
                              if category(record['prefix']) == prefix and uid not in by_requirement)
-               for prefix in ('HLR-SRV', 'LLR-SRV', 'HLR-TERM', 'LLR-TERM')}
-    for prefix in ('LLR-SRV', 'LLR-TERM', 'HLR-SRV', 'HLR-TERM'):
+               for prefix in ('HLR-SRV', 'LLR-SRV', 'HLR-TERM', 'LLR-TERM', 'HLR-AND', 'LLR-AND')}
+    for prefix in missing:
         for uid in missing[prefix]:
             level = 'LLT' if prefix.startswith('LLR') else 'HLT'
             errors.append(f'{uid}: no mapped {level} verifying this {prefix[:3]}')

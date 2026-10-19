@@ -4,8 +4,11 @@ This technical guide is for developers and maintainers. It describes component
 boundaries, networking, persistent state, build tooling and verification.
 [Server implementation](server.md) covers the Node services and deployment;
 [terminal implementation](terminal.md) covers state ownership, native media and
-Pi hardware integration. Product requirements exist only in
+Pi hardware integration. [Android implementation](android.md) covers ZmalaPhone. Product requirements exist only in
 [Doorstop records](../requirements/). [astra.md](../astra.md) tracks engineering gaps.
+
+The Pi and Android SDK adapters share the bounded TURN TLS write helper under
+`zmala_terminal/common/native/`; each adapter is pinned to its SDK's native ABI.
 
 The separate Word guides are intended for installers, administrators and callers.
 Their editable originals live in `docs/`; downloads place them beside the installer
@@ -31,6 +34,7 @@ calls. Compatible SIP phone clients can participate on the same LAN.
 | --- | --- |
 | Server | Raspberry Pi OS Lite 64-bit, Debian 13 Trixie; installer accepts Pi 3 Model B/B+ and Pi 4 Model B |
 | TV terminal | Raspberry Pi 4 Model B, the same OS, Nuroum C20, Presenter+, HDMI TV; Argon ONE Pi 4 V2 fan integration |
+| Android app | ZmalaPhone LAN or encrypted relay video with Firebase incoming alerts, Android 9+, Linphone SDK 5.5.32 |
 | Desktop terminal | 64-bit Windows with Tk/Liblinphone and server-selected camera/audio devices |
 | Installers | Windows executables deploying over Ethernet SSH; graphical and headless modes |
 
@@ -44,7 +48,7 @@ camera. Sony BRAVIA guidance exists, but physical BRAVIA operation is unverified
 | Service | Default listener |
 | --- | --- |
 | Administration and terminal API | TCP 8080, all IPv4 interfaces |
-| Optional HTTPS administration | TCP 8443 when certificates are configured |
+| Optional HTTPS administration | TCP 8443 when certificates are configured; administration restricted to the server LAN |
 | SIP | UDP/TCP 5060, all IPv4 interfaces |
 | Relayed RTP/RTCP | UDP 20000–20199 |
 | Installed Pi SSH | TCP 22, Ethernet only; guard also covers configured sshd ports and IPv6 |
@@ -54,7 +58,7 @@ such as `zmalaserver.local` depends on local name resolution; use its Ethernet I
 when necessary. Loopback on a phone or terminal refers to that device, not the
 server. One account has one registration and one call at a time.
 
-The server QR assigns a terminal's device ID and token. The ID is independent of
+Server QR codes assign a device ID and token. App codes carry `account_type: app` and use a separate app configuration API. App and Terminal are exclusive account types; converting between them rotates enrollment and SIP credentials. A terminal QR assigns a terminal's device ID and token. The ID is independent of
 the Pi hostname and hardware serial. Account association can change without
 re-enrollment. Never run two terminals with the same enrollment concurrently.
 
@@ -78,8 +82,8 @@ dependencies; ordinary calls do not download code or models.
 | `zmala_terminal/windows/` | Windows native loading, rendering, WLAN and process adapters |
 | `zmala_terminal/linux/` | Pi adapters, native media, Bluetooth, CEC and peripheral control |
 | `build_tools/` | Packaging, installers, launchers, source checks and hardware probes |
-| `requirements/` | Doorstop product (`PROD`), themed server (`*-SRV-*`) and Pi terminal (`*-TERM-*`) records |
-| `docs/` | Three implementation guides and four Word user guides |
+| `requirements/` | Doorstop product (`PROD`), themed server (`*-SRV-*`), Pi terminal (`*-TERM-*`) and Android (`*-AND-*`) records |
+| `docs/` | Four implementation guides and four Word user guides |
 
 Source launches keep state in component `data/` directories. Pi installations
 link those paths to private `/var/lib/zmalacall` or `/var/lib/zmalacall-server`;
@@ -302,7 +306,7 @@ PROD  Product specification
     └── LLR-TERM-VIDEO  Terminal video implementation contracts
 ```
 
-IDs use `<HLR|LLR>-<SRV|TERM>-<GROUP>-NNN`, for example
+IDs use `<HLR|LLR>-<SRV|TERM|AND>-<GROUP>-NNN`, for example
 `LLR-TERM-VIDEO-012`. The three-digit number is unique across **both HLRs and
 LLRs in the same component/theme**: `HLR-TERM-VIDEO-012` cannot coexist with
 `LLR-TERM-VIDEO-012`. Other component/theme groups have independent sequences.
@@ -587,3 +591,5 @@ no missing code anchors or HLR/LLR test-plan links. These results do not claim
 100% execution coverage or public deployment qualification. Physical long-call
 quality, institutional HTTP proxies, and public endpoint provisioning remain
 separate deployment checks.
+
+Android tests use `A-LLT-NNN` and `A-HLT-NNN` IDs and the same leading plan fields. `make test-android` runs JVM tests and Android lint; `make test-android-device` explicitly runs native/display checks on the device selected by `ANDROID_SERIAL`. Android requirements are Experimental while physical media and background-delivery qualification remain device-specific.

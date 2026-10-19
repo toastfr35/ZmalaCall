@@ -1,14 +1,15 @@
 // @test T-LLT-078
 // @requirements LLR-TERM-COM-010
 // @environment native-sdk
-// @plan Compile the original and corrected pinned SDK parser. Feed ChannelData with every padding width and coalesced STUN frames at all 3804 chunk sizes, including incomplete headers. Compare each output byte and length. Require the original padded-length assertion to fail as a negative control. Run through build_tools/linux/build-turn.py.
-// @pass The corrected parser preserves every frame and omits alignment padding; the original reproduces the known defect.
+// @plan Compile the original and corrected pinned SDK parser. Feed ChannelData with every padding width and coalesced STUN frames at all 3804 chunk sizes, including incomplete headers. Compare each output byte and length. Require the original padded-length assertion to fail as a negative control. Run through build_tools/linux/build-turn.py. Inject short writes, alternating WANT_READ/WANT_WRITE, a stalled socket, peer closure and poll failure; assert exact output bytes, unchanged retry buffer/length and the three-second deadline.
+// @pass The corrected parser preserves every frame and omits alignment padding; the original reproduces the known defect. Write retries preserve every byte and buffer identity; error/timeout paths fail within the bound.
 #include "turn_tcp.h"
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include "../../support/native/turn-write-cases.h"
 using namespace ms2::turn;
 using Bytes = std::vector<uint8_t>;
 
@@ -45,5 +46,6 @@ int main(int argc, char **argv) {
     };
     if (argc == 2) verify(std::strtoul(argv[1], nullptr, 10));
     else for (size_t chunk = 1; chunk <= wire.size(); ++chunk) verify(chunk);
+    assert(verifyTurnWrites());
     std::cout << "TURN framing: " << wire.size() << " chunk sizes passed\n";
 }

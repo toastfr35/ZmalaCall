@@ -15,6 +15,8 @@ module.exports = [
       'tests/coverage/**',
       'build_tools/dist/**',
       'tmp/**',
+      'zmala_phone/**/build/**',
+      'zmala_phone/.gradle/**',
       'requirements/output/**',
       'zmala_server/web/admin.js', // Generated from the separately linted modules.
       'zmala_server/vendor/**', // Upstream source: retain its formatting and provenance.

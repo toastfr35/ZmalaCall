@@ -250,7 +250,7 @@ export function renderCallbacks() {
   policy.append(policyBody);
   const p = panel(
       'Callback requests',
-      'Linphone notifications are sent when the contact reconnects. Calls always start manually.',
+      'Calls always start manually. The ZmalaPhone preview does not yet display callback notifications.',
     ),
     list = el('div', null, 'registration-list');
   for (const request of state.model.callbacks || []) {
@@ -271,9 +271,9 @@ export function renderCallbacks() {
           state.model.users[request.to]?.type === 'terminal'
             ? 'Shown on the receiving terminal when both people are available.'
             : request.notified_at
-              ? 'Linphone accepted the chat message.'
+              ? 'The calling app acknowledged the notification.'
               : registered(request.to)
-                ? 'Waiting for Linphone to accept the chat message.'
+                ? 'Waiting for the calling app to acknowledge the notification.'
                 : 'Waiting for the phone to reconnect.',
         ),
         el('small', callbackEmailStatus(request)),

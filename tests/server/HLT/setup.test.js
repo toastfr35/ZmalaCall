@@ -1,7 +1,7 @@
 // @test S-HLT-018
 // @requirements HLR-SRV-ENROLL-001
 // @environment portable
-// @plan Generate Wi-Fi/server enrollment PDFs through authenticated HTTP and inspect payloads; assert escaping, valid terminal-only identity and absence of persisted Wi-Fi secrets.
+// @plan Generate Wi-Fi/server enrollment PDFs through authenticated HTTP and inspect payloads; assert escaping, valid enrolled account identity and absence of persisted Wi-Fi secrets.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -12,7 +12,7 @@ const test = require('node:test'),
   path = require('node:path');
 const { serverPayload } = require('../../../zmala_server/setup-pdf');
 
-test('QR PDF endpoints require admin, target terminal accounts and do not persist Wi-Fi secrets', async () => {
+test('QR PDF endpoints require admin, target enrolled accounts and do not persist Wi-Fi secrets', async () => {
   const fixture = await httpFixture();
   const { store, base, directory: dir } = fixture;
   async function req(route, method = 'GET', value, token = store.value.admin_token) {
@@ -38,7 +38,7 @@ test('QR PDF endpoints require admin, target terminal accounts and do not persis
       ).status,
       401,
     );
-    assert.equal((await req('/api/setup/server.pdf?id=phone1')).status, 400);
+    assert.equal((await req('/api/setup/server.pdf?id=phone1')).status, 200);
     const r = await req('/api/setup/server.pdf?id=term1');
     assert.equal(r.status, 200);
     assert.equal(r.headers.get('content-type'), 'application/pdf');

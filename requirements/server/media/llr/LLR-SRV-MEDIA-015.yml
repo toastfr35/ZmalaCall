@@ -28,6 +28,8 @@ text: When a secure deployment policy is present, the server shall accept SIP ov
   relay sockets. It shall issue per-account TURN credentials with an eight-hour expiry from the current
   hour. It shall refresh these credentials in configuration responses and shall not expose the shared
   signing secret. Invalid deployment settings shall prevent startup.
+  SIP and TURN public ports shall be independently configurable, defaulting to 443, so a single public IP can expose HTTPS, SIP TLS and TURN TLS on distinct ports.
 verification: Use fixed-clock unit tests for credentials, expiry and account separation. Reject malformed
   deployment settings and insecure SDP; verify unchanged secure SDP without UDP socket allocation.
   Test the HTTPS boundary and advertised routing in the network HLT.
+  Check default and configured public ports, including invalid port rejection.

@@ -19,7 +19,7 @@ test('400 pending requests allow duplicates but refuse a new pair until capacity
   const { storeFixture } = require('../../support/server/unit-fixture');
   const store = storeFixture(t);
   for (let i = 1; i <= 19; i++)
-    for (const type of ['terminal', 'linphone']) {
+    for (const type of ['terminal', 'app']) {
       store.createAccount({
         id: `${type}${i}`,
         type,

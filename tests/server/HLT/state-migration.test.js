@@ -24,7 +24,7 @@ test('older state migrates before HTTP configuration is served and stays stable 
     legacy.users.term1.device_id = 'ZM-fixture-kept';
     legacy.users.term1.device_token = 'fixture-device-token';
     legacy.users.term1.password = 'fixture-sip-password';
-    legacy.users.visitor = { name: 'Visitor', type: 'linphone', password: 'fixture-visitor' };
+    legacy.users.visitor = { name: 'Visitor', type: 'app', password: 'fixture-visitor' };
     delete legacy.users.phone1.emails;
     legacy.permissions = {
       term1: { phone1: true, visitor: true },
@@ -51,7 +51,7 @@ test('older state migrates before HTTP configuration is served and stays stable 
     assert.equal(config.contacts.find((contact) => contact.id === 'visitor').can_call, false);
     await application.flush();
     const restored = new Store(directory);
-    assert.equal(restored.value.schema_version, 6);
+    assert.equal(restored.value.schema_version, 7);
     assert.equal(restored.value.configuration_version, config.configuration_version);
     assert.deepEqual(config.callbacks, []);
     assert.ok(config.contacts.every((contact) => contact.online === false));

@@ -1,0 +1,32 @@
+active: true
+area: QR enrollment and configuration
+derived: false
+header: Bounded enrollment and private storage
+level: 2
+links:
+- HLR-AND-ENROLL-001: null
+normative: true
+ref: ''
+references:
+- path: zmala_phone/app/src/main/res/xml/network_security_config.xml
+  type: file
+- path: zmala_phone/app/src/main/AndroidManifest.xml
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/Enrollment.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/ServerApi.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
+  type: file
+- path: tests/android/LLT/unit/EnrollmentTest.java
+  type: file
+- path: tests/android/LLT/clear_storage.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The app shall validate QR type, version, App discriminator, device ID and token; bind received configuration
+  to that identity; bound HTTP response sizes and timeouts; reject redirects, malformed secure-call
+  configurations and secure mode over HTTP enrollment; and store only enrollment in application-private no-backup storage. The app shall rely on Android Clear storage / Clear app data to remove
+  enrollment and terminate its process; reopening shall return to QR setup.
+verification: Test malformed or mismatched QR/configuration and redirects; exercise enrollment persistence,
+  Android app-data clearing and return to QR setup. Inspect manifest and no-backup storage policy.

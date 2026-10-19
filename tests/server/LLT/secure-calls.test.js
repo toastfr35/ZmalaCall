@@ -1,7 +1,7 @@
 // @test S-LLT-039
 // @requirements LLR-SRV-MEDIA-015
 // @environment portable
-// @plan Use temporary certificate/secret files and a fixed clock. Check TLS-only listeners, signed expiring per-account credentials, rotation, invalid deployment rejection and unchanged encrypted ICE SDP. Reject plaintext, missing keys/ICE, unsupported sections and invalid ports; ensure no UDP sockets are allocated.
+// @plan Use temporary certificate/secret files and a fixed clock. Check TLS-only listeners with default 443 and configured 5061/5349 public ports, signed expiring per-account credentials, rotation, invalid deployment rejection and unchanged encrypted ICE SDP. Reject plaintext, missing keys/ICE, unsupported sections and invalid ports; ensure no UDP sockets are allocated.
 // @pass Every assertion passes. File fixtures do not qualify TLS handshakes; the network HLT performs those checks.
 'use strict';
 const { test } = require('node:test');
@@ -42,6 +42,10 @@ test('secure deployment validates endpoints and issues stable bounded credential
   assert.equal(policy.listener().port, 443);
   assert.equal(policy.listener().tls_port, 5061);
   assert.equal(policy.proxy(), 'sip:sip.example.org:443;transport=tls');
+  const sharedIp = new SecureCalls({ ...value, sip_public_port: 5061, turn_public_port: 5349 });
+  assert.equal(sharedIp.proxy(), 'sip:sip.example.org:5061;transport=tls');
+  assert.equal(sharedIp.listener().port, 5061);
+  assert.equal(sharedIp.configuration('a', 3600000).turn_server, 'turn.example.org:5349');
   assert.ok(!JSON.stringify(credential).includes('a'.repeat(64)));
   for (const invalid of [
     { sip_host: 'bad;transport=udp' },
@@ -53,6 +57,10 @@ test('secure deployment validates endpoints and issues stable bounded credential
     { sip_listen_port: 0 },
     { sip_listen_port: 65536 },
     { sip_listen_port: 1.5 },
+    { sip_public_port: 0 },
+    { sip_public_port: '5061' },
+    { turn_public_port: 65536 },
+    { turn_public_port: 1.5 },
   ])
     assert.throws(() => new SecureCalls({ ...value, ...invalid }));
   fs.writeFileSync(file, 'short');

@@ -70,6 +70,7 @@ function fixture() {
     };
   const bootstrap = { server_url: 'http://pi:8080', device_id: 'serial', device_token: 'secret' };
   const store = {
+    enrolledAccount: () => ({ type: 'terminal' }),
     value: {
       configuration_version: 7,
       users: {

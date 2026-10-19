@@ -34,10 +34,12 @@ export interface TerminalAccount extends AccountDetails {
   auto_answer: boolean;
   auto_answer_seconds: number;
 }
-export interface LinphoneAccount extends AccountDetails {
-  type: 'linphone';
+export interface AppAccount extends AccountDetails {
+  type: 'app';
+  device_id: string;
+  device_token: string;
 }
-export type Account = TerminalAccount | LinphoneAccount;
+export type Account = TerminalAccount | AppAccount;
 export interface TerminalProfile {
   display_name: string;
   language: string;
@@ -83,6 +85,7 @@ export interface ServerState {
   };
 }
 export interface Enrollment {
+  account_type?: 'terminal' | 'app';
   server_url: string;
   device_id: string;
   device_token: string;

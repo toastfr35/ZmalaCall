@@ -71,11 +71,41 @@ class Store extends AccountStore {
     const account = this.value.users[id];
     return account.type === 'terminal' ? account : null;
   }
+  // @llr LLR-SRV-APP-003
+  /** @param {unknown} id @returns {import('./types/contracts').Account | null} */
+  enrolledAccount(id) {
+    return typeof id === 'string' && own(this.value.users, id) ? this.value.users[id] : null;
+  }
+  // @llr LLR-SRV-APP-003
+  /** App views contain no Pi controls or other accounts' credentials. @param {string} id */
+  appConfig(id) {
+    const user = this.enrolledAccount(id);
+    if (!user || user.type !== 'app') throw Error('Choose an app account.');
+    const v = this.value;
+    return {
+      schema_version: 1,
+      configuration_version: v.configuration_version,
+      account_type: 'app',
+      device_id: user.device_id,
+      display_name: user.name,
+      call_auth_key: user.device_token,
+      sip: {
+        username: id,
+        password: user.password,
+        domain: v.host,
+        proxy: this.secureCalls?.proxy() || `sip:${v.host}:${v.sip_port};transport=udp`,
+      },
+      ...(this.secureCalls ? { secure_calls: this.secureCalls.configuration(id) } : {}),
+      contacts: this.buildContacts(id)
+        .filter((c) => c.can_call || c.can_receive)
+        .map((c) => ({ ...c, sip_uri: `sip:${c.id}@${v.host}` })),
+    };
+  }
   /** @param {string | undefined} token */
   // @llr LLR-SRV-AUTH-020
   deviceAccount(token) {
     return token
-      ? Object.keys(this.value.users).find((id) => this.terminalAccount(id)?.device_token === token)
+      ? Object.keys(this.value.users).find((id) => this.enrolledAccount(id)?.device_token === token)
       : undefined;
   }
   // @llr LLR-SRV-DIR-030
@@ -218,8 +248,9 @@ class Store extends AccountStore {
   /** @param {string | null} [id] @param {boolean} [lan]
    * @returns {import('./types/contracts').Enrollment} */
   bootstrap(id = this.value.local_terminal_id, lan = false) {
-    const u = this.terminalAccount(id);
+    const u = this.enrolledAccount(id);
     return {
+      ...(u?.type === 'app' ? { account_type: /** @type {const} */ ('app') } : {}),
       server_url:
         this.secureCalls?.httpsUrl ||
         `http://${lan ? this.value.host : '127.0.0.1'}:${this.value.http_port}`,

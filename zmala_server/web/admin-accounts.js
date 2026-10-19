@@ -49,7 +49,7 @@ export function accountRows() {
     const type = el('td');
     type.append(
       badge(
-        u.type === 'terminal' ? 'Terminal' : 'Linphone',
+        u.type === 'terminal' ? 'Terminal' : 'App',
         u.type === 'terminal' ? 'accent' : 'neutral',
       ),
     );
@@ -108,7 +108,7 @@ export function renderAccounts() {
   filter.setAttribute('aria-label', 'Filter account type');
   for (const [value, text] of [
     ['all', 'All account types'],
-    ['linphone', 'Linphone'],
+    ['app', 'App'],
     ['terminal', 'Terminal'],
   ]) {
     const o = el('option', text);
@@ -163,7 +163,7 @@ export function openAccount(id = '') {
   const u = state.model.users[id];
   $('account-form').reset();
   state.accountPhoto = u?.photo || '';
-  $('account-picture-preview').replaceChildren(avatar(u || { name: '?', type: 'linphone' }));
+  $('account-picture-preview').replaceChildren(avatar(u || { name: '?', type: 'app' }));
   $('edit-remove-photo').disabled = !state.accountPhoto;
   message('account-error', '');
   $('account-title').textContent = u ? 'Edit account' : 'New account';
@@ -171,7 +171,7 @@ export function openAccount(id = '') {
   $('edit-id').value = id;
   $('edit-name').value = u?.name || '';
   $('edit-emails').value = (u?.emails || []).join(', ');
-  $('edit-type').value = u?.type || 'linphone';
+  $('edit-type').value = u?.type || 'app';
   $('edit-password').placeholder = u ? 'Leave blank to keep current' : 'Leave blank to generate';
   $('password-help').textContent = u
     ? 'Leave blank to keep the current password.'
@@ -303,7 +303,7 @@ export function renderConnection() {
   $('details-title').textContent = u.name;
   const container = $('details-content');
   container.replaceChildren(
-    badge(u.type === 'terminal' ? 'Terminal account' : 'Linphone account', 'accent'),
+    badge(u.type === 'terminal' ? 'Terminal account' : 'App account', 'accent'),
   );
   const list = el('div', null, 'credential-list');
   for (const [name, value, secret] of /** @type {const} */ ([
@@ -315,13 +315,11 @@ export function renderConnection() {
   ]))
     list.append(credential(name, value, secret));
   container.append(list);
-  if (u.type === 'linphone')
+  if (u.type === 'app')
     container.append(
       el(
         'p',
-        state.model.sip_proxy.includes('transport=tls')
-          ? 'This deployment uses TLS and TURN. Use a Zmala terminal enrolled with an HTTPS QR code. Manual phone provisioning is not supported in secure relay mode.'
-          : 'In Linphone, add a third-party SIP account. Use UDP, enable video, set media encryption to None, and disable ICE/STUN. Keep the phone on the same LAN as the server. Enable H.264 for Pi terminal calls.',
+        'ZmalaPhone preview supports LAN calling only, while the app is open. Install ZmalaPhone, choose Scan setup QR, and scan this account’s server QR code. This account belongs to an app; it cannot also be assigned to a Pi terminal.',
         'info-box',
       ),
     );
@@ -375,10 +373,7 @@ export function renderConnection() {
     );
     container.append(actions);
   }
-  if (u.type === 'terminal')
-    container.append(
-      actionButton('Download server QR PDF', () => serverPdf(id), 'primary', 'down'),
-    );
+  container.append(actionButton('Download server QR PDF', () => serverPdf(id), 'primary', 'down'));
 }
 /** @param {string} id */
 export function openConnection(id) {

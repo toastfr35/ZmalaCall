@@ -168,6 +168,7 @@ static void submit_access_unit(Codec *s, MSQueue *nals, uint32_t timestamp) {
     zmala_codec_submit(s, unit);
 }
 
+// @llr LLR-TERM-VIDEO-008
 static void decoder_process(MSFilter *f) {
     Codec *s = f->data;
     mblk_t *message;
@@ -178,7 +179,14 @@ static void decoder_process(MSFilter *f) {
         ms_queue_init(&nals);
         unsigned status = rfc3984_unpack2(s->rtp, message, &nals);
         if (status & Rfc3984FrameCorrupted) {
-            ms_queue_flush(&nals);
+            // An IDR may lose a slice while its separate SPS/PPS arrive intact.
+            // Preserve the received parameter NALs for recovery, but never send
+            // this damaged frame's slices to the decoder worker.
+            mblk_t *nal;
+            while ((nal = ms_queue_get(&nals))) {
+                if (nal->b_rptr < nal->b_wptr) remember_parameter_set(s, nal);
+                freemsg(nal);
+            }
             request_keyframe(f);
         } else if (status & Rfc3984FrameAvailable) submit_access_unit(s, &nals, timestamp);
         else ms_queue_flush(&nals);
@@ -207,7 +215,12 @@ static void decoder_process(MSFilter *f) {
         }
     }
     if (produced) ms_average_fps_activity(&s->fps, f->ticker->time, TRUE);
-    if (zmala_codec_failed(s)) request_keyframe(f);
+    /* A decoder can accept inter frames without an error while still waiting
+     * for its first usable SPS/PPS and IDR. ICE may have discarded the initial
+     * keyframe before the relay path was ready. Keep asking at the bounded PLI
+     * cadence until a picture is actually decoded, even on otherwise quiet ticks.
+     */
+    if (zmala_codec_failed(s) || !s->first_image) request_keyframe(f);
 }
 
 static int get_config(MSFilter *f, void *arg) {

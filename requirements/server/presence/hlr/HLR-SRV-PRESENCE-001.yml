@@ -1,8 +1,9 @@
 active: true
 area: Registration and availability
 derived: false
-header: |
-  Current client availability
+header: 'Current client availability
+
+  '
 level: 13.0
 links:
 - PROD001: 4fW6PPWrP16gAqSCbhixs6pGUTY3fOkFmKN-9QSRxFM=
@@ -15,7 +16,12 @@ references:
   type: file
 reviewed: null
 scope: Core
-text: |
-  The server shall accept authenticated client registrations and check their reachability. Calls and terminal availability responses shall use current registration and reachability state.
-verification: |
-  Register clients, interrupt their flow, restore it and replace a registration during an outstanding probe. Check availability without configuration edits.
+text: 'The server shall accept authenticated client registrations and check their reachability. Calls
+  and terminal availability responses shall use current registration and reachability state, or a current
+  push-enabled App enrollment for push-assisted reconnection.
+
+  '
+verification: 'Register clients, interrupt their flow, restore it and replace a registration during an
+  outstanding probe. Check availability without configuration edits.
+
+  '

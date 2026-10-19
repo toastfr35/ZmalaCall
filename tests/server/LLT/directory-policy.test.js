@@ -11,7 +11,7 @@ const { storeFixture } = require('../../support/server/unit-fixture');
 
 const phone = {
   id: 'fixture',
-  type: 'linphone',
+  type: 'app',
   name: 'Fixture',
   emails: ['fixture@example.test'],
 };

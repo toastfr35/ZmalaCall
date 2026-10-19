@@ -23,7 +23,7 @@ test('printed instructions match current English setup screens and explain priva
   });
   for (const [kind, prompt, privacy] of [
     ['wifi', 'Scan the Wi-Fi QR code', 'This code contains the Wi-Fi password.'],
-    ['server', 'Scan the server QR code', 'This code grants access to this terminal account.'],
+    ['server', 'Scan the server QR code', 'This code grants access to this account.'],
   ]) {
     text.length = 0;
     const pdf = await setupPdf({ kind, label: 'Fixture', payload: 'fixture' });

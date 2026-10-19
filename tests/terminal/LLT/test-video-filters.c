@@ -1,7 +1,7 @@
 // @test T-LLT-072
 // @requirements LLR-TERM-VIDEO-006, LLR-TERM-VIDEO-008
 // @environment native-sdk
-// @plan Exercise real H264 Annex-B parsing/RFC3984 packing, cached SPS/PPS recovery, frame coalescing and SDK filter methods with real queues and buffers. Stub decoder unpack statuses and event notifications to inject lost/corrupt/incomplete frames deterministically. Assert padded/chained input ownership, PLI rate limiting, newest-picture display, configuration validation and supported rate ladders without starting codecs or hardware. Inject a mismatched SDK encoder selection and assert registration refuses it.
+// @plan Exercise real H264 Annex-B parsing/RFC3984 packing, cached SPS/PPS recovery, frame coalescing and SDK filter methods with real queues and buffers. Stub decoder unpack statuses and event notifications to inject lost/corrupt/incomplete frames deterministically. Retain received SPS/PPS from a damaged frame without submitting its slices, then assert they precede the next intact access unit. Tick a decoder without frames or errors and require rate-limited PLI retries until its first decoded picture; check retries resume after notification reset. Assert padded/chained input ownership, newest-picture display, configuration validation and supported rate ladders without starting codecs or hardware. Inject a mismatched SDK encoder selection and assert registration refuses it.
 // @pass All byte, timestamp, queue, event and configuration assertions pass using the supported MediaStreamer SDK; no camera or encoder device is opened.
 #include "../../../zmala_terminal/linux/media/video/codec.h"
 #include <mediastreamer2/msinterfaces.h>
@@ -87,10 +87,16 @@ static void test_decoder_tick(MSFilter *f) {
     Codec *s=f->data; f->ticker->time=100; unpack_status=Rfc3984FrameCorrupted;
     ms_queue_put(f->inputs[0],bytes((const uint8_t *)"\x65",1)); decoder_process(f);
     assert(notification_count == 1 && notifications[0] == MS_VIDEO_DECODER_SEND_PLI);
+    ms_queue_put(f->inputs[0],bytes((const uint8_t *)"\x67\x42\x00\x1f",4)); decoder_process(f);
+    ms_queue_put(f->inputs[0],bytes((const uint8_t *)"\x68\xaa",2)); decoder_process(f);
+    assert(s->sps && s->pps && s->input_count == 0);
     ms_queue_put(f->inputs[0],bytes((const uint8_t *)"\x65",1)); decoder_process(f); assert(notification_count == 1);
     f->ticker->time=1100; s->failed=1; decoder_process(f); assert(notification_count == 2);
     unpack_status=0; ms_queue_put(f->inputs[0],bytes((const uint8_t *)"\x65",1)); decoder_process(f); assert(s->input_count == 0);
     unpack_status=Rfc3984FrameAvailable; ms_queue_put(f->inputs[0],bytes((const uint8_t *)"\x65\x33",2)); decoder_process(f); assert(s->input_count == 1);
+    mblk_t *recovered=ms_queue_peek_first(&s->input);
+    const uint8_t expected[]={0,0,0,1,0x67,0x42,0,0x1f,0,0,0,1,0x68,0xaa,0,0,0,1,0x65,0x33};
+    assert(msgdsize(recovered)==sizeof(expected) && !memcmp(recovered->b_rptr,expected,sizeof(expected)));
     ms_queue_flush(&s->input); s->input_count=0;
     for (int i=0;i<2;++i) {
         MSPicture picture; mblk_t *raw=ms_yuv_buf_allocator_get(s->allocator,&picture,32,16);
@@ -130,6 +136,26 @@ static void test_methods(MSFilter *f) {
     int payload=1200; result=mtu(f,&payload); assert(result == 0 && ms_factory_get_payload_max_size(f->factory) == 1200);
 }
 
+static void test_first_picture_recovery(MSFilter *f) {
+    Codec *s = f->data;
+    notification_count = 0;
+    f->ticker->time = 100;
+    decoder_process(f);
+    assert(notification_count == 1 && notifications[0] == MS_VIDEO_DECODER_SEND_PLI);
+    f->ticker->time = 1099; decoder_process(f); assert(notification_count == 1);
+    f->ticker->time = 1100; decoder_process(f); assert(notification_count == 2);
+    assert(!s->failed && !s->first_image);
+    MSPicture picture;
+    ms_queue_put(&s->output, ms_yuv_buf_allocator_get(s->allocator, &picture, 32, 16));
+    ++s->output_count;
+    decoder_process(f); assert(s->first_image);
+    int after_picture = notification_count;
+    f->ticker->time = 3100; decoder_process(f); assert(notification_count == after_picture);
+    reset_first(f, NULL); decoder_process(f);
+    assert(notification_count == after_picture + 1 && notifications[after_picture] == MS_VIDEO_DECODER_SEND_PLI);
+    ms_queue_flush(f->outputs[0]);
+}
+
 int main(void) {
     MSFactory *factory=ms_factory_new_with_voip();
     int result=zmala_video_register(NULL); assert(result == -1);
@@ -140,6 +166,7 @@ int main(void) {
     MSFilter filter={0}; filter.factory=factory; filter.inputs=inputs; filter.outputs=outputs; filter.ticker=&ticker;
     encoder_init(&filter); test_packetization(&filter); test_encoder_tick(&filter); test_reassembly(&filter); test_methods(&filter); zmala_codec_free(&filter);
     decoder_init(&filter); test_decoder_tick(&filter); zmala_codec_free(&filter);
+    decoder_init(&filter); test_first_picture_recovery(&filter); zmala_codec_free(&filter);
     ms_queue_flush(&input); ms_queue_flush(&output); ms_factory_destroy(factory);
     puts("H264 filter packetization, recovery, queue and configuration checks: PASS"); return 0;
 }

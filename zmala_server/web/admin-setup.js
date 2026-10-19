@@ -20,7 +20,9 @@ export async function downloadPdf(route, filename, value) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
-  notice('PDF downloaded. Print at actual size, then show the code to the terminal camera.');
+  notice(
+    'PDF downloaded. Print at actual size, then scan it with the assigned terminal or ZmalaPhone app.',
+  );
 }
 /** @param {string} id */
 export function serverPdf(id) {

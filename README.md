@@ -166,3 +166,11 @@ The [Verify workflow](https://github.com/toastfr35/ZmalaCall/actions/workflows/v
 also publishes it as the `zmala-requirements` artifact. See the
 [requirement rewrite method](howto_rewrite_requirements.md) for the process and
 [astra.md](astra.md) for remaining engineering work.
+
+## ZmalaPhone Android preview
+
+The Android companion lives in `zmala_phone/`. See [Android setup and development](docs/android.md). It uses App-only QR enrollment and the terminal visual identity, with LAN or encrypted server-relayed video calls and Firebase incoming-call alerts when the app is closed. Build with `make phone test-android` after configuring the Android SDK and JDK.
+
+For a signed APK, use `python build_tools/android/release.py` with private release
+signing and Firebase configuration as described in the Android guide. Signing keys,
+deployment credentials and account QR codes are not included in this repository.

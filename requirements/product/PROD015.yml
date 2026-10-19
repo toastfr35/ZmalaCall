@@ -1,0 +1,17 @@
+active: true
+area: Product specification
+derived: false
+header: Android companion
+level: 15.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Experimental
+text: The product shall provide a ZmalaPhone Android companion using the terminal visual identity, server
+  QR setup and mutually exclusive App or Terminal account types. It shall support authorized video calling,
+  Firebase incoming-call wake-up and encrypted server-relayed calls between separate NAT networks when
+  secure mode is deployed.
+verification: Exercise app enrollment, authorized contacts and native call signaling on Android. Separately
+  qualify camera, microphone and bidirectional media against the Pi terminal on physical hardware.

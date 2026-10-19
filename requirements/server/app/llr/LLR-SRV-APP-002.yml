@@ -1,0 +1,24 @@
+active: true
+area: Android app accounts and enrollment
+derived: false
+header: Account type migration and revocation
+level: 2
+links:
+- HLR-SRV-APP-001: null
+normative: true
+ref: ''
+references:
+- path: zmala_server/accounts.js
+  type: file
+- path: zmala_server/migrations.js
+  type: file
+- path: tests/server/LLT/app-accounts.test.js
+  type: file
+reviewed: null
+scope: Core
+text: New App accounts shall have independent ZP device identities and bearer tokens without Pi profiles.
+  Conversion shall replace device identity, bearer token and SIP password while preserving personal details
+  and groups. Schema-six Linphone accounts shall migrate once to App, retaining their SIP credentials
+  and receiving app enrollment.
+verification: Compare both conversion directions and persistence across repeated migration; verify revoked
+  identities no longer authenticate.

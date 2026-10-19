@@ -580,6 +580,22 @@ frame dropping would corrupt references. Encoding reuses buffers and scales only
 when input/target sizes differ. Encoder overflow recovers with fresh headers;
 recovery requests are coalesced. Queue count/age diagnostics exist; byte budgets
 and bounded stuck-native shutdown remain outstanding.
+When a damaged received access unit is discarded, its received SPS/PPS NALs
+remain cached and precede the next intact unit. Discarding those setup NALs as
+well can leave every later frame undecodable after an initial loss over a relay.
+The native filter regression checks this recovery without submitting damaged
+slices to the decoder worker.
+Before the first decoded picture, the receiver also requests a keyframe once per
+second. Waiting only for decoder errors can leave it stuck after ICE drops the
+initial setup frame: accepting later inter frames need not report a fresh error.
+Retries stop after a decoded picture and resume if the first-picture notification
+is reset during a stream update.
+The pinned TURN correction also retries TLS short writes and socket backpressure
+through the shared `common/native/turn-write.h` helper. It polls in 100 ms steps
+and shuts down the connection if a frame cannot finish within three seconds.
+This avoids dropping the middle of large keyframes when the SDK's small socket
+send buffer fills. The native TURN regression exercises exact output bytes,
+retry buffer identity, timeout and closed/error paths.
 
 The local preview shares camera capture, averages pixels before final display
 scaling and uses NEON for common 2×/4× reductions with scalar fallback. Small
@@ -597,6 +613,17 @@ Echo cancellation uses a 500 ms window/automatic delay; assess real speech befor
 changing it. Packet counters alone do not establish intelligibility or acoustic
 echo performance. Earlier USB/control timeouts require separate capture/audio
 diagnosis; changing codec bitrate cannot repair a stalled physical device.
+
+On 19 October 2026, a test terminal's C20 returned UVC/ALSA USB timeouts and failed device
+opens. Stopping the terminal, cycling C20 power through the existing guarded USB
+helper and restarting restored capture. The underlying timeout trigger remains
+undetermined; this was an operational recovery, not a new automatic recovery
+feature. After the first-picture keyframe retry change and Android 0.3.6's
+deferred notification acceptance, four Pi-to-OnePlus calls showed remote video
+at both ends (two app-closed, then two app-open, with the phone on cellular data).
+The native filter regression passed, including a negative control against the
+old first-picture behavior. See `docs/android.md` for the bounded hardware run
+and its limitations; it does not establish sustained C20 reliability.
 
 ### Automatic framing
 
@@ -816,8 +843,9 @@ work is in [astra.md](../astra.md).
 A server can select `secure_calls.mode = tls-relay` in its authenticated HTTPS
 configuration. The terminal disables SIP UDP/plain TCP, enables SIP TLS, verifies
 the server certificate and name against the local CA bundle, and requires SRTP
-for outgoing and incoming media. ICE gathers TURN candidates through TLS on port
-443 and forces relay selection. Network failure does not trigger plaintext fallback.
+for outgoing and incoming media. ICE gathers TURN candidates through TLS on the
+configured port (443 by default) and forces relay selection. Separate SIP/TURN
+ports support a single public server IP. Network failure does not trigger plaintext fallback.
 The installed trust store is authoritative; a server response cannot supply a CA.
 For a private deployment, install its CA in the OS trust store before enrollment.
 `SSL_CERT_FILE` can select a locally administered CA bundle for both HTTPS and SIP.
@@ -844,3 +872,7 @@ rebuilding/requalifying the correction. Secure mode refuses to run without the l
 correction. Ordinary LAN-only source launches can run without it. No ARM binary or
 local SDK source download is committed. See the server guide for endpoint routing,
 certificates, coturn configuration and network limitations.
+
+## Android companion accounts
+
+ZmalaPhone uses the same palette and logo with an **App** account. Pi enrollment still requires a **Terminal** account. An account cannot belong to both; changing its type revokes its previous device and SIP credentials and requires a fresh setup QR. ZmalaPhone supports LAN or encrypted relay calls and Firebase incoming alerts while closed. A green App contact can be reached through push without an active SIP registration; delivery still depends on notification permission and connectivity. Both clients must use HTTPS enrollment when secure mode is enabled. See [Android implementation](android.md) for build and qualification status.

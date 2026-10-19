@@ -41,7 +41,7 @@ function profile(name = 'Family') {
 /** @returns {import('./types/contracts').ServerState} */
 function defaultState() {
   return {
-    schema_version: 6,
+    schema_version: 7,
     configuration_version: 1,
     host: lanAddress(),
     sip_port: 5060,
@@ -60,7 +60,14 @@ function defaultState() {
         auto_answer: false,
         auto_answer_seconds: 5,
       },
-      phone1: { name: 'phone1', type: 'linphone', emails: [], password: random() },
+      phone1: {
+        name: 'phone1',
+        type: 'app',
+        emails: [],
+        password: random(),
+        device_id: 'ZP-' + crypto.randomUUID(),
+        device_token: random(),
+      },
     },
     profiles: { term1: profile('term1') },
     local_terminal_id: 'term1',
