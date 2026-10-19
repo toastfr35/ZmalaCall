@@ -155,6 +155,26 @@ def build_phone():
         doc.save(ROOT / 'docs' / filename)
 
 
+def update_c20_guide():
+    """Keep the retained terminal guide aligned with fixed Pi hardware."""
+    path = ROOT / 'docs/terminal_config.docx'
+    doc = Document(path)
+    for paragraph in doc.paragraphs:
+        if paragraph.text.startswith('The terminal serial is shown at the bottom of Settings.'):
+            paragraph.text = (
+                'The terminal serial is shown at the bottom of Settings. The Nuroum C20 '
+                'automatically supplies the camera, microphone and speaker; there are no '
+                'other device choices. If it is still waking, the terminal retries once '
+                'per second and waits before connecting the call. You can still press red '
+                'to cancel. Sound never switches to the TV. The server offers video '
+                'resolution, frame rate, audio processing and C20 volume. Fresh video '
+                'settings are 720p at 15 fps; media changes may wait until the call ends.')
+    doc.core_properties.author = 'ZmalaCall'
+    doc.core_properties.last_modified_by = ''
+    doc.save(path)
+
+
 if __name__ == '__main__':
     update_existing()
+    update_c20_guide()
     build_phone()

@@ -370,9 +370,15 @@ also block credential/type changes and account deletion.
 Terminal cards group Calls, Video & audio and General settings. **Setup** downloads
 Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
 are runtime provisioning documents, separate from project documentation. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it.
-Settings include auto-answer, camera/audio selection, resolution, FPS, framing,
+Settings include auto-answer, fixed C20 hardware information, resolution, FPS, framing,
 volume, language, portrait count and TV return. See the
 [terminal settings implementation](terminal.md#settings-and-controls) for input and save semantics.
+
+The Pi terminal settings page has no alternative camera, microphone or speaker
+selectors. All three are supplied by the Nuroum C20. Legacy API selector strings
+remain validated for compatibility, but the Pi ignores them and browser saves
+clear them. A waking C20 is retried automatically; TV audio is never a substitute.
+
 
 Current editors capture their opening configuration revision and reject stale
 saves with HTTP 409. Polling does not rebase drafts. Reopen/review after a conflict.

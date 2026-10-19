@@ -10,6 +10,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/HLT/c20_audio_native.py
+  type: file
 - path: tests/terminal/HLT/test_peripheral_workers.py
   type: file
 reviewed: null

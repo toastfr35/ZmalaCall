@@ -4,6 +4,7 @@ import logging
 import threading
 import time
 from zmala_terminal.common.model import State
+from zmala_terminal.common.media_errors import MediaNotReady
 
 
 class CallControl:
@@ -138,7 +139,15 @@ class CallControl:
             return
         if getattr(self, 'usb_power', None):
             self.usb_power.stop_ringing()
-        self.engine.answer()
+        try:
+            self.engine.answer()
+        except MediaNotReady as error:
+            # @llr LLR-TERM-AUDIO-005
+            logging.info('Waiting for C20 before answering: %s', error)
+            generation, call = self.generation, self.engine.call
+            self.root.after(1000, lambda: self.action('answer')
+                if not self.closed and self.generation == generation and self.engine
+                and self.engine.call == call and self.model.state == State.CONNECTING else None)
 
     # @llr LLR-TERM-CALL-014
     def action(self, action):
@@ -196,6 +205,10 @@ class CallControl:
                     return
                 self.outgoing_deadline = time.monotonic() + ring_timeout
                 self.engine.dial(contact['sip_uri'])
+            except MediaNotReady as error:
+                logging.info('Waiting for C20 before dialing: %s', error)
+                self.root.after(1000, lambda: self.dial_ready(generation, serial, contact, available, ring_timeout))
+                return
             except Exception:
                 logging.exception('Call could not be started')
                 self.model.ended()

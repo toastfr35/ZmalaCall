@@ -75,16 +75,12 @@ export function buildCallFields(devices, calls, id) {
 /** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} media @param {string} id */
 export function buildMediaFields(devices, media, id) {
   const profile = state.model.profiles[id];
-  /** @param {keyof import('../types/contracts').TerminalSettings} key @param {string} label */
-  const mediaField = (key, label) => {
-    const current = profile.terminal_settings[key] || '';
-    const available = state.model.terminal_statuses[id]?.devices?.[key] || [];
-    const choices = [
-      ['', 'System default'],
-      ...[...new Set([...available, ...(current ? [current] : [])])].map((value) => [value, value]),
-    ];
-    return terminalSelect(devices, label, key, choices, current);
-  };
+  // @llr LLR-SRV-CONFIG-018
+  const hardware = el(
+    'p',
+    'Nuroum C20 supplies the camera, microphone and speaker automatically. If it is waking up, the terminal waits and retries.',
+    'help',
+  );
   const resolution = terminalSelect(
     devices,
     'Video resolution',
@@ -156,16 +152,7 @@ export function buildMediaFields(devices, media, id) {
     { type: 'number', min: '0', max: '100', step: '1', required: true },
   );
   volume.append(el('small', 'Linux C20 · calls and ringing. Applies when idle. Default: 50%.'));
-  media.append(
-    mediaField('camera', 'Camera'),
-    resolution,
-    frameRate,
-    framing,
-    mediaField('microphone', 'Microphone'),
-    mediaField('speaker', 'Speaker'),
-    audio,
-    volume,
-  );
+  media.append(hardware, resolution, frameRate, framing, audio, volume);
 }
 
 /** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} general @param {string} id */

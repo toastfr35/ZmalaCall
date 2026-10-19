@@ -44,7 +44,7 @@ class C20MediaTests(unittest.TestCase):
         for name in ('core_set_video_device', 'core_set_capture_device', 'core_set_playback_device', 'core_set_ringer_device'):
             setattr(engine, name, Mock(return_value=0))
         engine.core_get_playback_device = Mock(return_value=b'ALSA: Nuroum C20 [Unknown]')
-        with patch('zmala_terminal.common.engine.WINDOWS', False):
+        with patch('zmala_terminal.common.engine.WINDOWS', False), patch('zmala_terminal.linux.media.bind_call_audio'):
             engine.apply_settings({'camera': 'old webcam', 'speaker': 'ALSA: vc4-hdmi'})
         engine.core_set_video_device.assert_called_once_with('core', b'ZmalaMJPEG: /dev/video4')
         engine.core_set_capture_device.assert_called_once_with('core', b'ALSA: Nuroum C20 [Unknown]')

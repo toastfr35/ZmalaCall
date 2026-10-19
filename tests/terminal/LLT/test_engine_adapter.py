@@ -1,7 +1,7 @@
 # @test T-LLT-057
-# @requirements LLR-TERM-START-005, LLR-TERM-START-006, LLR-TERM-CALL-011, LLR-TERM-AUDIO-004, LLR-TERM-AUDIO-005, LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-006, LLR-TERM-VIDEO-012, LLR-TERM-MAINT-018
+# @requirements LLR-TERM-START-005, LLR-TERM-START-006, LLR-TERM-CALL-011, LLR-TERM-AUDIO-004, LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-006, LLR-TERM-VIDEO-012, LLR-TERM-MAINT-018
 # @environment portable
-# @plan Substitute only Liblinphone ABI calls, OS media hooks and storage roots; run the real Engine constructor, registration, callback dispatch, dialing/answering and shutdown. Inspect bound retain/release signatures to prevent truncation of native call handles. Verify resource ownership, native configuration/transport requests, signed caller proof, absent microphone fallback, device enumeration and diagnostic units. Inject native startup, address, invite and accept failures and verify errors/cleanup without loading the SDK or contacting SIP. Exercise the real Linux plugin adapter with fake ABI libraries: registration order, rate/registration failure, framing configuration, native resource lookup and deferred USB/mixer refresh.
+# @plan Substitute only Liblinphone ABI calls, OS media hooks and storage roots; run the real Engine constructor, registration, callback dispatch, dialing/answering and shutdown. Inspect bound retain/release signatures to prevent truncation of native call handles. Verify resource ownership, native configuration/transport requests, signed caller proof, device enumeration and diagnostic units. Inject native startup, address, invite and accept failures and verify errors/cleanup without loading the SDK or contacting SIP. Exercise the real Linux plugin adapter with fake ABI libraries: registration order, rate/registration failure, framing configuration, native resource lookup and deferred USB/mixer refresh.
 # @pass Recorded native arguments and reference releases match the requested policy; rejected/forged calls cannot notify the UI. These adapter checks do not establish real codec quality, network interoperability or hardware timing.
 import ctypes as C
 import hashlib
@@ -135,9 +135,9 @@ class EngineAdapterTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(); self.addCleanup(temporary.cleanup)
         self.media = Mock(CODECS={'H264'}, DISPLAY_FILTER=b'ZmalaDisplay')
-        self.media.select_settings.side_effect = lambda e, settings: settings
+        self.media.select_settings.side_effect = lambda e, settings: {'speaker': ''} | settings
         self.media.filter_devices.side_effect = lambda devices: devices
-        patches = [patch.object(engine, 'ROOT', Path(temporary.name)),
+        patches = [patch.object(engine, 'WINDOWS', False), patch.object(engine, 'ROOT', Path(temporary.name)),
                    patch.object(engine, 'resource', return_value=Path(temporary.name)),
                    patch.object(engine, 'library', return_value=Mock()),
                    patch.object(engine, 'media_backend', return_value=self.media),
@@ -202,7 +202,7 @@ class EngineAdapterTests(unittest.TestCase):
         e.core_get_video_devices.return_value = [b'StaticImage: Static picture', b'C20', None]
         e.core_get_playback_device.return_value = b'actual-speaker'
         e.core_set_capture_device.return_value = -1; e.core_set_ringer_device.return_value = -1
-        with self.assertLogs(level='WARNING'):
+        with patch.object(engine, 'WINDOWS', True), self.assertLogs(level='WARNING'):
             e.apply_settings({'microphone':'missing-mic'})
         e.core_set_video_device.assert_called_with(2, b'C20')
         e.core_set_capture_device.assert_called_with(2, b'missing-mic')
@@ -228,20 +228,20 @@ class EngineAdapterTests(unittest.TestCase):
     def test_dial_answer_end_and_failures_own_and_release_native_objects(self):
         e = self.build(); self.addCleanup(e.close)
         e.address_unref.reset_mock(); e.core_invite_address_with_params.return_value = 42
-        with self.assertLogs(level='WARNING'): e.dial('sip:alice@family.test')
+        e.dial('sip:alice@family.test')
         self.assertEqual(e.call, 42)
-        e.call_params_enable_mic.assert_called_with(6, 0)
-        e.call_params_set_audio_direction.assert_called_with(6, 2)
+        e.call_params_enable_mic.assert_not_called()
+        e.call_params_set_audio_direction.assert_not_called()
         e.call_params_unref.assert_called_once_with(6); e.address_unref.assert_called_once_with(5)
         e.core_get_extended_audio_devices.return_value = 0
-        with self.assertLogs(level='WARNING'): e.answer()
+        e.answer()
         e.call_accept_with_params.assert_called_once_with(42, 6)
         e.end(); e.end(True)
         e.call_terminate.assert_called_once_with(42); e.call_decline.assert_called_once_with(42, 3)
         e.call_accept_with_params.return_value = 1
-        with self.assertLogs(level='WARNING'), self.assertRaisesRegex(RuntimeError, 'answered'): e.answer()
+        with self.assertRaisesRegex(RuntimeError, 'answered'): e.answer()
         e.core_invite_address_with_params.return_value = 0
-        with self.assertLogs(level='WARNING'), self.assertRaisesRegex(RuntimeError, 'started'): e.dial('sip:x@y')
+        with self.assertRaisesRegex(RuntimeError, 'started'): e.dial('sip:x@y')
         e.address_new.return_value = 0
         with self.assertRaisesRegex(ValueError, 'Invalid SIP'): e.dial('bad')
         e.hold_call(None); e.call_accept_with_params.reset_mock(); e.answer()

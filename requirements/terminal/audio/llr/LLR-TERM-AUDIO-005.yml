@@ -2,14 +2,16 @@ active: true
 area: Audio
 derived: false
 header: |
-  Missing microphone handling
+  C20 readiness before calls
 level: 67.0
 links:
 - HLR-TERM-AUDIO-001: PFoiG3qDcQEzEGeZgfZ4kZuS7cdKL3JpiWMY7aSgPII=
 normative: true
 ref: ''
 references:
-- path: tests/terminal/LLT/test_engine_adapter.py
+- path: zmala_terminal/common/media_errors.py
+  type: file
+- path: zmala_terminal/common/call_control.py
   type: file
 - path: tests/terminal/LLT/test_missing_microphone.py
   type: file
@@ -18,9 +20,12 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Without usable microphone capture, a call shall disable outgoing audio capture while
-  preserving available playback and video. The next call shall check capture
-  availability again.
+  When any required C20 device or audio route is unavailable, the Pi shall keep
+  the call waiting and retry discovery approximately once per second without
+  blocking SIP or user input. It shall not start a partial receive-only call.
+  Recovery shall allow the waiting call to proceed; cancellation, replacement or
+  shutdown shall prevent a queued retry from starting or answering a stale call.
 verification: |
-  Start without a microphone, reconnect it and start another call. Check capture
-  parameters and retained receive capability.
+  Fail discovery before native call allocation, then restore it. Check one-second
+  answer and dial retries, successful recovery, and cancellation, generation, call
+  identity and shutdown guards.

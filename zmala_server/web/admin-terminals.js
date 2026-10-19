@@ -177,9 +177,9 @@ function buildDevicesForm(card, id) {
           tv_idle_seconds: Number(fields.tvIdleSeconds.value),
           auto_framing: terminalInput(devices, 'autoFraming').checked,
           c20_speaker_volume: Number(fields.c20SpeakerVolume.value),
-          camera: fields.camera.value,
-          microphone: fields.microphone.value,
-          speaker: fields.speaker.value,
+          camera: '',
+          microphone: '',
+          speaker: '',
         });
         savedTerminalForm(devices, card);
         await state.refresh(true);
