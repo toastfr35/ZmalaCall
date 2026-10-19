@@ -147,6 +147,57 @@ configure internet access; some restrictive networks may still block calls.
 | Installation computer | Windows; installers deploy to the Pi over wired Ethernet SSH |
 | Android phone | Android 9 or later, 64-bit ARM or x86 processor, camera and microphone; notifications and internet access for incoming alerts |
 
+### Terminal parts list — United Kingdom
+
+These suggested shopping lists use **GBP (£)** and one of each item. Prices are
+indicative UK retail prices checked on **19 October 2026**, including VAT where
+shown by the retailer, and excluding delivery. They are budgeting estimates, not
+manufacturer recommended retail prices; check the final price and stock before
+ordering. Product names link to the example suppliers.
+
+The examples use a **4GB Raspberry Pi 4** and a **64GB microSD card**, which were
+available when checked. Reuse suitable equipment you already own.
+
+| Item | Suggested part / purchase link | Estimated price |
+| --- | --- | ---: |
+| Raspberry Pi | [Raspberry Pi 4 Model B — 4GB](https://thepihut.com/products/raspberry-pi-4-model-b?variant=20064052740158) | £96.00 |
+| microSD card | [Official Raspberry Pi A2 — 64GB](https://thepihut.com/products/noobs-preinstalled-sd-card?variant=31604721287230) | £30.60 |
+| Case | [Argon ONE V2 for Raspberry Pi 4, with fan](https://thepihut.com/products/argon-one-raspberry-pi-4-case) | £24.00 |
+| HDMI cable | [Full-size HDMI to HDMI, 2m, with CEC](https://thepihut.com/products/1-8m-hdmi-cable?variant=40821663662275) | £4.00 |
+| Camera, microphone and speaker | [Nuroum C20](https://nuroum.com/uk/product/all-in-one-webcam-c20) | £153.00 |
+| Remote | [Microsoft Presenter+](https://www.tab-retail.co.uk/microsoft-presenter-certified-for-microsoft-teams-remote-bluetooth/) | £16.99 |
+| USB power supply | [Official Raspberry Pi 15W USB-C, UK plug, 5.1V/3A](https://thepihut.com/products/raspberry-pi-psu-uk) | £7.70 |
+| Ethernet cable for setup | [RJ45 Cat5e cable, 5m](https://thepihut.com/products/rj45-cat5e-ethernet-lan-cable-5m-black) | £3.00 |
+| **Terminal total** | **One complete terminal, excluding the TV** | **£335.29** |
+
+The Argon ONE **V2** converts the Pi's micro-HDMI ports to **full-size HDMI**,
+so the cable above fits the case. The C20 includes the microphone and speaker;
+there is no separate audio equipment to buy. The Presenter+ price is a discounted
+listing and availability varies; check that its charging dock is included.
+
+### Server parts list — United Kingdom
+
+One server can be shared by the family's terminals and phones; you do not need a
+server for each person.
+
+| Item | Suggested part / purchase link | Estimated price |
+| --- | --- | ---: |
+| Raspberry Pi | [Raspberry Pi 4 Model B — 4GB](https://thepihut.com/products/raspberry-pi-4-model-b?variant=20064052740158) | £96.00 |
+| microSD card | [Official Raspberry Pi A2 — 64GB](https://thepihut.com/products/noobs-preinstalled-sd-card?variant=31604721287230) | £30.60 |
+| Case | [Official Raspberry Pi 4 case](https://thepihut.com/products/raspberry-pi-4-case) | £4.80 |
+| USB power supply | [Official Raspberry Pi 15W USB-C, UK plug, 5.1V/3A](https://thepihut.com/products/raspberry-pi-psu-uk) | £7.70 |
+| Ethernet cable for setup | [RJ45 Cat5e cable, 5m](https://thepihut.com/products/rj45-cat5e-ethernet-lan-cable-5m-black) | £3.00 |
+| **Server total** | **One shared family server** | **£142.10** |
+
+**One terminal plus one server: £477.39**, before delivery. The totals include
+two Ethernet cables. Keeping the server connected by Ethernet is recommended.
+
+You will also need an existing HDMI TV, internet connection, a Windows computer
+for installation and a microSD card reader. Those items, Android phones and
+ongoing electricity/internet costs are not included. Even if a card comes with
+Raspberry Pi OS pre-installed, flash the **Lite 64-bit Trixie** image specified in
+the installation guide before running the installer.
+
 ### Downloads
 
 The [latest public release](https://github.com/toastfr35/ZmalaCall/releases/latest)
