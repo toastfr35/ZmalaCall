@@ -151,6 +151,7 @@ class ManagementLoop:
         elif success and self.model.state == State.HOME:
             self.render()  # A request finishing after navigation still gets its tag.
 
+    # @llr LLR-TERM-NAV-005
     def apply_poll_config(self, config):
         if self.model.config and config['configuration_version'] < self.model.config['configuration_version']:
             return
@@ -161,11 +162,14 @@ class ManagementLoop:
             self.apply_config(config)
             return
         # Reachability changes independently of the persisted configuration version.
-        availability = {c['id']: c.get('online') is True for c in config['contacts']}
+        availability = {c['id']: c for c in config['contacts']}
         self.model.config['callbacks'] = list(self.callback_requests)
         for contact in self.model.config['contacts']:
-            changed |= contact.get('online', False) != availability.get(contact['id'], False)
-            contact['online'] = availability.get(contact['id'], False)
+            live = availability.get(contact['id'], {})
+            online = live.get('online') is True
+            presence = live.get('presence', 'available' if online else 'offline')
+            changed |= contact.get('online', False) != online or contact.get('presence') != presence
+            contact.update(online=online, presence=presence)
         if changed and self.model.state == State.HOME:
             self.render()
 

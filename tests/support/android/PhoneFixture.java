@@ -69,7 +69,8 @@ public final class PhoneFixture {
   }
 
   public static TextView text(View root, String target) {
-    if (root instanceof TextView && ((TextView) root).getText().toString().equals(target))
+    if (root instanceof TextView && (((TextView) root).getText().toString().equals(target)
+        || root instanceof android.widget.Button && ((TextView) root).getText().toString().startsWith(target + "\n")))
       return (TextView) root;
     if (root instanceof ViewGroup)
       for (int i = 0; i < ((ViewGroup) root).getChildCount(); i++) {

@@ -1,7 +1,7 @@
 # @test T-HLT-005
 # @requirements HLR-TERM-NAV-001
 # @environment hardware
-# @plan With a disposable configured server profile and display prepared, Render the real carousel with changing reachability and selected contacts; assert visible availability and stable selection during updates.
+# @plan With a disposable configured server profile and display prepared, Render the real carousel with changing reachability and selected contacts; assert available, push-only and offline colours/labels and stable selection during updates.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Native canvas visibility and call guards, without placing a real SIP call."""
@@ -60,6 +60,7 @@ base['contacts'] = [c for c in base['contacts'] if c['can_call']][:3]
 assert len(base['contacts']) == 3
 for index, contact in enumerate(base['contacts']):
     contact['online'] = index != 1
+    contact['presence'] = ('available', 'offline', 'push')[index]
 app.apply_config(base)
 app.server_seen = time.monotonic()
 app.root.geometry('900x620')
@@ -82,6 +83,8 @@ try:
         app.root.update_idletasks()
         assert len(app.avatar.find_withtag('contact-online')) == 2, code
         assert len(app.avatar.find_withtag('contact-offline')) == 1, code
+        for state in ('available', 'push', 'offline'):
+            assert len(app.avatar.find_withtag('presence-'+state)) == 1, (code, state)
         for item in (*app.avatar.find_withtag('contact-online'), *app.avatar.find_withtag('contact-offline')):
             x1, y1, x2, y2 = app.avatar.coords(item)
             assert 0 <= x1 < x2 <= app.avatar.winfo_width(), (code, 'horizontal', x1, x2)

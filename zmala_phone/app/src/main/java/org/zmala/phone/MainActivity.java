@@ -40,6 +40,7 @@ public final class MainActivity extends Activity {
       MUTED = Color.rgb(144, 160, 185),
       PANEL = Color.rgb(25, 34, 48),
       OFFLINE = Color.rgb(57, 64, 76),
+      BLUE = Color.rgb(33, 91, 164),
       GREEN = Color.rgb(33, 122, 80),
       RED = Color.rgb(183, 47, 63);
   private final Handler main = new Handler(Looper.getMainLooper());
@@ -422,10 +423,12 @@ public final class MainActivity extends Activity {
           portrait.addView(photo, new FrameLayout.LayoutParams(-1, -1));
           card.addView(portrait, new LinearLayout.LayoutParams(dp(72), dp(72)));
           boolean online = contact.optBoolean("online");
+          boolean pushOnly = online && "push".equals(contact.optString("presence"));
+          String presenceLabel = !online ? "Offline" : pushOnly ? "Try calling" : "Available";
           Button call =
               button(
                   contact.optString("name"),
-                  online ? GREEN : OFFLINE,
+                  !online ? RED : pushOnly ? BLUE : GREEN,
                   () -> {
                     try {
                       engine.dial(contact);
@@ -433,13 +436,19 @@ public final class MainActivity extends Activity {
                       showError("Call could not start.");
                     }
                   });
+          android.text.SpannableString caption = new android.text.SpannableString(
+              contact.optString("name") + "\n" + presenceLabel);
+          caption.setSpan(new android.text.style.RelativeSizeSpan(0.65f),
+              contact.optString("name").length() + 1, caption.length(), 0);
+          call.setText(caption);
           call.setTextSize(20);
           call.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
           call.setPadding(dp(18), dp(10), dp(14), dp(10));
           call.setMinHeight(dp(72));
           call.setMinimumHeight(dp(72));
           call.setContentDescription(
-              contact.optString("name") + (online ? ", online. Tap to call." : ", offline."));
+              contact.optString("name") + ", " + presenceLabel.toLowerCase(java.util.Locale.ROOT)
+                  + (online ? ". Tap to call." : "."));
           call.setEnabled(engine.registered && online);
           LinearLayout.LayoutParams nameArea = new LinearLayout.LayoutParams(0, -2, 1);
           nameArea.setMargins(dp(10), 0, 0, 0);

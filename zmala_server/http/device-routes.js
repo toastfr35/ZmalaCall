@@ -2,7 +2,7 @@
 'use strict';
 // Device API routes use the bearer token identity, not a terminal ID supplied by the request.
 const { terminalStatus } = require('../validation');
-const { registrationOnline } = require('../registrations');
+const { contactPresence } = require('../registrations');
 const { send, readJson, requireDevice, httpError } = require('./responses');
 // @llr LLR-SRV-CONFIG-022
 /** Full snapshots after reads and writes must expose the same live fields.
@@ -11,9 +11,7 @@ function liveConfiguration(id, { store, sipServer, callbacks }) {
   const config = store.config(id);
   config.contacts = config.contacts.map((contact) => ({
     ...contact,
-    online:
-      registrationOnline(sipServer.registrations.get(contact.id)) ||
-      !!sipServer.appCalls?.push.available(contact.id),
+    ...contactPresence(sipServer, contact.id),
   }));
   config.callbacks = callbacks.list(id);
   return config;
@@ -67,9 +65,7 @@ async function deviceRoutes(req, res, url, context) {
     const config = store.appConfig(id);
     config.contacts = config.contacts.map((contact) => ({
       ...contact,
-      online:
-        registrationOnline(sipServer.registrations.get(contact.id)) ||
-        !!sipServer.appCalls?.push.available(contact.id),
+      ...contactPresence(sipServer, contact.id),
     }));
     return send(res, 200, {
       ...config,
@@ -99,9 +95,7 @@ async function deviceRoutes(req, res, url, context) {
         live: {
           contacts: store.contacts(deviceId).map(({ id }) => ({
             id,
-            online:
-              registrationOnline(sipServer.registrations.get(id)) ||
-              !!sipServer.appCalls?.push.available(id),
+            ...contactPresence(sipServer, id),
           })),
           callbacks: callbacks.list(deviceId),
         },
@@ -152,10 +146,7 @@ async function deviceRoutes(req, res, url, context) {
       allowed = store.permitted(deviceId, id);
     return send(res, 200, {
       id,
-      online:
-        allowed &&
-        (registrationOnline(sipServer.registrations.get(id)) ||
-          !!sipServer.appCalls?.push.available(id)),
+      ...(allowed ? contactPresence(sipServer, id) : { online: false, presence: 'offline' }),
       can_call: allowed,
       ring_timeout: allowed ? store.ringTimeout(id) : 60,
     });

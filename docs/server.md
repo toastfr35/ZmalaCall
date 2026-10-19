@@ -501,7 +501,7 @@ pending calls. Fresh registration rechecks caller credentials, App enrollment an
 current permission before forwarding. Signed high-priority data messages contain
 no SIP password or caller display name. Cancellation carries the same enrollment
 proof. Live contact availability includes current push-eligible App accounts even
-without a live SIP registration; green means callable, not guaranteed delivery.
+without a live SIP registration; blue means push may work, not guaranteed delivery; green requires a live registration.
 After the alert, the app connects through the enrolled server's call transport:
 LAN HTTP/SIP/RTP or publicly reachable HTTPS/SIP TLS/TURN TLS with SRTP.
 
@@ -834,3 +834,19 @@ App request cancellation uses `DELETE /api/app/callbacks/:id`. Only the authenti
 requesting app can cancel its pending request; the recipient cannot cancel it on
 the requester's behalf. The existing callback lifecycle persists the change and
 subsequent phone/terminal snapshots remove the pending indicator.
+
+
+### Contact presence colours
+
+Contacts distinguish confirmed activity from unconfirmed push delivery: **Available**
+(green) means a current SIP registration remains reachable under the server's
+five-second checks; **Try calling** (blue) means only push eligibility remains;
+**Offline** (red) means neither. Both green and blue permit an attempted call.
+A push registration is not proof that the app is installed, online or ready to answer.
+The API adds `presence` (`available`, `push`, `offline`) to full, delta and preflight
+responses; `online` remains true for both callable states for older clients.
+Terminal live information expires after six seconds without a successful refresh,
+and cached configurations discard both live fields. Android clears the directory
+when a configuration refresh fails. Name buttons show a smaller status line;
+terminal cards show the status with a check, question mark or cross. New terminal
+labels are translated in English and French, with English fallback elsewhere.

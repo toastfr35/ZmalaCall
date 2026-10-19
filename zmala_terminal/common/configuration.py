@@ -25,6 +25,7 @@ def stable_configuration(config):
     stable.pop('callbacks', None)
     for contact in stable['contacts']:
         contact.pop('online', None)
+        contact.pop('presence', None)
     return stable
 
 
@@ -99,9 +100,11 @@ class Configuration:
                 raise ValueError('Live update does not match cached configuration')
             config = copy.deepcopy(previous)
             live = reply['live']
-            availability = {contact['id']: contact['online'] for contact in live['contacts']}
+            availability = {contact['id']: contact for contact in live['contacts']}
             for contact in config['contacts']:
-                contact['online'] = availability.get(contact['id'], False)
+                update = availability.get(contact['id'], {})
+                contact['online'] = update.get('online', False)
+                contact['presence'] = update.get('presence', 'available' if contact['online'] else 'offline')
             config['callbacks'] = live['callbacks']
         else:
             config = reply

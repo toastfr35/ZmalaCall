@@ -89,7 +89,8 @@ class CarouselView:
         ringing = self.model.state == State.RINGING
         current = next((c for c in self.model.contacts if person and c['id'] == person['id']), person)
         available = self.contact_online(current)
-        border = self.blend_color('#31594e', GREEN, .5+.5*math.sin((time.monotonic()-(self.ringing_started or 0))*3.5)) if ringing else (GREEN if available else '#66748c') if idle else ACCENT
+        presence = self.contact_presence(current)
+        border = self.blend_color('#31594e', GREEN, .5+.5*math.sin((time.monotonic()-(self.ringing_started or 0))*3.5)) if ringing else ({'available': GREEN, 'push': '#388bff', 'offline': RED}[presence]) if idle else ACCENT
         self.avatar.create_rectangle(x-size/2-padding, y-size/2-padding, x+size/2+padding, bottom,
                                      fill='#211e32' if selected else PANEL,
                                      outline=border if selected or idle else '#2b3547', width=4 if ringing or idle and selected else 2 if selected else 1,
@@ -133,26 +134,29 @@ class CarouselView:
                                      tags=('contact-name', 'contact-name-'+person['id']) if person else ())
         if idle and person:
             label_width = min(layout.portrait_size*.5, max(40, height-154)) if self.carousel_motion else size
-            self.draw_contact_status(x, bottom, size, padding, selected, available, label_width)
+            self.draw_contact_status(x, bottom, size, padding, selected, available, label_width, presence)
         if ringing:
             phone = self.text_renderer.photo('☎', 'Segoe UI Symbol' if 'Segoe UI Symbol' in self.available_fonts else self.font_family,
                                               28, BG, GREEN, 55)
             self.current_text_images.append(phone)
             self.avatar.create_image(center_x+size/2+62, center_y, image=phone, tags='ring-phone')
 
-    def draw_contact_status(self, x, bottom, size, padding, selected, available, label_width=None):
-        color, background = (GREEN, '#193e31') if available else (RED, '#41222a')
+    def draw_contact_status(self, x, bottom, size, padding, selected, available, label_width=None, presence=None):
+        presence = presence or ('available' if available else 'offline')
+        color, background = {'available': (GREEN, '#193e31'), 'push': ('#388bff', '#152e50'),
+                             'offline': (RED, '#41222a')}[presence]
+        label_key = {'available': 'available', 'push': 'try_calling', 'offline': 'offline'}[presence]
         status_y = bottom-20
         self.avatar.create_rectangle(x-size/2-padding+3, bottom-39, x+size/2+padding-3, bottom-3,
-                                     fill=background, outline='', tags='contact-online' if available else 'contact-offline')
+                                     fill=background, outline='', tags=('contact-online' if available else 'contact-offline', 'presence-'+presence))
         self.avatar.create_text(x-size/2+6, status_y, text='✓' if available else '×', fill=color,
                                 font=('Segoe UI', 24 if selected else 20, 'bold'))
         font_size = 23 if selected and not self.carousel_motion else 17
         label_width = max(30, int((size if label_width is None else label_width)-20))
-        label = self.text_renderer.photo(self.text('online' if available else 'offline'), self.font_family, font_size, background, color, label_width, True)
+        label = self.text_renderer.photo(self.text(label_key), self.font_family, font_size, background, color, label_width, True)
         while label.height() > 31 and font_size > 10:
             font_size -= 1
-            label = self.text_renderer.photo(self.text('online' if available else 'offline'), self.font_family, font_size, background, color, label_width, True)
+            label = self.text_renderer.photo(self.text(label_key), self.font_family, font_size, background, color, label_width, True)
         self.current_text_images.append(label)
         self.avatar.create_image(x+12, status_y, image=label)
 

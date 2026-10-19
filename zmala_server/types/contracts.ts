@@ -99,6 +99,7 @@ export interface TerminalContact {
   auto_answer: boolean;
   sip_uri: string;
   online?: boolean;
+  presence?: 'available' | 'push' | 'offline';
 }
 export interface TerminalConfiguration {
   schema_version: number;

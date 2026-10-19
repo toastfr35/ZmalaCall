@@ -41,6 +41,7 @@ class ConfigurationTests(unittest.TestCase):
                 client = Configuration({'device_id': 'test'}, Path(folder) / 'cache.json')
                 client.photos = Mock()
                 reply = config() | {'callbacks': []}
+                reply['contacts'][0]['presence'] = 'push'
                 reply['contacts'][0]['online'] = True
                 client.request = Mock(return_value=json.dumps(reply))
                 result = client.fetch() if operation == 'poll' else client.update_settings({}, {})
@@ -48,6 +49,7 @@ class ConfigurationTests(unittest.TestCase):
                 durable = json.loads(client.cache.read_text())
                 self.assertNotIn('callbacks', durable)
                 self.assertNotIn('online', durable['contacts'][0])
+                self.assertNotIn('presence', durable['contacts'][0])
                 client.photos.schedule.assert_called_once_with(reply['contacts'])
                 client.deactivate()
                 client.request.reset_mock()

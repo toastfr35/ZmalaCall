@@ -46,7 +46,7 @@ Notifications, then reopen ZmalaPhone. Android Force stop blocks delivery until
 
 the app is opened again; swiping it from Recents is not the same operation.
 
-A green App contact can be reachable through push even when its activity is closed.
+A blue App contact may be reachable through push even when its activity is closed.
 
 An account has exactly one type, App or Terminal. The two types have separate
 
@@ -64,11 +64,11 @@ The contact view uses server group permissions, account names and portraits.
 
 Compact horizontal rows place a rounded 72 dp portrait beside the name, with
 
-8 dp between rows. Online names have green backgrounds and start a call when
+8 dp between rows. Available names have green backgrounds and push-only names have blue backgrounds; both start a call when
 
-tapped while registered; offline names are gray and disabled. Screen readers
+tapped while registered; offline names are red and disabled. Screen readers
 
-announce availability. There is no separate availability label or call button.
+announce availability. A smaller availability label is included in each name button; there is no separate call button.
 
 The contact screen omits the phone account name and routine ready-to-call status;
 
@@ -523,3 +523,19 @@ preserved, media/notification permissions restored and the contact screen checke
 The Pi's App callback API passed a deployed capability check. Cross-device callback
 delivery and the complete physical update matrix remain hardware plans, not passed
 runs. Nine focused server callback/API scenarios and requirements validation passed.
+
+
+### Contact presence colours
+
+Contacts distinguish confirmed activity from unconfirmed push delivery: **Available**
+(green) means a current SIP registration remains reachable under the server's
+five-second checks; **Try calling** (blue) means only push eligibility remains;
+**Offline** (red) means neither. Both green and blue permit an attempted call.
+A push registration is not proof that the app is installed, online or ready to answer.
+The API adds `presence` (`available`, `push`, `offline`) to full, delta and preflight
+responses; `online` remains true for both callable states for older clients.
+Terminal live information expires after six seconds without a successful refresh,
+and cached configurations discard both live fields. Android clears the directory
+when a configuration refresh fails. Name buttons show a smaller status line;
+terminal cards show the status with a check, question mark or cross. New terminal
+labels are translated in English and French, with English fallback elsewhere.
