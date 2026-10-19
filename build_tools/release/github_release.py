@@ -133,16 +133,19 @@ def publish(folder, notes_file):
     subprocess.run(['gh', 'release', 'create', tag, '--target', commit, '--draft',
                     '--title', 'ZmalaCall ' + tag, '--notes-file', str(notes_file)], cwd=ROOT, check=True)
     subprocess.run(['gh', 'release', 'upload', tag, *map(str, paths)], cwd=ROOT, check=True)
-    uploaded = json.loads(subprocess.check_output(
-        ['gh', 'release', 'view', tag, '--json', 'assets'], cwd=ROOT, text=True))['assets']
+    draft = json.loads(subprocess.check_output(
+        ['gh', 'release', 'view', tag, '--json', 'assets,databaseId,isDraft,tagName,targetCommitish'],
+        cwd=ROOT, text=True))
+    uploaded = draft['assets']
     if {item['name'] for item in uploaded} != set(ASSETS) or any(item['state'] != 'uploaded' for item in uploaded):
         raise ValueError('Uploaded release assets did not match; draft retained')
     # GitHub's semantic-version selection prevents an older, slower build from
     # forcing the latest-download URL backwards when two merges build together.
-    release_id = subprocess.check_output(
-        ['gh', 'api', 'repos/{owner}/{repo}/releases/tags/' + tag, '--jq', '.id'],
-        cwd=ROOT, text=True).strip()
-    if not release_id.isdigit():
+    # The REST by-tag endpoint does not find unpublished drafts. The CLI view
+    # already resolved this draft while checking its assets; reuse its identity.
+    release_id = str(draft.get('databaseId', ''))
+    if (not release_id.isdigit() or not draft.get('isDraft') or draft.get('tagName') != tag
+            or draft.get('targetCommitish') != commit):
         raise ValueError('Invalid draft release identity')
     subprocess.run(['gh', 'api', '--method', 'PATCH', 'repos/{owner}/{repo}/releases/' + release_id,
                     '-F', 'draft=false', '-f', 'make_latest=legacy', '--silent'], cwd=ROOT, check=True)
