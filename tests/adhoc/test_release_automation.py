@@ -66,11 +66,15 @@ class ReleaseAutomationTests(unittest.TestCase):
             folder = Path(directory)
             for name in ASSETS:
                 (folder / name).write_bytes(b'fixture')
-            assets = json.dumps({'assets': [{'name': name, 'state': 'uploaded'} for name in ASSETS]})
+            draft = {'assets': [{'name': name, 'state': 'uploaded'} for name in ASSETS],
+                     'databaseId': 123, 'isDraft': True, 'tagName': 'v0.3.9', 'targetCommitish': 'a' * 40}
+            assets = json.dumps(draft)
             with patch.object(release, 'version_tag', return_value='v0.3.9'), \
-                    patch.object(release.subprocess, 'check_output', side_effect=['a' * 40, assets, '123\n']), \
+                    patch.object(release.subprocess, 'check_output', side_effect=['a' * 40, assets]) as output, \
                     patch.object(release.subprocess, 'run') as run:
                 release.publish(folder, Path('notes.md'))
+                self.assertEqual(output.call_args.args[0], ['gh', 'release', 'view', 'v0.3.9', '--json',
+                                 'assets,databaseId,isDraft,tagName,targetCommitish'])
                 self.assertEqual(run.call_args.args[0], [
                     'gh', 'api', '--method', 'PATCH', 'repos/{owner}/{repo}/releases/123',
                     '-F', 'draft=false', '-f', 'make_latest=legacy', '--silent'])
@@ -81,6 +85,16 @@ class ReleaseAutomationTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'draft retained'):
                     release.publish(folder, Path('notes.md'))
                 self.assertFalse(any('--method' in call.args[0] for call in run.call_args_list))
+            for field, value in [('databaseId', 'invalid'), ('isDraft', False),
+                                 ('tagName', 'v0.3.8'), ('targetCommitish', 'b' * 40)]:
+                with self.subTest(field=field), \
+                        patch.object(release, 'version_tag', return_value='v0.3.9'), \
+                        patch.object(release.subprocess, 'check_output',
+                                     side_effect=['a' * 40, json.dumps({**draft, field: value})]), \
+                        patch.object(release.subprocess, 'run') as run:
+                    with self.assertRaisesRegex(ValueError, 'Invalid draft release identity'):
+                        release.publish(folder, Path('notes.md'))
+                    self.assertFalse(any('--method' in call.args[0] for call in run.call_args_list))
 
 
 if __name__ == '__main__':

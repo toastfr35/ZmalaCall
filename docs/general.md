@@ -593,7 +593,9 @@ a pull request; each change, including documentation, carries a version bump.
 `main` remains available for recovery, with an optional matching tag check.
 Windows builds both Pi installers and all PDFs; Linux builds and verifies the
 signed APK. The publication job waits for both, collects the nine named files,
-creates a draft, uploads and checks its assets, then publishes it. GitHub selects
+creates a draft, uploads and checks its assets, then publishes it by the draft ID
+returned by `gh release view`. It verifies the draft's tag and target commit before
+publication; the REST lookup by tag cannot resolve an unpublished draft. GitHub selects
 Latest using its semantic-version policy, so an older overlapping build does not
 explicitly replace a newer release. Concurrency is scoped to the source commit;
 separate merged commits are not cancelled. The old standalone installer workflows
