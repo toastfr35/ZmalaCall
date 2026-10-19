@@ -61,6 +61,12 @@ jobs:
             apt-get install -y --no-install-recommends build-essential python3-pil libavcodec-dev libavutil-dev pkg-config libmediastreamer-dev libegl-dev libgles-dev libglew-dev
             ZMALA_NATIVE_COVERAGE_DIR=/work/tests/coverage/LLT/terminal/native sh tests/support/terminal/run-native.sh
           '
+      - name: Restore coverage report ownership after Docker
+        if: always()
+        run: |
+          if [ -d tests/coverage/LLT/terminal/native ]; then
+            sudo chown -R "$(id -u):$(id -g)" tests/coverage/LLT/terminal/native
+          fi
       - name: Consolidate coverage report
         run: .venv/bin/python build_tools/rbt_coverage.py --report-only
       - name: LLT coverage report
