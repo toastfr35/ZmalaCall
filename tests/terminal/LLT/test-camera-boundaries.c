@@ -128,8 +128,13 @@ int main(void) {
         else if (which == 3) short_count=1; else if (which == 4) huge_buffer=1; else map_error=1;
         int result=prepare_capture(&c); assert(result == -1 && c.size.width == 1920 && c.size.height == 1080); cleanup(&c);
     }
-    reset(&c); thread_error=1; int result=zmala_mjpeg_start(&c);
-    assert(result == -1 && !c.started && atomic_load(&c.stopping) && !opened); cleanup(&c);
+    int result;
+    for (int configured=0;configured<2;++configured) {
+        reset(&c);
+        if (configured) { result=zmala_mjpeg_configure(&c); assert(result == 0 && opened == 1); }
+        thread_error=1; result=zmala_mjpeg_start(&c);
+        assert(result == -1 && !c.started && atomic_load(&c.stopping) && opened == closed); cleanup(&c);
+    }
     for (int mode=0;mode<6;++mode) {
         reset(&c); status_mode=mode < 2 ? mode+1 : mode >= 4 ? mode : 0;
         if (mode == 2) cancel_ms=101;
@@ -150,6 +155,7 @@ int main(void) {
         if (mode == 2) dq_error=1;
         entry(argument);
         assert(first_open_ms >= 751 && first_open_ms <= 771 && opened == 1);
+        result=zmala_mjpeg_configure(&c); assert(result == 0 && opened == 1);
         assert(atomic_load(&c.received) == (mode == 0 ? 5u : mode == 1 ? 1u : 0u));
         assert(atomic_load(&c.copied) == (mode == 0 ? 2u : mode == 1 ? 1u : 0u));
         assert(atomic_load(&c.rejected) == (mode == 0 ? 3u : 0u));

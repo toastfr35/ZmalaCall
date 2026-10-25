@@ -9,9 +9,10 @@ for language, values in SETUP.items():
 WIFI_CONFIRMATION = json.loads((Path(__file__).resolve().parent / 'shared/wifi-confirmation.json').read_text(encoding='utf-8'))
 for language, values in WIFI_CONFIRMATION.items():
     LANGUAGES[language]['messages'].update(zip(['wifi_connected', 'server_qr_next'], values))
+# @llr LLR-TERM-UI-023
 VIDEO_MESSAGES = json.loads((Path(__file__).resolve().parent / 'shared/video-messages.json').read_text(encoding='utf-8'))
 for language, values in VIDEO_MESSAGES.items():
-    LANGUAGES[language]['messages'].update(zip(['no_remote_video', 'audio_continues'], values))
+    LANGUAGES[language]['messages'].update(zip(['no_remote_video', 'audio_continues', 'starting_video'], values))
 CALL_QUESTIONS = json.loads((Path(__file__).resolve().parent / 'shared/call-questions.json').read_text(encoding='utf-8'))
 for language, values in CALL_QUESTIONS.items():
     LANGUAGES[language]['messages'].update(zip(['call_question', 'callback_question', 'callback_requested'], values))

@@ -34,10 +34,18 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Four seconds without a decoded remote frame shall show missing-video feedback.
-  Negotiated receive-video disablement shall show the same feedback. Audio and
-  outgoing media shall continue. A new decoded frame or call shall clear the stale
-  condition.
+  Before the first decoded remote frame, the terminal call view shall show a
+  neutral video-starting message and an unslashed camera icon for up to eight
+  seconds. If no frame arrives by that deadline, it shall show missing-video
+  feedback. Once a frame has appeared, four seconds without a decoded remote
+  frame or negotiated receive-video disablement shall show missing-video
+  feedback without restarting the initial grace period. Audio and outgoing
+  media shall continue. A new decoded frame or call shall clear the stale
+  condition; each new call shall receive its own initial grace period.
 verification: |
   Control frame times and negotiated reception. Check the four-second boundary,
   feedback and continued audio and send state.
+  Check the neutral initial message and camera icon immediately before and at
+  the eight-second boundary, that redraws do not extend it, that first-frame
+  reception ends it, and that a new call resets it. Render both phases in every
+  supplied language without covering the local preview or rebuilding video.

@@ -147,8 +147,14 @@ lets the user see the outgoing camera view. The local preview shares the camera
 capture path with the outgoing stream.
 
 Video size and frame rate are configurable targets. Actual delivery depends on
-the camera, processing capacity and network. Missing received video produces
-feedback without stopping audio. Optional local people detection adjusts the frame
+the camera, processing capacity and network. Before the first remote picture,
+the call page shows a neutral video-starting message and an unslashed camera
+icon for eight seconds. A decoded picture clears it immediately; if none arrives,
+the page changes to missing-video feedback while preserving audio and the local
+preview. Once video has appeared, a subsequent four-second stall uses the
+missing-video message without another startup grace period. Each new call resets
+the initial wait. Both message phases use the selected language.
+Optional local people detection adjusts the frame
 within a two-times digital zoom limit. Detector failure restores the wide view.
 
 ### 12. Call history and callback requests
@@ -697,8 +703,7 @@ the requested size without opening the camera. The readiness gate uses a
 five-second deadline and 20 ms polling, and runs off the UI/media ticker. Stop
 cancels and joins the worker; failed camera initialization releases partial
 buffers and descriptors. This sequencing addresses a reproduced USB-control
-startup interaction, rather than changing the audio rates or relay policy.
-Physical call qualification remains necessary on the affected C20.
+startup interaction without changing the audio rates or relay policy.
 
 The explicit hardware plan `tests/terminal/LLT/c20_media_cycle.py` requires the
 terminal service to be stopped. It captures three seconds of native 16 kHz stereo
@@ -711,15 +716,18 @@ USB media startup, not speech quality, call transport or indefinite reliability.
 On October 25 this staged hardware plan completed 50/50 cycles on term2 after
 an initial playback-volume write. Native boundary tests also checked the
 production worker's readiness reset, timeout, cancellation and cleanup paths.
-These results are separate from real-call qualification of the installed worker.
+The installed startup sequence also completed eight terminal/OnePlus calls in
+alternating directions, including an app-closed call and two calls after verified
+USB power-off/wake. Both ends displayed actual camera pictures in every call.
+These bounded checks do not establish indefinite hardware reliability.
 
-Successful October 25 test calls through the encrypted relay made received video
-available about 2.1–3.5 seconds after answer at the terminal and 2.3–2.8 seconds at
+The eight October 25 calls with the startup sequence through the encrypted relay
+made received video available about 2.1–3.6 seconds after answer at the terminal and 2.2–2.7 seconds at
 the OnePlus phone. Phone measurements use its decoded-frame callback; the Pi
 measurement uses the decoded-video gate sampled by its UI. These are bounded
 samples with healthy C20 media, not a latency guarantee or display-scanout measure.
-The failed C20 case is excluded from that range and remains a separate reliability
-issue. In the captured successful trace, relay ICE checks completed about 1.9
+The earlier failed C20 control-stall case is excluded from that timing range.
+In the captured successful trace, relay ICE checks completed about 1.9
 seconds after answer, before the first usable video picture.
 
 ### Automatic framing

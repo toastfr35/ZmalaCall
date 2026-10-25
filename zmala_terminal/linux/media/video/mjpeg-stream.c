@@ -170,6 +170,7 @@ int zmala_mjpeg_start(MjpegCamera *c) {
     atomic_store(&c->stopping, false);
     if (pthread_create(&c->thread, NULL, capture, c)) {
         atomic_store(&c->stopping, true);
+        release_capture(c);
         return -1;
     }
     c->started = 1;
