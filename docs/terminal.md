@@ -668,6 +668,12 @@ incompatible generic capture configuration; it does not establish that every
 possible USB timeout has the same trigger. Repeated real phone calls must still
 check decoded images at both ends, including alternating callers and USB wake;
 configured/sent FPS alone can remain nonzero when the camera has failed.
+The C20 was also configured for USB runtime autosuspend after two idle seconds.
+The host rule `linux/99-zmalacall-c20.rules` now keeps only that USB device awake
+while powered, including after re-enumeration. This avoids the firmware's stalled
+audio/video resume path; it does not change the opt-in guarded five-minute hub
+power-off. Confirm `power/control` is `on` on the actual C20 USB device when
+investigating an installation or upgrade.
 
 ### Automatic framing
 

@@ -145,8 +145,10 @@ if [ "$argon_one" -eq 1 ]; then
 fi
 mkdir -p /etc/udev/rules.d
 install -m 644 "$task_root/build_tools/linux/70-zmalacall-presenter.rules" /etc/udev/rules.d/
+install -m 644 "$task_root/zmala_terminal/linux/99-zmalacall-c20.rules" /etc/udev/rules.d/
 udevadm control --reload-rules
 udevadm trigger --subsystem-match=hidraw
+udevadm trigger --action=add --subsystem-match=usb --attr-match=idVendor=0525 --attr-match=idProduct=a4ad
 # Prepare release and persistent appliance state.
 mkdir -p /opt/zmalacall/releases /var/lib/zmalacall /etc/zmalacall
 if [ -n "$data_from" ]; then

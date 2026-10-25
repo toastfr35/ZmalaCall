@@ -9,6 +9,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/linux/99-zmalacall-c20.rules
+  type: file
+- path: tests/terminal/LLT/test_c20_power_policy.py
+  type: file
 - path: tests/terminal/LLT/test_audio_routing.py
   type: file
 - path: zmala_terminal/common/linphone_api.py
@@ -35,8 +39,14 @@ text: |
   an incoming call waiting during wake to the C20 input and output before answering.
   Missing devices or rejected routes shall keep media unready, with diagnostics;
   HDMI, unrelated hardware and stale server identifiers shall never be substitutes.
+  The host shall disable automatic USB runtime suspend for the C20 USB device
+  on enumeration and binding, independently of its port or node number. This
+  shall not disable explicit guarded USB hub power switching or affect unrelated
+  USB devices.
 verification: |
   Renumber C20 nodes and supply stale configured names. Start a pending call with
   HDMI routes, then restore C20 discovery and verify both call routes and defaults.
   Inject missing capabilities, setter failure and wrong readback; check retryable
   failure and release of native references.
+  Validate the C20-only host rule against device/interface and unrelated identity
+  fixtures and the udev parser. Check runtime power policy after real re-enumeration.

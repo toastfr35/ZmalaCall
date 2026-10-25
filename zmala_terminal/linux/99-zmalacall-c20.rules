@@ -1,0 +1,4 @@
+# @llr LLR-TERM-POWER-010
+# C20 firmware can stall shared audio/video controls after USB runtime suspend.
+# Explicit guarded hub power-off remains available for long idle.
+ACTION=="add|bind", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="0525", ATTR{idProduct}=="a4ad", ATTR{power/control}="on"

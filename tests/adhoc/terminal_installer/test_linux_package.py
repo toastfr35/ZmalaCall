@@ -75,6 +75,7 @@ class LinuxPackageTests(unittest.TestCase):
                 self.assertIn('tests/support/native/turn-write-cases.h', names)
                 self.assertIn('tests/terminal/LLT/turn_socket_io.cpp', names)
                 self.assertIn('zmala_terminal/linux/media/audio/c20-alsa.conf', names)
+                self.assertIn('zmala_terminal/linux/99-zmalacall-c20.rules', names)
                 self.assertFalse(any(name.startswith('zmala_terminal/windows/') for name in names))
                 self.assertFalse(any(name.startswith('zmala_terminal/windows/') for name in names))
                 self.assertFalse(any('experimental' in Path(name).parts for name in names))
