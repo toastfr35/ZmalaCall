@@ -59,8 +59,9 @@ PHONE = {
             ]),
             ('During a call', [
                 'The large picture shows the other person; the small view at bottom right shows your own camera. Rotate your phone for portrait or landscape. Tap the video to show the four round controls; they disappear after five seconds without interaction.',
-                'Microphone: mute or restore your microphone. Audio output: change where you hear the call. Switch camera: alternate the available front and rear cameras. Red hangup: end the call.',
-                'Use the phone volume buttons to change listening volume. Camera switching changes your outgoing picture; it does not change the other person\'s camera.',
+                'Microphone: tap to mute or restore what the other person hears. A slash across the microphone means your microphone is muted. The separate listening button cycles through loudspeaker (speaker with sound waves), earpiece (phone icon), and muted call sound (crossed speaker). Muting listening does not mute your microphone. Phones without an earpiece skip that choice. Brief text confirms each change.',
+                'Swipe upward on the video to raise listening volume, or downward to lower it. A percentage appears briefly. The phone volume buttons also change call volume. Each new call starts on the loudspeaker at your existing Android call volume; the app does not turn the volume up automatically. If a call sounds quiet, check the listening icon and raise call volume while the call is connected.',
+                'Switch camera: alternate the available front and rear cameras. The small preview follows the camera picture proportions and phone rotation. Camera switching changes your outgoing picture; it does not change the other person\'s camera. Red hangup ends the call.',
             ]),
             ('When something is not working', [
                 'No contacts or everyone offline: check your network connection and wait for the app to reconnect. Ask the administrator to check account groups and server availability. A phone and terminal need separate accounts in a shared calling group.',
@@ -118,8 +119,10 @@ def update_existing():
         doc.save(path)
 
 
-def build_phone():
+def build_phone(filenames=None):
     for filename, (title, intro, sections) in PHONE.items():
+        if filenames is not None and filename not in filenames:
+            continue
         doc = Document()
         section = doc.sections[0]
         section.page_width, section.page_height = Inches(8.27), Inches(11.69)
@@ -140,10 +143,10 @@ def build_phone():
         doc.add_paragraph(intro)
         for heading, paragraphs in sections:
             paragraph = doc.add_heading(heading, 1)
-            if heading == '3. Enable incoming call alerts':
+            if heading in ('3. Enable incoming call alerts', 'Updates'):
                 paragraph.paragraph_format.page_break_before = True
             for text in paragraphs:
-                doc.add_paragraph(text)
+                doc.add_paragraph(text).paragraph_format.keep_together = True
         footer = section.footer.paragraphs[0]
         footer.add_run('ZmalaPhone  |  ')
         field = OxmlElement('w:fldSimple')

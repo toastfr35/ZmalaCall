@@ -12,6 +12,8 @@ references:
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/CallScreen.java
   type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CameraPreview.java
+  type: file
 - path: zmala_phone/app/src/main/res/drawable/zmala_logo.xml
   type: file
 - path: tests/android/LLT/device/InterfaceTest.java
@@ -45,8 +47,17 @@ text: |
   The outgoing and connected call view shall devote the screen to video without a logo banner or
   contact name, with the local preview at bottom right. Four round icon controls for microphone,
   audio output, camera switching and hangup shall share one row with accessible action labels.
+  The microphone icon shall use a slash only when the microphone is muted. The listening icon shall
+  distinguish a speaker with sound waves, a handset/earpiece and a crossed speaker, with an accessible
+  label naming the current state and next action. Brief text feedback shall confirm audio changes.
+  A single-finger vertical swipe on video shall change Android call listening volume in bounded steps;
+  upward shall increase and downward decrease, without changing microphone/output mute or triggering
+  a video tap. Horizontal, cancelled or multi-finger gestures shall not change volume. Hardware volume
+  keys during calls shall control the call stream, and the previous system stream policy shall resume afterward.
   Controls shall start hidden, appear on a video tap, and hide after five seconds without interaction.
   The preview shall move above visible controls to avoid overlap and return to the corner when hidden.
+  The corner surface itself shall fit the current camera aspect ratio inside a bounded preview area,
+  updating when native capture reports a different size after rotation or camera switching.
   Portrait and landscape layouts shall retain the same video surfaces and call. The local preview shall preserve the captured image aspect ratio and apply camera sensor/display rotation without stretching or showing a sideways image. A pulsing phone
   indicator shall show outgoing calling/ringing progress and stop on connection or leaving the view.
   After answer, a Connecting video indicator shall remain visible until the current call
@@ -66,3 +77,6 @@ verification: Exercise labels and actions on an Android display, check minimum t
   Render the pulse at several animation phases and verify a full circular perimeter with clear margins.
 
   Test answered-but-no-frame progress, decoder re-arming, stale callbacks and cleanup.
+
+  Exercise all audio icon states and vertical, horizontal, cancelled and multi-finger gestures.
+  Check call volume bounds and volume-key stream policy on the native activity.

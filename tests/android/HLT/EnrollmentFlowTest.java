@@ -25,6 +25,8 @@
 // surfaces survive before hanging up. With no fixture video packets, assert Connecting video
 
 // remains visible after answer and after rotation.
+// Cycle all three listening states while the microphone stays muted. Check call-stream volume
+// key selection, dispatch a vertical video gesture and restore the original system volume.
 
 // @pass The scanner opens without crashing and cancellation returns to setup without enrollment;
 
@@ -37,6 +39,8 @@
 // The compact contact name is the outgoing call target; tapping it sends an INVITE to that contact.
 
 // An answered fixture call without remote frames keeps the Connecting video indication.
+// Listening state is independent of the microphone; swipes change bounded call volume and
+// leave microphone mute selected. Ending the call restores default volume-key stream selection.
 
 // Camera optical QR reading and real audio/video quality are separate physical checks.
 
@@ -348,13 +352,46 @@ public class EnrollmentFlowTest {
 
       PhoneFixture.click(screen, "Remote video. Tap to show call controls.");
 
-      PhoneFixture.click(screen, "Mute");
+      PhoneFixture.click(screen, "Mute microphone");
 
-      assertTrue(PhoneFixture.hasDescription(screen, "Unmute"));
+      assertTrue(PhoneFixture.hasDescription(screen, "Unmute microphone"));
 
-      PhoneFixture.click(screen, "Use earpiece");
+      PhoneFixture.click(screen, "Loudspeaker. Switch to earpiece");
 
-      assertTrue(PhoneFixture.hasDescription(screen, "Use speaker"));
+      if (PhoneFixture.hasDescription(screen, "Earpiece. Mute call sound"))
+        PhoneFixture.click(screen, "Earpiece. Mute call sound");
+      assertTrue(PhoneFixture.hasDescription(screen, "Call sound muted. Switch to loudspeaker"));
+      assertTrue(PhoneFixture.hasDescription(screen, "Unmute microphone"));
+      PhoneFixture.click(screen, "Call sound muted. Switch to loudspeaker");
+      PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+        android.media.AudioManager audio = (android.media.AudioManager) screen.getSystemService(android.content.Context.AUDIO_SERVICE);
+        int stream = android.media.AudioManager.STREAM_VOICE_CALL;
+        int originalVolume = audio.getStreamVolume(stream);
+        int maximum = audio.getStreamMaxVolume(stream);
+        int minimum = audio.getStreamMinVolume(stream);
+        try {
+          assertEquals(stream, screen.getVolumeControlStream());
+          audio.setStreamVolume(stream, minimum, 0);
+          float density = screen.getResources().getDisplayMetrics().density;
+          android.view.View video = PhoneFixture.description(screen.getWindow().getDecorView(), "Remote video. Tap to show call controls.");
+          for (int[] step : new int[][]{{0, 200}, {2, 136}, {1, 136}}) {
+            android.view.MotionEvent event = android.view.MotionEvent.obtain(0, 10, step[0], 100 * density, step[1] * density, 0);
+            video.dispatchTouchEvent(event); event.recycle();
+          }
+          assertEquals(Math.min(maximum, minimum + 2), audio.getStreamVolume(stream));
+          for (int[] step : new int[][]{{0, 200}, {2, 2000}, {1, 2000}}) {
+            android.view.MotionEvent event = android.view.MotionEvent.obtain(0, 10, step[0], 100 * density, step[1] * density, 0);
+            video.dispatchTouchEvent(event); event.recycle();
+          }
+          assertEquals(minimum, audio.getStreamVolume(stream));
+          for (int[] step : new int[][]{{0, 2000}, {2, 200}, {1, 200}}) {
+            android.view.MotionEvent event = android.view.MotionEvent.obtain(0, 10, step[0], 100 * density, step[1] * density, 0);
+            video.dispatchTouchEvent(event); event.recycle();
+          }
+          assertEquals(maximum, audio.getStreamVolume(stream));
+          assertNotNull(PhoneFixture.description(screen.getWindow().getDecorView(), "Unmute microphone"));
+        } finally { audio.setStreamVolume(stream, originalVolume, 0); }
+      });
 
       PhoneFixture.snapshot("active-call");
 
@@ -429,6 +466,8 @@ public class EnrollmentFlowTest {
                   android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
 
       PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Living room"));
+
+      assertEquals(android.media.AudioManager.USE_DEFAULT_STREAM_TYPE, screen.getVolumeControlStream());
 
       assertFalse(PhoneFixture.hasText(screen, "Reset setup"));
 

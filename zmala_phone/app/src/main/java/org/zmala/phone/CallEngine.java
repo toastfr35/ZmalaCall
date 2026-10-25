@@ -8,11 +8,19 @@ import org.linphone.core.*;
 // @llr LLR-AND-CALL-002
 // The core is owned by the activity's main thread; no SIP credentials are written to disk.
 public final class CallEngine {
+  public enum Output {
+    SPEAKER, EARPIECE, MUTED;
+
+    Output next() { return values()[(ordinal() + 1) % values().length]; }
+  }
+
+  private Output output = Output.SPEAKER;
   public interface Events {
     void changed(String status);
   }
 
   private Core core;
+  private org.linphone.mediastream.video.capture.CaptureTextureView preview;
   private final Events events;
   private JSONObject config;
   private JSONObject transportConfig;
@@ -109,8 +117,12 @@ public final class CallEngine {
               connected = false; outgoingPeer = null;
               CallNotices.ring(context, changed.getCallLog().getCallId(), remote.getUsername(), System.currentTimeMillis() + 120000);
               call = changed;
+              output = Output.SPEAKER;
+              applyOutput();
             } else if (state == Call.State.OutgoingInit) call = changed;
             if (call != changed) return;
+            if (state == Call.State.OutgoingInit || state == Call.State.Connected
+                || state == Call.State.StreamsRunning) applyOutput();
             // @llr LLR-AND-HISTORY-002
             if (state == Call.State.Connected || state == Call.State.StreamsRunning) {
               connected = true;
@@ -125,6 +137,7 @@ public final class CallEngine {
               if (outgoingPeer == null) CallNotices.finish(context, changed.getCallLog().getCallId(), !connected);
               outgoingPeer = null;
               call = null;
+              preview = null;
               // @llr LLR-AND-UPDATE-002
               UpdateGate.INSTANCE.endCall();
               core.setNativeVideoWindowId(null);
@@ -141,7 +154,10 @@ public final class CallEngine {
 
           @Override
           public void onCallStatsUpdated(Core source, Call changed, CallStats stats) {
-            if (source == core && changed == call) videoStartup.requestFrame(changed);
+            if (source == core && changed == call) {
+              videoStartup.requestFrame(changed);
+              updatePreviewSize();
+            }
           }
         });
     core.start();
@@ -179,7 +195,7 @@ public final class CallEngine {
         core.setVideoDevice(device);
         break;
       }
-    speaker(true);
+    output(Output.SPEAKER);
   }
 
   public void refresh(JSONObject configuration) {
@@ -207,6 +223,7 @@ public final class CallEngine {
     }
     if (!permitted) return;
     core.setMicEnabled(true);
+    output(Output.SPEAKER);
     Address address =
         Factory.instance()
             .createAddress(
@@ -257,14 +274,34 @@ public final class CallEngine {
     if (core != null) core.setMicEnabled(!value);
   }
 
-  public void speaker(boolean value) {
+  // @llr LLR-AND-CALL-002
+  public Output output(Output value) {
+    output = value;
+    applyOutput();
+    return output;
+  }
+
+  private void applyOutput() {
     if (core == null) return;
+    boolean routeFound = false;
     for (AudioDevice device : core.getAudioDevices()) {
-      if (device.getType() == (value ? AudioDevice.Type.Speaker : AudioDevice.Type.Earpiece)) {
+      if (device.getType() == (output == Output.EARPIECE
+          ? AudioDevice.Type.Earpiece : AudioDevice.Type.Speaker)) {
+        // Current-core routing while idle does not establish the next call's default.
+        core.setDefaultOutputAudioDevice(device);
         core.setOutputAudioDevice(device);
+        if (call != null) call.setOutputAudioDevice(device);
+        routeFound = true;
         break;
       }
     }
+    // Devices without an earpiece skip that unavailable choice.
+    if (!routeFound && output == Output.EARPIECE) {
+      output = Output.MUTED;
+      applyOutput();
+      return;
+    }
+    if (call != null) call.setSpeakerMuted(output == Output.MUTED);
   }
 
   // @llr LLR-AND-CALL-002
@@ -283,9 +320,25 @@ public final class CallEngine {
 
   public void video(TextureView remote, TextureView preview) {
     if (core != null) {
+      this.preview = preview instanceof org.linphone.mediastream.video.capture.CaptureTextureView
+          ? (org.linphone.mediastream.video.capture.CaptureTextureView) preview : null;
       core.setNativeVideoWindowId(remote);
       core.setNativePreviewWindowId(preview);
+      updatePreviewSize();
     }
+  }
+
+  // @llr LLR-AND-UI-002
+  void updatePreviewSize() {
+    if (call == null || preview == null) return;
+    CallParams params = call.getCurrentParams();
+    VideoDefinition size = params == null ? null : params.getSentVideoDefinition();
+    if (size == null || size.getWidth() <= 0 || size.getHeight() <= 0) return;
+    // SDK 5.5's in-call Camera2 size notification does not resize the Java preview
+    // (its dimensions stay 0x0). Use the live stream definition, including adaptation.
+    android.util.Size current = preview.getPreviewVideoSize();
+    if (current.getWidth() != size.getWidth() || current.getHeight() != size.getHeight())
+      preview.setAspectRatio(size.getWidth(), size.getHeight());
   }
 
   // @llr LLR-AND-UI-002
@@ -305,6 +358,7 @@ public final class CallEngine {
     Core previous = core;
     core = null;
     call = null;
+    preview = null;
     // @llr LLR-AND-UPDATE-002
     UpdateGate.INSTANCE.endCall();
     registered = false;
