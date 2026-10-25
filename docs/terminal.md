@@ -513,6 +513,11 @@ or change contacts. This includes the first middle/Pointer press: motion during
 that consumed hold does not adjust volume. Release and press again to adjust it.
 With no CEC, normal button behavior remains available; unknown routing limits
 detection.
+After restart, a missing power observation still permits a previously qualified
+power-on, even if the separate source-switching check was skipped or failed.
+The first press configures the CEC playback identity if needed and wakes the TV;
+it remains consumed. Unknown power is never saved as a standby restoration target.
+If power control was not qualified, an unknown state cannot authorize waking it.
 
 Incoming calls remember observed power/source before revealing the UI. Decline,
 caller cancellation or hangup restores that state. Browsing has its own return

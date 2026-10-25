@@ -34,6 +34,11 @@ text: |
   wake or input selection and consume that press. Presses during input settling shall
   also be consumed. A consumed middle hold shall require release and a fresh press
   before volume motion works.
+  Unknown TV power state shall permit qualified power-on even when input switching
+  was skipped or failed. It shall not permit power-on when power control is disabled,
+  or be treated as a known standby state for restoration.
 verification: |
   Hide the UI and send every button, including held middle and motion. Check selection
   requests and absence of normal button actions.
+  Repeat after restart with unknown power, an unconfigured CEC adapter and only
+  power control qualified; check wake and no invented standby restoration.
