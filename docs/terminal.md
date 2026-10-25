@@ -78,6 +78,8 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
+The eight-row Settings menu reserves a full text line for each label and saved value at both supported sizes; short values such as Nokia and the speaker percentage remain complete.
+
 The server supplies the main terminal configuration. The local Settings page lets
 the user change language, automatic answer, framing, speaker volume, ringtone, portrait count
 and the return-to-TV timeout. Each editor lets the user accept or cancel a change.

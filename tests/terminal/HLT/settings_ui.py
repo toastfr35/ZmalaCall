@@ -2,6 +2,7 @@
 # @requirements HLR-TERM-CONFIG-016, HLR-TERM-AUDIO-001
 # @environment display
 # @plan Render settings on the real Tk UI and drive selection/draft transitions; assert only the active pane shows controls and cancellation preserves configuration.
+# At both sizes, render French short values with the real Pango font and assert their final images retain the full text without ellipsis and stay inside their rows.
 # Render the ringtone editor and exercise its debounced preview request through substituted playback; verify cancel and incoming-call interruption stop it without changing the selected ringtone.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
@@ -49,6 +50,27 @@ try:
         print(f'Settings layout: {size}, {len(LANGUAGES)} languages', flush=True)
         app.root.geometry(size)
         app.root.update()
+        app.language = 'fr'
+        app.font_family = font_family('fr', app.available_fonts)
+        rendered = {}
+        original_photo = app.text_renderer.photo
+        def record_photo(text, *args, **kwargs):
+            photo = original_photo(text, *args, **kwargs)
+            if photo is not None:
+                rendered[str(photo)] = text
+            return photo
+        with patch.object(app.text_renderer, 'photo', side_effect=record_photo):
+            app.settings_signature = None
+            app.render(); app.root.update()
+            for key in ('language', 'c20_speaker_volume', 'ringtone', 'carousel_portraits'):
+                item = next(i for i in app.settings_canvas.find_withtag('settings-value')
+                            if key in app.settings_canvas.gettags(i))
+                image = app.settings_canvas.itemcget(item, 'image')
+                expected = app.settings_value(key, app.settings_draft.value(app.model.config, key))
+                assert rendered[image] == expected, (size, key, rendered[image], expected)
+                row = app.settings_canvas.bbox('settings-row-'+key)
+                value = app.settings_canvas.bbox(item)
+                assert value[1] >= row[1] and value[3] <= row[3], (size, key, row, value)
         for language in LANGUAGES:
             app.language = language
             app.font_family = font_family(language, app.available_fonts)

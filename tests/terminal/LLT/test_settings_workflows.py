@@ -1,7 +1,7 @@
 # @test T-LLT-071
 # @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-020, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022
 # @environment portable
-# @plan Exercise settings navigation, acknowledged writes and timeout reconciliation with real drafts and recording HTTP/Tk boundaries. Verify busy and cancelled drafts, captured enrollment generation, keyboard repeat release coalescing and stale-result rejection. Draw every setting with controlled image metrics; check serial footer, hint placement only on the active side, localized values, hold progress, busy feedback and bounded font size.
+# @plan Exercise settings navigation, acknowledged writes and timeout reconciliation with real drafts and recording HTTP/Tk boundaries. Verify busy and cancelled drafts, captured enrollment generation, keyboard repeat release coalescing and stale-result rejection. Draw every setting with controlled image metrics; check serial footer, hint placement only on the active side, localized values, hold progress, busy feedback and bounded font size. With eight rows at both supported sizes and 22-pixel minimum text images, assert short saved values are rendered without ellipsis.
 # @pass Every navigation, request, state and drawing assertion passes without a display or server; no mocked pixel output is claimed as physical readability evidence.
 import queue
 from types import SimpleNamespace
@@ -82,6 +82,20 @@ class SettingsWorkflowTests(unittest.TestCase):
         self.assertFalse(any(call.kwargs.get('tags')=='settings-hint' for call in c.create_image.call_args_list))
         v.settings_draft.busy=False; v.settings_draft.error=True; v.draw_settings()
         self.assertIn('help',[call.args[0] for call in v.text_renderer.photo.call_args_list])
+
+    def test_short_saved_values_retain_full_text_in_eight_rows(self):
+        for width, height in ((900, 620), (1280, 720)):
+            v = self.view()
+            v.settings_canvas.winfo_width.return_value = width
+            v.settings_canvas.winfo_height.return_value = height
+            v.text_renderer.photo.side_effect = lambda text, family, size, *args: SimpleNamespace(
+                height=lambda: max(22, size+8), text=text)
+            v.draw_settings()
+            images = [call.kwargs['image'] for call in v.settings_canvas.create_image.call_args_list
+                      if 'settings-value' in call.kwargs.get('tags', ())]
+            for key in ('language', 'c20_speaker_volume', 'ringtone', 'carousel_portraits'):
+                expected = v.settings_value(key, SettingsDraft.value(v.model.config, key))
+                self.assertIn(expected, [image.text for image in images], (width, height, key))
 
     def test_hold_progress_bounded_labels_and_localized_values(self):
         v=self.view(); v.settings_open=False; v.settings_hold.start(100); v.settings_hold.update(105)

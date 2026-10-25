@@ -121,12 +121,12 @@ class SettingsView:
             selected = draft.row == index
             fill = '#303b50' if selected else PANEL
             self.settings_panel(margin, y, left_width, row_height, fill,
-                                ACCENT if selected and not draft.editing else None, tags='settings-row')
-            self.settings_label(self.settings_text(key), margin+14, y+(row_height*.3 if key == 'reset' else 10), left_width-28,
-                                22, color=RED if key == 'reset' else FG, background=fill, bold=True, max_height=row_height*.45)
+                                ACCENT if selected and not draft.editing else None, tags=('settings-row', 'settings-row-'+key))
+            self.settings_label(self.settings_text(key), margin+14, y+(row_height*.3 if key == 'reset' else 1), left_width-28,
+                                22, color=RED if key == 'reset' else FG, background=fill, bold=True, max_height=row_height/2-1)
             value = self.settings_value(key, SettingsDraft.value(config, key))
-            self.settings_label(value, margin+14, y+row_height*.55, left_width-28,
-                                19, MUTED, fill, max_height=row_height*.37)
+            self.settings_label(value, margin+14, y+row_height/2, left_width-28,
+                                19, MUTED, fill, max_height=row_height/2, tags=('settings-value', key))
         key = draft.key
         self.settings_label(self.settings_text(key), right_x, 28, right_width, 30, bold=True, max_height=72)
         shown = draft
