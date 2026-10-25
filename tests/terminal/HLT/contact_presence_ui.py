@@ -1,7 +1,7 @@
 # @test T-HLT-005
-# @requirements HLR-TERM-NAV-001
-# @environment hardware
-# @plan With a disposable configured server profile and display prepared, Render the real carousel with changing reachability and selected contacts; assert available, push-only and offline colours/labels and stable selection during updates.
+# @requirements HLR-TERM-NAV-001, HLR-TERM-UI-012
+# @environment display
+# @plan Render real Tk/Linux text with a disposable profile and substituted hardware. Check complete status-label and symbol bounds, their separation and enclosing frames in 95 languages at three/five-card display sizes and during French carousel motion. Check full French labels at 720p, presence colours, stable selection, stale-preflight rejection and cancellation without placing SIP calls.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Native canvas visibility and call guards, without placing a real SIP call."""
@@ -10,61 +10,54 @@ import json
 from pathlib import Path
 import sys
 import time
+from unittest.mock import Mock
 
 ROOT = (Path(__file__).resolve().parents[3] / 'zmala_terminal')
 sys.path.insert(0, str(ROOT.parent))
-from zmala_terminal.common import main as main
-from zmala_terminal.common.configuration import Configuration
 from zmala_terminal.common.localization import LANGUAGES, font_family
 from zmala_terminal.common.model import State
 
 
-class QuietEngine:
-    registered, core, call = True, None, None
+from tests.support.terminal.ui_fixture import terminal_fixture, configuration
+from zmala_terminal.common.carousel import CarouselMotion
 
-    def __init__(self, config, *args, **kwargs):
-        self.config, self.dialed = config, []
-
-    def dial(self, uri):
-        self.dialed.append(uri)
-
-    def iterate(self):
-        pass
-
-    def diagnostics(self):
-        return {}
-
-    def core_refresh_registers(self, *args):
-        pass
-
-    def end(self, **kwargs):
-        pass
-
-    def close(self):
-        pass
-
-
-class QuietMaintenance:
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def stop(self):
-        pass
-
-
-main.Engine, main.MaintenanceAgent = QuietEngine, QuietMaintenance
-app = main.Terminal(profile='presence-ui')
+fixture = terminal_fixture()
+app, _ = fixture.__enter__()
 app.poll = lambda: None
-base = Configuration().fetch()
-base['contacts'] = [c for c in base['contacts'] if c['can_call']][:3]
-assert len(base['contacts']) == 3
+rendered_labels = {}
+original_photo = app.text_renderer.photo
+def recorded_photo(text, *args, **kwargs):
+    image = original_photo(text, *args, **kwargs)
+    rendered_labels[str(image)] = text
+    return image
+app.text_renderer.photo = recorded_photo
+app.engine.dialed = []
+app.engine.dial.side_effect = app.engine.dialed.append
+base = configuration()
 for index, contact in enumerate(base['contacts']):
     contact['online'] = index != 1
     contact['presence'] = ('available', 'offline', 'push')[index]
 app.apply_config(base)
 app.server_seen = time.monotonic()
-app.root.geometry('900x620')
-app.root.update()
+
+
+def assert_status_bounds(code, moving=False):
+    bands = [app.avatar.coords(item) for tag in ('contact-online', 'contact-offline')
+             for item in app.avatar.find_withtag(tag)]
+    for label, symbol in zip(app.avatar.find_withtag('contact-status-label'),
+                             app.avatar.find_withtag('contact-status-symbol')):
+        text_box, icon_box = app.avatar.bbox(label), app.avatar.bbox(symbol)
+        x, y = app.avatar.coords(label)
+        enclosing = [band for band in bands if band[0] < x < band[2] and band[1] < y < band[3]]
+        assert len(enclosing) == 1, (code, 'status owner', text_box, enclosing)
+        left, top, right, bottom = enclosing[0]
+        for box in (text_box, icon_box):
+            assert left <= box[0] < box[2] <= right, (code, 'horizontal content', box, enclosing)
+            assert top <= box[1] < box[3] <= bottom, (code, 'vertical content', box, enclosing)
+        assert icon_box[2]+3 <= text_box[0], (code, 'icon overlaps text', icon_box, text_box)
+        if not moving:  # Entering/leaving cards intentionally cross the canvas edge.
+            assert 0 <= left < right <= app.avatar.winfo_width(), (code, 'screen width', enclosing)
+        assert 0 <= top < bottom <= app.avatar.winfo_height(), (code, 'screen height', enclosing)
 
 
 def pump():
@@ -76,19 +69,47 @@ def pump():
 
 
 try:
-    for code in LANGUAGES:
-        app.language = code
-        app.font_family = font_family(code, app.available_fonts)
-        app.render()
-        app.root.update_idletasks()
-        assert len(app.avatar.find_withtag('contact-online')) == 2, code
-        assert len(app.avatar.find_withtag('contact-offline')) == 1, code
-        for state in ('available', 'push', 'offline'):
-            assert len(app.avatar.find_withtag('presence-'+state)) == 1, (code, state)
-        for item in (*app.avatar.find_withtag('contact-online'), *app.avatar.find_withtag('contact-offline')):
-            x1, y1, x2, y2 = app.avatar.coords(item)
-            assert 0 <= x1 < x2 <= app.avatar.winfo_width(), (code, 'horizontal', x1, x2)
-            assert 0 <= y1 < y2 <= app.avatar.winfo_height(), (code, 'vertical', y1, y2)
+    for width, height, portraits in ((900, 620, 3), (1280, 720, 5), (1920, 1080, 5)):
+        app.root.geometry(f'{width}x{height}')
+        fixture_config = copy.deepcopy(base)
+        if portraits == 5:
+            fixture_config['contacts'] += [dict(fixture_config['contacts'][index], id='extra'+str(index)) for index in (0, 2)]
+        fixture_config['carousel_portraits'] = portraits
+        app.apply_config(fixture_config)
+        app.root.update()
+        for code in LANGUAGES:
+            app.language = code
+            app.font_family = font_family(code, app.available_fonts)
+            app.server_seen = time.monotonic()
+            app.render()
+            app.root.update_idletasks()
+            for state in ('available', 'push', 'offline'):
+                assert app.avatar.find_withtag('presence-'+state), (code, state)
+            assert_status_bounds(code)
+        app.language = 'fr'
+        app.font_family = font_family('fr', app.available_fonts)
+        for index in range(3):
+            app.model.index = index
+            app.carousel_motion = None
+            app.render()
+            app.root.update_idletasks()
+            assert_status_bounds('fr selected '+str(index))
+            # At the supported TV size, every French status is displayed in full.
+            if width >= 1280:
+                for item in app.avatar.find_withtag('contact-status-label'):
+                    image_name = app.avatar.itemcget(item, 'image')
+                    rendered = rendered_labels[image_name]
+                    assert '…' not in rendered, ('French label truncated', rendered)
+        app.carousel_motion = CarouselMotion(app.model.contacts, 0, 1, time.monotonic())
+        for progress in (.05, .25, .5, .75, .95):
+            app.carousel_motion.started = time.monotonic()-app.carousel_motion.duration*progress
+            app.draw_avatar(app.model.selected)
+            app.root.update_idletasks()
+            assert_status_bounds('fr moving '+str(progress), moving=True)
+        app.carousel_motion = None
+    app.apply_config(base)
+    app.root.update()
+    app.configuration = Mock()  # Only preflight responses are substituted below.
     app.language = 'en'
     app.model.index = 1
     app.press('green')
@@ -106,6 +127,7 @@ try:
     fresh = copy.deepcopy(base)
     fresh['contacts'][0]['online'] = True
     fresh['contacts'][1]['online'] = True
+    fresh['contacts'][1]['presence'] = 'available'
     app.messages.put(('poll-config', (app.generation, fresh)))
     app.tick()
     assert len(app.avatar.find_withtag('contact-online')) == 3
@@ -126,6 +148,6 @@ try:
     app.press('green')
     assert app.model.state == State.CONFIRM_CALLBACK and not app.engine.dialed
     app.press('red')
-    print('95-language status bands fit the native carousel; offline, unknown/stale presence, fresh preflight and cancellation guards passed.')
+    print('95-language text/icon bounds, full French status labels, three/five cards, animation and presence/call guards passed.')
 finally:
-    app.close()
+    fixture.__exit__(None, None, None)

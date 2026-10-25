@@ -2,6 +2,9 @@
 from dataclasses import dataclass
 import math
 
+# @llr LLR-TERM-UI-015
+CONTACT_STATUS_HEIGHT = 56
+
 
 @dataclass(frozen=True)
 class CarouselLayout:
@@ -28,8 +31,8 @@ class CarouselLayout:
         # Neighbours are half the selected portrait size. Their combined
         # half-widths occupy 3/4 of this size; leave room for borders and a gap.
         horizontal_limit = (spacing-32)/.75
-        size = min(460, width*.24, height-132, horizontal_limit) if wide else min(
-            400 if width >= 1100 else 300, height-132, horizontal_limit)
+        size = min(460, width*.24, height-92-CONTACT_STATUS_HEIGHT, horizontal_limit) if wide else min(
+            400 if width >= 1100 else 300, height-92-CONTACT_STATUS_HEIGHT, horizontal_limit)
         slots = 5 if wide else 3
         # Five portraits must also fit on a 720p TV or a narrow window.
         available = width-140-slots*28-(slots-1)*12

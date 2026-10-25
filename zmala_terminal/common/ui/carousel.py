@@ -2,10 +2,13 @@
 import math
 import time
 import tkinter as tk
+import unicodedata
 from zmala_terminal.common.model import State
-from zmala_terminal.common.carousel import CarouselLayout, carousel_contacts
+from zmala_terminal.common.carousel import CarouselLayout, carousel_contacts, CONTACT_STATUS_HEIGHT
 from zmala_terminal.common.configuration import ROOT
 from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED, PANEL, ACCENT, BADGE_RED, BADGE_WHITE
+
+STATUS_HEIGHT = CONTACT_STATUS_HEIGHT
 
 
 class CarouselView:
@@ -82,10 +85,10 @@ class CarouselView:
         selected = focus > .5
         layout = layout or CarouselLayout.fit(width, height, len(self.model.contacts),
                                     (self.model.config or {}).get('carousel_portraits', 3))
-        size = min(layout.portrait_size*(.5+.5*focus), max(40, height-132)) if idle else min(152+88*focus, height - (90-50*focus))
+        size = min(layout.portrait_size*(.5+.5*focus), max(40, height-92-STATUS_HEIGHT)) if idle else min(152+88*focus, height - (90-50*focus))
         x, y = center_x+(layout.offset(slot) if idle else width*.29*slot), center_y-42 if idle else center_y-12*(1-focus)
         padding = 12+2*focus
-        bottom = y+size/2+padding+(44 if idle else 44*(1-focus))+(40 if idle and person else 0)
+        bottom = y+size/2+padding+(44 if idle else 44*(1-focus))+(STATUS_HEIGHT if idle and person else 0)
         ringing = self.model.state == State.RINGING
         current = next((c for c in self.model.contacts if person and c['id'] == person['id']), person)
         available = self.contact_online(current)
@@ -94,7 +97,7 @@ class CarouselView:
         self.avatar.create_rectangle(x-size/2-padding, y-size/2-padding, x+size/2+padding, bottom,
                                      fill='#211e32' if selected else PANEL,
                                      outline=border if selected or idle else '#2b3547', width=4 if ringing or idle and selected else 2 if selected else 1,
-                                     tags=('ring-card',) if ringing else ())
+                                     tags=('ring-card',) if ringing else ('contact-card',))
         image = self.contact_image(person, int(size), '#211e32' if selected else PANEL)
         if image:
             self.current_photos.append(image)
@@ -130,7 +133,7 @@ class CarouselView:
                 label = self.text_renderer.photo(shortened+'…', self.font_family, label_size,
                                                  '#211e32' if selected else PANEL, color, label_width)
             self.current_text_images.append(label)
-            self.avatar.create_image(x, bottom-22-(40 if idle and person else 0), image=label,
+            self.avatar.create_image(x, bottom-22-(STATUS_HEIGHT if idle and person else 0), image=label,
                                      tags=('contact-name', 'contact-name-'+person['id']) if person else ())
         if idle and person:
             label_width = min(layout.portrait_size*.5, max(40, height-154)) if self.carousel_motion else size
@@ -141,24 +144,35 @@ class CarouselView:
             self.current_text_images.append(phone)
             self.avatar.create_image(center_x+size/2+62, center_y, image=phone, tags='ring-phone')
 
+    # @llr LLR-TERM-NAV-005, LLR-TERM-UI-015
     def draw_contact_status(self, x, bottom, size, padding, selected, available, label_width=None, presence=None):
         presence = presence or ('available' if available else 'offline')
         color, background = {'available': (GREEN, '#193e31'), 'push': ('#388bff', '#152e50'),
                              'offline': (RED, '#41222a')}[presence]
         label_key = {'available': 'available', 'push': 'try_calling', 'offline': 'offline'}[presence]
-        status_y = bottom-20
-        self.avatar.create_rectangle(x-size/2-padding+3, bottom-39, x+size/2+padding-3, bottom-3,
+        left, right = x-size/2-padding+3, x+size/2+padding-3
+        status_y = bottom-STATUS_HEIGHT/2
+        self.avatar.create_rectangle(left, bottom-STATUS_HEIGHT+1, right, bottom-3,
                                      fill=background, outline='', tags=('contact-online' if available else 'contact-offline', 'presence-'+presence))
-        self.avatar.create_text(x-size/2+6, status_y, text='✓' if available else '×', fill=color,
-                                font=('Segoe UI', 24 if selected else 20, 'bold'))
+        self.avatar.create_text(left+16, status_y, text={'available': '✓', 'push': '?', 'offline': '×'}[presence], fill=color,
+                                font=(self.font_family, 20 if selected else 16, 'bold'), tags='contact-status-symbol')
         font_size = 23 if selected and not self.carousel_motion else 17
-        label_width = max(30, int((size if label_width is None else label_width)-20))
-        label = self.text_renderer.photo(self.text(label_key), self.font_family, font_size, background, color, label_width, True)
-        while label.height() > 31 and font_size > 10:
+        # Reserve separate icon/text regions. The smallest moving card supplies
+        # a stable text width, so shaping stays cached throughout the animation.
+        label_width = max(16, int(min(right-left-40, (size if label_width is None else label_width)+2*padding-46)))
+        text = self.text(label_key)
+        label = self.text_renderer.photo(text, self.font_family, font_size, background, color, label_width, True)
+        while label.height() > STATUS_HEIGHT-8 and font_size > 11:
             font_size -= 1
-            label = self.text_renderer.photo(self.text(label_key), self.font_family, font_size, background, color, label_width, True)
+            label = self.text_renderer.photo(text, self.font_family, font_size, background, color, label_width, True)
+        shortened = text
+        while label.height() > STATUS_HEIGHT-8 and shortened:
+            while shortened and unicodedata.category(shortened[-1]).startswith('M'):
+                shortened = shortened[:-1]
+            shortened = shortened[:-1].rstrip()
+            label = self.text_renderer.photo(shortened+'…', self.font_family, font_size, background, color, label_width, True)
         self.current_text_images.append(label)
-        self.avatar.create_image(x+12, status_y, image=label)
+        self.avatar.create_image((left+35+right-5)/2, status_y, image=label, tags='contact-status-label')
 
     # @llr LLR-TERM-HISTORY-016
     def draw_corner_notification(self, count):
