@@ -684,6 +684,12 @@ power cycle recovers the tested unit; successful short call sequences cannot
 establish that a particular workaround eliminates the fault. Trials of fixed-rate,
 interface-close and settling-delay driver quirks were inconclusive; long control
 runs also passed without those overrides, so they are not installed as fixes.
+Moving the same C20 from a USB 3 port to a USB 2 port did not prevent recurrence.
+After an initial playback-volume write, separate 40-cycle audio-duplex and
+camera-only checks passed, but concurrent microphone/camera startup failed on
+its fifth cycle. An additional control-message-delay trial failed on its
+seventeenth combined-media cycle. These comparisons narrow the reproduction
+conditions; they do not distinguish camera firmware, cable or host-driver faults.
 
 The explicit hardware plan `tests/terminal/LLT/c20_media_cycle.py` requires the
 terminal service to be stopped. It captures one second of native 16 kHz stereo
