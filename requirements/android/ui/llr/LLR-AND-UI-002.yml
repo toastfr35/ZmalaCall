@@ -35,8 +35,8 @@ text: |
   Welcome instructions shall describe scanning a supplied setup QR code, received by email or on paper,
   without requiring the phone user to access server administration.
   Contacts shall use compact horizontal rows with a rounded portrait beside the name.
-  Name buttons shall include a smaller status label: Available on green for confirmed live
-  availability, Try calling on blue for unconfirmed push eligibility, and Offline on red
+  Name buttons shall include a smaller status label: Available on green for recently confirmed
+  activity, Try calling on blue for unconfirmed push eligibility, and Offline on red
   otherwise. Green and blue buttons shall initiate a call when tapped while registered;
   red buttons shall be disabled. Status shall also be exposed to accessibility services.
   Rows shall omit a separate call button to show more contacts.

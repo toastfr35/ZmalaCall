@@ -27,6 +27,8 @@
 // remains visible after answer and after rotation.
 // Cycle all three listening states while the microphone stays muted. Check call-stream volume
 // key selection, dispatch a vertical video gesture and restore the original system volume.
+// Enroll a directory with recently active, push-only and offline contacts. Assert all three
+// colours/state labels and disabled offline action, and dial both the green and blue names.
 
 // @pass The scanner opens without crashing and cancellation returns to setup without enrollment;
 
@@ -41,6 +43,7 @@
 // An answered fixture call without remote frames keeps the Connecting video indication.
 // Listening state is independent of the microphone; swipes change bounded call volume and
 // leave microphone mute selected. Ending the call restores default volume-key stream selection.
+// Available is green, Try calling blue and Offline red; green/blue dial the named permitted peer.
 
 // Camera optical QR reading and real audio/video quality are separate physical checks.
 
@@ -77,6 +80,16 @@ import org.junit.*;
 
 
 public class EnrollmentFlowTest {
+  private static org.json.JSONObject presenceConfig(int port) throws Exception {
+    org.json.JSONObject config = PhoneFixture.config(port);
+    config.getJSONArray("contacts").put(new org.json.JSONObject()
+        .put("id", "phone2").put("name", "Sleeping phone").put("photo", "")
+        .put("can_call", true).put("can_receive", true).put("online", true).put("presence", "push"));
+    config.getJSONArray("contacts").put(new org.json.JSONObject()
+        .put("id", "term2").put("name", "Kitchen").put("photo", "")
+        .put("can_call", true).put("can_receive", true).put("online", false).put("presence", "offline"));
+    return config;
+  }
 
   @Rule
 
@@ -268,7 +281,7 @@ public class EnrollmentFlowTest {
 
     try (PhoneFixture.Sip sip = new PhoneFixture.Sip();
 
-        PhoneFixture.Http http = new PhoneFixture.Http(PhoneFixture.config(sip.port()))) {
+        PhoneFixture.Http http = new PhoneFixture.Http(presenceConfig(sip.port()))) {
 
       MainActivity screen = activity.launchActivity(null);
 
@@ -303,6 +316,28 @@ public class EnrollmentFlowTest {
       assertFalse(PhoneFixture.hasText(screen, "Ready to call"));
 
       assertFalse(PhoneFixture.hasText(screen, "Test phone"));
+
+      PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+        android.view.View root = screen.getWindow().getDecorView();
+        for (Object[] state : new Object[][]{{"Living room", "Available", android.graphics.Color.rgb(33, 122, 80), true},
+            {"Sleeping phone", "Try calling", android.graphics.Color.rgb(33, 91, 164), true},
+            {"Kitchen", "Offline", android.graphics.Color.rgb(183, 47, 63), false}}) {
+          android.widget.Button name = (android.widget.Button) PhoneFixture.text(root, (String) state[0]);
+          assertNotNull(name);
+          assertTrue(name.getText().toString().endsWith("\n" + state[1]));
+          assertEquals((int) state[2], ((android.graphics.drawable.GradientDrawable) name.getBackground()).getColor().getDefaultColor());
+          assertEquals((boolean) state[3], name.isEnabled());
+        }
+      });
+
+      sip.ringOutgoing = true;
+      PhoneFixture.click(screen, "Sleeping phone");
+      String pushInvite = sip.invites.poll(10, java.util.concurrent.TimeUnit.SECONDS);
+      assertNotNull(pushInvite);
+      assertTrue(pushInvite.startsWith("INVITE sip:phone2@127.0.0.1"));
+      sip.respond(pushInvite, 486, "");
+      PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Living room")
+          && !PhoneFixture.hasText(screen, "End call"));
 
       PhoneFixture.snapshot("contacts");
 
