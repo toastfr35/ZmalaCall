@@ -153,6 +153,50 @@ function terminalStatus(update) {
     if (typeof value !== 'string' || value.length > 256) throw Error('Invalid terminal status.');
     status[key] = value;
   }
+  for (const [key, allowed] of /** @type {[string, string[]][]} */ ([
+    [
+      'remote_status',
+      [
+        'connected',
+        'disconnected',
+        'unpaired',
+        'blocked',
+        'bluetooth_unavailable',
+        'input_unavailable',
+        'unknown',
+      ],
+    ],
+    [
+      'camera_status',
+      ['connected', 'disconnected', 'off', 'on', 'waking', 'switching', 'error', 'unknown'],
+    ],
+  ])) {
+    if (update[key] !== undefined) {
+      if (typeof update[key] !== 'string' || !allowed.includes(update[key]))
+        throw Error('Invalid peripheral status.');
+      Object.assign(status, { [key]: update[key] });
+    }
+  }
+  if (update.remote_battery !== undefined) {
+    const battery = update.remote_battery;
+    if (
+      battery !== null &&
+      (typeof battery !== 'number' || !Number.isInteger(battery) || battery < 0 || battery > 100)
+    )
+      throw Error('Invalid remote battery.');
+    status.remote_battery = battery;
+  }
+  for (const key of /** @type {const} */ ([
+    'remote_charger_connected',
+    'camera_powered',
+    'camera_connected',
+  ])) {
+    const value = update[key];
+    if (value !== undefined) {
+      if (value !== null && typeof value !== 'boolean') throw Error('Invalid peripheral state.');
+      status[key] = value;
+    }
+  }
   if (update.registered !== undefined) {
     if (typeof update.registered !== 'boolean') throw Error('Invalid registration status.');
     status.registered = update.registered;

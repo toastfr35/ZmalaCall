@@ -1,11 +1,12 @@
 # @test T-LLT-064
 # @requirements LLR-TERM-NET-005, LLR-TERM-COM-007, LLR-TERM-COM-008, LLR-TERM-CALL-012, LLR-TERM-POWER-013, LLR-TERM-MAINT-018
 # @environment portable
-# @plan Exercise the real UI queue and timer pump with a configured model, virtual clock and recording UI/device boundaries. Verify captured-generation polling, diagnostics publication, worker-failure recovery, rejected stale button/results, USB readiness activity, deferred auto-answer, timer-driven redraw and rescheduling after a tick exception. Verify completed carousel motion and closed terminals do not keep animating.
+# @plan Exercise the real UI queue and timer pump with a configured model, virtual clock and recording UI/device boundaries. Verify captured-generation polling, diagnostics/peripheral publication with unknown values, power/wake states and detached snapshots, worker-failure recovery, rejected stale button/results, USB readiness activity, deferred auto-answer, timer-driven redraw and rescheduling after a tick exception. Verify completed carousel motion and closed terminals do not keep animating.
 # @pass Assertions pass without real threads, Tk windows, network or devices; these tests verify scheduling and boundary contracts, not hardware timing.
 import copy
 import queue
 import unittest
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 from zmala_terminal.common import management
 from zmala_terminal.common.model import TerminalModel, State
@@ -39,10 +40,31 @@ class ManagementPumpTests(unittest.TestCase):
             # Mutation after launch must not leak into the captured report.
             loop.generation=8; loop.diagnostics['camera']='changed'; loop.callback_revision=9
             for task in tasks: task()
-        loop.configuration.report.assert_called_once_with({'camera':'ready','state':'home','configuration_version':1})
+        loop.configuration.report.assert_called_once_with({'camera':'ready','state':'home','configuration_version':1, 'remote_status':'unknown','remote_battery':75,'remote_charger_connected':None,'camera_powered':None,'camera_connected':None,'camera_status':'unknown'})
         loop.drain_messages(); self.assertTrue(loop.worker_busy); self.assertFalse(loop.network_worker_busy)
         loop.apply_config.assert_not_called(); loop.draw_connectivity.assert_not_called()
         loop.handle_worker_message('poll-done',8); self.assertFalse(loop.worker_busy)
+
+    def test_peripheral_reports_preserve_observed_unknown_and_power_states(self):
+        loop=self.loop()
+        loop.presenter_input=SimpleNamespace(status='connected',battery=0,charger_connected=True)
+        loop.c20_status=Mock();loop.c20_status.read.return_value=True
+        loop.usb_power=SimpleNamespace(enabled=True,power_state=True,state='on',ready=True)
+        self.assertEqual(loop.peripheral_status(),{'remote_status':'connected','remote_battery':0,
+            'remote_charger_connected':True,'camera_powered':True,'camera_connected':True,'camera_status':'connected'})
+        for state,powered,ready,expected in [('off',False,False,'off'),('switching',None,False,'switching'),
+                ('starting',None,False,'switching'),('on',True,False,'waking'),('error',True,False,'error')]:
+            loop.usb_power.state=state;loop.usb_power.power_state=powered;loop.usb_power.ready=ready
+            self.assertEqual(loop.peripheral_status()['camera_status'],expected)
+        loop.usb_power.enabled=False;loop.c20_status.read.return_value=False
+        loop.presenter_input=SimpleNamespace(status='disconnected',battery=None,charger_connected=False)
+        status=loop.peripheral_status();self.assertEqual(status['camera_status'],'disconnected')
+        self.assertIsNone(status['camera_powered']);self.assertEqual(status['remote_status'],'disconnected')
+        self.assertIsNone(status['remote_battery']);self.assertIs(status['remote_charger_connected'],False)
+        loop.presenter_input=SimpleNamespace(status='unexpected',battery=True,charger_connected='yes')
+        loop.c20_status.read.side_effect=OSError('unavailable')
+        status=loop.peripheral_status();self.assertEqual(status['remote_status'],'unknown')
+        for key in ('remote_battery','remote_charger_connected','camera_connected'):self.assertIsNone(status[key])
 
     def test_poll_failure_and_cancelled_configuration_never_strand_workers(self):
         for failure,cancelled in ((True,False),(False,True)):

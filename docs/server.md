@@ -151,7 +151,11 @@ execution becomes lost; the server does not automatically execute it again.
 
 The administration pages show current calls, registrations, terminal reports and
 recent events. Device reports remain distinct from server-observed SIP reachability.
-The server records when it received a report.
+The server records when it received a report. The selected Terminals card shows
+remote connection/input state, battery percentage and charger connection, plus
+C20 connection/recovery state and confirmed USB power. Older or unsupported fields
+show unknown; after 20 seconds without a fresh report, peripheral badges show
+status unavailable. Live badge updates preserve unsaved terminal settings.
 
 ### 12. Saved state
 

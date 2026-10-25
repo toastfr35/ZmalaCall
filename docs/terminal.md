@@ -203,6 +203,11 @@ battery state favors retaining power. The webcam indicator reports confirmed hub
 ### 15. Maintenance and diagnostics
 
 The terminal reports application, connection and media status to the server.
+Each two-second management poll captures remote input/connection, battery and
+charger state, C20 USB presence, confirmed power and transition/recovery state.
+These observations do not wake USB or open the camera; unsupported or stale
+sensor values remain unknown. The server displays them on the selected terminal
+card and suppresses stale readings after 20 seconds.
 Authorized maintenance jobs run with limited duration and output. Cancellation,
 reset and shutdown stop work that belongs to the terminal.
 

@@ -1,7 +1,7 @@
 // @test S-HLT-035
 // @requirements HLR-SRV-CONFIG-015, HLR-SRV-UI-010, HLR-SRV-UI-011
 // @environment display
-// @plan Use the actual isolated server and Chromium to import a WAV through the file picker, verify normalized audio and saved selection, and play/pause its authenticated preview. Verify all 5-percent speaker-volume choices and preserve an unsaved volume change across import, check phone/desktop layout bounds, and verify navigation stops playback. No API or media-control mocks.
+// @plan Use the actual isolated server and Chromium to import a WAV through the file picker, verify normalized audio and saved selection, and play/pause its authenticated preview. Verify all 5-percent speaker-volume choices and preserve an unsaved volume change across import, check phone/desktop layout bounds, and verify navigation stops playback. Post real device peripheral reports, check live badges while edits remain unsaved, then age the browser clock to verify stale hardware status is unavailable. No API or media-control mocks.
 // @pass Accepted imports and edits persist, preview decodes, navigation pauses it, both layouts fit and no page errors occur. This does not establish physical speaker audibility.
 'use strict';
 /* global document, innerWidth */
@@ -37,6 +37,27 @@ test(
       .fill('ringtone-browser-password');
     await page.getByRole('button', { name: 'Set password', exact: true }).click();
     await page.getByRole('button', { name: 'Sign out', exact: true }).waitFor();
+    const report = async (status) => {
+      const response = await fetch(fixture.base + '/api/status', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + fixture.store.value.users.term1.device_token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(status),
+      });
+      assert.equal(response.status, 200);
+      await response.arrayBuffer();
+    };
+    const hardware = {
+      remote_status: 'connected',
+      remote_battery: 75,
+      remote_charger_connected: true,
+      camera_status: 'connected',
+      camera_powered: true,
+      camera_connected: true,
+    };
+    await report(hardware);
     await page.goto(fixture.base + '/terminals');
     await page.waitForFunction(
       () =>
@@ -46,6 +67,22 @@ test(
     assert.equal(await page.locator('#error').innerText(), '', errors.join('; '));
     await page.getByLabel('Select terminal', { exact: true }).selectOption('term1');
     await page.locator('select[name="c20SpeakerVolume"]').selectOption('75');
+    await page.getByText('Remote battery: 75%', { exact: true }).waitFor();
+    await page.getByText('Remote charger: connected', { exact: true }).waitFor();
+    await page.getByText('C20: connected', { exact: true }).waitFor();
+    await report({
+      ...hardware,
+      remote_battery: 31,
+      remote_charger_connected: false,
+      camera_status: 'off',
+      camera_powered: false,
+      camera_connected: false,
+    });
+    await page.getByText('Remote battery: 31%', { exact: true }).waitFor();
+    await page.getByText('Remote charger: not connected', { exact: true }).waitFor();
+    await page.getByText('C20: powered off', { exact: true }).waitFor();
+    assert.equal(await page.locator('select[name="c20SpeakerVolume"]').inputValue(), '75');
+
     assert.deepEqual(
       await page
         .locator('select[name="c20SpeakerVolume"]')
@@ -96,6 +133,12 @@ test(
         width + ' ringtone layout',
       );
     }
+    await page.evaluate(() => {
+      const now = Date.now();
+      Date.now = () => now + 21000;
+    });
+    await page.getByText('Remote: status unavailable', { exact: true }).waitFor();
+    await page.getByText('C20: status unavailable', { exact: true }).waitFor();
     assert.deepEqual(errors, []);
   },
 );

@@ -263,6 +263,20 @@ export interface SipStatus {
 }
 
 export interface TerminalStatus {
+  remote_status?:
+    | 'connected'
+    | 'disconnected'
+    | 'unpaired'
+    | 'blocked'
+    | 'bluetooth_unavailable'
+    | 'input_unavailable'
+    | 'unknown';
+  remote_battery?: number | null;
+  remote_charger_connected?: boolean | null;
+  camera_powered?: boolean | null;
+  camera_connected?: boolean | null;
+  camera_status?:
+    'connected' | 'disconnected' | 'off' | 'on' | 'waking' | 'switching' | 'error' | 'unknown';
   last_seen?: string;
   state?: string;
   registered?: boolean;

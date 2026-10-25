@@ -310,9 +310,15 @@ def update_terminal_volume_guides():
                     'outgoing call, Zmala asks: green requests a callback; red returns home. Incoming '
                     'requests show a large yellow Please call back flag over the requester’s picture '
                     'until completed or cancelled. Nothing dials automatically.')
+            elif filename == 'server_prep.docx' and paragraph.text.startswith(('If checks or installation fail,', 'Read installation errors and keep the log')):
+                paragraph.text = ('Read installation errors and keep the log in LocalAppData/ZmalaCall/ServerInstaller. '
+                    'After a dropped connection, check whether installation is still running before retrying. '
+                    'Back up server data regularly.')
             elif paragraph.text.startswith(("In Terminals, choose each terminal's language and settings", "In Terminals, save language and settings")):
                 paragraph.text = ("In Terminals, save language and settings (volume: 5% steps, rounding existing values). "
-                    'Open Setup for the Wi-Fi/server QR PDFs, then follow ZmalaTerminal-Guide.pdf.')
+                    'Open Setup for the Wi-Fi/server QR PDFs, then follow ZmalaTerminal-Guide.pdf. '
+                    'The terminal card shows remote connection, battery/charger and C20 connection/power. '
+                    'Reports become unavailable when the terminal stops reporting.')
         if filename == 'terminal_use.docx':
             from copy import deepcopy
             for table in doc.tables:

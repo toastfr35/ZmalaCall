@@ -81,7 +81,9 @@ class RuntimeContractTests(unittest.TestCase):
             v.diagnostics = {'registered':False}
             thread.call_args.kwargs['target']()
         v.configuration.report.assert_called_once_with({'registered':True, 'devices':{'camera':['C20']},
-            'camera':'C20', 'state':State.HOME.value, 'configuration_version':1})
+            'camera':'C20', 'state':State.HOME.value, 'configuration_version':1,
+            'remote_status':'unknown','remote_battery':None,'remote_charger_connected':None,
+            'camera_powered':None,'camera_connected':None,'camera_status':'unknown'})
 
     def test_native_statistics_release_both_handles_and_preserve_units(self):
         e = Engine.__new__(Engine); e.call = 9

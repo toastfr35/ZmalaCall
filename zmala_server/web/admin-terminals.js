@@ -56,6 +56,69 @@ export function savedTerminalForm(form, card) {
   form.dataset.dirty = 'false';
   card.dataset.dirty = String(!!card.querySelector('form[data-dirty="true"]'));
 }
+// @llr LLR-SRV-UI-017
+/** @param {HTMLElement} summary @param {import('../types/contracts').TerminalStatus | undefined} status @param {boolean} fresh */
+function appendTerminalHardware(summary, status, fresh) {
+  if (!fresh) {
+    summary.append(
+      badge('Remote: status unavailable', 'neutral'),
+      badge('C20: status unavailable', 'neutral'),
+    );
+    return;
+  }
+  /** @type {Record<string, string>} */
+  const remote = {
+    connected: 'connected',
+    disconnected: 'disconnected',
+    unpaired: 'not paired',
+    blocked: 'blocked',
+    bluetooth_unavailable: 'Bluetooth unavailable',
+    input_unavailable: 'input unavailable',
+  };
+  /** @type {Record<string, string>} */
+  const camera = {
+    connected: 'connected',
+    disconnected: 'disconnected',
+    off: 'powered off',
+    on: 'powered on (connection unknown)',
+    waking: 'waking',
+    switching: 'changing power',
+    error: 'power/recovery error',
+  };
+  const battery = status?.remote_battery;
+  summary.append(
+    badge(
+      'Remote: ' + (remote[status?.remote_status || ''] || 'unknown'),
+      status?.remote_status === 'connected' ? 'success' : 'neutral',
+    ),
+    badge(
+      'Remote battery: ' + (typeof battery === 'number' ? battery + '%' : 'unknown'),
+      typeof battery === 'number' && battery > 20 ? 'success' : 'neutral',
+    ),
+    badge(
+      'Remote charger: ' +
+        (status?.remote_charger_connected === true
+          ? 'connected'
+          : status?.remote_charger_connected === false
+            ? 'not connected'
+            : 'unknown'),
+      'neutral',
+    ),
+    badge(
+      'C20: ' + (camera[status?.camera_status || ''] || 'unknown'),
+      status?.camera_status === 'connected' ? 'success' : 'neutral',
+    ),
+    badge(
+      'C20 power: ' +
+        (status?.camera_powered === true
+          ? 'on'
+          : status?.camera_powered === false
+            ? 'off'
+            : 'unknown'),
+      status?.camera_powered === true ? 'success' : 'neutral',
+    ),
+  );
+}
 /** @param {HTMLElement} card @param {string} id */
 export function terminalCardState(card, id) {
   const u = state.model.users[id];
@@ -72,6 +135,7 @@ export function terminalCardState(card, id) {
   if (id === state.model.local_terminal_id)
     summary.append(badge('Server-local terminal', 'accent'));
   const audioStatus = state.model.terminal_statuses[id];
+  appendTerminalHardware(summary, audioStatus, online(id));
   if (state.model.profiles[id].auto_framing === true) {
     const framingStatus = audioStatus?.auto_framing_status;
     /** @type {Record<string, string>} */

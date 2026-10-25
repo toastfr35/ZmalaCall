@@ -1,7 +1,7 @@
 // @test S-LLT-010
 // @requirements LLR-SRV-UI-016, LLR-SRV-UI-017, LLR-SRV-UI-019
 // @environment portable
-// @plan Render terminal field definitions with DOM/API doubles; assert controls attach to the intended sections, frame-rate choices and all 5-percent speaker-volume choices are present, existing between-step levels show the nearest choice without changing the model and drafts/download errors retain ownership.
+// @plan Render terminal field definitions with DOM/API doubles; assert controls attach to the intended sections, frame-rate choices and all 5-percent speaker-volume choices are present, existing between-step levels show the nearest choice without changing the model and drafts/download errors retain ownership. Render peripheral badges for fresh, stale, legacy/unknown, connected, charging, zero-battery and powered-off reports.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -133,4 +133,61 @@ test('terminal drafts retain their original revision and setup downloads propaga
     actions.find(({ text }) => text === 'Download server QR PDF').action(),
     /Download failed/,
   );
+});
+
+test('terminal hardware badges distinguish fresh values, unknowns and stale reports', () => {
+  const context = { badge: (text, kind) => ({ text, kind }) };
+  vm.runInNewContext(
+    vm
+      .source(path.join(__dirname, '../../../zmala_server/web/admin-terminals.js'), 'utf8')
+      .replace(/^import[^;]+;\s*/gm, '')
+      .replace(/^export /gm, ''),
+    context,
+  );
+  const render = (status, fresh = true) => {
+    const summary = new Element('div');
+    context.appendTerminalHardware(summary, status, fresh);
+    return summary.children;
+  };
+  const status = {
+    remote_status: 'connected',
+    remote_battery: 75,
+    remote_charger_connected: true,
+    camera_status: 'connected',
+    camera_powered: true,
+  };
+  assert.deepEqual(
+    render(status).map((x) => x.text),
+    [
+      'Remote: connected',
+      'Remote battery: 75%',
+      'Remote charger: connected',
+      'C20: connected',
+      'C20 power: on',
+    ],
+  );
+  assert.equal(render(status)[0].kind, 'success');
+  assert.deepEqual(
+    render({
+      ...status,
+      remote_battery: 0,
+      remote_charger_connected: false,
+      camera_status: 'off',
+      camera_powered: false,
+    }).map((x) => x.text),
+    [
+      'Remote: connected',
+      'Remote battery: 0%',
+      'Remote charger: not connected',
+      'C20: powered off',
+      'C20 power: off',
+    ],
+  );
+  assert.ok(render(undefined).every((x) => x.text.endsWith('unknown') && x.kind === 'neutral'));
+  assert.deepEqual(
+    render(status, false).map((x) => x.text),
+    ['Remote: status unavailable', 'C20: status unavailable'],
+  );
+  assert.ok(render(status, false).every((x) => x.kind === 'neutral'));
+  assert.equal(render({ ...status, camera_status: 'waking' })[3].text, 'C20: waking');
 });

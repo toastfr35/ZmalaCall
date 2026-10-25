@@ -1,7 +1,7 @@
 # @test T-HLT-029
 # @requirements HLR-TERM-MAINT-012
 # @environment display
-# @plan Run installed-mode logging in a separate Python process with disposable persistent/runtime directories. Log before, during and after a real debug-expiry interval. Inspect stderr and persistent files. Use a real HTTP status exchange to verify only operational fields leave the terminal; inspect installed volatile storage separately in the opt-in host test.
+# @plan Run installed-mode logging in a separate Python process with disposable persistent/runtime directories. Log before, during and after a real debug-expiry interval. Inspect stderr and persistent files. Use a real HTTP status exchange to verify operational peripheral connection, battery/charger and C20 power/unknown fields leave the terminal; inspect installed volatile storage separately in the opt-in host test.
 # @pass INFO continues, DEBUG expires without restart, no terminal log file is created and status JSON omits credentials. The subprocess verifies application logging; RAM mounts and swap require the installed-host scenario.
 
 import json
@@ -57,7 +57,9 @@ logging.debug('hidden-after'); logging.info('normal-after')
             route, auth, body = next(r for r in server.requests if r[0] == '/api/status')
             self.assertEqual(auth, 'Bearer fixture-bearer-token')
             self.assertEqual(body, {'registered': True, 'camera': 'Fixture C20',
-                                   'state': 'home', 'configuration_version': 1})
+                                   'state': 'home', 'configuration_version': 1,
+                                   'remote_status':'connected','remote_battery':75,'remote_charger_connected':False,
+                                   'camera_powered':None,'camera_connected':None,'camera_status':'unknown'})
             encoded = json.dumps(body)
             for secret in (app.model.config['sip']['password'], app.model.config['call_auth_key'], server.bootstrap['device_token']):
                 self.assertNotIn(secret, encoded)
