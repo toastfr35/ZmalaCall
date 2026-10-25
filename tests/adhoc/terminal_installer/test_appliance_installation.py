@@ -32,7 +32,7 @@ class ApplianceInstallTests(unittest.TestCase):
         self.assertEqual(events[-1], 'verified initial-boot')
         with patch.dict(os.environ, {}, clear=True), patch('zmala_terminal.linux.usb_power.sys.platform', 'linux'), \
                 patch('zmala_terminal.linux.usb_power.threading.Thread') as thread:
-            power = UsbPower(Mock())
+            power = UsbPower(ROOT/'zmala_terminal')
             self.assertFalse(power.enabled); thread.assert_not_called()
 
 
