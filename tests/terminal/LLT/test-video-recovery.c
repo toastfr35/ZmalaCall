@@ -1,7 +1,7 @@
 // @test T-LLT-045
 // @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-008
 // @environment native-sdk
-// @plan Request 1080p from a deliberately absent camera and inject repeated codec recovery requests; assert failure retains the requested size and keyframe work coalesces until the recovery interval passes.
+// @plan Negotiate 1080p without opening a deliberately absent camera, then explicitly attempt hardware configuration and inject repeated codec recovery requests; assert failure retains the requested size and keyframe work coalesces until the recovery interval passes.
 // @pass Every named assertion must pass; record platform and native prerequisites with the result.
 
 /* No camera capture or calls. Link codec.c, mjpeg-filter.c and mjpeg-stream.c
@@ -21,7 +21,9 @@ int main(void) {
     camera->device = ms_strdup("/dev/zmala-nonexistent-test-camera");
     MSVideoSize wanted = {1920, 1080}, actual = {320, 240};
     int failed = ms_filter_call_method(source, MS_FILTER_SET_VIDEO_SIZE, &wanted) != 0;
-    failed |= ms_filter_call_method(source, MS_FILTER_GET_VIDEO_SIZE, &actual) == 0;
+    failed |= ms_filter_call_method(source, MS_FILTER_GET_VIDEO_SIZE, &actual) != 0;
+    failed |= camera->fd != -1;
+    failed |= zmala_mjpeg_configure(camera) == 0;
     failed |= actual.width != wanted.width || actual.height != wanted.height;
     ms_filter_destroy(source);
     ms_factory_destroy(factory);

@@ -1,0 +1,38 @@
+active: true
+area: Video
+derived: false
+header: |
+  C20 microphone and camera startup sequencing
+level: 127.0
+links:
+- HLR-TERM-VIDEO-003: os3xFxhh_DxiDwfgqhuRpXE6TF2VMSL8cB-X-FVV9hM=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/c20_media_cycle.py
+  type: file
+- path: tests/terminal/LLT/test-camera-boundaries.c
+  type: file
+- path: tests/terminal/LLT/test-camera-filter.c
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-stream.c
+  type: file
+- path: zmala_terminal/linux/media/video/mjpeg-filter.c
+  type: file
+reviewed: null
+scope: Core
+text: |
+  The Pi shall defer C20 camera open, format and stream controls until its C20
+  microphone PCM has remained RUNNING for 750 ms. Camera size negotiation shall
+  not open the device. Waiting and camera initialization shall run on the camera
+  worker, without blocking the UI or media ticker. The readiness wait shall use
+  a five-second deadline and a 20 ms polling interval, checking cancellation
+  before each poll. Failed initialization shall release acquired camera resources.
+verification: |
+  Inject microphone state transitions, monotonic time, cancellation, thread
+  creation failure and V4L2 failures. Assert no camera I/O before the stable-ready
+  interval, a reset interval after readiness loss, the timeout/cancellation bounds,
+  resource cleanup and camera size negotiation without opening hardware.
+  On the physical Pi, repeat the staged native-rate audio/MJPEG sequence and
+  require completed audio and camera data for every requested cycle. Record the
+  requested/completed cycle count independently from native boundary evidence.

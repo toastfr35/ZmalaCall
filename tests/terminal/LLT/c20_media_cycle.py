@@ -1,7 +1,7 @@
 # @test T-LLT-082
-# @requirements LLR-TERM-AUDIO-003
+# @requirements LLR-TERM-AUDIO-003, LLR-TERM-VIDEO-019
 # @environment hardware
-# @plan On an installed Pi with the terminal service stopped and its C20 host policy loaded, repeatedly open 16 kHz stereo raw capture, 48 kHz stereo silent playback and 1080p MJPEG capture concurrently. Close all streams between cycles. Require successful processes, the expected one-second microphone byte count and complete JPEG data. Retain aggregate results privately. This checks repeated USB media startup, not acoustic quality, H.264, network calls or indefinite reliability.
+# @plan On an installed Pi with the terminal service stopped and its C20 host policy loaded, repeatedly open three-second 16 kHz stereo capture and 48 kHz stereo silent playback. Require the microphone PCM to remain RUNNING for 750 ms before opening 1080p MJPEG capture, with a five-second readiness deadline. Close all streams between cycles. Require successful processes, the expected microphone byte count and complete JPEG data. Retain aggregate results privately. This checks the physical staged-startup sequence, not acoustic quality, H.264, network calls or indefinite reliability; native boundary tests separately exercise the production worker's gate.
 # @pass Every requested cycle completes without a command timeout, audio parameter failure or video streaming failure and produces the expected data. A skipped/unavailable device is not a passed run.
 """Explicit hardware qualification; never selected by portable unittest discovery."""
 import argparse
@@ -16,21 +16,34 @@ import time
 def cycle(video, directory, environment):
     audio, picture = directory/'capture.raw', directory/'capture.mjpg'
     commands = [
-        ['arecord', '-q', '-D', 'default:C20', '-t', 'raw', '-f', 'S16_LE', '-c', '2', '-r', '16000', '-d', '1', str(audio)],
-        ['aplay', '-q', '-D', 'default:C20', '-f', 'S16_LE', '-c', '2', '-r', '48000', '-d', '1', '/dev/zero'],
+        ['arecord', '-q', '-D', 'default:C20', '-t', 'raw', '-f', 'S16_LE', '-c', '2', '-r', '16000', '-d', '3', str(audio)],
+        ['aplay', '-q', '-D', 'default:C20', '-f', 'S16_LE', '-c', '2', '-r', '48000', '-d', '3', '/dev/zero'],
         ['v4l2-ctl', '-d', str(video), '--set-fmt-video=width=1920,height=1080,pixelformat=MJPG',
          '--stream-mmap', '--stream-count=30', '--stream-to='+str(picture)],
     ]
     processes = []
     try:
-        for command in commands:
+        for command in commands[:2]:
             processes.append(subprocess.Popen(command, env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+        deadline, stable = time.monotonic()+5, None
+        while True:
+            now = time.monotonic()
+            assert now < deadline and processes[0].poll() is None, 'Microphone did not remain ready'
+            status = Path('/proc/asound/C20/pcm0c/sub0/status').read_text()
+            if 'state: RUNNING' in status:
+                stable = now if stable is None else stable
+                if now-stable >= .75:
+                    break
+            else:
+                stable = None
+            time.sleep(.02)
+        processes.append(subprocess.Popen(commands[2], env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE))
         results = []
         for process in processes:
             _, errors = process.communicate(timeout=15)
             results.append({'code': process.returncode, 'errors': errors.decode(errors='replace')[-1200:]})
         assert all(result['code'] == 0 for result in results), results
-        assert audio.stat().st_size == 16000*2*2, 'Incomplete microphone capture'
+        assert audio.stat().st_size == 3*16000*2*2, 'Incomplete microphone capture'
         jpeg = picture.read_bytes()
         assert jpeg.startswith(b'\xff\xd8') and b'\xff\xd9' in jpeg, 'No complete MJPEG frame'
         return {'microphone_bytes': audio.stat().st_size, 'mjpeg_bytes': len(jpeg)}

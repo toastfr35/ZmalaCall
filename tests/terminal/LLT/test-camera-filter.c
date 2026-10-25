@@ -1,7 +1,7 @@
 // @test T-LLT-075
-// @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-018
+// @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-018, LLR-TERM-VIDEO-019
 // @environment native-sdk
-// @plan Run the real camera filter against mocked device enumeration and capture lifecycle boundaries. Mix inaccessible, other-model, raw-only and C20 MJPEG nodes; assert only the eligible node is registered. Verify reader ownership, requested size/rate validation, newest-frame transfer and RTP timestamps, empty-tick FPS stability and stopped capture cleanup without physical camera access.
+// @plan Run the real camera filter against mocked device enumeration and capture lifecycle boundaries. Mix inaccessible, other-model, raw-only and C20 MJPEG nodes; assert only the eligible node is registered. Verify reader ownership, requested size/rate validation, size negotiation without device access, newest-frame transfer and RTP timestamps, empty-tick FPS stability and stopped capture cleanup without physical camera access.
 // @pass Every catalog, configuration, buffer and metadata assertion passes using real MediaStreamer buffers/filter objects; driver capture is checked separately by the capture-boundary LLT.
 #include "../../../zmala_terminal/linux/media/video/mjpeg-stream.h"
 #include <mediastreamer2/msfactory.h>
@@ -19,14 +19,14 @@
 
 static MSFactory *factory;
 static MSWebCam *found[8];
-static int found_count, closes, freed_glob, glob_error, start_error, starts, stops;
+static int found_count, opens, closes, freed_glob, glob_error, start_error, starts, stops;
 static char *paths[]={"/dev/video0","/dev/video1","/dev/video2","/dev/video3","/dev/video4"};
 static int fake_glob(const char *pattern,int flags,int (*error)(const char *,int),glob_t *result) {
     (void)flags; (void)error; assert(strcmp(pattern,"/dev/video*") == 0);
     result->gl_pathc=5; result->gl_pathv=paths; return glob_error;
 }
 static void fake_globfree(glob_t *result) { (void)result; ++freed_glob; }
-static int fake_open(const char *path,int flags) { assert(flags & O_NONBLOCK); int index=path[strlen(path)-1]-'0'; return index ? 100+index : -1; }
+static int fake_open(const char *path,int flags) { ++opens; assert(flags & O_NONBLOCK); int index=path[strlen(path)-1]-'0'; return index ? 100+index : -1; }
 static int fake_close(int fd) { assert(fd>=101 && fd<=104); ++closes; return 0; }
 static int fake_ioctl(int fd,unsigned long request,void *value) {
     if (request == VIDIOC_QUERYCAP) {
@@ -43,7 +43,6 @@ static void fake_prepend(MSWebCamManager *manager,MSWebCam *cam) { (void)manager
 static MSFactory *fake_factory(MSWebCam *cam) { (void)cam; return factory; }
 static MSWebCamManager *fake_manager(MSFactory *f) { assert(f == factory); return (MSWebCamManager *)&found_count; }
 static void fake_register(MSWebCamManager *manager,MSWebCamDesc *desc) { desc->detect(manager); }
-static int fake_configure(MjpegCamera *c) { assert(c->device); return 0; }
 static int fake_start(MjpegCamera *c) { ++starts; if (start_error) return -1; c->started=1; return 0; }
 static void fake_stop(MjpegCamera *c) { ++stops; c->started=0; }
 #define glob fake_glob
@@ -55,7 +54,6 @@ static void fake_stop(MjpegCamera *c) { ++stops; c->started=0; }
 #define ms_web_cam_get_factory fake_factory
 #define ms_factory_get_web_cam_manager fake_manager
 #define ms_web_cam_manager_register_desc fake_register
-#define zmala_mjpeg_configure fake_configure
 #define zmala_mjpeg_start fake_start
 #define zmala_mjpeg_stop fake_stop
 #include "../../../zmala_terminal/linux/media/video/mjpeg-filter.c"
@@ -70,6 +68,7 @@ int main(void) {
     assert(c->device != found[0]->name && strcmp(c->device,found[0]->name) == 0);
     MSVideoSize wanted={1920,1080},actual;
     result=set_size(f,&wanted); assert(result == 0); result=get_size(f,&actual); assert(result == 0 && actual.width == 1920 && actual.height == 1080);
+    assert(opens == 5 && closes == 4 && starts == 0);
     wanted.width=8; result=set_size(f,&wanted); assert(result == -1 && c->size.width == 1920);
     wanted.width=1921; result=set_size(f,&wanted); assert(result == -1);
     for (int i=0;i<4;++i) { float fps=i == 0 ? NAN : i == 1 ? 0 : i == 2 ? 31 : 20; result=set_fps(f,&fps); assert(result == (i == 3 ? 0 : -1)); }

@@ -67,13 +67,13 @@ static int set_size(MSFilter *f, void *arg) {
     c->size = size;
     return 0;
 }
+// @llr LLR-TERM-VIDEO-019
 static int get_size(MSFilter *f, void *arg) {
     MjpegCamera *c = f->data;
-    /* The SDK ignores this method's error and otherwise keeps its 320x240
-     * default. Preserve the requested size if camera I/O fails; start still
-     * refuses an unsupported format instead of silently lowering quality. */
+    /* Size negotiation must not open the USB camera before audio startup.
+     * The capture worker validates the requested hardware format later. */
     *(MSVideoSize *)arg = c->size;
-    return zmala_mjpeg_configure(c);
+    return 0;
 }
 static int set_fps(MSFilter *f, void *arg) {
     MjpegCamera *c = f->data;
