@@ -5,10 +5,14 @@ header: |
   Confirmed callback submission
 level: 91.0
 links:
-- HLR-TERM-HISTORY-014: rYJPkKsSwXCDvKbjdyI6Mcjd9kFi4LqMv_P0XP9RrWs=
+- HLR-TERM-HISTORY-014: k1LndChP4W1BcDBOK-wx3qZ-HVC6ZSNPK3cKld2AEBQ=
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/model.py
+  type: file
+- path: zmala_terminal/common/ui/confirmation.py
+  type: file
 - path: tests/terminal/LLT/test_call_orchestration.py
   type: file
 - path: tests/terminal/LLT/test_callbacks.py
@@ -24,10 +28,20 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Green confirmation for an unavailable contact shall submit a callback request. Other
+  An outgoing terminal attempt ending before connection, including rejection,
+  timeout, preflight failure or caller cancellation, shall offer a callback request
+  for the same currently permitted contact after media ends. Answered calls and
+  declined incoming calls shall not trigger this offer. A late call-end event shall
+  not dismiss or duplicate the prompt. An existing pending outgoing request shall
+  not be requested again. The offer shall not label a voluntarily cancelled contact
+  unavailable. Green confirmation shall submit the callback request. Other
   buttons shall cancel before submission. Pending submission shall hide the answer
   prompts. Success shall appear only after server acknowledgement. Failure shall show
   feedback without automatic mutation retry.
 verification: |
   Use each button and delay, reject or accept the server response. Count submissions
-  and inspect prompts and outcome feedback.
+  and inspect prompts and outcome feedback. End unanswered outgoing calls by
+  rejection, timeout and cancellation, including immediate and delayed native end
+  events. Connect calls and decline incoming calls as controls. Verify one prompt
+  for the original permitted contact, no duplicate submission or late redial, both
+  confirmation answers and truthful wording.

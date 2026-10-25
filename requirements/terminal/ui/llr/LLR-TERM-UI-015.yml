@@ -25,7 +25,9 @@ reviewed: null
 scope: Core
 text: |
   Each card shall place its contact name directly below the picture and above
-  availability, inside the frame. The selected card shall use the same placement. The
+  availability, inside the frame. The selected card shall use the same placement,
+  with a larger, bold name when carousel movement has settled. Long names shall
+  reduce in size as needed to remain inside the name area. The
   idle page shall not add a separate selected-name footer or mouse action controls.
   Localized availability labels and their separate status symbols shall fit inside
   the status band without overlapping each other, the name or the frame, including
@@ -34,7 +36,8 @@ text: |
   overflow without separating combining marks from their base characters.
 verification: |
   Render selected and adjacent cards. Inspect name bounds and absence of the separate
-  footer and action controls.
+  footer and action controls. Check larger bold selected-name text, long-name
+  fitting and stable label geometry during carousel movement.
   Measure real text and symbol bounds for every language in three/five-card layouts
   at 900x620, 1280x720 and 1920x1080. Check full French labels at TV sizes and
   French animation frames. Force minimum-font overflow and verify bounded ellipsis.

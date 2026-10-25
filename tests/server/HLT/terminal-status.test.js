@@ -31,18 +31,37 @@ test('device diagnostics reject malformed fields without replacing the last vali
       registered: true,
       configuration_version: 2,
       last_seen: 'forged',
+      remote_status: 'connected',
+      remote_battery: 75,
+      remote_charger_connected: true,
+      camera_status: 'connected',
+      camera_powered: true,
+      camera_connected: true,
       devices: { camera: ['Webcam'], microphone: ['Microphone'] },
     });
     assert.equal(accepted.status, 200);
     await accepted.arrayBuffer();
     const original = await status();
     assert.notEqual(original.last_seen, 'forged');
+    assert.equal(original.remote_status, 'connected');
+    assert.equal(original.remote_battery, 75);
+    assert.equal(original.camera_powered, true);
     assert.deepEqual(original.devices.camera, ['Webcam']);
     for (const update of [
       { devices: [] },
       { devices: { camera: 'bad' } },
       { devices: { microphone: [{}] } },
       { registered: 'yes' },
+      { remote_status: 'invented' },
+      { camera_status: [] },
+      { camera_status: 'ready-but-unknown' },
+      { remote_battery: true },
+      { remote_battery: -1 },
+      { remote_battery: 101 },
+      { remote_battery: 4.5 },
+      { remote_charger_connected: 'yes' },
+      { camera_powered: 1 },
+      { camera_connected: 'yes' },
       { state: {} },
       { configuration_version: -1 },
       { configuration_version: '2' },

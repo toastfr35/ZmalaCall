@@ -8,7 +8,27 @@ import ctypes.util
 import time
 import tkinter as tk
 import cv2
-from PIL import Image, ImageTk
+from PIL import Image, ImageDraw, ImageTk
+
+
+# @llr LLR-TERM-SETUP-027
+def scan_guides(image):
+    """Draw positioning brackets on the displayed copy, never the decoder input."""
+    preview = image.copy()
+    width, height = preview.size
+    side = max(1, int(min(width, height)*.68))
+    left, top = (width-side)//2, (height-side)//2
+    right, bottom = left+side, top+side
+    arm, stroke = max(1, int(side*.18)), max(2, min(width, height)//100)
+    corners = [((left, top+arm), (left, top), (left+arm, top)),
+               ((right-arm, top), (right, top), (right, top+arm)),
+               ((left, bottom-arm), (left, bottom), (left+arm, bottom)),
+               ((right-arm, bottom), (right, bottom), (right, bottom-arm))]
+    draw = ImageDraw.Draw(preview)
+    for points in corners:
+        draw.line(points, fill='#0d121c', width=stroke+4, joint='curve')
+        draw.line(points, fill='#83dfc5', width=stroke, joint='curve')
+    return preview
 
 
 class QRDecoder:
@@ -148,7 +168,7 @@ class NativeQRScanner:
             self.root.geometry(f'{width}x{height}+0+0')
         image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         image.thumbnail((width, height), Image.Resampling.BILINEAR)
-        self.photo = ImageTk.PhotoImage(image, master=self.root)
+        self.photo = ImageTk.PhotoImage(scan_guides(image), master=self.root)
         self.label.configure(image=self.photo)
         if now >= self.next_decode:
             self.next_decode = now + .4

@@ -15,6 +15,7 @@ const {
 const { terminalProfileFields } = require('./terminal-settings');
 const { validateCallbackSettings, validateSmtpSettings } = require('./callback-settings');
 const { checkDimensions } = require('./photos');
+const { SOUND, MAX_LIBRARY, validateSound, ringtoneId } = require('./ringtones');
 const MAX_BACKUP = 64 * 1024 * 1024;
 const FILES = ['server.json', 'admin-password.json', 'callbacks.json', 'console-jobs.json'];
 const PHOTO = /^photos\/[a-f0-9]{64}\.(png|jpg)$/;
@@ -58,6 +59,22 @@ function validateFiles(files) {
   const users = object(state.users),
     profiles = object(state.profiles),
     groups = object(state.groups);
+  // @llr LLR-SRV-CONFIG-024
+  const ringtones = object(state.ringtones || {});
+  requireValue(Object.keys(ringtones).length <= 64);
+  let soundBytes = 0;
+  for (const [id, raw] of Object.entries(ringtones)) {
+    requireValue(ringtoneId(id) !== 'nokia');
+    const sound = object(raw),
+      data = files.get(`ringtones/${id}.wav`);
+    requireValue(text(sound.name, 80) && sound.name.trim() && !/\p{Cc}/u.test(sound.name));
+    requireValue(
+      data && sound.bytes === data.length && validateSound(data) === id,
+      'A referenced ringtone is missing or invalid.',
+    );
+    soundBytes += data.length;
+  }
+  requireValue(soundBytes <= MAX_LIBRARY);
   requireValue(Object.keys(users).length <= 40 && Object.keys(groups).length <= 1000);
   const identities = new Set(),
     tokens = new Set();
@@ -90,6 +107,11 @@ function validateFiles(files) {
       );
       autoAnswerFields(user);
       const profile = object(profiles[id]);
+      requireValue(
+        !profile.ringtone ||
+          profile.ringtone === 'nokia' ||
+          Object.hasOwn(ringtones, profile.ringtone),
+      );
       terminalProfileFields(/** @type {import('./types/contracts').TerminalProfile} */ (profile), {
         ...profile,
         ...object(profile.terminal_settings),
@@ -195,7 +217,9 @@ async function decodeBackup(bytes) {
     const entry = object(raw),
       name = entry.name;
     requireValue(
-      typeof name === 'string' && (FILES.includes(name) || PHOTO.test(name)) && !files.has(name),
+      typeof name === 'string' &&
+        (FILES.includes(name) || PHOTO.test(name) || SOUND.test(name)) &&
+        !files.has(name),
     );
     requireValue(typeof entry.data === 'string' && /^[A-Za-z0-9+/]*={0,2}$/.test(entry.data));
     const data = Buffer.from(entry.data, 'base64');
@@ -203,6 +227,8 @@ async function decodeBackup(bytes) {
       data.toString('base64') === entry.data && digest(data) === entry.sha256,
       'Backup checksum failed.',
     );
+    if (SOUND.test(name))
+      requireValue(validateSound(data) === name.slice(10, -4), 'Ringtone checksum failed.');
     if (PHOTO.test(name)) {
       requireValue(
         name.split('/')[1].split('.')[0] === digest(data),

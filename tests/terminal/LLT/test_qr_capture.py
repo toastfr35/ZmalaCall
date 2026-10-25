@@ -2,6 +2,7 @@
 # @requirements LLR-TERM-SETUP-027, LLR-TERM-SETUP-028
 # @environment portable
 # @plan Stub V4L2, X11, ZBar and Tk at their API boundaries while executing the real Linux QR capture/decoder. Check 640x480/15fps requests, wrapper embedding and bounded preview, independent frame/decode throttles, repeated-code suppression and exact UTF-8 symbol bounds. Inject missing camera/display/tree, invalid image/UTF-8 and capture/decode failures; assert acquired resources are released on startup failure and close.
+# Check display-only positioning guides on real light/dark images at portrait/landscape sizes; assert centred square bounds, four corners, a clear centre and unchanged original image/decoder input.
 # @pass Decode and cleanup assertions pass without a camera/display or native libraries. Pixel quality and real USB/X11 interoperability remain system tests.
 import ctypes as C
 import importlib.util
@@ -10,6 +11,7 @@ import sys
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch, call
+from PIL import Image
 
 
 class QRNativeTests(unittest.TestCase):
@@ -25,6 +27,7 @@ class QRNativeTests(unittest.TestCase):
         root=Mock(); root.winfo_id.return_value=21
         for patcher in (patch.object(self.qr.tk,'Tk',return_value=root),patch.object(self.qr.tk,'Label'),
                         patch.object(self.qr,'QRDecoder'),patch.object(self.qr.ImageTk,'PhotoImage'),
+                        patch.object(self.qr,'scan_guides',side_effect=lambda image: image),
                         patch.object(self.qr.Image,'fromarray')):
             patcher.start(); self.addCleanup(patcher.stop)
         return root
@@ -55,8 +58,34 @@ class QRNativeTests(unittest.TestCase):
         with patch.object(self.qr.time,'monotonic',return_value=1): scanner.iterate()
         root.geometry.assert_called_with('320x180+0+0')
         self.qr.Image.fromarray.return_value.thumbnail.assert_called_once_with((320,180),self.qr.Image.Resampling.BILINEAR)
+        scanner.decoder.decode.assert_called_once_with(scanner.capture.read.return_value[1])
+        self.qr.scan_guides.assert_called_once_with(self.qr.Image.fromarray.return_value)
         scanner.close(); x.XCloseDisplay.assert_called_once_with(1)
         self.cv.VideoCapture.return_value.release.assert_called_once()
+
+    def test_positioning_guides_preserve_source_and_clear_centre(self):
+        for size in ((640,480),(320,180),(480,640),(96,72)):
+            for background in ('white','black'):
+                with self.subTest(size=size,background=background):
+                    original=Image.new('RGB',size,background)
+                    before=original.tobytes()
+                    preview=self.qr.scan_guides(original)
+                    self.assertEqual(original.tobytes(),before)
+                    self.assertEqual(preview.size,size)
+                    width,height=size
+                    self.assertEqual(preview.getpixel((width//2,height//2)),original.getpixel((0,0)))
+                    radius=max(1,int(min(size)*.2))
+                    centre=(width//2-radius,height//2-radius,width//2+radius,height//2+radius)
+                    self.assertEqual(preview.crop(centre).tobytes(),original.crop(centre).tobytes())
+                    mint=Image.eval(preview.convert('RGB').getchannel('G'),lambda value: 255 if value==223 else 0)
+                    box=mint.getbbox();self.assertIsNotNone(box)
+                    left,top,right,bottom=box
+                    self.assertAlmostEqual((left+right)/2,width/2,delta=1)
+                    self.assertAlmostEqual((top+bottom)/2,height/2,delta=1)
+                    self.assertAlmostEqual(right-left,bottom-top,delta=1)
+                    self.assertTrue(0<left<right<width and 0<top<bottom<height)
+                    for x,y in ((left+2,top+2),(right-3,top+2),(left+2,bottom-3),(right-3,bottom-3)):
+                        self.assertNotEqual(preview.getpixel((x,y)),original.getpixel((x,y)))
 
     def test_static_frame_decode_cadence_and_repeat_suppression(self):
         self.widgets(); callback=Mock(); scanner=self.qr.NativeQRScanner(callback,camera='StaticImage: Static picture')

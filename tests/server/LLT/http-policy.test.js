@@ -339,6 +339,12 @@ test('accepted status is device scoped and server timestamped; rejected updates 
     configuration_version: 4,
     devices: { camera: ['C20'] },
     last_seen: 'spoofed',
+    remote_status: 'connected',
+    remote_battery: 75,
+    remote_charger_connected: true,
+    camera_status: 'connected',
+    camera_powered: true,
+    camera_connected: true,
   };
   assert.equal(
     (await call('/api/status', { method: 'POST', headers: device, value: accepted })).status,
@@ -346,10 +352,33 @@ test('accepted status is device scoped and server timestamped; rejected updates 
   );
   const saved = ctx.terminalStatuses.term1;
   assert.notEqual(saved.last_seen, 'spoofed');
+  assert.equal(saved.remote_battery, 75);
+  assert.equal(saved.remote_charger_connected, true);
+  assert.equal(saved.camera_powered, true);
+  const unknown = terminalStatus({
+    remote_status: 'unknown',
+    remote_battery: null,
+    remote_charger_connected: null,
+    camera_connected: null,
+    camera_powered: null,
+    camera_status: 'unknown',
+  });
+  assert.equal(unknown.remote_battery, null);
+  assert.equal(unknown.camera_powered, null);
   assert.ok(Number.isFinite(Date.parse(saved.last_seen)));
   for (const invalid of [
     { state: [] },
     { registered: 'yes' },
+    { remote_status: 'invented' },
+    { camera_status: [] },
+    { camera_status: 'ready-but-unknown' },
+    { remote_battery: true },
+    { remote_battery: -1 },
+    { remote_battery: 101 },
+    { remote_battery: 4.5 },
+    { remote_charger_connected: 'yes' },
+    { camera_powered: 1 },
+    { camera_connected: 'yes' },
     { configuration_version: -1 },
     { devices: [] },
     { devices: { camera: [1] } },

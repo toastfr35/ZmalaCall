@@ -5,7 +5,12 @@
 // Replace ringing with Connecting video progress, inspect the visible spinner and stopped
 // ring pulse, then clear progress and verify unchanged video surfaces and available controls.
 // Measure the connecting label at narrow portrait and landscape sizes and reject clipped text.
+// Cycle speaker, earpiece and silent output while microphone mute stays selected. Dispatch
+// vertical swipes, taps, horizontal drags, cancellation and a second pointer to the video.
+// Supply changing live-stream definitions through SDK doubles; bind the real capture view,
+// apply the statistics-refresh path and verify nonzero SDK dimensions and fitted camera ratio.
 // @pass Controls start hidden, remain in one row, hide after five seconds and reappear on a tap.
+// Vertical swipes adjust only listening volume and show feedback; other gestures do not.
 // Preview surfaces survive rotation with correct bounds and aspect ratio on the first layout pass.
 // Connecting video shows a spinner without the ringing pulse, and clearing it hides progress.
 // Every connecting-label glyph fits the measured text bounds in both orientations.
@@ -22,12 +27,88 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.*;
 
 public class CallScreenTest {
+  @Test public void previewReceivesCurrentStreamDimensionsAndAdaptation() {
+    PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+      try {
+        CallScreen view = new CallScreen(PhoneFixture.INSTRUMENTATION.getTargetContext(), false,
+            CallEngine.Output.SPEAKER, new CallScreen.Actions() {
+              public void mute(boolean value) {} public CallEngine.Output output(CallEngine.Output value) { return value; }
+              public int volume(int steps) { return 50; } public void camera() {} public void end() {}
+            });
+        int[] pixels = {480, 640};
+        org.linphone.core.VideoDefinition definition = (org.linphone.core.VideoDefinition)
+            java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{org.linphone.core.VideoDefinition.class},
+            (p, m, a) -> m.getName().equals("getWidth") ? pixels[0] : pixels[1]);
+        org.linphone.core.CallParams params = (org.linphone.core.CallParams)
+            java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{org.linphone.core.CallParams.class},
+            (p, m, a) -> { assertEquals("getSentVideoDefinition", m.getName()); return definition; });
+        org.linphone.core.Call call = (org.linphone.core.Call)
+            java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{org.linphone.core.Call.class},
+            (p, m, a) -> { assertEquals("getCurrentParams", m.getName()); return params; });
+        org.linphone.core.Core core = (org.linphone.core.Core)
+            java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{org.linphone.core.Core.class},
+            (p, m, a) -> { assertTrue(m.getName().equals("setNativeVideoWindowId") || m.getName().equals("setNativePreviewWindowId")); return null; });
+        CallEngine engine = new CallEngine(s -> {});
+        var field = CallEngine.class.getDeclaredField("core"); field.setAccessible(true); field.set(engine, core);
+        engine.call = call;
+        assertEquals(0, view.preview.getPreviewVideoSize().getWidth());
+        engine.video(view.remote, view.preview);
+        for (int[] size : new int[][]{{480,640}, {720,1280}, {1280,720}, {640,480}, {480,640}}) {
+          pixels[0] = size[0]; pixels[1] = size[1]; engine.updatePreviewSize();
+          view.measure(View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY),
+              View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY));
+          assertEquals(size[0], view.preview.getPreviewVideoSize().getWidth());
+          assertEquals(size[1], view.preview.getPreviewVideoSize().getHeight());
+          assertEquals((float)size[0] / size[1], (float)view.preview.getMeasuredWidth()
+              / view.preview.getMeasuredHeight(), .01f);
+        }
+        pixels[0] = 0; pixels[1] = 0; engine.updatePreviewSize();
+        assertEquals(480, view.preview.getPreviewVideoSize().getWidth());
+        engine.call = null; engine.updatePreviewSize(); view.dispose();
+      } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
+    });
+  }
+  @Test public void volumeGesturesDoNotBecomeTapsOrChangeMute() {
+    PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+      int[] volume = {50}, calls = {0};
+      CallScreen view = new CallScreen(PhoneFixture.INSTRUMENTATION.getTargetContext(), true,
+          CallEngine.Output.MUTED, new CallScreen.Actions() {
+            public void mute(boolean value) { fail("A swipe changed microphone mute"); }
+            public CallEngine.Output output(CallEngine.Output value) { fail("A swipe changed routing"); return value; }
+            public int volume(int steps) { calls[0]++; volume[0] += steps; return volume[0]; }
+            public void camera() { fail(); } public void end() { fail(); }
+          });
+      float density = view.getResources().getDisplayMetrics().density;
+      java.util.function.BiConsumer<Integer, float[]> touch = (action, point) -> {
+        android.view.MotionEvent event = android.view.MotionEvent.obtain(0, 10, action,
+            point[0] * density, point[1] * density, 0);
+        view.remote.dispatchTouchEvent(event); event.recycle();
+      };
+      touch.accept(0, new float[]{100, 200}); touch.accept(2, new float[]{100, 136});
+      touch.accept(1, new float[]{100, 136});
+      assertEquals(52, volume[0]); assertEquals(View.INVISIBLE, view.controls.getVisibility());
+      assertNotNull(PhoneFixture.text(view, "Sound muted · 52%"));
+      touch.accept(0, new float[]{100, 100}); touch.accept(2, new float[]{100, 164});
+      touch.accept(1, new float[]{100, 164}); assertEquals(50, volume[0]);
+      int prior = calls[0];
+      touch.accept(0, new float[]{100, 100}); touch.accept(2, new float[]{200, 104}); touch.accept(1, new float[]{200, 104});
+      touch.accept(0, new float[]{100, 200}); touch.accept(3, new float[]{100, 200});
+      touch.accept(2, new float[]{100, 100}); touch.accept(1, new float[]{100, 100});
+      touch.accept(0, new float[]{100, 200}); touch.accept(5, new float[]{100, 200});
+      touch.accept(2, new float[]{100, 100}); touch.accept(1, new float[]{100, 100});
+      assertEquals(prior, calls[0]); assertEquals(View.INVISIBLE, view.controls.getVisibility());
+      touch.accept(0, new float[]{100, 100}); touch.accept(1, new float[]{100, 100});
+      assertEquals(View.VISIBLE, view.controls.getVisibility());
+      view.dispose();
+    });
+  }
   @Test public void connectingLabelFitsBesideNarrowSpinner() {
     org.linphone.core.Factory.instance();
     PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
-      CallScreen view = new CallScreen(PhoneFixture.INSTRUMENTATION.getTargetContext(), false, true,
+      CallScreen view = new CallScreen(PhoneFixture.INSTRUMENTATION.getTargetContext(), false, CallEngine.Output.SPEAKER,
           new CallScreen.Actions() {
-            public void mute(boolean value) {} public void speaker(boolean value) {}
+            public void mute(boolean value) {} public CallEngine.Output output(CallEngine.Output value) { return value; }
+            public int volume(int steps) { return 50; }
             public void camera() {} public void end() {}
           });
       float density = view.getResources().getDisplayMetrics().density;
@@ -64,11 +145,12 @@ public class CallScreenTest {
               new CallScreen(
                   PhoneFixture.INSTRUMENTATION.getTargetContext(),
                   false,
-                  true,
+                  CallEngine.Output.SPEAKER,
                   new CallScreen.Actions() {
                     public void mute(boolean value) {}
 
-                    public void speaker(boolean value) {}
+                    public CallEngine.Output output(CallEngine.Output value) { return value; }
+            public int volume(int steps) { return 50; }
 
                     public void camera() {}
 
@@ -86,9 +168,9 @@ public class CallScreenTest {
             call.layout(0, 0, width, height);
             assertEquals(
                 "Preview width must use this layout, not the previous orientation",
-                Math.round((landscape ? 128 : 96) * density),
+                Math.round((landscape ? 128 : 72) * density),
                 call.preview.getWidth());
-            assertEquals(Math.round((landscape ? 96 : 128) * density), call.preview.getHeight());
+            assertEquals(Math.round((landscape ? 72 : 128) * density), call.preview.getHeight());
             android.graphics.RectF pixels =
                 new android.graphics.RectF(0, 0, call.preview.getWidth(), call.preview.getHeight());
             call.preview.getTransform(new android.graphics.Matrix()).mapRect(pixels);
@@ -119,17 +201,17 @@ public class CallScreenTest {
               new CallScreen(
                   screen,
                   false,
-                  true,
+                  CallEngine.Output.SPEAKER,
                   new CallScreen.Actions() {
                     public void mute(boolean value) {
                       assertTrue(value);
                       actions[0]++;
                     }
 
-                    public void speaker(boolean value) {
-                      assertFalse(value);
-                      actions[1]++;
+                    public CallEngine.Output output(CallEngine.Output value) {
+                      actions[1]++; return value;
                     }
+                    public int volume(int steps) { return 50; }
 
                     public void camera() {
                       actions[2]++;
@@ -153,12 +235,17 @@ public class CallScreenTest {
     PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> checkLayout(call));
     checkPreviewTransform(call);
     checkPulse(call);
-    PhoneFixture.click(screen, "Mute");
-    assertTrue(PhoneFixture.hasDescription(screen, "Unmute"));
-    PhoneFixture.click(screen, "Use earpiece");
-    assertTrue(PhoneFixture.hasDescription(screen, "Use speaker"));
+    PhoneFixture.click(screen, "Mute microphone");
+    assertTrue(PhoneFixture.hasDescription(screen, "Unmute microphone"));
+    PhoneFixture.click(screen, "Loudspeaker. Switch to earpiece");
+    assertTrue(PhoneFixture.hasDescription(screen, "Earpiece. Mute call sound"));
+    PhoneFixture.click(screen, "Earpiece. Mute call sound");
+    assertTrue(PhoneFixture.hasDescription(screen, "Call sound muted. Switch to loudspeaker"));
+    assertTrue(PhoneFixture.hasDescription(screen, "Unmute microphone"));
+    PhoneFixture.click(screen, "Call sound muted. Switch to loudspeaker");
+    assertTrue(PhoneFixture.hasDescription(screen, "Loudspeaker. Switch to earpiece"));
     PhoneFixture.click(screen, "Switch camera");
-    assertArrayEquals(new int[] {1, 1, 1, 0}, actions);
+    assertArrayEquals(new int[] {1, 3, 1, 0}, actions);
     PhoneFixture.snapshot("call-controls-portrait");
     // Check before and after the five-second idle deadline, without depending on exact frame
     // timing.
@@ -216,7 +303,7 @@ public class CallScreenTest {
           call.remote.performClick();
         });
     PhoneFixture.click(screen, "End call");
-    assertArrayEquals(new int[] {1, 1, 1, 1}, actions);
+    assertArrayEquals(new int[] {1, 3, 1, 1}, actions);
     PhoneFixture.INSTRUMENTATION.runOnMainSync(
         () -> screen.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
   }
@@ -250,7 +337,8 @@ public class CallScreenTest {
     for (int degrees : new int[] {0, 90, 180, 270}) {
       PhoneFixture.INSTRUMENTATION.runOnMainSync(
           () -> {
-            call.preview.setAspectRatio(640, 360);
+            call.preview.setAspectRatio(degrees % 180 == 90 ? 360 : 640,
+                degrees % 180 == 90 ? 640 : 360);
             call.preview.setRotation(degrees);
           });
       PhoneFixture.INSTRUMENTATION.waitForIdleSync();
@@ -261,13 +349,19 @@ public class CallScreenTest {
             assertNotNull(fitted);
             assertEquals(
                 "Captured aspect ratio must survive the preview slot",
-                640f / 360f,
+                degrees % 180 == 90 ? 360f / 640f : 640f / 360f,
                 fitted.width() / fitted.height(),
                 .01f);
             assertTrue(fitted.width() <= call.preview.getWidth() + 1);
             assertTrue(fitted.height() <= call.preview.getHeight() + 1);
             float[] matrix = new float[9];
             call.preview.getTransform(new android.graphics.Matrix()).getValues(matrix);
+            // TextureView first maps the actual 640x360 buffer into its view. The final
+            // transform must give horizontal and vertical camera pixels equal lengths.
+            float rawX = call.preview.getWidth() / 640f, rawY = call.preview.getHeight() / 360f;
+            double pixelX = Math.hypot(matrix[0] * rawX, matrix[3] * rawX);
+            double pixelY = Math.hypot(matrix[1] * rawY, matrix[4] * rawY);
+            assertEquals("A camera circle must stay circular", pixelX, pixelY, .015);
             if (degrees == 90 || degrees == 270) {
               assertEquals(0, matrix[android.graphics.Matrix.MSCALE_X], .001f);
               assertTrue(Math.abs(matrix[android.graphics.Matrix.MSKEW_X]) > .1f);

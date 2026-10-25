@@ -6,9 +6,12 @@
 // outgoing INVITEs. This verifies signaling and camera selection, not physical captured pixels.
 // Keep an engine alive past the SDK's 20-second startup timer; inspect its foreground state
 // and native Android helper's 20ms iteration schedule before and after that deadline.
+// Inspect the native default speaker before a call. On an answered stream, select each output,
+// assert its device/mute state independently of microphone mute, then switch cameras while muted.
 // @pass Registration authenticates, the INVITE targets the permitted contact with audio and video and no bundle, and stop leaves no current call or registered state.
 // Two switches restore the original native camera and retain StreamsRunning without a new INVITE.
 // A visible-activity engine stays foreground with a 20ms timer after the startup boost expires.
+// Speaker is the real next-call default; current-call device/mute and microphone stay independent.
 package org.zmala.phone;
 
 import static org.junit.Assert.*;
@@ -101,6 +104,19 @@ public class CallEngineTest {
       org.linphone.core.Call original = engine.call;
       String[] cameras = new String[3];
       PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+        assertEquals(org.linphone.core.AudioDevice.Type.Speaker, core.getDefaultOutputAudioDevice().getType());
+        assertEquals(org.linphone.core.AudioDevice.Type.Speaker, original.getOutputAudioDevice().getType());
+        engine.mute(true);
+        for (CallEngine.Output mode : CallEngine.Output.values()) {
+          CallEngine.Output actual = engine.output(mode);
+          assertFalse(core.isMicEnabled());
+          assertEquals(actual == CallEngine.Output.MUTED, original.getSpeakerMuted());
+          assertEquals(actual == CallEngine.Output.EARPIECE ? org.linphone.core.AudioDevice.Type.Earpiece
+              : org.linphone.core.AudioDevice.Type.Speaker, original.getOutputAudioDevice().getType());
+        }
+        engine.mute(false);
+        assertTrue(core.isMicEnabled());
+        assertTrue(original.getSpeakerMuted());
         cameras[0] = core.getVideoDevice();
         engine.flipCamera();
         cameras[1] = core.getVideoDevice();
@@ -115,6 +131,7 @@ public class CallEngineTest {
       assertNull("Return to front sent a reINVITE", sip.invites.poll(2, TimeUnit.SECONDS));
       assertSame(original, engine.call);
       assertEquals(org.linphone.core.Call.State.StreamsRunning, engine.call.getState());
+      assertTrue(engine.call.getSpeakerMuted());
     } finally {
       PhoneFixture.INSTRUMENTATION.runOnMainSync(engine::stop);
     }

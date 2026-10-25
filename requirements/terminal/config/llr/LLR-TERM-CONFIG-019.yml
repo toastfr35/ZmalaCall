@@ -24,9 +24,12 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Arrows shall select a setting. Green shall open its editor and red shall leave the
-  list. In the editor, arrows shall change the draft, green shall accept it and red
-  shall discard it. Only the active pane shall show button hints.
+  Arrows shall select a setting. Green shall open its editor. Red on the list shall ask
+  for confirmation before leaving Settings: green shall exit and red shall return
+  to the same list selection without changing configuration. Arrows on the exit
+  confirmation shall have no effect. In the editor, arrows shall change the draft,
+  green shall accept it and red shall discard it. Only the active pane shall show button hints.
 verification: |
   Navigate both panes and cancel drafts. Check saved values and hints for the active
-  pane.
+  pane. Exercise both exit answers and ignored arrows; check configuration and list
+  selection are preserved until confirmed.

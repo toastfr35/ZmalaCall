@@ -9,7 +9,7 @@ from zmala_terminal.common.theme import BG, FG, MUTED, PANEL, ACCENT, BUTTON_GRE
 
 MESSAGES = json.loads((Path(__file__).resolve().parents[1] / 'shared/settings-messages.json').read_text(encoding='utf-8'))
 KEYS = ('settings', 'language', 'auto_answer', 'auto_framing', 'c20_speaker_volume',
-        'carousel_portraits', 'never', 'open', 'accept', 'exit', 'current', 'tv_idle_seconds')
+        'carousel_portraits', 'never', 'open', 'accept', 'exit', 'current', 'tv_idle_seconds', 'ringtone')
 
 
 class SettingsView:
@@ -33,6 +33,10 @@ class SettingsView:
             return self.settings_text('never') if not value else f'{value//60} min' if value % 60 == 0 else f'{value} s'
         if key == 'auto_framing':
             return self.text('yes' if value else 'no')
+        # @llr LLR-TERM-AUDIO-009
+        if key == 'ringtone':
+            choices = self.model.config.get('ringtones', [{'id': 'nokia', 'name': 'Nokia'}])
+            return next((item['name'] for item in choices if item['id'] == value), 'Nokia')
         return f'{value} %' if key == 'c20_speaker_volume' else str(value)
 
     def render_settings(self):
@@ -88,7 +92,8 @@ class SettingsView:
         width, height = max(900, c.winfo_width()), max(620, c.winfo_height())
         draft = self.settings_draft
         signature = (width, height, self.language, self.settings_open, int(self.settings_hold.progress*100),
-                     draft.row, draft.editing, draft.index, draft.busy, draft.error,
+                     draft.row, draft.editing, draft.index, draft.busy, draft.error, draft.confirm_exit,
+                     getattr(self, 'ringtone_preview_state', ''),
                      tuple(SettingsDraft.value(config, key) for key in FIELDS))
         if signature == self.settings_signature:
             return
@@ -105,6 +110,9 @@ class SettingsView:
             c.create_rectangle(x+5, y+5, x+5+(bar_width-10)*self.settings_hold.progress,
                                y+27, fill=BUTTON_RED, outline='', tags='settings-progress')
             return
+        if draft.confirm_exit:
+            self.draw_settings_exit(width, height)
+            return
         split, margin = int(width*.39), 28
         left_width, right_x = split-2*margin, split+margin
         right_width = width-right_x-margin
@@ -116,12 +124,12 @@ class SettingsView:
             selected = draft.row == index
             fill = '#303b50' if selected else PANEL
             self.settings_panel(margin, y, left_width, row_height, fill,
-                                ACCENT if selected and not draft.editing else None, tags='settings-row')
-            self.settings_label(self.settings_text(key), margin+14, y+(row_height*.3 if key == 'reset' else 10), left_width-28,
-                                22, color=RED if key == 'reset' else FG, background=fill, bold=True, max_height=row_height*.45)
+                                ACCENT if selected and not draft.editing else None, tags=('settings-row', 'settings-row-'+key))
+            self.settings_label(self.settings_text(key), margin+14, y+(row_height*.3 if key == 'reset' else 1), left_width-28,
+                                22, color=RED if key == 'reset' else FG, background=fill, bold=True, max_height=row_height/2-1)
             value = self.settings_value(key, SettingsDraft.value(config, key))
-            self.settings_label(value, margin+14, y+row_height*.55, left_width-28,
-                                19, MUTED, fill, max_height=row_height*.37)
+            self.settings_label(value, margin+14, y+row_height/2, left_width-28,
+                                19, MUTED, fill, max_height=row_height/2, tags=('settings-value', key))
         key = draft.key
         self.settings_label(self.settings_text(key), right_x, 28, right_width, 30, bold=True, max_height=72)
         shown = draft
@@ -168,6 +176,11 @@ class SettingsView:
         if draft.busy or draft.error:
             self.settings_label(self.text('wait' if draft.busy else 'help'), right_x, height-116,
                                 right_width, 17, MUTED if draft.busy else RED, max_height=38)
+        elif draft.editing and key == 'ringtone':
+            preview = getattr(self, 'ringtone_preview_state', '')
+            caption = self.text('help') if preview == 'error' else self.text('wait') if preview == 'waiting' else '0 %' if preview == 'muted' else '♫' if preview == 'playing' else ''
+            self.settings_label(caption, right_x, height-116, right_width, 17,
+                                RED if preview == 'error' else MUTED, max_height=38, tags='ringtone-preview')
         if not draft.busy:
             # Hints belong exclusively to the active panel.
             y, gap = height-72, 8
@@ -179,3 +192,21 @@ class SettingsView:
                 self.settings_panel(x+i*(part+gap), y, part, 40, fill, tags='settings-hint')
                 self.settings_label(label, x+i*(part+gap)+part/2, y+20, part-10, 17, FG, fill,
                                     True, anchor='center', max_height=32)
+
+    # @llr LLR-TERM-CONFIG-019
+    def draw_settings_exit(self, width, height):
+        self.settings_label(self.settings_text('settings'), width/2, height*.23, width-80,
+                            34, bold=True, anchor='center', max_height=height*.15)
+        self.settings_label(self.settings_text('exit')+' ?', width/2, height*.43, width-80,
+                            36, bold=True, anchor='center', max_height=height*.2,
+                            tags='settings-exit-question')
+        gap = 24
+        part = min(320, (width-80-gap)/2)
+        y = height*.65
+        for index, (answer, fill) in enumerate((('yes', BUTTON_GREEN), ('no', BUTTON_RED))):
+            x = width/2-gap/2-part if index == 0 else width/2+gap/2
+            tag = 'settings-exit-'+answer
+            self.settings_panel(x, y, part, 70, fill, tags=tag)
+            self.settings_label(('✓ ' if index == 0 else '× ')+self.text(answer),
+                                x+part/2, y+35, part-24, 26, FG, fill, True,
+                                anchor='center', max_height=60, tags=tag)

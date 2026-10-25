@@ -1,7 +1,7 @@
 # @test T-LLT-071
 # @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-020, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022
 # @environment portable
-# @plan Exercise settings navigation, acknowledged writes and timeout reconciliation with real drafts and recording HTTP/Tk boundaries. Verify busy and cancelled drafts, captured enrollment generation, keyboard repeat release coalescing and stale-result rejection. Draw every setting with controlled image metrics; check serial footer, hint placement only on the active side, localized values, hold progress, busy feedback and bounded font size.
+# @plan Exercise settings navigation, acknowledged writes and timeout reconciliation with real drafts and recording HTTP/Tk boundaries. Verify busy and cancelled drafts, captured enrollment generation, both Settings-exit answers and ignored confirmation arrows, keyboard repeat release coalescing and stale-result rejection. Draw every setting with controlled image metrics; check serial footer, hint placement only on the active side, localized values, hold progress, busy feedback and bounded font size. With eight rows at both supported sizes and 22-pixel minimum text images, assert short saved values are rendered without ellipsis.
 # @pass Every navigation, request, state and drawing assertion passes without a display or server; no mocked pixel output is claimed as physical readability evidence.
 import queue
 from types import SimpleNamespace
@@ -26,7 +26,25 @@ class SettingsWorkflowTests(unittest.TestCase):
         d.error=True; c.settings_button('red'); self.assertFalse(d.editing); self.assertFalse(d.error); self.assertTrue(c.settings_open)
         c.settings_button('green'); c.save_local_setting=Mock(); c.settings_button('green'); c.save_local_setting.assert_called_once()
         d.busy=True; c.render.reset_mock(); c.settings_button('red'); self.assertTrue(c.settings_open); c.render.assert_not_called()
-        d.busy=False; d.editing=False; c.settings_button('red'); self.assertFalse(c.settings_open)
+        d.busy=False; d.editing=False; c.settings_button('red'); self.assertTrue(c.settings_open); self.assertTrue(d.confirm_exit)
+        c.settings_button('green'); self.assertFalse(c.settings_open)
+
+    def test_exit_requires_confirmation_and_preserves_list_and_configuration(self):
+        c = self.controller(); d = c.settings_draft; d.row = FIELDS.index('ringtone')
+        before = dict(c.model.config)
+        c.settings_button('red')
+        self.assertTrue(c.settings_open); self.assertTrue(d.confirm_exit)
+        for button in ('left', 'right'):
+            c.settings_button(button)
+            self.assertEqual(d.row, FIELDS.index('ringtone')); self.assertTrue(d.confirm_exit)
+        c.settings_button('red')
+        self.assertTrue(c.settings_open); self.assertFalse(d.confirm_exit)
+        self.assertEqual(d.row, FIELDS.index('ringtone'))
+        c.settings_button('green'); self.assertTrue(d.editing)
+        c.settings_button('red'); self.assertFalse(d.editing); self.assertFalse(d.confirm_exit)
+        c.settings_button('red'); c.settings_button('green')
+        self.assertFalse(c.settings_open); self.assertFalse(d.confirm_exit)
+        self.assertEqual(c.model.config, before); c.configuration.update_settings.assert_not_called()
 
     def test_write_reconciliation_preserves_generation_and_expected_values(self):
         for outcome in ['accepted','timeout-applied','timeout-rejected','offline']:
@@ -83,8 +101,22 @@ class SettingsWorkflowTests(unittest.TestCase):
         v.settings_draft.busy=False; v.settings_draft.error=True; v.draw_settings()
         self.assertIn('help',[call.args[0] for call in v.text_renderer.photo.call_args_list])
 
+    def test_short_saved_values_retain_full_text_in_eight_rows(self):
+        for width, height in ((900, 620), (1280, 720)):
+            v = self.view()
+            v.settings_canvas.winfo_width.return_value = width
+            v.settings_canvas.winfo_height.return_value = height
+            v.text_renderer.photo.side_effect = lambda text, family, size, *args: SimpleNamespace(
+                height=lambda: max(22, size+8), text=text)
+            v.draw_settings()
+            images = [call.kwargs['image'] for call in v.settings_canvas.create_image.call_args_list
+                      if 'settings-value' in call.kwargs.get('tags', ())]
+            for key in ('language', 'c20_speaker_volume', 'ringtone', 'carousel_portraits'):
+                expected = v.settings_value(key, SettingsDraft.value(v.model.config, key))
+                self.assertIn(expected, [image.text for image in images], (width, height, key))
+
     def test_hold_progress_bounded_labels_and_localized_values(self):
-        v=self.view(); v.settings_open=False; v.settings_hold.start(100); v.settings_hold.update(105)
+        v=self.view(); v.settings_open=False; v.settings_hold.start(100); v.settings_hold.update(103.5)
         with patch.object(settings.tk.Misc,'lift'): self.assertTrue(v.render_settings())
         progress=[call for call in v.settings_canvas.create_rectangle.call_args_list if call.kwargs.get('tags')=='settings-progress']; self.assertEqual(len(progress),1)
         self.assertAlmostEqual(progress[0].args[2]-progress[0].args[0],(1280*.6-10)*.5)

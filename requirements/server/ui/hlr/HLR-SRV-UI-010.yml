@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/HLT/ringtone-browser.test.js
+  type: file
 - path: tests/server/HLT/browser-admin.test.js
   type: file
 reviewed: null

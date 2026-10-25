@@ -1,7 +1,7 @@
 # @test T-LLT-066
 # @requirements LLR-TERM-NAV-007, LLR-TERM-CALL-012, LLR-TERM-CALL-014, LLR-TERM-HISTORY-015, LLR-TERM-HISTORY-017, LLR-TERM-HISTORY-021, LLR-TERM-HISTORY-022, LLR-TERM-HISTORY-024, LLR-TERM-POWER-014
 # @environment portable
-# @plan Drive real call orchestration and the configured model with fake native SIP, HTTP preflight, scheduling and USB boundaries. Verify incoming permissions, call-handle ownership, persisted notifications, timeout validation, stale/cancelled USB retries, end/error cleanup and callback target/response validation. Check callback-availability prompts do not interrupt active settings or calls.
+# @plan Drive real call orchestration and the configured model with fake native SIP, HTTP preflight, scheduling and USB boundaries. Verify incoming permissions, call-handle ownership, persisted notifications, timeout validation, stale/cancelled USB retries, end/error cleanup and callback target/response validation. For unanswered outgoing attempts, inject remote rejection/end, delayed/immediate caller cancellation, synchronous end callbacks, prior connection, incoming decline, permission removal and existing pending requests; verify one callback offer, both choices and late-event fencing. Check callback-availability prompts do not interrupt active settings or calls.
 # @pass Native operations and persisted results match assertions; no actual call, media, TV or network side effects occur.
 import json
 import queue
@@ -87,7 +87,7 @@ class CallOrchestrationTests(unittest.TestCase):
         c.engine.dial.assert_called_once_with(contact['sip_uri']); self.assertEqual(c.outgoing_deadline,220)
         c.engine.dial.side_effect=RuntimeError('device removed')
         with self.assertLogs(level='ERROR'): c.dial_ready(1,2,contact,True)
-        self.assertEqual(c.notice,'unavailable'); self.assertIsNone(c.outgoing_deadline); self.assertEqual(c.model.state,State.HOME)
+        self.assertEqual(c.notice,'unavailable'); self.assertIsNone(c.outgoing_deadline); self.assertEqual(c.model.state,State.CONFIRM_CALLBACK)
         c.model.state=State.CALLING; c.engine.registered=False; c.dial_ready(1,2,contact,True)
         self.assertEqual(c.notice,'offline'); self.assertFalse(c.model.contacts[0]['online'])
 
@@ -101,6 +101,54 @@ class CallOrchestrationTests(unittest.TestCase):
         with self.assertLogs(level='ERROR'): c.action('answer')
         c.engine.end.assert_called_with(); self.assertEqual(c.notice,'unavailable'); c.tv_control.cancel.assert_called()
         c.engine=None; c.begin_dial.reset_mock(); c.action('dial'); c.action(None); c.begin_dial.assert_not_called()
+
+    def outgoing(self):
+        c = self.controller(); c.model.button('green'); c.model.button('green')
+        return c
+
+    def test_unanswered_remote_end_offers_callback_once_for_original_contact(self):
+        for state in (13, 14, 19):
+            c = self.outgoing(); c.call_event(41, state, 'alice', 'family.test')
+            self.assertEqual(c.model.state, State.CONFIRM_CALLBACK)
+            self.assertTrue(c.model.callback_after_call); self.assertEqual(c.model.contact['id'], 'alice')
+            self.assertIsNone(c.engine.call); self.assertFalse(c.model.outgoing_attempt)
+            c.call_event(41, 19, 'alice', 'family.test')
+            self.assertEqual(c.model.state, State.CONFIRM_CALLBACK)
+            self.assertTrue(c.finish_call())
+            c.begin_callback = Mock()
+            c.action(c.model.button('green')); c.begin_callback.assert_called_once_with(cancel=False)
+
+    def test_caller_cancel_waits_for_native_end_and_no_closes_without_request(self):
+        for immediate in (False, True):
+            c = self.outgoing()
+            if immediate: c.engine.end.side_effect = lambda **kw: setattr(c.engine, 'call', None)
+            c.action(c.model.button('red'))
+            if not immediate:
+                self.assertEqual(c.model.state, State.STOPPING)
+                c.call_event(41, 14, 'alice', 'family.test')
+            self.assertEqual(c.model.state, State.CONFIRM_CALLBACK)
+            self.assertIsNone(c.model.button('red')); self.assertEqual(c.model.state, State.HOME)
+            c.configuration.request.assert_not_called()
+            c.dial_ready(1, 2, dict(c.model.selected), True); c.engine.dial.assert_not_called()
+
+    def test_synchronous_end_does_not_dismiss_its_own_callback_offer(self):
+        c = self.outgoing()
+        c.engine.end.side_effect = lambda **kw: c.call_event(41, 14, 'alice', 'family.test')
+        c.action(c.model.button('red'))
+        self.assertEqual(c.model.state, State.CONFIRM_CALLBACK); self.assertTrue(c.model.callback_after_call)
+
+    def test_connected_calls_incoming_declines_and_existing_requests_do_not_offer(self):
+        c = self.outgoing(); c.call_event(41, 7, 'alice', 'family.test')
+        c.model.button('red'); c.call_event(41, 14, 'alice', 'family.test')
+        self.assertEqual(c.model.state, State.HOME)
+        c = self.controller(); c.model.incoming('alice', 'family.test')
+        c.model.button('red'); c.call_event(41, 14, 'alice', 'family.test')
+        self.assertEqual(c.model.state, State.HOME)
+        c = self.outgoing(); c.model.config['callbacks'] = [
+            {'from': c.model.config['sip']['username'], 'to': 'alice', 'status': 'pending'}]
+        c.call_event(41, 14, 'alice', 'family.test'); self.assertEqual(c.model.state, State.HOME)
+        c = self.outgoing(); c.model.config['contacts'] = []
+        c.call_event(41, 14, 'alice', 'family.test'); self.assertEqual(c.model.state, State.HOME)
 
     def test_callback_worker_validates_reply_and_reports_cancelled_request_identity(self):
         request={'id':'11111111-1111-4111-8111-111111111111','from':'terminal','to':'alice','status':'pending','ready':False}

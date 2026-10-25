@@ -126,16 +126,20 @@ class ServerInstallerTests(unittest.TestCase):
     def test_migration_keeps_current_state_not_logs_and_backups(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            (root/'server.json').write_text(json.dumps({'users': {'alice': {'password': 'private'}}, 'profiles': {}}))
+            identity = 'a' * 64
+            (root/'server.json').write_text(json.dumps({'users': {'alice': {'password': 'private'}}, 'profiles': {}, 'ringtones': {identity: {'name': 'Private sound', 'bytes': 4}}}))
             (root/'admin-password.json').write_text('{"password_hash":"private"}')
             (root/'server.log').write_text('private log')
             (root/'server-before-reset.json').write_text('old private data')
             (root/'photos').mkdir()
             (root/'photos/a.png').write_bytes(b'picture')
+            (root/'ringtones').mkdir()
+            (root/'ringtones'/(identity+'.wav')).write_bytes(b'tone')
+            (root/'ringtones'/('b'*64+'.wav')).write_bytes(b'obsolete')
             output = root/'migration.tar.gz'
             migration_archive(root, output)
             with tarfile.open(output) as archive:
-                self.assertEqual(set(archive.getnames()), {'server.json', 'admin-password.json', 'photos/a.png'})
+                self.assertEqual(set(archive.getnames()), {'server.json', 'admin-password.json', 'photos/a.png', 'ringtones/'+identity+'.wav'})
 
 
 class ServerPackageTests(unittest.TestCase):
@@ -150,6 +154,7 @@ class ServerPackageTests(unittest.TestCase):
                 self.assertIn('zmala_server/vendor/sip/sip.js', names)
                 self.assertIn('build_tools/linux/server-ssh.py', names)
                 self.assertIn('zmala_terminal/common/shared/terminal-languages.json', names)
+                self.assertEqual([p for p in names if p.endswith('.wav')], ['zmala_terminal/common/assets/gentle-chime.wav'])
                 for name in ('docs/general.md', 'docs/server.md', 'docs/terminal.md',
                              'build_tools/assets/installation-connections.png',
                              'zmala_terminal/common/assets/presenter-pairing.png'):

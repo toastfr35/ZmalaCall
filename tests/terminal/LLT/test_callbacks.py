@@ -1,7 +1,7 @@
 # @test T-LLT-009
 # @requirements LLR-TERM-HISTORY-021, LLR-TERM-HISTORY-022, LLR-TERM-HISTORY-023
 # @environment portable
-# @plan Drive the model and management controller with pending, completed and stale callback results; assert one confirmed request, cancellable tags, failure retention and protection against stale poll resurrection.
+# @plan Drive the model and management controller with pending, completed and stale callback results; assert incoming flags only for pending requests from current contacts, and one confirmed request, cancellable tags, failure retention and protection against stale poll resurrection.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Callback tags and cancellation retain server ownership and late-result guards."""
@@ -29,6 +29,27 @@ class CallbackTests(unittest.TestCase):
                         'status': 'pending', 'ready': False}
         model.config['callbacks'] = [dict(self.request)]
         return model
+
+    def test_incoming_callback_captions_cover_all_catalogs_and_do_not_mean_sent(self):
+        from zmala_terminal.common.localization import LANGUAGES, INCOMING_CALLBACK_MESSAGES, translate
+        self.assertEqual(set(INCOMING_CALLBACK_MESSAGES), set(LANGUAGES))
+        self.assertTrue(all(isinstance(text, str) and text.strip() for text in INCOMING_CALLBACK_MESSAGES.values()))
+        self.assertEqual(translate('en', 'callback_received'), 'Please call back')
+        self.assertEqual(translate('fr', 'callback_received'), 'À rappeler')
+        self.assertNotEqual(translate('fr', 'callback_received'), translate('fr', 'callback_requested'))
+
+    def test_incoming_callback_flags_are_distinct_from_cancellable_outgoing_requests(self):
+        model = self.model(); person = model.selected; own = model.config['sip']['username']
+        self.assertIsNone(model.incoming_callback(person))
+        incoming = dict(self.request, **{'from': person['id'], 'to': own})
+        model.config['callbacks'].append(incoming)
+        self.assertIs(model.incoming_callback(person), incoming)
+        self.assertEqual(model.pending_callback(person)['from'], own)
+        for status in ('completed', 'cancelled'):
+            incoming['status'] = status; self.assertIsNone(model.incoming_callback(person))
+        incoming.update(status='pending', to='other-terminal'); self.assertIsNone(model.incoming_callback(person))
+        incoming.update(to=own, **{'from': 'outsider'}); self.assertIsNone(model.incoming_callback({'id': 'outsider'}))
+        self.assertIsNone(model.incoming_callback(None))
 
     def loop(self):
         loop = ManagementLoop()

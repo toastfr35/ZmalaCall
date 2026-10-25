@@ -115,23 +115,27 @@ class CarouselView:
             self.current_photos.append(badge)
             self.avatar.create_image(x-size/2+18, y-size/2+18, image=badge,
                                      tags=('callback-pending', 'callback-pending-'+person['id']))
+        if idle and self.model.incoming_callback(current):
+            self.draw_callback_flag(person, x, y, size, selected)
         # @llr LLR-TERM-UI-015
         if idle or focus < .8:
             text = person['name'] if person else '—'
-            label_size = 16
+            emphasize = idle and selected and not self.carousel_motion
+            label_size = 26 if emphasize else 16
             # Keep shaped labels reusable while cards resize. The smallest card
-            # determines a width that remains inside every moving card.
-            label_width = int(layout.portrait_size*.5+15) if idle else int(size+15)
+            # determines a width that remains inside every moving card; the
+            # settled selection can use its full width for a larger name.
+            label_width = int(layout.portrait_size*.5+15) if idle and not emphasize else int(size+15)
             color = FG if idle and selected else MUTED
-            label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width)
+            label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width, emphasize)
             while label.height() > 44 and label_size > 10:
                 label_size -= 1
-                label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width)
+                label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width, emphasize)
             shortened = text
             while label.height() > 44 and shortened:
                 shortened = shortened[:-1]
                 label = self.text_renderer.photo(shortened+'…', self.font_family, label_size,
-                                                 '#211e32' if selected else PANEL, color, label_width)
+                                                 '#211e32' if selected else PANEL, color, label_width, emphasize)
             self.current_text_images.append(label)
             self.avatar.create_image(x, bottom-22-(STATUS_HEIGHT if idle and person else 0), image=label,
                                      tags=('contact-name', 'contact-name-'+person['id']) if person else ())
@@ -143,6 +147,36 @@ class CarouselView:
                                               28, BG, GREEN, 55)
             self.current_text_images.append(phone)
             self.avatar.create_image(center_x+size/2+62, center_y, image=phone, tags='ring-phone')
+
+    # @llr LLR-TERM-HISTORY-022
+    def draw_callback_flag(self, person, x, y, size, selected):
+        background, ink = '#ffd166', '#1a2433'
+        left, right, bottom = x-size/2, x+size/2, y+size/2
+        height = min(64, max(40, size*.23))
+        top = bottom-height
+        tags = ('callback-received', 'callback-received-'+person['id'])
+        self.avatar.create_rectangle(left, top, right, bottom, fill=background, outline='',
+                                     tags=tags+('callback-banner',))
+        flag_x, flag_y = left+10, top+height/2-12
+        self.avatar.create_line(flag_x, flag_y, flag_x, flag_y+26, fill=ink, width=3,
+                                tags=tags+('callback-flag',))
+        self.avatar.create_polygon(flag_x, flag_y, flag_x+22, flag_y+3, flag_x+17, flag_y+11,
+                                   flag_x, flag_y+8, fill=ink, outline='', tags=tags+('callback-flag',))
+        text, font = self.text('callback_received'), 20 if selected else 14
+        width = max(16, int(size-46))
+        while True:
+            label = self.text_renderer.photo(text, self.font_family, font, background, ink, width, True)
+            if label.height() <= height-6 or font <= 11:
+                break
+            font -= 1
+        while label.height() > height-6 and len(text) > 1:
+            while text and unicodedata.category(text[-1]).startswith('M'):
+                text = text[:-1]
+            text = text[:-1].rstrip()
+            label = self.text_renderer.photo(text+'…', self.font_family, font, background, ink, width, True)
+        self.current_text_images.append(label)
+        self.avatar.create_image(left+38+width/2, top+height/2, image=label,
+                                 tags=tags+('callback-label',))
 
     # @llr LLR-TERM-NAV-005, LLR-TERM-UI-015
     def draw_contact_status(self, x, bottom, size, padding, selected, available, label_width=None, presence=None):

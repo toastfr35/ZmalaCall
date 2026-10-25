@@ -18,5 +18,5 @@ text: |
   The terminal shall let the user adjust speaker volume during operation. Volume
   changes shall preserve microphone gain and TV volume.
 verification: |
-  Adjust the level from settings and remote motion. Check the speaker, visible level,
+  Adjust the level from settings and the remote volume page. Check the speaker, visible level,
   other audio controls and USB reconnection.

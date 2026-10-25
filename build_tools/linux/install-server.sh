@@ -63,7 +63,7 @@ install -d -m 700 -o zmalaserver -g zmalaserver /var/lib/zmalacall-server
 if [ -n "$task_migration" ]; then
     task_stage='importing server data'
     python3 - "$task_migration" <<'PY'
-import json, pathlib, sys, tarfile
+import json, pathlib, re, sys, tarfile
 root = pathlib.Path('/var/lib/zmalacall-server')
 with tarfile.open(sys.argv[1]) as archive:
     members = archive.getmembers()
@@ -71,7 +71,7 @@ with tarfile.open(sys.argv[1]) as archive:
         parts = pathlib.PurePosixPath(member.name).parts
         assert member.isfile() and parts and not member.name.startswith('/') and '..' not in parts, 'Unsafe migration member'
         assert member.size <= 32*1024*1024, 'Oversized migration member'
-        assert (len(parts)==1 and (parts[0] in ('server.json', 'admin-password.json', 'callbacks.json', 'console-jobs.json') or parts[0].endswith('-avatar.png'))) or (len(parts)==2 and parts[0]=='photos'), 'Unexpected migration file'
+        assert (len(parts)==1 and (parts[0] in ('server.json', 'admin-password.json', 'callbacks.json', 'console-jobs.json') or parts[0].endswith('-avatar.png'))) or (len(parts)==2 and parts[0]=='photos') or re.fullmatch(r'ringtones/[a-f0-9]{64}\.wav', member.name), 'Unexpected migration file'
     state = json.load(archive.extractfile('server.json'))
     assert isinstance(state.get('users'), dict) and isinstance(state.get('profiles'), dict), 'Invalid server state'
     if 'admin-password.json' in archive.getnames():

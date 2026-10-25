@@ -2,7 +2,7 @@
 
 ZmalaPhone is the Android companion in `zmala_phone/`, package `org.zmala.phone`.
 
-Version 0.3.7 supports encrypted calls through the server's TLS/TURN relay from
+Current releases support encrypted calls through the server's TLS/TURN relay from
 
 separate NAT networks, alongside LAN mode and Firebase incoming-call alerts while
 
@@ -86,7 +86,24 @@ During outgoing and connected calls, video replaces the logo banner and contact
 
 name. The local camera preview sits at bottom right. Tap the video to reveal one
 
-row of four round icons: microphone, audio output, switch camera and hangup.
+row of four round icons: microphone, listening output, switch camera and hangup.
+
+The microphone control mutes only outgoing speech. The listening control cycles
+loudspeaker (sound waves), earpiece (phone icon), and received sound muted
+(crossed speaker), skipping an unavailable earpiece. Each control has a state/action
+accessibility label; brief text feedback confirms changes. A single vertical swipe
+on the video changes Android's voice-call stream by one step per 32 dp; horizontal,
+cancelled and multi-finger gestures do not trigger volume changes or video taps.
+A percentage appears briefly, and changing volume does not unmute either control.
+Hardware volume keys target the call stream while a call owns audio focus and return
+to Android's default stream selection afterward.
+
+New calls select the built-in loudspeaker without changing Android's stored volume.
+`CallEngine` sets both the future-call default and current-call output device and
+reapplies the chosen route/mute at media startup. Previously, routing only the
+idle core left the next-call default unspecified. This could explain a quiet call
+using the earpiece despite the loudspeaker icon. The routing defect is corrected;
+other causes of low acoustic level still need physical listening checks.
 
 The controls start hidden and disappear after five seconds without interaction;
 
@@ -261,11 +278,17 @@ It binds the remote TextureView and the SDK CaptureTextureView for local video,
 
 which receives actual camera dimensions and sensor/display transforms to preserve
 
-proportions and orientation. `CallScreen` chooses the preview slot dimensions from
-
-the incoming measure bounds before measuring children, so an orientation change
-
-does not leave the video in the previous layout's dimensions. It exposes answer, hangup, mute,
+proportions and orientation. `CameraPreview` requests layout when native capture
+reports a new display-oriented image size. On the pinned SDK, in-call Camera2
+size events leave the Java view at 0 by 0, even while the native stream adapts
+from VGA to widescreen. `CallEngine` supplies the current call's sent-video
+definition on binding and statistics updates, including rotation/camera changes.
+Before child measurement, `CallScreen`
+fits that ratio into a 96 by 128 dp portrait or 128 by 96 dp landscape maximum;
+the surface follows actual capture proportions instead of always being a fixed
+4:3 rectangle. The SDK retains ownership of sensor/display texture rotation.
+Tests compare transformed raw camera pixel lengths as well as fitted bounds, so
+a test cannot mistake a correctly shaped container for undistorted video. It exposes answer, hangup, mute,
 
 speaker and camera controls. Camera switching uses `Call.update(null)` after selecting
 
@@ -539,3 +562,22 @@ and cached configurations discard both live fields. Android clears the directory
 when a configuration refresh fails. Name buttons show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
+
+
+## Call controls check on 25 October 2026
+
+On the connected OnePlus and term2, the native output changed from loudspeaker
+to earpiece to muted and back while microphone mute remained independent.
+The existing Android call-volume setting was 9 of 9; a downward video swipe
+changed it to 7 and an upward swipe restored 9. This does not establish an
+acoustic loudness improvement: the original low-volume report still needs a
+human listening comparison.
+
+The original preview reproduced a 0 by 0 Java capture size while the native
+camera supplied 1280 by 720 and the sent portrait stream was 720 by 1280.
+After the bridge correction, the corner surface followed 480 by 640 portrait,
+640 by 480 landscape and back, then 720 by 1280 after camera changes, using a
+216 by 384 pixel corner surface for that widescreen portrait image. Both camera
+switches retained the call. Ten targeted emulator native/display scenarios also
+passed, covering icon states, independent mute, volume gestures/bounds, preview
+size propagation, pixel scaling, timed controls and call/rotation ownership.

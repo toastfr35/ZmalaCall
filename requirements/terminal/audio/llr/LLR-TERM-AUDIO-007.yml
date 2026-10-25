@@ -5,7 +5,7 @@ header: |
   Bounded speaker writes
 level: 69.0
 links:
-- HLR-TERM-AUDIO-002: A69x0CsfzYjDNxw8FZwaEFTPhXvX7WpCQtXBNs5HKJc=
+- HLR-TERM-AUDIO-002: hoGaDJ4c4UQMUiQOpR48fOu56WLz-Q6EyYwf-5lKJRI=
 normative: true
 ref: ''
 references:
@@ -22,10 +22,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Motion-driven mixer updates shall occur at most ten times per second while the
-  terminal is active. One worker shall combine pending level requests. The command
-  shall change C20 playback volume without changing microphone gain, hardware mute or
-  TV volume.
+  Volume-page mixer updates shall occur at most ten times per second while the terminal is active, with a final pending level flushed when closing the page. One worker shall combine pending level requests. The command shall change C20 playback volume without changing microphone gain, hardware mute or TV volume.
 verification: |
-  Inject rapid motion and mixer delay. Check write intervals, final level and exact
-  playback-only command.
+  Inject rapid button adjustments and mixer delay. Check write intervals, final close flush and exact playback-only command.

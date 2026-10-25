@@ -78,8 +78,16 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
+All terminal volume UI uses 5% steps, including Settings, the middle-button volume page and the server terminal editor. Left/right on the volume page moves an existing between-step level to the next boundary in the chosen direction. The speaker-volume editor uses 5% steps. Existing values between steps open at the nearest step and stay unchanged until accepted.
+
+The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.
+
+Red on the Settings list asks whether to exit: green confirms; red keeps the same list selection. Red within an editor only discards that draft. Neither exit answer changes saved configuration.
+
+The eight-row Settings menu reserves a full text line for each label and saved value at both supported sizes; short values such as Nokia and the speaker percentage remain complete.
+
 The server supplies the main terminal configuration. The local Settings page lets
-the user change language, automatic answer, framing, speaker volume, portrait count
+the user change language, automatic answer, framing, speaker volume, ringtone, portrait count
 and the return-to-TV timeout. Each editor lets the user accept or cancel a change.
 
 The terminal confirms a saved change only after the server accepts it. A rejected
@@ -90,7 +98,7 @@ configuration wait until the terminal is idle. Supported live changes do not end
 
 The remote has left, right, green, red and middle controls. Green and red stickers
 identify the two action buttons. Button actions depend on the current page or call
-state. Holding the middle button permits relative speaker-volume adjustment by motion.
+state. Pressing the middle button opens a dedicated volume page; left/right changes volume and a second middle press closes it.
 
 The terminal detects remote connection, battery level and external charging power
 where the device reports them. It shows help when the remote is unavailable.
@@ -110,7 +118,10 @@ Incoming calls take priority over unfinished navigation and edits.
 ### 8. User interface and language
 
 The display uses large portraits, clear text and consistent action colors. Names
-stay inside their portrait cards. Status symbols and words give information without
+stay inside their portrait cards. The settled centre card uses a larger, bold name
+to emphasize the selected person; long names shrink to fit above availability.
+Moving cards retain the compact name style until navigation settles.
+Status symbols and words give information without
 relying on color alone. Confirmation pages make the proposed action clear.
 
 Normal operation uses the selected language. Early setup uses English before the
@@ -192,6 +203,11 @@ battery state favors retaining power. The webcam indicator reports confirmed hub
 ### 15. Maintenance and diagnostics
 
 The terminal reports application, connection and media status to the server.
+Each two-second management poll captures remote input/connection, battery and
+charger state, C20 USB presence, confirmed power and transition/recovery state.
+These observations do not wake USB or open the camera; unsupported or stale
+sensor values remain unknown. The server displays them on the selected terminal
+card and suppresses stale readings after 20 seconds.
 Authorized maintenance jobs run with limited duration and output. Cancellation,
 reset and shutdown stop work that belongs to the terminal.
 
@@ -371,8 +387,12 @@ Each asynchronous completion is checked against the current setup generation.
 Before enrollment, prompts use English. Enrollment applies the selected language;
 detailed diagnostic catalogs use English fallback where a translation is absent.
 Invalid codes, unreachable servers and rejected credentials retain the current
-stage with retry feedback. QR preview remains contained within the screen and
-its process releases the camera before call-engine startup.
+stage with retry feedback. Both QR stages show mint corner guides with a dark
+outline around a centred square in the unmirrored camera picture. Hold the whole
+code inside the guides; the centre stays clear. Guides resize with the displayed
+picture, including letterboxing, and are added only to its display copy: decoding
+still receives the entire untouched camera frame. QR preview remains contained
+within the screen and its process releases the camera before call-engine startup.
 
 Reset is entered through Settings with a separate confirmation. It invalidates
 workers and clears the current profile's enrollment, configuration cache, missed
@@ -398,14 +418,15 @@ coalesces mixer work. The following mappings are implementation behavior, while
 | Left/right | Select contacts; navigate settings/options or change a value |
 | Green | Open confirmation, call/request/answer, open a setting or accept its draft |
 | Red | Cancel/decline/end, cancel a selected callback request, or discard/leave an editor |
-| Hold red for 10 seconds on the carousel | Open Settings; progress appears after two seconds |
-| Hold middle and move up/down | Relative speaker adjustment: two percentage points per 64 motion units |
+| Hold red for 7 seconds on the carousel | Open Settings; progress appears after two seconds |
+| Press middle | Open/close the dedicated horizontal volume page |
+| Left/right while volume is open | Decrease/increase speaker volume in 5% steps |
 
 Windows equivalents are Left/Right, Enter and Escape. F11 toggles fullscreen
 outside confirmation. Button repeat cannot confirm a call; release, another
 button, focus loss, disconnect or an incoming call cancels the settings hold.
 The Presenter green sticker covers the microphone button; red covers Teams.
-Middle is Pointer. Horizontal motion is ignored for volume.
+Middle is Pointer. Remote motion is ignored for volume. While the volume page is open, buttons do not navigate contacts, dial, hang up or open Settings. Call/state changes and setup/focus changes dismiss the page; an existing call continues.
 
 Settings has a list and editor; only the active side shows button hints, status
 icons are hidden, and the terminal serial appears at the bottom. Confirmed edits
@@ -422,16 +443,37 @@ inside the small-window layout.
 | Language | Server-supported languages |
 | Automatic answer | Never, 10 seconds, 30 seconds, 1, 2, 5 or 10 minutes |
 | Automatic framing | On/off; Pi C20 only |
-| Speaker volume | 0–100% |
+| Speaker volume | 0–100%, in 5% steps |
+| Ringtone | Nokia (default) and the private server library |
 | Portraits | Three/five; short contact lists retain three positions |
 | Return to TV | 30 seconds (default), 1, 2, 5, 10, 20 minutes, Never |
 | Reset | Confirmed local reset and re-enrollment |
 
-Volume motion shows a vertical bar while held and for two seconds after release;
-a red exclamation indicates mixer failure. It changes speaker/ringtone playback,
-not microphone gain/mute. Mixer requests coalesce on one worker at at most ten
-per second. Motion changes survive calls/core replacement in the current session;
-restart or a changed server volume restores the saved setting.
+Open Ringtone with green, then use left/right to hear the highlighted choice.
+Preview starts after 400 ms without another selection and plays for at most ten
+seconds through the C20 at the current speaker volume. It waits for a waking C20;
+zero volume remains silent. Green saves the choice after server acknowledgement;
+red cancels it. Leaving the editor or receiving a call stops preview immediately.
+The editor shows waiting, playing, muted or playback-failure feedback.
+
+`ringtones.py` downloads selected private audio asynchronously from the enrolled
+origin with terminal authentication, validates its canonical SHA-256 path and
+normalized PCM bytes, and atomically caches it under the profile's data folder.
+The catalog holds Nokia plus at most 64 private choices. Each custom WAV is mono
+16-bit PCM at 16 kHz and at most 30 seconds. Valid cached audio works offline;
+incoming calls use Nokia until a selected download becomes available. Reset
+cancels pending cache writes. `usb_power.py` owns bounded C20 preview playback,
+including installations without USB power switching; incoming ringing preempts it.
+
+Outside calls the volume page covers the UI with one centered horizontal control,
+direction icons and the current percentage. During a connected call it becomes a
+compact overlay above the video, leaving most of the picture visible. Press middle to open it, click left/right for
+5% steps, and press middle again to close it. Button release does not close it,
+and it has no automatic timeout. A red exclamation indicates mixer failure.
+It changes speaker/ringtone playback, not microphone gain/mute. Mixer requests
+coalesce on one worker at at most ten per second, with a final pending value
+flushed on closing. Volume changes survive calls/core replacement in the current
+session; restart or a changed server volume restores the saved setting.
 
 Contact names stay within portrait frames. Online/offline bands use symbols and
 words. Green opens a separate call confirmation for an online contact or callback
@@ -483,10 +525,15 @@ different Pi does not transfer the Bluetooth controller identity.
 
 The first mapped button when TV power/input hides the UI wakes/selects the
 terminal and is consumed, as are presses while HDMI settles. It cannot also dial
-or change contacts. This includes the first middle/Pointer press: motion during
-that consumed hold does not adjust volume. Release and press again to adjust it.
+or change contacts. This includes the first middle/Pointer press: that consumed
+press does not open volume. Release and press again to open the volume page.
 With no CEC, normal button behavior remains available; unknown routing limits
 detection.
+After restart, a missing power observation still permits a previously qualified
+power-on, even if the separate source-switching check was skipped or failed.
+The first press configures the CEC playback identity if needed and wakes the TV;
+it remains consumed. Unknown power is never saved as a standby restoration target.
+If power control was not qualified, an unknown state cannot authorize waking it.
 
 Incoming calls remember observed power/source before revealing the UI. Decline,
 caller cancellation or hangup restores that state. Browsing has its own return
@@ -1008,3 +1055,7 @@ combining marks with their base. French status phrases fit in full in the 720p
 and full-HD three/five-card TV layouts. Animation uses the smallest card's label
 width to reuse shaped images without overlapping the symbol. The display HLT
 checks actual text/icon bounds, rather than only the coloured band's rectangle.
+
+Incoming callback requests from a current app contact show a persistent yellow flag banner over that contact portrait, including adjacent cards. The localized callback-requested label stays separate from the name and availability. The flag disappears when the server reports cancellation or completion. Outgoing requests keep their existing return-arrow tag and cancellation controls. Neither marker starts a call.
+
+When an outgoing call ends before answer, including timeout, refusal or caller cancellation, the terminal offers to request a callback from the same contact. Green submits the request; red returns home. It waits for media teardown, does not repeat an existing pending request, and does not show this question after a connected call or declined incoming call. Late native events cannot dismiss the offer or start a cancelled call.

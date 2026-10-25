@@ -5,7 +5,7 @@ header: |
   Volume feedback
 level: 68.0
 links:
-- HLR-TERM-AUDIO-002: A69x0CsfzYjDNxw8FZwaEFTPhXvX7WpCQtXBNs5HKJc=
+- HLR-TERM-AUDIO-002: hoGaDJ4c4UQMUiQOpR48fOu56WLz-Q6EyYwf-5lKJRI=
 normative: true
 ref: ''
 references:
@@ -16,9 +16,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Held-middle volume adjustment shall show a vertical bar on the right with the
-  current percentage. The bar shall remain for two seconds after release. A mixer
-  failure shall show a failure indication.
+  Outside an established call, the volume page shall cover the terminal UI with only a centered horizontal speaker-volume control, direction icons and current percentage. During an established call, the same control shall appear as a compact overlay above the video, leaving most video visible and preserving the call. It shall remain open until closed by middle or preempted by a call/state, setup or focus change. A mixer failure shall show a failure indication.
 verification: |
-  Drive hold, motion, release and a failed mixer result with a controlled clock.
-  Inspect percentage, visibility and failure state.
+  Open at multiple sizes; inspect horizontal control geometry, percentage and full-page coverage outside calls and bounded overlay geometry over visible video during calls. Check it stays open without a timeout and displays a mixer failure.

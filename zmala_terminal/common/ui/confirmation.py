@@ -30,9 +30,11 @@ class ConfirmationView:
         button_width = min(340, (width-2*margin-button_gap)//2)
         rows = []
         if callback:
-            rows.extend([(contact['name'], FG, 24, 'confirmation-name'),
-                         (self.text('callback_requested' if cancelling else 'contact_unavailable'),
-                          ACCENT if cancelling else RED, 22, 'confirmation-unavailable')])
+            rows.append((contact['name'], FG, 24, 'confirmation-name'))
+            # @llr LLR-TERM-HISTORY-021
+            if cancelling or not self.model.callback_after_call:
+                rows.append((self.text('callback_requested' if cancelling else 'contact_unavailable'),
+                             ACCENT if cancelling else RED, 22, 'confirmation-unavailable'))
         rows.append((self.confirmation_question, FG, 32, 'confirmation-question'))
         scale = 1.0
         while True:

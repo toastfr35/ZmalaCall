@@ -70,4 +70,5 @@ export type SelectedElement<S extends string> = S extends keyof HTMLElementTagNa
 export interface TerminalForm extends HTMLFormElement {
   fields: Record<string, HTMLInputElement | HTMLSelectElement>;
   errorId: string;
+  configurationVersion?: number;
 }

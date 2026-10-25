@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/LLT/ringtones.test.js
+  type: file
 - path: tests/server/LLT/backup-components.test.js
   type: file
 - path: zmala_server/backup-storage.js
@@ -16,6 +18,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Restore shall write only allowed application files and permitted portraits. The password destination shall come from local configuration. Each replacement shall use a private temporary file, file fsync, rename and directory sync. Obsolete restored portraits shall be removed.
+  Restore shall write only allowed application files and permitted portraits and ringtones. The password destination shall come from local configuration. Each replacement shall use a private temporary file, file fsync, rename and directory sync. Obsolete restored portraits and ringtones shall be removed.
 verification: |
   Use external credential paths, unsafe destinations and fsync failure. Check destination ownership, cleanup and durable write order.

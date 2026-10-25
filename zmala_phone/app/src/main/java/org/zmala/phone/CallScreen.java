@@ -10,6 +10,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.util.Property;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.*;
@@ -21,7 +22,9 @@ final class CallScreen extends FrameLayout {
   interface Actions {
     void mute(boolean muted);
 
-    void speaker(boolean loud);
+    CallEngine.Output output(CallEngine.Output output);
+
+    int volume(int steps);
 
     void camera();
 
@@ -37,7 +40,10 @@ final class CallScreen extends FrameLayout {
   private final RingingView ringing;
   private final ProgressBar connecting;
   private final ImageButton mute, speaker;
-  private boolean muted, loud;
+  private boolean muted;
+  private CallEngine.Output output;
+  private final TextView feedback;
+  private final Runnable hideFeedback = this::hideFeedback;
   private final Runnable hideControls = this::hideControls;
 
   private void hideControls() {
@@ -45,10 +51,14 @@ final class CallScreen extends FrameLayout {
     positionOverlays();
   }
 
-  CallScreen(Context context, boolean initiallyMuted, boolean initiallyLoud, Actions actions) {
+  private void hideFeedback() { feedback.setVisibility(INVISIBLE); }
+
+  // The shared gesture listener calls the touched view's performClick for ordinary taps.
+  @android.annotation.SuppressLint("ClickableViewAccessibility")
+  CallScreen(Context context, boolean initiallyMuted, CallEngine.Output initiallyOutput, Actions actions) {
     super(context);
     muted = initiallyMuted;
-    loud = initiallyLoud;
+    output = initiallyOutput;
     setBackgroundColor(Color.BLACK);
     setContentDescription("Video call. Tap to show call controls.");
     setOnClickListener(v -> showControls());
@@ -56,6 +66,47 @@ final class CallScreen extends FrameLayout {
     remote.setContentDescription("Remote video. Tap to show call controls.");
     remote.setOnClickListener(v -> showControls());
     addView(remote, new LayoutParams(-1, -1));
+    View.OnTouchListener volumeGesture = new View.OnTouchListener() {
+      float x, y;
+      int applied;
+      boolean dragging, cancelled;
+
+      public boolean onTouch(View source, MotionEvent event) {
+        switch (event.getActionMasked()) {
+          case MotionEvent.ACTION_DOWN:
+            x = event.getX(); y = event.getY(); applied = 0;
+            dragging = false; cancelled = false;
+            return true;
+          case MotionEvent.ACTION_POINTER_DOWN:
+          case MotionEvent.ACTION_CANCEL:
+            cancelled = true;
+            return true;
+          case MotionEvent.ACTION_MOVE:
+            if (cancelled) return true;
+            float vertical = y - event.getY(), horizontal = event.getX() - x;
+            if (!dragging && Math.abs(horizontal) > dp(16)
+                && Math.abs(horizontal) > Math.abs(vertical)) cancelled = true;
+            if (cancelled) return true;
+            if (Math.abs(vertical) >= dp(24) && Math.abs(vertical) > Math.abs(horizontal)) {
+              dragging = true;
+              int steps = (int) (vertical / dp(32));
+              if (steps != applied) {
+                int percent = actions.volume(steps - applied);
+                applied = steps;
+                notice((output == CallEngine.Output.MUTED ? "Sound muted · " : "Call volume ") + percent + "%");
+              }
+            }
+            return true;
+          case MotionEvent.ACTION_UP:
+            if (!dragging && !cancelled) source.performClick();
+            return true;
+          default:
+            return true;
+        }
+      }
+    };
+    remote.setOnTouchListener(volumeGesture);
+    setOnTouchListener(volumeGesture);
 
     progress = new LinearLayout(context);
     progress.setOrientation(LinearLayout.VERTICAL);
@@ -63,6 +114,7 @@ final class CallScreen extends FrameLayout {
     progress.setClipChildren(false);
     progress.setClipToPadding(false);
     progress.setOnClickListener(v -> showControls());
+    progress.setOnTouchListener(volumeGesture);
     ringing = new RingingView(context);
     progress.addView(ringing, new LinearLayout.LayoutParams(dp(108), dp(108)));
     connecting = new ProgressBar(context);
@@ -103,16 +155,17 @@ final class CallScreen extends FrameLayout {
 
     // The SDK supplies camera dimensions and sensor/display rotation to this view.
     // A plain TextureView stretches the buffer and cannot consume those updates.
-    preview = new CaptureTextureView(context);
+    preview = new CameraPreview(context);
     preview.setContentDescription("Your camera. Tap to show call controls.");
     preview.setOnClickListener(v -> showControls());
+    preview.setOnTouchListener(volumeGesture);
     addView(preview, new LayoutParams(dp(96), dp(128), Gravity.BOTTOM | Gravity.RIGHT));
 
     controls = new LinearLayout(context);
     controls.setGravity(Gravity.CENTER);
     controls.setContentDescription("Call controls");
-    mute = icon(Kind.MIC, muted, muted ? "Unmute" : "Mute", MainActivity.PANEL);
-    speaker = icon(Kind.SPEAKER, loud, loud ? "Use earpiece" : "Use speaker", MainActivity.PANEL);
+    mute = icon(Kind.MIC, muted, muted ? "Unmute microphone" : "Mute microphone", MainActivity.PANEL);
+    speaker = icon(outputKind(), false, outputLabel(), MainActivity.PANEL);
     ImageButton camera = icon(Kind.CAMERA, false, "Switch camera", MainActivity.PANEL);
     ImageButton end = icon(Kind.END, false, "End call", MainActivity.RED);
     for (ImageButton button : new ImageButton[] {mute, speaker, camera, end}) {
@@ -125,17 +178,19 @@ final class CallScreen extends FrameLayout {
           muted = !muted;
           actions.mute(muted);
           mute.setImageDrawable(new Glyph(Kind.MIC, muted));
-          mute.setContentDescription(muted ? "Unmute" : "Mute");
+          mute.setContentDescription(muted ? "Unmute microphone" : "Mute microphone");
           mute.setSelected(muted);
+          notice(muted ? "Microphone muted" : "Microphone on");
           showControls();
         });
     speaker.setOnClickListener(
         v -> {
-          loud = !loud;
-          actions.speaker(loud);
-          speaker.setImageDrawable(new Glyph(Kind.SPEAKER, loud));
-          speaker.setContentDescription(loud ? "Use earpiece" : "Use speaker");
-          speaker.setSelected(loud);
+          output = actions.output(output.next());
+          speaker.setImageDrawable(new Glyph(outputKind(), false));
+          speaker.setContentDescription(outputLabel());
+          speaker.setSelected(output == CallEngine.Output.MUTED);
+          notice(output == CallEngine.Output.SPEAKER ? "Loudspeaker"
+              : output == CallEngine.Output.EARPIECE ? "Earpiece" : "Call sound muted");
           showControls();
         });
     camera.setOnClickListener(
@@ -146,6 +201,20 @@ final class CallScreen extends FrameLayout {
     end.setOnClickListener(v -> actions.end());
     addView(controls, new LayoutParams(-2, dp(60), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
     controls.setVisibility(INVISIBLE);
+    feedback = new TextView(context);
+    feedback.setTextColor(MainActivity.FG);
+    feedback.setTextSize(16);
+    feedback.setGravity(Gravity.CENTER);
+    feedback.setPadding(dp(16), dp(10), dp(16), dp(10));
+    GradientDrawable feedbackBackground = new GradientDrawable();
+    feedbackBackground.setColor(0xe6192230);
+    feedbackBackground.setCornerRadius(dp(12));
+    feedback.setBackground(feedbackBackground);
+    feedback.setAccessibilityLiveRegion(ACCESSIBILITY_LIVE_REGION_POLITE);
+    feedback.setVisibility(INVISIBLE);
+    LayoutParams feedbackSlot = new LayoutParams(-2, -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+    feedbackSlot.topMargin = dp(24);
+    addView(feedback, feedbackSlot);
     setOnApplyWindowInsetsListener(
         (v, insets) -> {
           setPadding(
@@ -157,6 +226,24 @@ final class CallScreen extends FrameLayout {
           return insets;
         });
     positionOverlays();
+  }
+
+  private Kind outputKind() {
+    return output == CallEngine.Output.EARPIECE ? Kind.EARPIECE
+        : output == CallEngine.Output.MUTED ? Kind.SILENT : Kind.SPEAKER;
+  }
+
+  private String outputLabel() {
+    return output == CallEngine.Output.SPEAKER ? "Loudspeaker. Switch to earpiece"
+        : output == CallEngine.Output.EARPIECE ? "Earpiece. Mute call sound"
+        : "Call sound muted. Switch to loudspeaker";
+  }
+
+  private void notice(String text) {
+    feedback.setText(text);
+    feedback.setVisibility(VISIBLE);
+    removeCallbacks(hideFeedback);
+    postDelayed(hideFeedback, 1800);
   }
 
   private int dp(int value) {
@@ -213,8 +300,12 @@ final class CallScreen extends FrameLayout {
     // and leaves the texture at the previous orientation's size for this layout pass.
     boolean landscape = MeasureSpec.getSize(widthSpec) > MeasureSpec.getSize(heightSpec);
     LayoutParams local = (LayoutParams) preview.getLayoutParams();
-    local.width = dp(landscape ? 128 : 96);
-    local.height = dp(landscape ? 96 : 128);
+    android.util.Size capture = preview.getPreviewVideoSize();
+    float ratio = capture.getWidth() > 0 && capture.getHeight() > 0
+        ? (float) capture.getWidth() / capture.getHeight() : landscape ? 4f / 3 : 3f / 4;
+    int maximumWidth = dp(landscape ? 128 : 96), maximumHeight = dp(landscape ? 96 : 128);
+    local.width = Math.min(maximumWidth, Math.round(maximumHeight * ratio));
+    local.height = Math.min(maximumHeight, Math.round(maximumWidth / ratio));
     super.onMeasure(widthSpec, heightSpec);
   }
 
@@ -236,12 +327,15 @@ final class CallScreen extends FrameLayout {
 
   void dispose() {
     removeCallbacks(hideControls);
+    removeCallbacks(hideFeedback);
     pulse.cancel();
   }
 
   private enum Kind {
     MIC,
     SPEAKER,
+    EARPIECE,
+    SILENT,
     CAMERA,
     END,
     PHONE
@@ -319,13 +413,22 @@ final class CallScreen extends FrameLayout {
           path.lineTo(3, 15);
           path.close();
           canvas.drawPath(path, paint);
-          if (active) {
+          {
             canvas.drawArc(10, 7, 20, 17, -60, 120, false, paint);
             canvas.drawArc(8, 3, 24, 21, -55, 110, false, paint);
-          } else {
-            canvas.drawLine(17, 10, 21, 14, paint);
-            canvas.drawLine(17, 14, 21, 10, paint);
           }
+          break;
+        case EARPIECE:
+          canvas.drawRoundRect(7, 2, 17, 22, 2, 2, paint);
+          canvas.drawLine(10, 5, 14, 5, paint);
+          canvas.drawCircle(12, 19, .6f, paint);
+          break;
+        case SILENT:
+          path.moveTo(3, 9); path.lineTo(7, 9); path.lineTo(12, 5);
+          path.lineTo(12, 19); path.lineTo(7, 15); path.lineTo(3, 15); path.close();
+          canvas.drawPath(path, paint);
+          canvas.drawLine(17, 10, 21, 14, paint);
+          canvas.drawLine(17, 14, 21, 10, paint);
           break;
         case CAMERA:
           canvas.drawRoundRect(3, 6, 21, 18, 2, 2, paint);

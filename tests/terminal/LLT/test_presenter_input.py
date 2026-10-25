@@ -1,7 +1,7 @@
 # @test T-LLT-027
 # @requirements LLR-TERM-REMOTE-013, LLR-TERM-REMOTE-014, LLR-TERM-REMOTE-015, LLR-TERM-REMOTE-016, LLR-TERM-REMOTE-019
 # @environment portable
-# @plan Feed recorded-format raw and evdev reports, signed motion, repeats and disconnects; assert Presenter-only button mapping, held-middle motion gating and release/status cleanup. Inject sysfs identities and descriptor failures to check exclusive remote discovery, reconnect, observer consumption, health exposure and handler/descriptor cleanup.
+# @plan Feed recorded-format raw and evdev reports, signed motion, repeats and disconnects; assert Presenter-only button mapping, middle-button duplicate suppression, optional raw-motion callback gating and release/status cleanup (the volume page does not bind motion). Inject sysfs identities and descriptor failures to check exclusive remote discovery, reconnect, observer consumption, health exposure and handler/descriptor cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """The measured remote button cannot be triggered by unrelated HID keys."""

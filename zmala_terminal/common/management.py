@@ -57,6 +57,44 @@ class ManagementLoop:
             self.messages.put(('network-done', None))
         threading.Thread(target=worker, daemon=True).start()
 
+    # @llr LLR-TERM-MAINT-018
+    def peripheral_status(self):
+        """Publish observed peripheral state, including unknowns, without waking USB."""
+        remote = getattr(self, 'presenter_input', None)
+        status = getattr(remote, 'status', None)
+        if status not in ('connected', 'disconnected', 'unpaired', 'blocked',
+                          'bluetooth_unavailable', 'input_unavailable'):
+            status = 'unknown'
+        battery = getattr(remote, 'battery', None)
+        battery = battery if type(battery) is int and 0 <= battery <= 100 else None
+        charger = getattr(remote, 'charger_connected', None)
+        charger = charger if type(charger) is bool else None
+        power = getattr(self, 'usb_power', None)
+        enabled = power is not None and power.enabled is True
+        powered = power.power_state if enabled else None
+        powered = powered if type(powered) is bool else None
+        detector = getattr(self, 'c20_status', None)
+        try:
+            connected = detector.read() if detector else None
+        except OSError:
+            connected = None
+        connected = connected if type(connected) is bool else None
+        camera = 'connected' if connected is True else 'disconnected' if connected is False else 'unknown'
+        if enabled:
+            if power.state == 'error':
+                camera = 'error'
+            elif power.state in ('starting', 'switching'):
+                camera = 'switching'
+            elif powered is False:
+                camera = 'off'
+            elif power.ready is False:
+                camera = 'waking'
+            elif camera == 'unknown' and powered is True:
+                camera = 'on'
+        return {'remote_status': status, 'remote_battery': battery,
+                'remote_charger_connected': charger, 'camera_powered': powered,
+                'camera_connected': connected, 'camera_status': camera}
+
     # @llr LLR-TERM-COM-007
     def poll(self):
         """Capture an enrollment generation before worker I/O; all results return through the UI queue."""
@@ -66,7 +104,7 @@ class ManagementLoop:
         self.worker_busy = True
         configuration, generation = self.configuration, self.generation
         callback_revision = getattr(self, 'callback_revision', 0)
-        status = dict(self.diagnostics) | {
+        status = dict(self.diagnostics) | self.peripheral_status() | {
             'state': self.model.state.value,
             'configuration_version': self.model.config['configuration_version'] if self.model.config else 0,
         }
@@ -222,6 +260,7 @@ class ManagementLoop:
             self.update_video_message()
             self.iterate_scanner()
             self.drain_messages()
+            self.tick_ringtone(time.monotonic())
             self.tick_tv_setup()
             if self.configuration and self.configuration.photos.changed():
                 if self.model.state == State.HOME:

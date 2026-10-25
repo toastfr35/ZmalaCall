@@ -151,7 +151,11 @@ execution becomes lost; the server does not automatically execute it again.
 
 The administration pages show current calls, registrations, terminal reports and
 recent events. Device reports remain distinct from server-observed SIP reachability.
-The server records when it received a report.
+The server records when it received a report. The selected Terminals card shows
+remote connection/input state, battery percentage and charger connection, plus
+C20 connection/recovery state and confirmed USB power. Older or unsupported fields
+show unknown; after 20 seconds without a fresh report, peripheral badges show
+status unavailable. Live badge updates preserve unsaved terminal settings.
 
 ### 12. Saved state
 
@@ -371,8 +375,25 @@ Terminal cards group Calls, Video & audio and General settings. **Setup** downlo
 Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
 are runtime provisioning documents, separate from project documentation. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it.
 Settings include auto-answer, fixed C20 hardware information, resolution, FPS, framing,
-volume, language, portrait count and TV return. See the
+volume, ringtone, language, portrait count and TV return. See the
 [terminal settings implementation](terminal.md#settings-and-controls) for input and save semantics.
+
+The Ringtone selector defaults to Nokia and offers an audio preview on the
+administrator's computer. Add ringtones imports audio files into a private server
+library, preserving other unsaved terminal edits. The browser accepts files up to
+12 MB, converts their first 30 seconds to mono 16-bit PCM at 16 kHz, and submits
+the bounded WAV with the form's configuration revision. The server validates
+exact headers, duration and SHA-256 identity, then durably publishes the file
+under `data/ringtones/`. At most 64 additional sounds and 40 MiB are retained.
+Select a tone and Save changes to assign it; importing alone does not change
+other terminals. Only import recordings you have permission to use.
+
+`POST /api/ringtones` is LAN-administrator-only. `GET /api/ringtones/:id.wav`
+requires an administrator session or terminal bearer; App and anonymous callers
+cannot read the library. Names are bounded, paths are canonical, and conflicts
+require reopening the form. Previews stop after ten seconds or navigation. The
+Pi receives the catalog and caches its selection; Nokia stays bundled, so public
+installers and source releases contain no privately imported music.
 
 The Pi terminal settings page has no alternative camera, microphone or speaker
 selectors. All three are supplied by the Nuroum C20. Legacy API selector strings
@@ -518,16 +539,18 @@ Unrelated read-only device polling continues through console/callback save error
 Overview → **Backup and restore → Manage backups** exports a `.zmala-backup`
 file through the authenticated administrator API. It includes accounts, profiles,
 groups, device/SIP credentials, SMTP settings/password, the configured administrator
-password hash, pictures, callback records and console history. The file is
+password hash, pictures, private ringtones, callback records and console history. The file is
 unencrypted and sensitive: store it privately. Sessions, registrations, logs,
 bootstrap caches and OS/SSH/TLS configuration are excluded.
 
 `backups.js` serializes all in-memory records before yielding, then reads immutable
-hash-named pictures. `backup-format.js` encodes a versioned gzip JSON file map.
+hash-named pictures and referenced private ringtone audio. `backup-format.js` encodes a versioned gzip JSON file map.
 SHA-256 checksums detect corruption, not authenticity. Both upload and expanded
-JSON are capped at 64 MiB. Only four state files and up to 1,000 hash-named PNG/JPEG
-pictures are accepted. The decoder checks schemas, field limits, relationships,
-picture dimensions/hashes and administrator hash syntax. An unsupported backup
+JSON are capped at 64 MiB. Only four state files and up to 1,000 permitted portrait
+and ringtone files combined are accepted. The decoder checks schemas, field limits,
+relationships, picture dimensions/hashes, ringtone catalog/PCM hashes and limits,
+and administrator hash syntax. Obsolete portrait and ringtone files are removed
+on restore. An unsupported backup
 configuration version needs a compatible server release.
 
 `POST /api/server/backup/check` returns a date/count summary. The explicitly
@@ -850,3 +873,5 @@ and cached configurations discard both live fields. Android clears the directory
 when a configuration refresh fails. Name buttons show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
+
+Terminal C20 speaker-volume controls offer 0–100% in 5% steps. Existing between-step values display the nearest step and are changed only when Save changes is accepted. The Pi Settings editor and held-middle volume gesture use the same 5% grid.

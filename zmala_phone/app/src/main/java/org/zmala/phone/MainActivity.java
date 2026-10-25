@@ -50,7 +50,8 @@ public final class MainActivity extends Activity {
   private JSONObject config;
   private LinearLayout page;
   private int generation;
-  private boolean visible, fetching, muted, loud = true;
+  private boolean visible, fetching, muted;
+  private CallEngine.Output output = CallEngine.Output.SPEAKER;
   private Call displayedCall;
   private CallScreen callScreen;
   private final DisplayManager.DisplayListener displayListener =
@@ -635,16 +636,26 @@ public final class MainActivity extends Activity {
         new CallScreen(
             this,
             muted,
-            loud,
+            output,
             new CallScreen.Actions() {
               public void mute(boolean value) {
                 muted = value;
                 engine.mute(value);
               }
 
-              public void speaker(boolean value) {
-                loud = value;
-                engine.speaker(value);
+              public CallEngine.Output output(CallEngine.Output value) {
+                output = engine.output(value);
+                return output;
+              }
+
+              public int volume(int steps) {
+                AudioManager audio = (AudioManager) getSystemService(AUDIO_SERVICE);
+                int maximum = audio.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
+                int minimum = audio.getStreamMinVolume(AudioManager.STREAM_VOICE_CALL);
+                int next = Math.max(minimum, Math.min(maximum,
+                    audio.getStreamVolume(AudioManager.STREAM_VOICE_CALL) + steps));
+                audio.setStreamVolume(AudioManager.STREAM_VOICE_CALL, next, 0);
+                return Math.round(100f * next / Math.max(1, maximum));
               }
 
               public void camera() {
@@ -780,6 +791,7 @@ public final class MainActivity extends Activity {
             .build();
     audio.requestAudioFocus(audioFocus);
     audio.setMode(AudioManager.MODE_IN_COMMUNICATION);
+    setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
   }
 
   private void releaseAudio() {
@@ -790,6 +802,8 @@ public final class MainActivity extends Activity {
       audioFocus = null;
     }
     muted = false;
+    output = CallEngine.Output.SPEAKER;
+    setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
   }
 
   private void silence() {

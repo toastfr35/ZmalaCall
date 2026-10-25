@@ -4,6 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { FILES, PHOTO, decodeBackup, encodeBackup } = require('./backup-format');
+const { SOUND } = require('./ringtones');
 
 /** @param {string} directory */
 function syncDirectory(directory) {
@@ -46,17 +47,39 @@ async function readPhotos(directory, files) {
   }
 }
 
+// @llr LLR-SRV-CONFIG-024
+/** Only the catalog in the captured snapshot owns private immutable audio.
+ * @param {string} directory @param {Map<string, Buffer>} files */
+async function readRingtones(directory, files) {
+  const state = JSON.parse((files.get('server.json') || Buffer.from('{}')).toString());
+  let bytes = [...files.values()].reduce((total, value) => total + value.length, 0);
+  for (const id of Object.keys(state.ringtones || {})) {
+    const name = `ringtones/${id}.wav`;
+    if (!SOUND.test(name)) throw Error('Invalid ringtone filename.');
+    const file = path.join(directory, name),
+      stat = await fs.promises.lstat(file);
+    if (!stat.isFile()) throw Error('Ringtones must be regular files.');
+    bytes += stat.size;
+    if (bytes > 47 * 1024 * 1024 || files.size >= 1004) throw Error('Backup is too large.');
+    files.set(name, await fs.promises.readFile(file));
+  }
+}
+
 /** Replace only known application data. The external password destination comes
  * from local configuration, never from the uploaded archive.
  * @param {string} directory @param {string} passwordFile @param {Map<string, Buffer>} files */
 // @llr LLR-SRV-BACKUP-009
 function applyFiles(directory, passwordFile, files) {
   const photos = path.join(directory, 'photos');
+  const sounds = path.join(directory, 'ringtones');
+  fs.mkdirSync(sounds, { recursive: true });
+  if (!fs.lstatSync(sounds).isDirectory()) throw Error('Invalid ringtone directory.');
   fs.mkdirSync(photos, { recursive: true });
   if (!fs.lstatSync(photos).isDirectory()) throw Error('Invalid pictures directory.');
   fs.mkdirSync(path.dirname(passwordFile), { recursive: true });
   for (const [name, bytes] of files) {
-    if (!FILES.includes(name) && !PHOTO.test(name)) throw Error('Invalid restore filename.');
+    if (!FILES.includes(name) && !PHOTO.test(name) && !SOUND.test(name))
+      throw Error('Invalid restore filename.');
     const destination = name === 'admin-password.json' ? passwordFile : path.join(directory, name);
     if (fs.existsSync(destination) && !fs.lstatSync(destination).isFile())
       throw Error('Invalid restore destination.');
@@ -66,6 +89,10 @@ function applyFiles(directory, passwordFile, files) {
     if (PHOTO.test('photos/' + name) && !files.has('photos/' + name))
       fs.unlinkSync(path.join(photos, name));
   syncDirectory(photos);
+  for (const name of fs.readdirSync(sounds))
+    if (SOUND.test('ringtones/' + name) && !files.has('ringtones/' + name))
+      fs.unlinkSync(path.join(sounds, name));
+  syncDirectory(sounds);
 }
 
 /** Commit a durable journal last. Before that point the live data is untouched.
@@ -117,4 +144,11 @@ async function recoverRestore(directory, passwordFile, apply = applyFiles) {
   fs.unlinkSync(journal);
   syncDirectory(recovery);
 }
-module.exports = { atomicWrite, readPhotos, applyFiles, stageRestore, recoverRestore };
+module.exports = {
+  atomicWrite,
+  readPhotos,
+  readRingtones,
+  applyFiles,
+  stageRestore,
+  recoverRestore,
+};

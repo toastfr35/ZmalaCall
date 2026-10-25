@@ -1,7 +1,7 @@
 # @test T-LLT-019
 # @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-018, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022, LLR-TERM-CONFIG-023
 # @environment portable
-# @plan Drive timed red holds, setting drafts, incoming calls and delayed server acknowledgements with fake controllers; assert access timing, cancel/accept behavior, allowed values, revision ownership and deferred media changes.
+# @plan Drive timed red holds, setting drafts, incoming calls and delayed server acknowledgements with fake controllers; assert access timing, cancel/accept behavior, allowed values including every 5-percent volume step, clamped endpoints and nearest-step display for an existing saved value, revision ownership and deferred media changes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 import json
@@ -20,14 +20,14 @@ from tests.terminal.LLT.test_terminal import config
 
 
 class LocalSettingsTests(unittest.TestCase):
-    def test_hold_indicator_after_two_seconds_opens_after_ten(self):
+    def test_hold_indicator_after_two_seconds_opens_after_seven(self):
         hold = SettingsHold(); hold.start(100)
         self.assertFalse(hold.update(101.99)); self.assertFalse(hold.capturing)
         self.assertFalse(hold.update(102)); self.assertTrue(hold.capturing)
-        self.assertAlmostEqual(hold.progress, .2)
+        self.assertAlmostEqual(hold.progress, 2/7)
         hold.start(105)  # Repeated down events must not restart the clock.
-        self.assertFalse(hold.update(109.99))
-        self.assertTrue(hold.update(110))
+        self.assertFalse(hold.update(106.99))
+        self.assertTrue(hold.update(107))
         hold.clear()
         self.assertFalse(hold.update(120)); self.assertFalse(hold.capturing)
 
@@ -41,7 +41,7 @@ class LocalSettingsTests(unittest.TestCase):
         return app
 
     def test_early_release_focus_loss_and_other_input_cancel_hold(self):
-        for duration in (.5, 2, 9.99):
+        for duration in (.5, 2, 6.99):
             app = self.controller(); app.keys_down.add('red')
             with patch('zmala_terminal.common.settings_control.time.monotonic', return_value=100):app.press('red')
             app.tick_settings_access(100+duration)
@@ -67,7 +67,7 @@ class LocalSettingsTests(unittest.TestCase):
             self.assertIsNone(app.settings_hold.started)
         self.assertEqual(app._press_action.call_count, 4)
 
-    def test_focus_loss_releases_motion_and_invalidates_pending_pointer(self):
+    def test_focus_loss_closes_volume_page_and_invalidates_pending_pointer(self):
         app = self.controller()
         app.keys_down.add('pointer')
         app.pointer_serial = 4
@@ -76,6 +76,7 @@ class LocalSettingsTests(unittest.TestCase):
         self.assertEqual(app.keys_down, set())
         self.assertEqual(app.pointer_serial, 5)
         app.volume_control.pointer.assert_called_once_with(False)
+        app.volume_control.dismiss.assert_called_once()
 
     def test_drafts_do_not_mutate_config_and_combine_auto_answer(self):
         c = config() | {'auto_answer': False, 'auto_answer_seconds': 10}
@@ -87,8 +88,21 @@ class LocalSettingsTests(unittest.TestCase):
         self.assertEqual(json.dumps(c), original)
         draft.index = 0
         self.assertEqual(draft.change(c), {'auto_answer': False, 'auto_answer_seconds': 10})
-        draft.row = 3; draft.open(c); draft.index = 100; draft.move(1)
-        self.assertEqual(draft.index, 100)
+        draft.row = 3; draft.open(c); draft.index = 20; draft.move(1)
+        self.assertEqual(draft.options[draft.index], 100)
+
+    def test_speaker_volume_choices_use_five_percent_steps_and_preserve_saved_value(self):
+        config_value = config() | {'c20_speaker_volume': 53}
+        draft = SettingsDraft(); draft.row = FIELDS.index('c20_speaker_volume'); draft.open(config_value)
+        self.assertEqual(draft.options, list(range(0, 101, 5)))
+        self.assertEqual(draft.change(config_value), {'c20_speaker_volume': 55})
+        self.assertEqual(draft.expected, {'c20_speaker_volume': 53})
+        self.assertEqual(config_value['c20_speaker_volume'], 53)
+        draft.move(-1); self.assertEqual(draft.options[draft.index], 50)
+        draft.move(1); self.assertEqual(draft.options[draft.index], 55)
+        for value, direction in ((0, -1), (100, 1)):
+            draft.open(config_value | {'c20_speaker_volume': value}); draft.move(direction)
+            self.assertEqual(draft.options[draft.index], value)
 
     def test_legacy_answer_delay_selects_next_supported_delay_not_never(self):
         for old, selected in ((5, 10), (20, 30), (90, 120)):
@@ -140,7 +154,7 @@ class LocalSettingsTests(unittest.TestCase):
         self.assertEqual(actions, [None, 'dial'])
         app.model.ended(); app.keys_down.add('red')
         with patch('zmala_terminal.common.settings_control.time.monotonic', return_value=100):app.press('red')
-        app.tick_settings_access(110)
+        app.tick_settings_access(107)
         self.assertTrue(app.settings_open)
         app.keyrelease('red')
         self.assertTrue(app.settings_open)
@@ -179,7 +193,7 @@ class LocalSettingsTests(unittest.TestCase):
         messages = json.loads((Path(__file__).resolve().parents[3]/'zmala_terminal/common/shared/settings-messages.json').read_text(encoding='utf-8'))
         self.assertEqual(set(messages), set(LANGUAGES))
         for values in messages.values():
-            self.assertEqual(len(values), 12)
+            self.assertEqual(len(values), 13)
             self.assertTrue(all(isinstance(v, str) and v.strip() for v in values))
 
 

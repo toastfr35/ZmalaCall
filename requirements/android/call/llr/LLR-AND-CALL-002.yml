@@ -20,13 +20,20 @@ references:
   type: file
 - path: tests/android/LLT/unit/CameraSwitchTest.java
   type: file
+- path: tests/android/LLT/unit/CallAudioTest.java
+  type: file
 reviewed: null
 scope: Experimental
 text: The app shall own at most one foreground Linphone call, use the configured SIP proxy and credentials,
   negotiate audio and video without RTP bundle in LAN mode, and reject incoming calls unless the contact
   permits reception and X-Family-Auth matches the HMAC over call ID and caller. Answer, hangup, mute,
-  speaker and camera controls shall operate on the current call, and stopping shall release registration
+  audio output and camera controls shall operate on the current call, and stopping shall release registration
   and media.
+  New calls shall default to the built-in loudspeaker without raising the user's Android call volume.
+  The listening control shall cycle loudspeaker, earpiece and muted call sound, skipping an unavailable
+  earpiece. Microphone mute and received-audio mute shall be independent. Both the native future-call
+  default and current-call device shall follow the selected audible route; call state transitions shall
+  retain the selection.
   Camera switching shall alternate the available front and back cameras without starting a new
   SIP offer/answer; two successive switches shall restore the original camera.
   The native core shall enable AVPF feedback and NACK retransmission so peers can request recovery
@@ -42,3 +49,5 @@ verification: Test valid and forged HMACs and permission/directory mismatch; exe
   Exercise two camera switches and reject non-local call updates; on the native SDK assert that
   switching preserves the call and sends no new INVITE to the fixture peer.
   Verify foreground state and the native 20 ms iteration timer after the SDK startup boost expires.
+
+  Verify idle and active routing, independent microphone/output mute and missing-earpiece fallback.

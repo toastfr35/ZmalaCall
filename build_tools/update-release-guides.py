@@ -59,8 +59,9 @@ PHONE = {
             ]),
             ('During a call', [
                 'The large picture shows the other person; the small view at bottom right shows your own camera. Rotate your phone for portrait or landscape. Tap the video to show the four round controls; they disappear after five seconds without interaction.',
-                'Microphone: mute or restore your microphone. Audio output: change where you hear the call. Switch camera: alternate the available front and rear cameras. Red hangup: end the call.',
-                'Use the phone volume buttons to change listening volume. Camera switching changes your outgoing picture; it does not change the other person\'s camera.',
+                'Microphone: tap to mute or restore what the other person hears. A slash across the microphone means your microphone is muted. The separate listening button cycles through loudspeaker (speaker with sound waves), earpiece (phone icon), and muted call sound (crossed speaker). Muting listening does not mute your microphone. Phones without an earpiece skip that choice. Brief text confirms each change.',
+                'Swipe upward on the video to raise listening volume, or downward to lower it. A percentage appears briefly. The phone volume buttons also change call volume. Each new call starts on the loudspeaker at your existing Android call volume; the app does not turn the volume up automatically. If a call sounds quiet, check the listening icon and raise call volume while the call is connected.',
+                'Switch camera: alternate the available front and rear cameras. The small preview follows the camera picture proportions and phone rotation. Camera switching changes your outgoing picture; it does not change the other person\'s camera. Red hangup ends the call.',
             ]),
             ('When something is not working', [
                 'No contacts or everyone offline: check your network connection and wait for the app to reconnect. Ask the administrator to check account groups and server availability. A phone and terminal need separate accounts in a shared calling group.',
@@ -118,8 +119,10 @@ def update_existing():
         doc.save(path)
 
 
-def build_phone():
+def build_phone(filenames=None):
     for filename, (title, intro, sections) in PHONE.items():
+        if filenames is not None and filename not in filenames:
+            continue
         doc = Document()
         section = doc.sections[0]
         section.page_width, section.page_height = Inches(8.27), Inches(11.69)
@@ -140,10 +143,10 @@ def build_phone():
         doc.add_paragraph(intro)
         for heading, paragraphs in sections:
             paragraph = doc.add_heading(heading, 1)
-            if heading == '3. Enable incoming call alerts':
+            if heading in ('3. Enable incoming call alerts', 'Updates'):
                 paragraph.paragraph_format.page_break_before = True
             for text in paragraphs:
-                doc.add_paragraph(text)
+                doc.add_paragraph(text).paragraph_format.keep_together = True
         footer = section.footer.paragraphs[0]
         footer.add_run('ZmalaPhone  |  ')
         field = OxmlElement('w:fldSimple')
@@ -169,8 +172,91 @@ def update_c20_guide():
                 'to cancel. Sound never switches to the TV. The server offers video '
                 'resolution, frame rate, audio processing and C20 volume. Fresh video '
                 'settings are 720p at 15 fps; media changes may wait until the call ends.')
+        elif paragraph.text.startswith('From the contact carousel, hold red for '):
+            paragraph.text = paragraph.text.replace('ten seconds', 'seven seconds', 1)
+        elif paragraph.text.startswith(('Use left and right to select a setting.', 'Use left/right to choose a setting;')):
+            paragraph.text = (
+                'Use left/right to choose a setting; green opens it. Inside, left/right changes '
+                'the draft, green saves and red discards it. Red on the list asks to exit: '
+                'green confirms; red stays. Saved changes go to the server. If saving fails, '
+                'retry after restoring the connection.')
+    for row in doc.tables[0].rows:
+        if row.cells[0].text == 'Speaker volume':
+            paragraph = row.cells[1].paragraphs[0]
+            paragraph.text = '0–100%, in steps of 5%'
+            paragraph.paragraph_format.space_after = Pt(0)
+            paragraph.paragraph_format.line_spacing = 1.05
+            for run in paragraph.runs:
+                run.font.size = Pt(11.5)
+                run.bold = False
     doc.core_properties.author = 'ZmalaCall'
     doc.core_properties.last_modified_by = ''
+    doc.save(path)
+
+
+def update_qr_guides():
+    """Describe the Pi scanner's positioning guides in the retained setup guide."""
+    path = ROOT / 'docs/terminal_config.docx'
+    doc = Document(path)
+    for paragraph in doc.paragraphs:
+        if paragraph.text.startswith('Hold the Wi-Fi QR steadily in front of the C20,'):
+            paragraph.text = ('Hold the Wi-Fi QR steadily in front of the C20, with the whole '
+                'code inside the four corner guides shown on the TV. Move the code closer '
+                'or farther away until it fits clearly. Wait for success and the ten-second '
+                'confirmation. When the server QR screen appears, show the server QR '
+                'inside the same guides. An incorrect or unreachable server leaves an '
+                'error and lets you try again.')
+    doc.save(path)
+
+
+def update_ringtone_guides():
+    """Describe private ringtone choices and bounded previews in retained guides."""
+    path = ROOT / 'docs/terminal_config.docx'
+    doc = Document(path)
+    table = doc.tables[0]
+    if not any(row.cells[0].text == 'Ringtone' for row in table.rows):
+        row = table.add_row()
+        row.cells[0].text = 'Ringtone'
+        row.cells[1].text = 'Nokia (default) and the sounds added on your server'
+        speaker = next(row for row in table.rows if row.cells[0].text == 'Speaker volume')
+        speaker._tr.addnext(row._tr)
+    text = ('To choose a ringtone, open Ringtone in Settings with green. Use left and right '
+            'to browse and hear each choice through the C20; the list wraps at both ends. A preview '
+            'plays for up to ten seconds after a short pause. A waking C20 may take a moment. '
+            'At zero volume the preview is silent. Press green to save, or red to cancel. '
+            'An incoming call stops the preview. Nokia remains available if a new sound '
+            'has not downloaded yet. The administrator can add sounds on the server.')
+    existing = next((p for p in doc.paragraphs if p.text.startswith('To choose a ringtone,')), None)
+    if existing is None:
+        anchor = next(p for p in doc.paragraphs if p.text.startswith('The terminal serial is shown'))
+        existing = doc.add_paragraph()
+        anchor._p.addnext(existing._p)
+    existing.text = text
+    doc.save(path)
+    path = ROOT / 'docs/server_prep.docx'
+    doc = Document(path)
+    text = ('To add ringtone choices, open Ringtone in Terminals. Preview plays on your '
+            'computer. Add ringtones accepts audio you have permission to use '
+            '(12 MB each, first 30 seconds). Choose a tone and Save changes. '
+            'Nokia is the default; the private library is included in backups.')
+    existing = next((p for p in doc.paragraphs if p.text.startswith('To add ringtone choices,')), None)
+    if existing is None:
+        anchor = next(p for p in doc.paragraphs if p.text.startswith('In Terminals, choose each'))
+        existing = doc.add_paragraph()
+        anchor._p.addnext(existing._p)
+    existing.text = text
+    existing.paragraph_format.space_after = Pt(0)
+    for p in doc.paragraphs:
+        if p.text.startswith('Use the server overview to keep a private copy'):
+            p.text = ('Use the server overview to keep a private copy of your accounts, '
+                      'settings, pictures and private ringtones. A backup also includes groups, '
+                      'terminal identities, passwords, callback records and console history. '
+                      'It does not contain Linux, Wi-Fi, SSH or TLS configuration.')
+        if p.text == 'Back up and restore the server':
+            previous = p._p.getprevious()
+            if previous is not None and previous.xpath('.//w:br[@w:type="page"]'):
+                previous.getparent().remove(previous)
+                p.paragraph_format.page_break_before = True
     doc.save(path)
 
 
@@ -201,8 +287,55 @@ def update_presence_guides():
         doc.save(path)
 
 
+
+def update_terminal_volume_guides():
+    """Use the same five-percent volume grid across terminal-facing controls."""
+    for filename in ('terminal_use.docx', 'server_prep.docx'):
+        path = ROOT / 'docs' / filename
+        doc = Document(path)
+        for paragraph in doc.paragraphs:
+            if paragraph.text.startswith(('Hold the middle button. Move the remote gently up', 'Press the middle button to open the volume page')):
+                paragraph.text = ('Press the middle button to open the volume page. '
+                    'Click left for quieter sound or right for louder sound, in 5% steps. '
+                    'The horizontal bar shows the volume. Press middle again to return. '
+                    'During a call, the control appears over the video so you can keep seeing the other person. '
+                    'Calls continue while adjusting volume; moving the remote has no effect.')
+            elif paragraph.text.startswith(('The movement is relative:', 'The volume page changes')):
+                paragraph.text = ('The volume page changes the sound you hear, not microphone volume. '
+                    'It stays open until you press middle again. Incoming calls close it automatically. '
+                    'For a saved starting volume, change Speaker volume in Settings.')
+            elif paragraph.text.startswith(('If a person is offline, select them and press green.', 'Select an offline contact, press green and confirm')):
+                paragraph.text = ('Select an offline contact, press green and confirm to request a callback. '
+                    'A return-arrow badge marks your request. After an unanswered, declined or cancelled '
+                    'outgoing call, Zmala asks: green requests a callback; red returns home. Incoming '
+                    'requests show a large yellow Please call back flag over the requester’s picture '
+                    'until completed or cancelled. Nothing dials automatically.')
+            elif filename == 'server_prep.docx' and paragraph.text.startswith(('If checks or installation fail,', 'Read installation errors and keep the log')):
+                paragraph.text = ('Read installation errors and keep the log in LocalAppData/ZmalaCall/ServerInstaller. '
+                    'After a dropped connection, check whether installation is still running before retrying. '
+                    'Back up server data regularly.')
+            elif paragraph.text.startswith(("In Terminals, choose each terminal's language and settings", "In Terminals, save language and settings")):
+                paragraph.text = ("In Terminals, save language and settings (volume: 5% steps, rounding existing values). "
+                    'Open Setup for the Wi-Fi/server QR PDFs, then follow ZmalaTerminal-Guide.pdf. '
+                    'The terminal card shows remote connection, battery/charger and C20 connection/power. '
+                    'Reports become unavailable when the terminal stops reporting.')
+        if filename == 'terminal_use.docx':
+            from copy import deepcopy
+            for table in doc.tables:
+                for row in table.rows:
+                    if row.cells[0].text == 'Middle long button':
+                        paragraph = row.cells[1].paragraphs[0]
+                        properties = deepcopy(paragraph.runs[0]._r.rPr) if paragraph.runs else None
+                        paragraph.text = 'Open/close volume; left/right changes it in 5% steps'
+                        if properties is not None:
+                            paragraph.runs[0]._r.insert(0, properties)
+        doc.save(path)
+
 if __name__ == '__main__':
     update_existing()
     update_c20_guide()
+    update_qr_guides()
+    update_ringtone_guides()
+    update_terminal_volume_guides()
     build_phone()
     update_presence_guides()

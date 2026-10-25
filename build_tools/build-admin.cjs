@@ -12,6 +12,7 @@ const scripts = [
   'accounts',
   'console',
   'groups',
+  'ringtones',
   'terminalfields',
   'terminals',
   'callbacks',

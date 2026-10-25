@@ -6,6 +6,50 @@ from zmala_terminal.common.model import State
 
 
 class SettingsControl:
+    # @llr LLR-TERM-AUDIO-009
+    def tick_ringtone(self, now):
+        from zmala_terminal.common.ringtones import DEFAULT_SOUND, RingtoneCache
+        configuration = getattr(self, 'configuration', None)
+        cache = getattr(configuration, 'ringtones', None)
+        cache = cache if isinstance(cache, RingtoneCache) else None
+        power = self.usb_power
+        config = self.model.config or {}
+        selected = config.get('ringtone', 'nokia')
+        file = cache.path(selected) if cache else DEFAULT_SOUND
+        power.set_ringtone(file or DEFAULT_SOUND)
+        if self.engine and not power.enabled and self.model.state == State.HOME:
+            # Development/host policy without USB switching keeps SDK ringing.
+            applied = str(file or DEFAULT_SOUND)
+            key = (id(self.engine), applied)
+            if key != getattr(self, 'sdk_ringtone_file', None):
+                self.engine.core_set_ring(self.engine.core, applied.encode())
+                self.sdk_ringtone_file = key
+        draft = self.settings_draft
+        editing = (self.settings_open and draft.editing and draft.key == 'ringtone' and
+                   not draft.busy and self.model.state == State.HOME and not self.setup_stage)
+        token = (self.generation, draft.options[draft.index]) if editing else None
+        if token != getattr(self, 'ringtone_preview_token', None):
+            power.stop_preview()
+            self.ringtone_preview_token = token
+            self.ringtone_preview_due = now+.4
+            self.ringtone_preview_started = False
+        state = ''
+        if token:
+            identity = token[1]
+            if cache:
+                cache.ensure(identity)
+            preview = cache.path(identity) if cache else DEFAULT_SOUND if identity == 'nokia' else None
+            if preview is None:
+                state = 'error' if cache and cache.failed(identity) else 'waiting'
+            elif now >= self.ringtone_preview_due:
+                if not self.ringtone_preview_started:
+                    power.preview_tone(preview)
+                    self.ringtone_preview_started = True
+                state = power.ringtone_preview_status
+        if state != getattr(self, 'ringtone_preview_state', ''):
+            self.ringtone_preview_state = state
+            self.render()
+
     def tick_settings_access(self, now):
         hold = self.settings_hold
         if hold.started is None:
@@ -51,14 +95,21 @@ class SettingsControl:
     def input_focus_lost(self):
         self.keys_down.clear()
         self.cancel_settings_hold()
-        # Focus changes can swallow a release. Stop motion and invalidate any
+        # Focus changes can swallow a release. Close the page and invalidate any
         # delayed visibility result so it cannot resume volume on its own.
         self.pointer_serial = getattr(self, 'pointer_serial', 0) + 1
         volume = getattr(self, 'volume_control', None)
         if volume:
             volume.pointer(False)
+            volume.dismiss()
 
+    # @llr LLR-TERM-REMOTE-016
     def press(self, button):
+        volume = getattr(self, 'volume_control', None)
+        if volume and volume.active is True:
+            self.cancel_settings_hold()
+            volume.button(button)
+            return
         if self.setup_stage == 'tv' and self.tv_setup_button(button):
             return
         self.last_button = time.monotonic()
@@ -79,14 +130,20 @@ class SettingsControl:
         draft = self.settings_draft
         if draft.busy:
             return  # An accepted write may already have reached the server.
-        if button in ('left', 'right'):
+        if draft.confirm_exit:
+            if button == 'green':
+                draft.confirm_exit = False
+                self.settings_open = False
+                self.settings_hold.clear()
+            elif button == 'red':
+                draft.confirm_exit = False
+        elif button in ('left', 'right'):
             draft.move(-1 if button == 'left' else 1)
         elif button == 'red':
             if draft.editing:
                 draft.editing, draft.error = False, False
             else:
-                self.settings_open = False
-                self.settings_hold.clear()
+                draft.confirm_exit = True
         elif button == 'green':
             if draft.key == 'reset':
                 self.settings_open = False

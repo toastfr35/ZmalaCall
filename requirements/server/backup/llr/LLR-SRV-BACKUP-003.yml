@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/LLT/ringtones.test.js
+  type: file
 - path: tests/server/LLT/backup-components.test.js
   type: file
 - path: zmala_server/backup-storage.js
@@ -18,6 +20,9 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Backup shall snapshot configuration, administrator password hash, callbacks and command history before yielding, then include immutable hash-named portraits. Sessions, registrations, logs, recovery files and OS configuration shall be excluded.
+  Backup shall snapshot configuration, administrator password hash, callbacks and
+  command history before yielding, then include immutable hash-named portraits
+  and referenced private ringtones. Sessions, registrations, logs, recovery files
+  and OS configuration shall be excluded.
 verification: |
   Export populated state while later mutations occur. Compare all included records and picture bytes and confirm excluded runtime files.

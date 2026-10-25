@@ -13,10 +13,16 @@ references:
 reviewed: null
 scope: Experimental
 text: The app shall use the existing ZmalaCall logo and terminal palette with large contact and call controls,
-  compact portrait-and-name contact rows, QR setup and a visible indication of incoming-alert availability. Online names shall be green call targets and offline names gray.
+  compact portrait-and-name contact rows, QR setup and a visible indication of incoming-alert availability.
+  Contact names shall show green Available for recently confirmed activity, blue Try calling for
+  unconfirmed push eligibility and red Offline when neither is known. Green and blue names shall
+  permit an attempted call while the app is registered; red names shall be disabled. The labels shall
+  explain the state without relying on colour alone.
   The contact screen shall omit the phone account name and routine ready status.
   Calls shall use a video-first view with a bottom-right local preview, temporary icon controls,
   portrait/landscape adaptation and animated outgoing ringing feedback. After answer, the app shall
   indicate that video is connecting until a remote frame is decoded.
 verification: Inspect enrollment, contacts and incoming/active call screens on Android and compare with
-  the terminal palette and shared logo.
+  the terminal palette and shared logo. Supply recently active, push-only and offline contacts;
+  check the green/blue/red names, corresponding labels and disabled offline action, then initiate
+  calls through both the available and push-only names.

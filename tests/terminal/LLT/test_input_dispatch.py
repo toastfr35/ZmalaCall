@@ -50,14 +50,17 @@ class InputDispatchTests(unittest.TestCase):
         c.keypress('red'); self.assertTrue(c.tv_control.handle_button.call_args.kwargs['preserve_restore'])
         c.tv_control.handle_button.call_args.args[0](); self.assertEqual(c.messages.get_nowait(),('tv-button',(3,State.IN_CALL,'red')))
 
-    def test_pointer_delayed_visibility_cannot_resume_released_gesture(self):
+    def test_pointer_delayed_visibility_keeps_click_but_rejects_newer_context(self):
         c=self.controller(); c.tv_control.handle_button.return_value=True; c.pointer_button(True)
         callback=c.tv_control.handle_button.call_args.args[0]; c.pointer_button(True); self.assertEqual(c.tv_control.handle_button.call_count,1)
         callback(); _,tokens=c.messages.get_nowait(); c.pointer_visible(*tokens); c.volume_control.pointer.assert_called_once_with(True)
-        c.pointer_button(False); c.volume_control.pointer.assert_called_with(False); c.volume_control.pointer.reset_mock()
-        c.pointer_visible(*tokens); c.volume_control.pointer.assert_not_called()
+        c.pointer_button(False); c.volume_control.pointer.reset_mock()
+        c.pointer_visible(*tokens)
+        self.assertEqual([x.args for x in c.volume_control.pointer.call_args_list],[(True,),(False,)])
+        c.volume_control.pointer.reset_mock()
         c.tv_control.handle_button.return_value=False; c.pointer_button(True); c.volume_control.pointer.assert_called_once_with(True)
-        c.setup_stage='tv'; c.volume_control.pointer.reset_mock(); c.pointer_button(False); c.volume_control.pointer.assert_not_called()
+        c.volume_control.pointer.reset_mock();c.pointer_visible(*tokens);c.volume_control.pointer.assert_not_called()
+        c.setup_stage='tv'; c.pointer_button(False); c.volume_control.pointer.assert_not_called()
 
     def test_other_keys_cancel_confirmation_without_changing_fullscreen(self):
         c=self.controller(); c.model.state=State.CONFIRMING

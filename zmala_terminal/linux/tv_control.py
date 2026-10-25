@@ -111,10 +111,14 @@ class TVControl:
         self._cancel.set()
         self._started = None
 
+    # @llr LLR-TERM-TV-026
     def _control_allowed(self, off):
         if off is True:
             return self.power_enabled
-        return self.source_enabled if off is False else self.power_enabled and self.source_enabled
+        # After a restart the passive observer may know neither power nor input.
+        # Qualified one-touch wake must still work when source switching was
+        # skipped. Unknown power cannot authorize an unqualified power-on.
+        return self.source_enabled if off is False else self.power_enabled
 
     def wake(self, restore=True, initial=None):
         self._refresh_device()

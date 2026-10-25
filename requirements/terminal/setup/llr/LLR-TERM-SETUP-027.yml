@@ -37,8 +37,14 @@ reviewed: null
 scope: Core
 text: |
   QR capture shall use a separate process and an unmirrored preview within the setup
-  viewport. Capture failure shall show an error and delay retry for five seconds.
+  viewport. The Wi-Fi and server QR previews shall show contrasting corner guides
+  around a centred square, scaled within the visible camera picture. The centre
+  shall remain unobscured. Guides shall affect only the displayed preview; QR
+  detection shall continue to use the full, unmodified camera frame.
+  Capture failure shall show an error and delay retry for five seconds.
   Cancellation shall release the camera before the call engine starts.
 verification: |
   Inject capture errors, malformed worker output and cancellation. Resize the viewport
   and check preview bounds and worker termination.
+  Check guide visibility on light and dark images, centred square bounds after
+  resizing and letterboxing, an unobscured centre, and unchanged decoder input.

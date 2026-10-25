@@ -1268,6 +1268,12 @@ input[type='file']::file-selector-button {
 .terminal-options select {
   margin-top: 5px;
 }
+.terminal-options audio {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 8px 0;
+}
 .terminal-calls .terminal-options {
   align-items: center;
 }

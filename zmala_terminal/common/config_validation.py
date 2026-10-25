@@ -9,6 +9,9 @@ from zmala_terminal.common.video_settings import FRAME_RATES
 def validate(config, device_id):
     if not isinstance(config, dict):
         raise ValueError('Configuration must be an object')
+    # @llr LLR-TERM-AUDIO-009
+    from zmala_terminal.common.ringtones import validate_catalog
+    validate_catalog(config)
     if config.get('schema_version') != 1 or config.get('device_id') != device_id:
         raise ValueError('Configuration schema or device identity mismatch')
     if type(config.get('configuration_version')) is not int or config['configuration_version'] < 1:

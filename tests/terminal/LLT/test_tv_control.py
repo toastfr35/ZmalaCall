@@ -1,7 +1,7 @@
 # @test T-LLT-036
 # @requirements LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032
 # @environment portable
-# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
+# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Check CEC routing, cancellation and failures without changing a real TV."""
@@ -92,6 +92,7 @@ class TVControlTests(unittest.TestCase):
         app = SimpleNamespace(model=model, engine=Mock(), tv_control=Mock(),
                               reset_gesture=Mock(), setup_stage=None, root=Mock(),
                               render=Mock(), missed_calls_store=Mock())
+        app.finish_call = lambda **kwargs: CallControl.finish_call(app, **kwargs)
         CallControl.call_event(app, 'call', 1, 'unknown', 'family.test')
         app.tv_control.wake.assert_not_called()
         CallControl.call_event(app, 'call', 1, 'alice', 'family.test')
@@ -116,6 +117,51 @@ class TVControlTests(unittest.TestCase):
             self.assertFalse(tv.handle_button(Mock()))
         thread.assert_not_called()
         tv._run.assert_not_called()
+
+    def test_unknown_power_can_wake_with_source_check_skipped_after_restart(self):
+        tv = self.controller()
+        tv.source_enabled = False
+        tv._observed_state = Mock(return_value={})
+        action = Mock()
+        with patch.object(Path, 'exists', return_value=True), patch('threading.Thread') as thread:
+            self.assertTrue(tv.handle_button(action))
+            thread.assert_called_once()
+        configured = False
+        woke = False
+
+        def run(*args):
+            nonlocal configured, woke
+            if '--physical-address' in args:
+                return '2.0.0.0'
+            if '--logical-address' in args:
+                return '4' if configured else '65535'
+            if '--playback' in args:
+                configured = True
+            if '--image-view-on' in args:
+                self.assertTrue(configured)
+                woke = True
+            if '--give-device-power-status' in args:
+                return 'pwr-state: on (0x00)' if woke else 'Adapter is unconfigured, please configure it first.'
+            return ''
+
+        tv._run.side_effect = run
+        tv.wake = Mock()
+        tv._button_worker(tv._cancel, action, False)
+        action.assert_not_called()
+        initial = tv.wake.call_args.kwargs['initial']
+        self.assertIsNone(initial['off'])
+        tv._cancel.wait = Mock(return_value=False)
+        tv._worker(tv._cancel, restore=False, initial=initial)
+        self.assertTrue(woke)
+        self.assertIsNone(tv._browse_previous, 'Unknown power must not become a standby restoration baseline')
+        tv._samsung.select_terminal.assert_not_called()
+
+        tv.power_enabled = False
+        for source_enabled in (False, True):
+            tv.source_enabled = source_enabled
+            with patch.object(Path, 'exists', return_value=True), patch('threading.Thread') as thread:
+                self.assertFalse(tv.handle_button(action))
+                thread.assert_not_called()
 
     def test_other_source_or_standby_consumes_press_and_reveals_terminal(self):
         for off, source in ((False, '0.0.0.0'), (True, '2.0.0.0'), (None, None)):
@@ -285,12 +331,12 @@ class TVControlTests(unittest.TestCase):
         app.tv_control.handle_button.assert_called_once()
         Terminal.pointer_button(app, False)
         app.volume_control.pointer.assert_called_once_with(False)
-        # Once visible, the NEXT deliberate hold adjusts volume normally.
+        # Once visible, the NEXT deliberate click opens the volume page normally.
         app.tv_control.handle_button.return_value = False
         Terminal.pointer_button(app, True)
         app.volume_control.pointer.assert_called_with(True)
 
-    def test_delayed_pointer_visibility_requires_same_unreleased_press(self):
+    def test_delayed_pointer_visibility_requires_same_click_context(self):
         from zmala_terminal.common.main import Terminal
         app = SimpleNamespace(pointer_serial=1, keys_down={'pointer'}, volume_control=Mock(),
                               generation=1, model=TerminalModel(), closed=False)
@@ -298,10 +344,13 @@ class TVControlTests(unittest.TestCase):
         Terminal.pointer_visible(app, 1, state, 1)
         app.volume_control.pointer.assert_called_once_with(True)
         app.volume_control.reset_mock()
-        for generation, serial, held in ((0, 1, True), (1, 0, True), (1, 1, False)):
+        for generation, serial, held in ((0, 1, True), (1, 0, True)):
             app.keys_down = {'pointer'} if held else set()
             Terminal.pointer_visible(app, generation, state, serial)
         app.volume_control.pointer.assert_not_called()
+        app.keys_down=set()
+        Terminal.pointer_visible(app,1,state,1)
+        self.assertEqual([x.args for x in app.volume_control.pointer.call_args_list],[(True,),(False,)])
 
     def call_app(self):
         model = TerminalModel()

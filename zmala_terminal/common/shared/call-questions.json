@@ -1,97 +1,477 @@
 {
- "en": ["Do you want to call {name}?", "Do you want to request a callback?", "Callback requested"],
- "fr": ["Voulez-vous appeler {name} ?", "Voulez-vous demander à être rappelé ?", "Demande de rappel envoyée"],
- "es": ["¿Quieres llamar a {name}?", "¿Quieres pedir que te devuelvan la llamada?", "Solicitud de llamada enviada"],
- "pt": ["Quer ligar a {name}?", "Quer pedir que lhe liguem de volta?", "Pedido de chamada enviado"],
- "de": ["Möchten Sie {name} anrufen?", "Möchten Sie um einen Rückruf bitten?", "Rückruf angefordert"],
- "it": ["Vuoi chiamare {name}?", "Vuoi chiedere di essere richiamato?", "Richiamata richiesta"],
- "nl": ["Wilt u {name} bellen?", "Wilt u vragen om teruggebeld te worden?", "Terugbelverzoek verstuurd"],
- "da": ["Vil du ringe til {name}?", "Vil du bede om at blive ringet op?", "Anmodning om opkald sendt"],
- "sv": ["Vill du ringa {name}?", "Vill du be om att bli uppringd?", "Begäran om uppringning skickad"],
- "nb": ["Vil du ringe {name}?", "Vil du be om å bli ringt tilbake?", "Forespørsel om oppringning sendt"],
- "nn": ["Vil du ringje {name}?", "Vil du be om å bli ringd tilbake?", "Førespurnad om oppringing send"],
- "fi": ["Haluatko soittaa henkilölle {name}?", "Haluatko pyytää takaisinsoittoa?", "Takaisinsoittoa pyydetty"],
- "is": ["Viltu hringja í {name}?", "Viltu biðja um að hringt verði til baka?", "Beiðni um símtal send"],
- "fo": ["Vilt tú ringja til {name}?", "Vilt tú biðja um at verða ringdur upp?", "Áheitan um at ringja send"],
- "et": ["Kas soovite helistada inimesele {name}?", "Kas soovite paluda tagasi helistada?", "Tagasihelistamise palve saadetud"],
- "lv": ["Vai vēlaties zvanīt: {name}?", "Vai vēlaties lūgt atzvanīt?", "Atzvanīšanas pieprasījums nosūtīts"],
- "lt": ["Ar norite paskambinti: {name}?", "Ar norite paprašyti perskambinti?", "Prašymas perskambinti išsiųstas"],
- "pl": ["Czy chcesz zadzwonić do {name}?", "Czy chcesz poprosić o oddzwonienie?", "Prośba o oddzwonienie wysłana"],
- "cs": ["Chcete zavolat: {name}?", "Chcete požádat o zpětné zavolání?", "Žádost o zavolání odeslána"],
- "sk": ["Chcete zavolať: {name}?", "Chcete požiadať o spätné zavolanie?", "Žiadosť o zavolanie odoslaná"],
- "hu": ["Felhívja ezt a személyt: {name}?", "Szeretne visszahívást kérni?", "Visszahívás kérve"],
- "ro": ["Doriți să sunați pe {name}?", "Doriți să cereți să fiți sunat înapoi?", "Cerere de apel trimisă"],
- "bg": ["Искате ли да се обадите на {name}?", "Искате ли да поискате обратно обаждане?", "Изпратена заявка за обаждане"],
- "hr": ["Želite li nazvati: {name}?", "Želite li zatražiti povratni poziv?", "Povratni poziv zatražen"],
- "bs": ["Želite li nazvati: {name}?", "Želite li zatražiti povratni poziv?", "Povratni poziv zatražen"],
- "sr": ["Желите ли да позовете: {name}?", "Желите ли да затражите повратни позив?", "Повратни позив затражен"],
- "sl": ["Želite poklicati: {name}?", "Želite zaprositi za povratni klic?", "Povratni klic je zahtevan"],
- "mk": ["Дали сакате да се јавите на {name}?", "Дали сакате да побарате повратен повик?", "Побаран е повратен повик"],
- "sq": ["Dëshironi të telefononi {name}?", "Dëshironi të kërkoni që t’ju telefonojnë?", "Kërkesa për telefonatë u dërgua"],
- "el": ["Θέλετε να καλέσετε τον/την {name};", "Θέλετε να ζητήσετε να σας καλέσουν πίσω;", "Το αίτημα κλήσης στάλθηκε"],
- "tr": ["{name} adlı kişiyi aramak ister misiniz?", "Geri aranmak ister misiniz?", "Geri arama istendi"],
- "mt": ["Trid iċċempel lil {name}?", "Trid titlob li jċemplulek lura?", "Talba għal telefonata mibgħuta"],
- "ga": ["Ar mhaith leat glaoch ar {name}?", "Ar mhaith leat glaoch ar ais a iarraidh?", "Iarratas ar ghlaoch ar ais seolta"],
- "cy": ["Hoffech chi ffonio {name}?", "Hoffech chi ofyn am alwad yn ôl?", "Anfonwyd cais am alwad yn ôl"],
- "gd": ["A bheil thu airson fònadh gu {name}?", "A bheil thu airson gairm air ais iarraidh?", "Chaidh gairm air ais iarraidh"],
- "ca": ["Vols trucar a {name}?", "Vols demanar que et tornin la trucada?", "Petició de trucada enviada"],
- "eu": ["{name} pertsonari deitu nahi diozu?", "Atzera deitzeko eskatu nahi duzu?", "Dei eskaera bidali da"],
- "gl": ["Queres chamar a {name}?", "Queres pedir que che devolvan a chamada?", "Solicitude de chamada enviada"],
- "lb": ["Wëllt Dir {name} uruffen?", "Wëllt Dir ëm e Réckruff bieden?", "Réckruff ugefrot"],
- "br": ["C’hoant hoc’h eus da bellgomz da {name}?", "C’hoant hoc’h eus da c’houlenn bezañ adgalvet?", "Goulenn adgalv kaset"],
- "co": ["Vulete chjamà {name}?", "Vulete dumandà d’esse richjamatu?", "Dumanda di richjamata mandata"],
- "oc": ["Volètz sonar {name}?", "Volètz demandar d’èsser tornat sonar?", "Demanda de sonada enviada"],
- "sc": ["Boles mutire a {name}?", "Boles pedire chi ti torrant a mutire?", "Pedida de mutida imbiada"],
- "rm": ["Vulais Vus telefonar a {name}?", "Vulais Vus dumandar da vegnir clamà enavos?", "Dumonda da telefon enviada"],
- "ru": ["Хотите позвонить: {name}?", "Хотите попросить перезвонить?", "Просьба перезвонить отправлена"],
- "uk": ["Бажаєте зателефонувати: {name}?", "Бажаєте попросити передзвонити?", "Прохання передзвонити надіслано"],
- "be": ["Хочаце патэлефанаваць: {name}?", "Хочаце папрасіць ператэлефанаваць?", "Просьба ператэлефанаваць адпраўлена"],
- "hy": ["Ցանկանո՞ւմ եք զանգահարել {name}։", "Ցանկանո՞ւմ եք խնդրել հետ զանգահարել։", "Հետ զանգի խնդրանքն ուղարկված է"],
- "ka": ["გსურთ დაურეკოთ {name}?", "გსურთ მოითხოვოთ უკან დარეკვა?", "უკან დარეკვა მოთხოვნილია"],
- "az": ["{name} adlı şəxsə zəng etmək istəyirsiniz?", "Sizə geri zəng edilməsini istəyirsiniz?", "Geri zəng istəyi göndərildi"],
- "kk": ["{name} деген адамға қоңырау шалғыңыз келе ме?", "Кері қоңырау сұрағыңыз келе ме?", "Кері қоңырау сұралды"],
- "ky": ["{name} деген адамга чалгыңыз келеби?", "Кайра чалууну сурагыңыз келеби?", "Кайра чалуу өтүнүчү жөнөтүлдү"],
- "uz": ["{name}ga qo‘ng‘iroq qilmoqchimisiz?", "Qayta qo‘ng‘iroq qilishni so‘ramoqchimisiz?", "Qayta qo‘ng‘iroq so‘rovi yuborildi"],
- "tk": ["{name} atly adama jaň etmek isleýärsiňizmi?", "Yzyna jaň edilmegini isleýärsiňizmi?", "Yzyna jaň haýyşy iberildi"],
- "tg": ["Мехоҳед ба {name} занг занед?", "Мехоҳед хоҳиш кунед, ки ба шумо занг зананд?", "Дархости занг фиристода шуд"],
- "mn": ["Та {name} руу залгахыг хүсэж байна уу?", "Буцааж залгах хүсэлт илгээх үү?", "Буцааж залгах хүсэлт илгээгдлээ"],
- "zh-Hans": ["您想呼叫{name}吗？", "您想请求对方回电吗？", "已发送回电请求"],
- "zh-Hant": ["您想撥打給{name}嗎？", "您想請對方回電嗎？", "已傳送回電請求"],
- "ja": ["{name}さんに電話しますか？", "折り返しの電話をお願いしますか？", "折り返しの電話を依頼しました"],
- "ko": ["{name}님에게 전화하시겠습니까?", "다시 전화해 달라고 요청하시겠습니까?", "회신 전화 요청을 보냈습니다"],
- "vi": ["Bạn có muốn gọi cho {name} không?", "Bạn có muốn yêu cầu gọi lại không?", "Đã gửi yêu cầu gọi lại"],
- "th": ["คุณต้องการโทรหา {name} หรือไม่?", "คุณต้องการขอให้โทรกลับหรือไม่?", "ส่งคำขอให้โทรกลับแล้ว"],
- "lo": ["ທ່ານຕ້ອງການໂທຫາ {name} ບໍ?", "ທ່ານຕ້ອງການຂໍໃຫ້ໂທກັບບໍ?", "ສົ່ງຄຳຂໍໃຫ້ໂທກັບແລ້ວ"],
- "km": ["តើអ្នកចង់ហៅទៅ {name} ឬទេ?", "តើអ្នកចង់ស្នើឱ្យហៅត្រឡប់មកវិញឬទេ?", "បានផ្ញើសំណើឱ្យហៅត្រឡប់មកវិញ"],
- "my": ["{name} ကို ဖုန်းခေါ်လိုပါသလား။", "ဖုန်းပြန်ခေါ်ပေးရန် တောင်းဆိုလိုပါသလား။", "ဖုန်းပြန်ခေါ်ရန် တောင်းဆိုထားပါသည်"],
- "id": ["Apakah Anda ingin menelepon {name}?", "Apakah Anda ingin meminta ditelepon kembali?", "Permintaan telepon kembali dikirim"],
- "ms": ["Adakah anda mahu menelefon {name}?", "Adakah anda mahu meminta panggilan balik?", "Permintaan panggilan balik dihantar"],
- "fil": ["Gusto mo bang tawagan si {name}?", "Gusto mo bang humiling na tawagan ka pabalik?", "Naipadala ang hiling na tawagan ka"],
- "jv": ["Apa sampeyan arep nelpon {name}?", "Apa sampeyan arep njaluk ditelpon maneh?", "Panjaluk telpon bali dikirim"],
- "su": ["Naha anjeun hoyong nelepon {name}?", "Naha anjeun hoyong nyuhunkeun ditelepon deui?", "Pamenta nelepon deui dikirim"],
- "hi": ["क्या आप {name} को कॉल करना चाहते हैं?", "क्या आप वापस कॉल करने का अनुरोध करना चाहते हैं?", "वापस कॉल करने का अनुरोध भेजा गया"],
- "bn": ["আপনি কি {name}-কে কল করতে চান?", "আপনি কি ফিরতি কলের অনুরোধ করতে চান?", "ফিরতি কলের অনুরোধ পাঠানো হয়েছে"],
- "pa": ["ਕੀ ਤੁਸੀਂ {name} ਨੂੰ ਕਾਲ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?", "ਕੀ ਤੁਸੀਂ ਵਾਪਸ ਕਾਲ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?", "ਵਾਪਸ ਕਾਲ ਦੀ ਬੇਨਤੀ ਭੇਜੀ ਗਈ"],
- "gu": ["શું તમે {name}ને કૉલ કરવા માંગો છો?", "શું તમે પાછો કૉલ કરવાની વિનંતી કરવા માંગો છો?", "પાછા કૉલની વિનંતી મોકલાઈ"],
- "mr": ["तुम्हाला {name} यांना कॉल करायचा आहे का?", "तुम्हाला परत कॉल करण्याची विनंती करायची आहे का?", "परत कॉल करण्याची विनंती पाठवली"],
- "ta": ["{name} அவர்களை அழைக்க விரும்புகிறீர்களா?", "திரும்ப அழைக்கக் கோர விரும்புகிறீர்களா?", "திரும்ப அழைக்கக் கோரிக்கை அனுப்பப்பட்டது"],
- "te": ["మీరు {name}కి కాల్ చేయాలనుకుంటున్నారా?", "తిరిగి కాల్ చేయమని కోరాలనుకుంటున్నారా?", "తిరిగి కాల్ చేయమని అభ్యర్థన పంపబడింది"],
- "kn": ["ನೀವು {name}ಗೆ ಕರೆ ಮಾಡಲು ಬಯಸುತ್ತೀರಾ?", "ಮರಳಿ ಕರೆ ಮಾಡಲು ವಿನಂತಿಸಬೇಕೇ?", "ಮರಳಿ ಕರೆ ಮಾಡಲು ವಿನಂತಿಸಲಾಗಿದೆ"],
- "ml": ["നിങ്ങൾക്ക് {name}നെ വിളിക്കണോ?", "തിരികെ വിളിക്കാൻ ആവശ്യപ്പെടണോ?", "തിരികെ വിളിക്കാൻ അഭ്യർത്ഥിച്ചു"],
- "or": ["ଆପଣ {name}ଙ୍କୁ କଲ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?", "ଆପଣ ଫେରି କଲ୍ କରିବାକୁ ଅନୁରୋଧ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?", "ଫେରି କଲ୍ କରିବାକୁ ଅନୁରୋଧ ପଠାଗଲା"],
- "as": ["আপুনি {name}লৈ কল কৰিব বিচাৰে নেকি?", "আপুনি উভতি কল কৰিবলৈ অনুৰোধ কৰিব বিচাৰে নেকি?", "উভতি কল কৰাৰ অনুৰোধ পঠোৱা হৈছে"],
- "ne": ["के तपाईं {name}लाई कल गर्न चाहनुहुन्छ?", "के तपाईं फिर्ता कल गर्न अनुरोध गर्न चाहनुहुन्छ?", "फिर्ता कलको अनुरोध पठाइयो"],
- "si": ["ඔබට {name} අමතන්න අවශ්‍යද?", "නැවත ඇමතුමක් ඉල්ලා සිටීමට අවශ්‍යද?", "නැවත ඇමතුමක් ඉල්ලා ඇත"],
- "bo": ["ཁྱེད་ཀྱིས་{name}ལ་ཁ་པར་གཏོང་འདོད་དམ།", "ཁ་པར་ཕྱིར་གཏོང་བའི་རེ་ཞུ་བྱེད་འདོད་དམ།", "ཁ་པར་ཕྱིར་གཏོང་བའི་རེ་ཞུ་བཏང་ཟིན།"],
- "dz": ["ཁྱོད་ཀྱིས་{name}ལུ་ཁ་པར་གཏང་ནི་ཨིན་ན།", "ཁ་པར་ལོག་གཏང་ནིའི་ཞུ་བ་འབད་ནི་ཨིན་ན།", "ཁ་པར་ལོག་གཏང་ནིའི་ཞུ་བ་བཏང་ཡོད།"],
- "ar": ["هل تريد الاتصال بـ {name}؟", "هل تريد طلب معاودة الاتصال؟", "تم إرسال طلب معاودة الاتصال"],
- "he": ["האם ברצונך להתקשר אל {name}?", "האם ברצונך לבקש שיחזרו אליך?", "נשלחה בקשה לשיחה חוזרת"],
- "fa": ["آیا می‌خواهید با {name} تماس بگیرید؟", "آیا می‌خواهید درخواست تماس مجدد کنید؟", "درخواست تماس مجدد ارسال شد"],
- "ur": ["کیا آپ {name} کو کال کرنا چاہتے ہیں؟", "کیا آپ واپس کال کرنے کی درخواست کرنا چاہتے ہیں؟", "واپس کال کرنے کی درخواست بھیج دی گئی"],
- "ps": ["ایا غواړئ {name} ته زنګ ووهئ؟", "ایا غواړئ د بېرته زنګ وهلو غوښتنه وکړئ؟", "د بېرته زنګ وهلو غوښتنه ولېږل شوه"],
- "ku": ["Tu dixwazî telefonê {name} bikî?", "Tu dixwazî daxwaza vegerandina telefonê bikî?", "Daxwaza telefonê hate şandin"],
- "ckb": ["دەتەوێت پەیوەندی بە {name} بکەیت؟", "دەتەوێت داوای پەیوەندییەکی گەڕاوە بکەیت؟", "داوای پەیوەندیی گەڕاوە نێردرا"],
- "ug": ["{name}گە تېلېفون قىلماقچىمۇ؟", "قايتا تېلېفون قىلىشنى تەلەپ قىلماقچىمۇ؟", "قايتا تېلېفون قىلىش تەلىپى ئەۋەتىلدى"],
- "sd": ["ڇا توهان {name} کي ڪال ڪرڻ چاهيو ٿا؟", "ڇا توهان واپس ڪال ڪرڻ جي درخواست ڪرڻ چاهيو ٿا؟", "واپس ڪال ڪرڻ جي درخواست موڪلي وئي"],
- "dv": ["{name} އަށް ގުޅަން ބޭނުންތަ؟", "އެނބުރި ގުޅުމަށް އެދޭތަ؟", "އެނބުރި ގުޅުމަށް އެދިފައި" ]
+  "en": [
+    "Do you want to call {name}?",
+    "Do you want to request a callback?",
+    "Callback request sent"
+  ],
+  "fr": [
+    "Voulez-vous appeler {name} ?",
+    "Voulez-vous demander à être rappelé ?",
+    "Demande de rappel envoyée"
+  ],
+  "es": [
+    "¿Quieres llamar a {name}?",
+    "¿Quieres pedir que te devuelvan la llamada?",
+    "Solicitud de llamada enviada"
+  ],
+  "pt": [
+    "Quer ligar a {name}?",
+    "Quer pedir que lhe liguem de volta?",
+    "Pedido de chamada enviado"
+  ],
+  "de": [
+    "Möchten Sie {name} anrufen?",
+    "Möchten Sie um einen Rückruf bitten?",
+    "Rückruf angefordert"
+  ],
+  "it": [
+    "Vuoi chiamare {name}?",
+    "Vuoi chiedere di essere richiamato?",
+    "Richiamata richiesta"
+  ],
+  "nl": [
+    "Wilt u {name} bellen?",
+    "Wilt u vragen om teruggebeld te worden?",
+    "Terugbelverzoek verstuurd"
+  ],
+  "da": [
+    "Vil du ringe til {name}?",
+    "Vil du bede om at blive ringet op?",
+    "Anmodning om opkald sendt"
+  ],
+  "sv": [
+    "Vill du ringa {name}?",
+    "Vill du be om att bli uppringd?",
+    "Begäran om uppringning skickad"
+  ],
+  "nb": [
+    "Vil du ringe {name}?",
+    "Vil du be om å bli ringt tilbake?",
+    "Forespørsel om oppringning sendt"
+  ],
+  "nn": [
+    "Vil du ringje {name}?",
+    "Vil du be om å bli ringd tilbake?",
+    "Førespurnad om oppringing send"
+  ],
+  "fi": [
+    "Haluatko soittaa henkilölle {name}?",
+    "Haluatko pyytää takaisinsoittoa?",
+    "Takaisinsoittoa pyydetty"
+  ],
+  "is": [
+    "Viltu hringja í {name}?",
+    "Viltu biðja um að hringt verði til baka?",
+    "Beiðni um símtal send"
+  ],
+  "fo": [
+    "Vilt tú ringja til {name}?",
+    "Vilt tú biðja um at verða ringdur upp?",
+    "Áheitan um at ringja send"
+  ],
+  "et": [
+    "Kas soovite helistada inimesele {name}?",
+    "Kas soovite paluda tagasi helistada?",
+    "Tagasihelistamise palve saadetud"
+  ],
+  "lv": [
+    "Vai vēlaties zvanīt: {name}?",
+    "Vai vēlaties lūgt atzvanīt?",
+    "Atzvanīšanas pieprasījums nosūtīts"
+  ],
+  "lt": [
+    "Ar norite paskambinti: {name}?",
+    "Ar norite paprašyti perskambinti?",
+    "Prašymas perskambinti išsiųstas"
+  ],
+  "pl": [
+    "Czy chcesz zadzwonić do {name}?",
+    "Czy chcesz poprosić o oddzwonienie?",
+    "Prośba o oddzwonienie wysłana"
+  ],
+  "cs": [
+    "Chcete zavolat: {name}?",
+    "Chcete požádat o zpětné zavolání?",
+    "Žádost o zavolání odeslána"
+  ],
+  "sk": [
+    "Chcete zavolať: {name}?",
+    "Chcete požiadať o spätné zavolanie?",
+    "Žiadosť o zavolanie odoslaná"
+  ],
+  "hu": [
+    "Felhívja ezt a személyt: {name}?",
+    "Szeretne visszahívást kérni?",
+    "Visszahívás kérve"
+  ],
+  "ro": [
+    "Doriți să sunați pe {name}?",
+    "Doriți să cereți să fiți sunat înapoi?",
+    "Cerere de apel trimisă"
+  ],
+  "bg": [
+    "Искате ли да се обадите на {name}?",
+    "Искате ли да поискате обратно обаждане?",
+    "Изпратена заявка за обаждане"
+  ],
+  "hr": [
+    "Želite li nazvati: {name}?",
+    "Želite li zatražiti povratni poziv?",
+    "Povratni poziv zatražen"
+  ],
+  "bs": [
+    "Želite li nazvati: {name}?",
+    "Želite li zatražiti povratni poziv?",
+    "Povratni poziv zatražen"
+  ],
+  "sr": [
+    "Желите ли да позовете: {name}?",
+    "Желите ли да затражите повратни позив?",
+    "Повратни позив затражен"
+  ],
+  "sl": [
+    "Želite poklicati: {name}?",
+    "Želite zaprositi za povratni klic?",
+    "Povratni klic je zahtevan"
+  ],
+  "mk": [
+    "Дали сакате да се јавите на {name}?",
+    "Дали сакате да побарате повратен повик?",
+    "Побаран е повратен повик"
+  ],
+  "sq": [
+    "Dëshironi të telefononi {name}?",
+    "Dëshironi të kërkoni që t’ju telefonojnë?",
+    "Kërkesa për telefonatë u dërgua"
+  ],
+  "el": [
+    "Θέλετε να καλέσετε τον/την {name};",
+    "Θέλετε να ζητήσετε να σας καλέσουν πίσω;",
+    "Το αίτημα κλήσης στάλθηκε"
+  ],
+  "tr": [
+    "{name} adlı kişiyi aramak ister misiniz?",
+    "Geri aranmak ister misiniz?",
+    "Geri arama istendi"
+  ],
+  "mt": [
+    "Trid iċċempel lil {name}?",
+    "Trid titlob li jċemplulek lura?",
+    "Talba għal telefonata mibgħuta"
+  ],
+  "ga": [
+    "Ar mhaith leat glaoch ar {name}?",
+    "Ar mhaith leat glaoch ar ais a iarraidh?",
+    "Iarratas ar ghlaoch ar ais seolta"
+  ],
+  "cy": [
+    "Hoffech chi ffonio {name}?",
+    "Hoffech chi ofyn am alwad yn ôl?",
+    "Anfonwyd cais am alwad yn ôl"
+  ],
+  "gd": [
+    "A bheil thu airson fònadh gu {name}?",
+    "A bheil thu airson gairm air ais iarraidh?",
+    "Chaidh gairm air ais iarraidh"
+  ],
+  "ca": [
+    "Vols trucar a {name}?",
+    "Vols demanar que et tornin la trucada?",
+    "Petició de trucada enviada"
+  ],
+  "eu": [
+    "{name} pertsonari deitu nahi diozu?",
+    "Atzera deitzeko eskatu nahi duzu?",
+    "Dei eskaera bidali da"
+  ],
+  "gl": [
+    "Queres chamar a {name}?",
+    "Queres pedir que che devolvan a chamada?",
+    "Solicitude de chamada enviada"
+  ],
+  "lb": [
+    "Wëllt Dir {name} uruffen?",
+    "Wëllt Dir ëm e Réckruff bieden?",
+    "Réckruff ugefrot"
+  ],
+  "br": [
+    "C’hoant hoc’h eus da bellgomz da {name}?",
+    "C’hoant hoc’h eus da c’houlenn bezañ adgalvet?",
+    "Goulenn adgalv kaset"
+  ],
+  "co": [
+    "Vulete chjamà {name}?",
+    "Vulete dumandà d’esse richjamatu?",
+    "Dumanda di richjamata mandata"
+  ],
+  "oc": [
+    "Volètz sonar {name}?",
+    "Volètz demandar d’èsser tornat sonar?",
+    "Demanda de sonada enviada"
+  ],
+  "sc": [
+    "Boles mutire a {name}?",
+    "Boles pedire chi ti torrant a mutire?",
+    "Pedida de mutida imbiada"
+  ],
+  "rm": [
+    "Vulais Vus telefonar a {name}?",
+    "Vulais Vus dumandar da vegnir clamà enavos?",
+    "Dumonda da telefon enviada"
+  ],
+  "ru": [
+    "Хотите позвонить: {name}?",
+    "Хотите попросить перезвонить?",
+    "Просьба перезвонить отправлена"
+  ],
+  "uk": [
+    "Бажаєте зателефонувати: {name}?",
+    "Бажаєте попросити передзвонити?",
+    "Прохання передзвонити надіслано"
+  ],
+  "be": [
+    "Хочаце патэлефанаваць: {name}?",
+    "Хочаце папрасіць ператэлефанаваць?",
+    "Просьба ператэлефанаваць адпраўлена"
+  ],
+  "hy": [
+    "Ցանկանո՞ւմ եք զանգահարել {name}։",
+    "Ցանկանո՞ւմ եք խնդրել հետ զանգահարել։",
+    "Հետ զանգի խնդրանքն ուղարկված է"
+  ],
+  "ka": [
+    "გსურთ დაურეკოთ {name}?",
+    "გსურთ მოითხოვოთ უკან დარეკვა?",
+    "უკან დარეკვა მოთხოვნილია"
+  ],
+  "az": [
+    "{name} adlı şəxsə zəng etmək istəyirsiniz?",
+    "Sizə geri zəng edilməsini istəyirsiniz?",
+    "Geri zəng istəyi göndərildi"
+  ],
+  "kk": [
+    "{name} деген адамға қоңырау шалғыңыз келе ме?",
+    "Кері қоңырау сұрағыңыз келе ме?",
+    "Кері қоңырау сұралды"
+  ],
+  "ky": [
+    "{name} деген адамга чалгыңыз келеби?",
+    "Кайра чалууну сурагыңыз келеби?",
+    "Кайра чалуу өтүнүчү жөнөтүлдү"
+  ],
+  "uz": [
+    "{name}ga qo‘ng‘iroq qilmoqchimisiz?",
+    "Qayta qo‘ng‘iroq qilishni so‘ramoqchimisiz?",
+    "Qayta qo‘ng‘iroq so‘rovi yuborildi"
+  ],
+  "tk": [
+    "{name} atly adama jaň etmek isleýärsiňizmi?",
+    "Yzyna jaň edilmegini isleýärsiňizmi?",
+    "Yzyna jaň haýyşy iberildi"
+  ],
+  "tg": [
+    "Мехоҳед ба {name} занг занед?",
+    "Мехоҳед хоҳиш кунед, ки ба шумо занг зананд?",
+    "Дархости занг фиристода шуд"
+  ],
+  "mn": [
+    "Та {name} руу залгахыг хүсэж байна уу?",
+    "Буцааж залгах хүсэлт илгээх үү?",
+    "Буцааж залгах хүсэлт илгээгдлээ"
+  ],
+  "zh-Hans": [
+    "您想呼叫{name}吗？",
+    "您想请求对方回电吗？",
+    "已发送回电请求"
+  ],
+  "zh-Hant": [
+    "您想撥打給{name}嗎？",
+    "您想請對方回電嗎？",
+    "已傳送回電請求"
+  ],
+  "ja": [
+    "{name}さんに電話しますか？",
+    "折り返しの電話をお願いしますか？",
+    "折り返しの電話を依頼しました"
+  ],
+  "ko": [
+    "{name}님에게 전화하시겠습니까?",
+    "다시 전화해 달라고 요청하시겠습니까?",
+    "회신 전화 요청을 보냈습니다"
+  ],
+  "vi": [
+    "Bạn có muốn gọi cho {name} không?",
+    "Bạn có muốn yêu cầu gọi lại không?",
+    "Đã gửi yêu cầu gọi lại"
+  ],
+  "th": [
+    "คุณต้องการโทรหา {name} หรือไม่?",
+    "คุณต้องการขอให้โทรกลับหรือไม่?",
+    "ส่งคำขอให้โทรกลับแล้ว"
+  ],
+  "lo": [
+    "ທ່ານຕ້ອງການໂທຫາ {name} ບໍ?",
+    "ທ່ານຕ້ອງການຂໍໃຫ້ໂທກັບບໍ?",
+    "ສົ່ງຄຳຂໍໃຫ້ໂທກັບແລ້ວ"
+  ],
+  "km": [
+    "តើអ្នកចង់ហៅទៅ {name} ឬទេ?",
+    "តើអ្នកចង់ស្នើឱ្យហៅត្រឡប់មកវិញឬទេ?",
+    "បានផ្ញើសំណើឱ្យហៅត្រឡប់មកវិញ"
+  ],
+  "my": [
+    "{name} ကို ဖုန်းခေါ်လိုပါသလား။",
+    "ဖုန်းပြန်ခေါ်ပေးရန် တောင်းဆိုလိုပါသလား။",
+    "ဖုန်းပြန်ခေါ်ရန် တောင်းဆိုထားပါသည်"
+  ],
+  "id": [
+    "Apakah Anda ingin menelepon {name}?",
+    "Apakah Anda ingin meminta ditelepon kembali?",
+    "Permintaan telepon kembali dikirim"
+  ],
+  "ms": [
+    "Adakah anda mahu menelefon {name}?",
+    "Adakah anda mahu meminta panggilan balik?",
+    "Permintaan panggilan balik dihantar"
+  ],
+  "fil": [
+    "Gusto mo bang tawagan si {name}?",
+    "Gusto mo bang humiling na tawagan ka pabalik?",
+    "Naipadala ang hiling na tawagan ka"
+  ],
+  "jv": [
+    "Apa sampeyan arep nelpon {name}?",
+    "Apa sampeyan arep njaluk ditelpon maneh?",
+    "Panjaluk telpon bali dikirim"
+  ],
+  "su": [
+    "Naha anjeun hoyong nelepon {name}?",
+    "Naha anjeun hoyong nyuhunkeun ditelepon deui?",
+    "Pamenta nelepon deui dikirim"
+  ],
+  "hi": [
+    "क्या आप {name} को कॉल करना चाहते हैं?",
+    "क्या आप वापस कॉल करने का अनुरोध करना चाहते हैं?",
+    "वापस कॉल करने का अनुरोध भेजा गया"
+  ],
+  "bn": [
+    "আপনি কি {name}-কে কল করতে চান?",
+    "আপনি কি ফিরতি কলের অনুরোধ করতে চান?",
+    "ফিরতি কলের অনুরোধ পাঠানো হয়েছে"
+  ],
+  "pa": [
+    "ਕੀ ਤੁਸੀਂ {name} ਨੂੰ ਕਾਲ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?",
+    "ਕੀ ਤੁਸੀਂ ਵਾਪਸ ਕਾਲ ਕਰਨ ਦੀ ਬੇਨਤੀ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?",
+    "ਵਾਪਸ ਕਾਲ ਦੀ ਬੇਨਤੀ ਭੇਜੀ ਗਈ"
+  ],
+  "gu": [
+    "શું તમે {name}ને કૉલ કરવા માંગો છો?",
+    "શું તમે પાછો કૉલ કરવાની વિનંતી કરવા માંગો છો?",
+    "પાછા કૉલની વિનંતી મોકલાઈ"
+  ],
+  "mr": [
+    "तुम्हाला {name} यांना कॉल करायचा आहे का?",
+    "तुम्हाला परत कॉल करण्याची विनंती करायची आहे का?",
+    "परत कॉल करण्याची विनंती पाठवली"
+  ],
+  "ta": [
+    "{name} அவர்களை அழைக்க விரும்புகிறீர்களா?",
+    "திரும்ப அழைக்கக் கோர விரும்புகிறீர்களா?",
+    "திரும்ப அழைக்கக் கோரிக்கை அனுப்பப்பட்டது"
+  ],
+  "te": [
+    "మీరు {name}కి కాల్ చేయాలనుకుంటున్నారా?",
+    "తిరిగి కాల్ చేయమని కోరాలనుకుంటున్నారా?",
+    "తిరిగి కాల్ చేయమని అభ్యర్థన పంపబడింది"
+  ],
+  "kn": [
+    "ನೀವು {name}ಗೆ ಕರೆ ಮಾಡಲು ಬಯಸುತ್ತೀರಾ?",
+    "ಮರಳಿ ಕರೆ ಮಾಡಲು ವಿನಂತಿಸಬೇಕೇ?",
+    "ಮರಳಿ ಕರೆ ಮಾಡಲು ವಿನಂತಿಸಲಾಗಿದೆ"
+  ],
+  "ml": [
+    "നിങ്ങൾക്ക് {name}നെ വിളിക്കണോ?",
+    "തിരികെ വിളിക്കാൻ ആവശ്യപ്പെടണോ?",
+    "തിരികെ വിളിക്കാൻ അഭ്യർത്ഥിച്ചു"
+  ],
+  "or": [
+    "ଆପଣ {name}ଙ୍କୁ କଲ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ଆପଣ ଫେରି କଲ୍ କରିବାକୁ ଅନୁରୋଧ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?",
+    "ଫେରି କଲ୍ କରିବାକୁ ଅନୁରୋଧ ପଠାଗଲା"
+  ],
+  "as": [
+    "আপুনি {name}লৈ কল কৰিব বিচাৰে নেকি?",
+    "আপুনি উভতি কল কৰিবলৈ অনুৰোধ কৰিব বিচাৰে নেকি?",
+    "উভতি কল কৰাৰ অনুৰোধ পঠোৱা হৈছে"
+  ],
+  "ne": [
+    "के तपाईं {name}लाई कल गर्न चाहनुहुन्छ?",
+    "के तपाईं फिर्ता कल गर्न अनुरोध गर्न चाहनुहुन्छ?",
+    "फिर्ता कलको अनुरोध पठाइयो"
+  ],
+  "si": [
+    "ඔබට {name} අමතන්න අවශ්‍යද?",
+    "නැවත ඇමතුමක් ඉල්ලා සිටීමට අවශ්‍යද?",
+    "නැවත ඇමතුමක් ඉල්ලා ඇත"
+  ],
+  "bo": [
+    "ཁྱེད་ཀྱིས་{name}ལ་ཁ་པར་གཏོང་འདོད་དམ།",
+    "ཁ་པར་ཕྱིར་གཏོང་བའི་རེ་ཞུ་བྱེད་འདོད་དམ།",
+    "ཁ་པར་ཕྱིར་གཏོང་བའི་རེ་ཞུ་བཏང་ཟིན།"
+  ],
+  "dz": [
+    "ཁྱོད་ཀྱིས་{name}ལུ་ཁ་པར་གཏང་ནི་ཨིན་ན།",
+    "ཁ་པར་ལོག་གཏང་ནིའི་ཞུ་བ་འབད་ནི་ཨིན་ན།",
+    "ཁ་པར་ལོག་གཏང་ནིའི་ཞུ་བ་བཏང་ཡོད།"
+  ],
+  "ar": [
+    "هل تريد الاتصال بـ {name}؟",
+    "هل تريد طلب معاودة الاتصال؟",
+    "تم إرسال طلب معاودة الاتصال"
+  ],
+  "he": [
+    "האם ברצונך להתקשר אל {name}?",
+    "האם ברצונך לבקש שיחזרו אליך?",
+    "נשלחה בקשה לשיחה חוזרת"
+  ],
+  "fa": [
+    "آیا می‌خواهید با {name} تماس بگیرید؟",
+    "آیا می‌خواهید درخواست تماس مجدد کنید؟",
+    "درخواست تماس مجدد ارسال شد"
+  ],
+  "ur": [
+    "کیا آپ {name} کو کال کرنا چاہتے ہیں؟",
+    "کیا آپ واپس کال کرنے کی درخواست کرنا چاہتے ہیں؟",
+    "واپس کال کرنے کی درخواست بھیج دی گئی"
+  ],
+  "ps": [
+    "ایا غواړئ {name} ته زنګ ووهئ؟",
+    "ایا غواړئ د بېرته زنګ وهلو غوښتنه وکړئ؟",
+    "د بېرته زنګ وهلو غوښتنه ولېږل شوه"
+  ],
+  "ku": [
+    "Tu dixwazî telefonê {name} bikî?",
+    "Tu dixwazî daxwaza vegerandina telefonê bikî?",
+    "Daxwaza telefonê hate şandin"
+  ],
+  "ckb": [
+    "دەتەوێت پەیوەندی بە {name} بکەیت؟",
+    "دەتەوێت داوای پەیوەندییەکی گەڕاوە بکەیت؟",
+    "داوای پەیوەندیی گەڕاوە نێردرا"
+  ],
+  "ug": [
+    "{name}گە تېلېفون قىلماقچىمۇ؟",
+    "قايتا تېلېفون قىلىشنى تەلەپ قىلماقچىمۇ؟",
+    "قايتا تېلېفون قىلىش تەلىپى ئەۋەتىلدى"
+  ],
+  "sd": [
+    "ڇا توهان {name} کي ڪال ڪرڻ چاهيو ٿا؟",
+    "ڇا توهان واپس ڪال ڪرڻ جي درخواست ڪرڻ چاهيو ٿا؟",
+    "واپس ڪال ڪرڻ جي درخواست موڪلي وئي"
+  ],
+  "dv": [
+    "{name} އަށް ގުޅަން ބޭނުންތަ؟",
+    "އެނބުރި ގުޅުމަށް އެދޭތަ؟",
+    "އެނބުރި ގުޅުމަށް އެދިފައި"
+  ]
 }

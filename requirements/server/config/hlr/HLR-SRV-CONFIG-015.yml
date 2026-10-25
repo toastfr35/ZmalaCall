@@ -11,6 +11,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/HLT/ringtone-settings.test.js
+  type: file
+- path: tests/server/HLT/ringtone-browser.test.js
+  type: file
 - path: tests/server/HLT/admin-settings-conflicts.test.js
   type: file
 - path: tests/server/HLT/device-settings.test.js

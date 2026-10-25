@@ -1,0 +1,52 @@
+active: true
+area: Audio
+derived: false
+header: |
+  Selectable ringtone and bounded preview
+level: 128.0
+links:
+- HLR-TERM-AUDIO-001: PJEudp-O1HpOIL8BT1xKnRKd64RP6hr4TVbkjQJLzXA=
+normative: true
+ref: ''
+references:
+- path: tests/terminal/LLT/test_ringtones.py
+  type: file
+- path: zmala_terminal/common/ringtones.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: zmala_terminal/common/config_validation.py
+  type: file
+- path: zmala_terminal/common/local_settings.py
+  type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
+- path: zmala_terminal/common/ui/settings.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Settings shall offer the server ringtone list, defaulting to Nokia. In its editor,
+  left from the first choice shall wrap to the last, and right from the last shall
+  wrap to the first; moving shall not change the saved choice. A highlighted
+  editor choice shall preview after 400 ms without selection changes, through C20
+  at the effective speaker volume. Preview shall wait for media readiness and
+  volume convergence, respect mute and stop after ten seconds or earlier at file
+  end, selection change, cancellation, leaving the editor, incoming call or shutdown.
+  Preview shall work without USB power switching; incoming calls take priority.
+  The saved choice shall ring incoming calls, temporarily falling back to Nokia
+  if its download is unavailable. Preview errors shall show feedback without
+  changing the saved choice.
+  Additional audio shall download asynchronously from the authenticated enrolled
+  origin into an atomic private cache. Catalogs shall contain at most 65 unique
+  choices including Nokia, names of 1-80 non-control characters and canonical
+  hash-based WAV paths. Audio shall be mono 16-bit PCM at 16 kHz, at most 30
+  seconds, with exact RIFF lengths and a matching SHA-256 identity. Invalid audio
+  shall not play. Valid cached audio shall work offline. Reset shall cancel late writes.
+verification: |
+  Inject catalog, path, PCM/hash and download errors, valid/corrupt cache files and
+  reset cancellation. Control time, player outcomes, readiness and volume; check
+  debounce, routing, mute, cutoff, replacement, call priority, disabled power switching
+  and cleanup. Exercise both wrapping boundaries and a one-choice catalog. Render supported languages/layouts. Check actual C20 output separately.

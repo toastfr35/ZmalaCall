@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 from tests.support.linux_units import ROOT, load, shell
 from tests.adhoc.terminal_installer.test_windows_installer import target
@@ -32,7 +32,7 @@ class ApplianceInstallTests(unittest.TestCase):
         self.assertEqual(events[-1], 'verified initial-boot')
         with patch.dict(os.environ, {}, clear=True), patch('zmala_terminal.linux.usb_power.sys.platform', 'linux'), \
                 patch('zmala_terminal.linux.usb_power.threading.Thread') as thread:
-            power = UsbPower(Mock())
+            power = UsbPower(ROOT/'zmala_terminal')
             self.assertFalse(power.enabled); thread.assert_not_called()
 
 
