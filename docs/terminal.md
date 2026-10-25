@@ -460,8 +460,9 @@ incoming calls use Nokia until a selected download becomes available. Reset
 cancels pending cache writes. `usb_power.py` owns bounded C20 preview playback,
 including installations without USB power switching; incoming ringing preempts it.
 
-The volume page covers the UI with one centered horizontal control, direction
-icons and the current percentage. Press middle to open it, click left/right for
+Outside calls the volume page covers the UI with one centered horizontal control,
+direction icons and the current percentage. During a connected call it becomes a
+compact overlay above the video, leaving most of the picture visible. Press middle to open it, click left/right for
 5% steps, and press middle again to close it. Button release does not close it,
 and it has no automatic timeout. A red exclamation indicates mixer failure.
 It changes speaker/ringtone playback, not microphone gain/mute. Mixer requests

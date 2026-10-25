@@ -16,6 +16,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The dedicated volume page shall cover the terminal UI with only a centered horizontal speaker-volume control, direction icons and current percentage. It shall remain open until closed by middle or preempted by a call/state, setup or focus change. A mixer failure shall show a failure indication.
+  Outside an established call, the volume page shall cover the terminal UI with only a centered horizontal speaker-volume control, direction icons and current percentage. During an established call, the same control shall appear as a compact overlay above the video, leaving most video visible and preserving the call. It shall remain open until closed by middle or preempted by a call/state, setup or focus change. A mixer failure shall show a failure indication.
 verification: |
-  Open at multiple sizes; inspect horizontal control geometry, percentage and full-page coverage. Check it stays open without a timeout and displays a mixer failure.
+  Open at multiple sizes; inspect horizontal control geometry, percentage and full-page coverage outside calls and bounded overlay geometry over visible video during calls. Check it stays open without a timeout and displays a mixer failure.

@@ -1,7 +1,7 @@
 # @test T-LLT-041
 # @requirements LLR-TERM-CONFIG-024, LLR-TERM-REMOTE-016, LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007, LLR-TERM-AUDIO-008
 # @environment portable
-# @plan Toggle the dedicated volume page with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal full-page feedback, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately.
+# @plan Toggle the dedicated volume page with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal full-page/compact in-call feedback, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately.
 # @pass Named assertions pass; skips and visual/hardware checks are recorded separately.
 
 """Dedicated volume page and bounded C20 playback writes."""
@@ -66,7 +66,7 @@ class VolumeTests(unittest.TestCase):
         root=Mock();root.winfo_width.return_value=1280;root.winfo_height.return_value=720
         canvas=Mock();control=VolumeControl(root,lambda:True,Mock())
         with patch.object(volume_control.tk,'Canvas',return_value=canvas),patch.object(volume_control.tk.Misc,'lift'),patch.object(c20_volume,'status',return_value=(50,50,False)) as status:
-            control.draw();canvas.place.assert_called_with(x=0,y=0,relwidth=1,relheight=1)
+            control.draw();canvas.place.assert_called_with(x=0,y=0,relx=0,rely=0,anchor='nw',width=0,height=0,relwidth=1,relheight=1)
             self.assertEqual(canvas.create_text.call_args.kwargs['text'],'50%')
             self.assertEqual(canvas.create_text.call_args.kwargs['fill'],GREEN)
             track=canvas.create_rectangle.call_args_list[0].args
@@ -75,6 +75,21 @@ class VolumeTests(unittest.TestCase):
             self.assertEqual(canvas.create_text.call_args.kwargs['text'],'!')
             self.assertEqual(canvas.create_text.call_args.kwargs['fill'],RED)
             control.close();canvas.destroy.assert_called_once()
+
+    def test_in_call_overlay_keeps_video_area_uncovered_and_restores_full_page(self):
+        root=Mock();root.winfo_width.return_value=1280;root.winfo_height.return_value=720
+        in_call=Mock(return_value=True);canvas=Mock()
+        control=VolumeControl(root,lambda:True,Mock(),in_call=in_call)
+        with patch.object(volume_control.tk,'Canvas',return_value=canvas),patch.object(volume_control.tk.Misc,'lift') as lift,patch.object(c20_volume,'status',return_value=(50,50,False)):
+            control.draw();placement=canvas.place.call_args.kwargs
+            self.assertLess(placement['width'],1280)
+            self.assertLess(placement['height'],720/3)
+            self.assertEqual((placement['relwidth'],placement['relheight']),(0,0))
+            self.assertEqual(placement['anchor'],'center');lift.assert_called_with(canvas)
+            in_call.return_value=False;control.draw()
+            placement=canvas.place.call_args.kwargs
+            self.assertEqual((placement['relwidth'],placement['relheight']),(1,1))
+            self.assertEqual(placement['anchor'],'nw')
 
     def test_local_level_survives_engine_reconfiguration_but_changed_default_wins(self):
         with patch.multiple(c20_volume, _desired=None, _applied=None, _worker=None,

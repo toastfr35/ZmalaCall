@@ -2,7 +2,7 @@
 import time
 import tkinter as tk
 from zmala_terminal.linux import c20_volume
-from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED
+from zmala_terminal.common.theme import BG, PANEL, FG, MUTED, GREEN, RED
 
 
 class VolumeLevel:
@@ -18,8 +18,9 @@ class VolumeLevel:
 
 
 class VolumeControl:
-    def __init__(self, root, enabled, activity, context=lambda: None):
+    def __init__(self, root, enabled, activity, context=lambda: None, in_call=lambda: False):
         self.root, self.enabled, self.activity = root, enabled, activity
+        self.in_call = in_call
         self.context = context
         self.opened_context = None
         self.level = VolumeLevel(50)
@@ -94,12 +95,16 @@ class VolumeControl:
             self.canvas = tk.Canvas(self.root, bg=BG, highlightthickness=0, takefocus=False)
         c = self.canvas
         w, h = max(1, self.root.winfo_width()), max(1, self.root.winfo_height())
+        overlay = self.in_call()
+        if overlay:
+            w, h = min(900, w*.8), 112
+        c.configure(bg=PANEL if overlay else BG)
         percent = self.level.percent
         _, _, failed = c20_volume.status()
         color = RED if failed else GREEN
         c.delete('all')
-        width = min(900, w*.65)
-        left, right, y = (w-width)/2, (w+width)/2, h/2
+        width = w-180 if overlay else min(900, w*.65)
+        left, right, y = (w-width)/2, (w+width)/2, h/2-(22 if overlay else 0)
         # A single centered horizontal control, with language-independent icons.
         c.create_polygon(left-70, y-12, left-62, y-12, left-48, y-24,
                          left-48, y+24, left-62, y+12, left-70, y+12, fill=FG)
@@ -110,9 +115,14 @@ class VolumeControl:
         if percent:
             c.create_rectangle(left+3, y-19, left+3+(width-6)*percent/100, y+19,
                                fill=color, outline='', tags='volume-fill')
-        c.create_text(w/2, y+66, text=f'{percent}%' if not failed else '!',
-                      fill=color, font=('Segoe UI', 28, 'bold'), tags='volume-level')
-        c.place(x=0, y=0, relwidth=1, relheight=1)
+        c.create_text(w/2, y+(52 if overlay else 66), text=f'{percent}%' if not failed else '!',
+                      fill=color, font=('Segoe UI', 22 if overlay else 28, 'bold'), tags='volume-level')
+        if overlay:
+            c.place(x=0, y=0, relx=.5, rely=.68, anchor='center',
+                    width=w, height=h, relwidth=0, relheight=0)
+        else:
+            c.place(x=0, y=0, relx=0, rely=0, anchor='nw', width=0, height=0, relwidth=1, relheight=1)
+
         tk.Misc.lift(c)
 
     def close(self):

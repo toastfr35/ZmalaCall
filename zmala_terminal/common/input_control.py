@@ -26,7 +26,8 @@ class InputControl:
         self.volume_control = VolumeControl(self.root,
                                             lambda: bool(self.engine) and not self.setup_stage and not self.settings_open,
                                             self.volume_activity,
-                                            lambda: (self.generation, self.model.state, self.setup_stage, self.settings_open))
+                                            lambda: (self.generation, self.model.state, self.setup_stage, self.settings_open),
+                                            in_call=lambda: self.model.state == State.IN_CALL)
         self.presenter_input = PresenterInput(self.root, self.keypress, self.keyrelease,
                                                self.pointer_button, None,
                                                self.remote_test_event)

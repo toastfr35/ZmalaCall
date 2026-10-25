@@ -298,6 +298,7 @@ def update_terminal_volume_guides():
                 paragraph.text = ('Press the middle button to open the volume page. '
                     'Click left for quieter sound or right for louder sound, in 5% steps. '
                     'The horizontal bar shows the volume. Press middle again to return. '
+                    'During a call, the control appears over the video so you can keep seeing the other person. '
                     'Calls continue while adjusting volume; moving the remote has no effect.')
             elif paragraph.text.startswith(('The movement is relative:', 'The volume page changes')):
                 paragraph.text = ('The volume page changes the sound you hear, not microphone volume. '

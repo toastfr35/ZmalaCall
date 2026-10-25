@@ -1,7 +1,7 @@
 # @test T-HLT-005
 # @requirements HLR-TERM-NAV-001, HLR-TERM-UI-012
 # @environment display
-# @plan Render real Tk/Linux text with a disposable profile and substituted hardware. Check complete status-label and symbol bounds, their separation and enclosing frames in 95 languages at three/five-card display sizes and during French carousel motion. Check full French labels at 720p, presence colours, stable selection, stale-preflight rejection and cancellation without placing SIP calls.
+# @plan Render real Tk/Linux text with a disposable profile and substituted hardware. Check complete status-label and symbol bounds, their separation and enclosing frames in 95 languages at three/five-card display sizes and during French carousel motion. Check full French labels at 720p, presence colours, stable selection, stale-preflight rejection followed by cancelling its callback prompt and cancellation without placing SIP calls.
 # Check that settled short selected names use larger bold type than neighbours, and that short/long names remain above availability inside their cards at every display size and during movement.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
@@ -150,7 +150,9 @@ try:
     assert app.model.state == State.CONFIRMING and not app.engine.dialed
     app.press('green')
     pump()
-    assert app.model.state == State.HOME and not app.engine.dialed, 'A stale online contact started a SIP call'
+    assert app.model.state == State.CONFIRM_CALLBACK and not app.engine.dialed, 'A stale online contact started a SIP call'
+    app.press('red')
+    assert app.model.state == State.HOME and not app.engine.dialed
     # A presence change updates the canvas without a configuration version bump.
     fresh = copy.deepcopy(base)
     fresh['contacts'][0]['online'] = True

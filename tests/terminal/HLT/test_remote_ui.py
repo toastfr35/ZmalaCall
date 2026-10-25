@@ -1,7 +1,7 @@
 # @test T-HLT-023
 # @requirements HLR-TERM-REMOTE-011, HLR-TERM-REMOTE-012, HLR-TERM-NAV-002, HLR-TERM-AUDIO-002
 # @environment display
-# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a dedicated horizontal volume page in 5-percent steps. Also open the page during a simulated established call, block call actions and preempt it on incoming ringing. Replace only device discovery, Bluetooth status and the external mixer process. Check that all mixer commands address C20 playback only.
+# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a dedicated horizontal volume page in 5-percent steps. Also render video and open a compact volume overlay during a simulated established call, assert most video remains uncovered, block call actions and preempt it on incoming ringing. Replace only device discovery, Bluetooth status and the external mixer process. Check that all mixer commands address C20 playback only.
 # @pass One held press cannot confirm a call; red cancels; middle toggles the volume page, arrows change only volume, movement is ignored and the page closes on the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
 
 import os
@@ -112,8 +112,15 @@ class RemoteUITests(unittest.TestCase):
 
                 # The page also preserves an established call and yields to ringing.
                 app.model.state=State.IN_CALL
+                app.model.contact=app.model.selected
+                app.render();app.root.update_idletasks()
                 app.engine.hangup.reset_mock()
                 report('043d010000000000');report('043d000000000000')
+                self.assertTrue(app.video.winfo_ismapped())
+                overlay=app.volume_control.canvas
+                self.assertLess(overlay.winfo_height(),app.video.winfo_height()/3)
+                self.assertLess(overlay.winfo_width(),app.root.winfo_width())
+                self.assertGreater(overlay.winfo_y(),app.video.winfo_rooty()-app.root.winfo_rooty())
                 app.keypress('left');app.keyrelease('left')
                 report('043f010000000000');report('043f000000000000')
                 report('043e010000000000');report('043e000000000000')
