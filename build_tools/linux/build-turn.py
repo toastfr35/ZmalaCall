@@ -33,6 +33,7 @@ def main():
     subprocess.run(['patch', '--batch', '-p0', '-i', str(Path(__file__).resolve().parents[2]/'zmala_terminal/linux/native/turn-framing.patch')], cwd=SOURCE, check=True)
     shutil.copyfile(Path(__file__).resolve().parents[2]/'zmala_terminal/common/native/turn-write.h', SOURCE/'turn-write.h')
     subprocess.run(['patch', '--batch', '-p0', '-i', str(Path(__file__).resolve().parents[2]/'zmala_terminal/linux/native/turn-write.patch')], cwd=SOURCE, check=True)
+    subprocess.run(['patch', '--batch', '-p0', '-i', str(Path(__file__).resolve().parents[2]/'zmala_terminal/linux/native/turn-socket-errors.patch')], cwd=SOURCE, check=True)
     subprocess.run(['g++', '-shared', '-fPIC', '-std=c++17', str(SOURCE/'turn_tcp.cpp'),
                     '-o', str(ROOT/'turn-fix.so'), '-lmediastreamer2', '-lortp', '-lbctoolbox'], check=True)
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
@@ -52,6 +53,19 @@ def main():
         if (name == 'original' and not original_failure) or (name == 'turn_tcp' and result.returncode != 0):
             raise RuntimeError('TURN framing regression failed: '+name+' '+result.stderr[-1000:])
     (ROOT/'parser-results.json').write_text(json.dumps(results, indent=2))
+    for original in (True, False):
+        executable = ROOT/('test-socket-original' if original else 'test-socket-corrected')
+        subprocess.run(['g++', '-std=c++17', '-I'+str(SOURCE),
+                        *(['-DZMALA_TURN_SOURCE="original.cpp"'] if original else []),
+                        str(Path(__file__).resolve().parents[2]/'tests/terminal/LLT/turn_socket_io.cpp'),
+                        '-o', str(executable), '-lmediastreamer2', '-lortp', '-lbctoolbox'], check=True)
+        result = subprocess.run([str(executable)], capture_output=True, text=True, timeout=30)
+        if original:
+            if result.returncode != -signal.SIGABRT or 'BCTBX_ERROR_NET_WANT_READ' not in result.stderr:
+                raise RuntimeError('Original socket backpressure defect was not reproduced: '+result.stderr[-1000:])
+        elif result.returncode != 0:
+            raise RuntimeError('TURN socket callback regression failed: '+result.stderr[-1000:])
+    print('TURN sockets: original EAGAIN defect reproduced; corrected callbacks passed', flush=True)
     (ROOT/'sdk-version').write_text(version)
     print('TURN parser: original defect reproduced; corrected parser passed', flush=True)
 

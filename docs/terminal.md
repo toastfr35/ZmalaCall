@@ -600,6 +600,13 @@ and shuts down the connection if a frame cannot finish within three seconds.
 This avoids dropping the middle of large keyframes when the SDK's small socket
 send buffer fills. The native TURN regression exercises exact output bytes,
 retry buffer identity, timeout and closed/error paths.
+The Pi correction also reads the actual operating-system socket error in the
+TLS callbacks. The pinned SDK instead negates `send`/`recv`'s `-1` result and
+mistakes temporary backpressure for a disconnected peer. Under video load that
+can close the video relay connection while the separate audio connection survives.
+`T-LLT-080` fills a real local socket buffer to EAGAIN, checks read/write retries
+and peer closure, and fails against the original SDK callbacks before passing
+against the correction. TLS verification and the three-second write bound remain.
 
 The local preview shares camera capture, averages pixels before final display
 scaling and uses NEON for common 2×/4× reductions with scalar fallback. Small
@@ -629,6 +636,15 @@ peer or recording, and releases both cores afterwards.
 C20 microphone input is 16 kHz stereo; playback is 48 kHz stereo. The speech
 profile limits echo processing to the native input rate while retaining the
 48 kHz Opus clock and playback resampling. Normal processing remains selectable.
+Before loading Liblinphone, the Pi adapter selects the process-local
+`linux/media/audio/c20-alsa.conf` policy. It retains the distribution configuration
+for other cards and replaces only the Nuroum C20 default PCM with separate
+capture/playback converters to its hardware rates and stereo S16_LE format.
+The supplied ALSA card identity is retained, including after USB renumbering.
+This avoids generic `dsnoop` opening the C20 input at its default 48 kHz and
+keeps ringback/call conversion in software. Missing policy prevents SDK startup
+with an explicit installation diagnostic. The real ALSA parser regression
+expands both directions without opening hardware.
 Echo cancellation uses a 500 ms window/automatic delay; assess real speech before
 changing it. Packet counters alone do not establish intelligibility or acoustic
 echo performance. Earlier USB/control timeouts require separate capture/audio
@@ -644,6 +660,20 @@ at both ends (two app-closed, then two app-open, with the phone on cellular data
 The native filter regression passed, including a negative control against the
 old first-picture behavior. See `docs/android.md` for the bounded hardware run
 and its limitations; it does not establish sustained C20 reliability.
+
+On 25 October 2026, intermittent missing terminal video was reproduced together
+with C20 UVC/ALSA control timeouts and failed camera/microphone opens. A guarded
+USB power cycle restored the device. The C20 PCM policy above corrects the
+incompatible generic capture configuration; it does not establish that every
+possible USB timeout has the same trigger. Repeated real phone calls must still
+check decoded images at both ends, including alternating callers and USB wake;
+configured/sent FPS alone can remain nonzero when the camera has failed.
+The C20 was also configured for USB runtime autosuspend after two idle seconds.
+The host rule `linux/99-zmalacall-c20.rules` now keeps only that USB device awake
+while powered, including after re-enumeration. This avoids the firmware's stalled
+audio/video resume path; it does not change the opt-in guarded five-minute hub
+power-off. Confirm `power/control` is `on` on the actual C20 USB device when
+investigating an installation or upgrade.
 
 ### Automatic framing
 
@@ -879,9 +909,12 @@ The normal user call and answer controls do not change.
 
 Debian Trixie mediastreamer2 5.3.105 has a fragmented TURN ChannelData padding bug
 which breaks SRTP authentication. `build_tools/linux/build-turn.py` fetches pinned,
-SHA-256-checked upstream source, applies `linux/native/turn-framing.patch`, and builds
+SHA-256-checked upstream source, applies the framing, complete-write and socket-error
+patches under `linux/native/`, and builds
 a process-local interposition library under `linux/turn-runtime/`. The original
 parser must reproduce the defect; the corrected parser must pass 3,804 chunk sizes.
+The socket callback fixture must likewise fail on original EAGAIN handling and
+pass with the correction, including a successful retry and real peer closure.
 The installer runs this build on the target architecture and retains upstream source
 and test evidence. It does not replace the system SDK library. Upstream source is
 AGPL-3.0-or-later, with its original notices retained in the downloaded files.

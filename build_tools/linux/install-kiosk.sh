@@ -145,8 +145,10 @@ if [ "$argon_one" -eq 1 ]; then
 fi
 mkdir -p /etc/udev/rules.d
 install -m 644 "$task_root/build_tools/linux/70-zmalacall-presenter.rules" /etc/udev/rules.d/
+install -m 644 "$task_root/zmala_terminal/linux/99-zmalacall-c20.rules" /etc/udev/rules.d/
 udevadm control --reload-rules
 udevadm trigger --subsystem-match=hidraw
+udevadm trigger --action=add --subsystem-match=usb --attr-match=idVendor=0525 --attr-match=idProduct=a4ad
 # Prepare release and persistent appliance state.
 mkdir -p /opt/zmalacall/releases /var/lib/zmalacall /etc/zmalacall
 if [ -n "$data_from" ]; then
@@ -166,7 +168,7 @@ mkdir -p "$release/build_tools"
 cp -a "$task_root/zmala_terminal" "$release/"
 cp -a "$task_root/build_tools/linux" "$release/build_tools/"
 mkdir -p "$release/tests/terminal/LLT"
-cp "$task_root/tests/terminal/LLT/turn_parser.cpp" "$release/tests/terminal/LLT/"
+cp "$task_root/tests/terminal/LLT/turn_parser.cpp" "$task_root/tests/terminal/LLT/turn_socket_io.cpp" "$release/tests/terminal/LLT/"
 python3 "$release/build_tools/linux/build-turn.py"
 if [ -e "$release/zmala_terminal/data" ]; then
     echo 'Package unexpectedly contains runtime data; refusing installation' >&2; exit 1

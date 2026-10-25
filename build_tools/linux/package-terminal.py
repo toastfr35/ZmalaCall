@@ -39,7 +39,8 @@ def package(destination=None):
                 info.size = len(content)
                 archive.addfile(info, io.BytesIO(content))
                 checksums.append(hashlib.sha256(content).hexdigest() + '  ' + info.name)
-        for name in ('tests/terminal/LLT/turn_parser.cpp', 'tests/support/native/turn-write-cases.h'):
+        for name in ('tests/terminal/LLT/turn_parser.cpp', 'tests/terminal/LLT/turn_socket_io.cpp',
+                     'tests/support/native/turn-write-cases.h'):
             content = (ROOT / name).read_bytes().replace(b'\r\n', b'\n')
             info = tarfile.TarInfo(name)
             info.size = len(content)

@@ -1,0 +1,22 @@
+--- turn_tcp.cpp
++++ turn_tcp.cpp
+@@ -259,7 +259,8 @@
+ 
+ 	int ret = recv(*socket, (char *)buf, (int)len, 0);
+ 	if (ret < 0) {
+-		ret = -ret;
++		// @llr LLR-TERM-COM-010
++		ret = getSocketErrorCode();
+ 		if (ret == TURN_EWOULDBLOCK || ret == TURN_EINPROGRESS || ret == TURN_EINTR) return BCTBX_ERROR_NET_WANT_READ;
+ 		return BCTBX_ERROR_NET_CONN_RESET;
+ 	}
+@@ -271,7 +272,8 @@
+ 
+ 	int ret = send(*socket, (const char *)buf, (int)len, 0);
+ 	if (ret < 0) {
+-		ret = -ret;
++		// @llr LLR-TERM-COM-010
++		ret = getSocketErrorCode();
+ 		if (ret == TURN_EWOULDBLOCK || ret == TURN_EINPROGRESS || ret == TURN_EINTR) return BCTBX_ERROR_NET_WANT_WRITE;
+ 		return BCTBX_ERROR_NET_CONN_RESET;
+ 	}

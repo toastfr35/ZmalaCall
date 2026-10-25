@@ -18,7 +18,15 @@ def library(name):
     return C.CDLL(path)
 
 
+# @llr LLR-TERM-AUDIO-003
 def load_linphone(owner):
+    # ALSA caches its configuration on first use. Apply the C20's asymmetric
+    # hardware rates before the SDK can enumerate or open any sound devices.
+    # This environment belongs to this process and its playback helpers only.
+    policy = Path(__file__).parent / 'media/audio/c20-alsa.conf'
+    if not policy.is_file():
+        raise RuntimeError('C20 audio policy is missing; repair the terminal installation')
+    os.environ['ALSA_CONFIG_PATH'] = str(policy)
     return library('linphone')
 
 def resource(kind):

@@ -58,8 +58,9 @@ jobs:
           # Match the supported Pi OS SDK; Ubuntu 24.04 ships an older API.
           docker run --rm -v "$PWD:/work" -w /work debian:trixie-slim sh -ec '
             apt-get update
-            apt-get install -y --no-install-recommends build-essential python3-pil libavcodec-dev libavutil-dev pkg-config libmediastreamer-dev libegl-dev libgles-dev libglew-dev
+            apt-get install -y --no-install-recommends build-essential python3-pil libavcodec-dev libavutil-dev pkg-config libmediastreamer-dev libegl-dev libgles-dev libglew-dev ca-certificates patch
             ZMALA_NATIVE_COVERAGE_DIR=/work/tests/coverage/LLT/terminal/native sh tests/support/terminal/run-native.sh
+            python3 build_tools/linux/build-turn.py
           '
       - name: Restore coverage report ownership after Docker
         if: always()
