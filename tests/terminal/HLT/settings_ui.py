@@ -3,7 +3,8 @@
 # @environment display
 # @plan Render settings on the real Tk UI and drive selection/draft transitions; assert only the active pane shows controls and cancellation preserves configuration.
 # At both sizes, render French short values with the real Pango font and assert their final images retain the full text without ellipsis and stay inside their rows.
-# Render the ringtone editor and exercise its debounced preview request through substituted playback; verify cancel and incoming-call interruption stop it without changing the selected ringtone.
+# Render the exit confirmation in every supported language at both sizes; verify bounded question/buttons, red returns to the same selection and green exits without modifying configuration.
+# Render the ringtone editor and exercise its debounced preview request through substituted playback; verify left/right wrap selects the last/first visible choice without saving, and cancel and incoming-call interruption stop it without changing the selected ringtone.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Real Tk settings navigation/layout without SIP, camera or enrollment side effects."""
@@ -90,8 +91,20 @@ try:
                     hints = c.bbox('settings-hint')
                     split = c.winfo_width()*.39
                     assert (hints[0] > split) if editing else (hints[2] < split)
+            app.settings_draft.editing = False
+            app.settings_draft.confirm_exit = True
+            app.render(); app.root.update()
+            c = app.settings_canvas
+            for tag in ('settings-exit-question', 'settings-exit-yes', 'settings-exit-no'):
+                bounds = c.bbox(tag)
+                assert bounds and bounds[0] >= 0 and bounds[2] <= c.winfo_width(), (language, size, tag, bounds)
+                assert bounds[1] >= 0 and bounds[3] <= c.winfo_height(), (language, size, tag, bounds)
+            app.settings_draft.confirm_exit = False
     app.settings_draft.editing = False
     app.settings_draft.row = FIELDS.index('ringtone')
+    app.model.config['ringtones'] = [
+        {'id': 'nokia', 'name': 'Nokia', 'url': '/api/ringtones/nokia.wav'},
+        {'id': 'a'*64, 'name': 'Last tone', 'url': '/api/ringtones/'+('a'*64)+'.wav'}]
     app.usb_power = Mock(enabled=True, ringtone_preview_status='playing')
     app.engine = None
     app.press('green')
@@ -100,6 +113,12 @@ try:
     app.tick_ringtone(1000.4); app.root.update()
     app.usb_power.preview_tone.assert_called_once()
     assert app.settings_canvas.find_withtag('ringtone-preview')
+    app.press('left'); app.root.update()
+    assert app.settings_draft.index == 1
+    assert app.settings_value('ringtone', app.settings_draft.options[1]) == 'Last tone'
+    assert app.model.config.get('ringtone', 'nokia') == 'nokia'
+    app.press('right'); app.root.update()
+    assert app.settings_draft.index == 0
     saved_ringtone = app.model.config.get('ringtone', 'nokia')
     app.press('red'); app.tick_ringtone(1001)
     assert app.ringtone_preview_token is None and app.model.config.get('ringtone', 'nokia') == saved_ringtone
@@ -118,8 +137,13 @@ try:
     before = dict(app.model.config)
     app.press('right'); app.press('red')
     assert app.model.config == before and not app.settings_draft.editing
+    app.press('red'); app.root.update()
+    assert app.settings_open and app.settings_draft.confirm_exit
+    selected_row = app.settings_draft.row
     app.press('red')
-    assert not app.settings_open and app.model.state == State.HOME
+    assert app.settings_open and not app.settings_draft.confirm_exit and app.settings_draft.row == selected_row
+    app.press('red'); app.press('green')
+    assert not app.settings_open and app.model.state == State.HOME and app.model.config == before
     if len(sys.argv) > 1:
         from PIL import ImageGrab
         app.settings_open = True
@@ -133,7 +157,7 @@ try:
         ImageGrab.grab(bbox=(app.root.winfo_rootx(), app.root.winfo_rooty(),
                             app.root.winfo_rootx()+app.root.winfo_width(),
                             app.root.winfo_rooty()+app.root.winfo_height())).save(sys.argv[1])
-    print('Settings: 95 languages, seven editors, both focus sides at 900x620 and 1280x720; ringtone preview/cancel/call interruption, red hold and reset navigation passed.')
+    print('Settings: 95 languages, seven editors, both focus sides at 900x620 and 1280x720; ringtone wrap/preview/cancel/call interruption, exit confirmation, red hold and reset navigation passed.')
 finally:
     app.tv_control.close()
     app.text_renderer.close()

@@ -172,6 +172,12 @@ def update_c20_guide():
                 'to cancel. Sound never switches to the TV. The server offers video '
                 'resolution, frame rate, audio processing and C20 volume. Fresh video '
                 'settings are 720p at 15 fps; media changes may wait until the call ends.')
+        elif paragraph.text.startswith(('Use left and right to select a setting.', 'Use left/right to choose a setting;')):
+            paragraph.text = (
+                'Use left/right to choose a setting; green opens it. Inside, left/right changes '
+                'the draft, green saves and red discards it. Red on the list asks to exit: '
+                'green confirms; red stays. Saved changes go to the server. If saving fails, '
+                'retry after restoring the connection.')
     doc.core_properties.author = 'ZmalaCall'
     doc.core_properties.last_modified_by = ''
     doc.save(path)
@@ -204,7 +210,7 @@ def update_ringtone_guides():
         speaker = next(row for row in table.rows if row.cells[0].text == 'Speaker volume')
         speaker._tr.addnext(row._tr)
     text = ('To choose a ringtone, open Ringtone in Settings with green. Use left and right '
-            'to hear each choice through the C20 at the current speaker volume; a preview '
+            'to browse and hear each choice through the C20; the list wraps at both ends. A preview '
             'plays for up to ten seconds after a short pause. A waking C20 may take a moment. '
             'At zero volume the preview is silent. Press green to save, or red to cancel. '
             'An incoming call stops the preview. Nokia remains available if a new sound '

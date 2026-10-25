@@ -34,6 +34,7 @@ class SettingsDraft:
     def __init__(self):
         self.row = 0
         self.editing = False
+        self.confirm_exit = False
         self.busy = False
         self.error = False
         self.options = []
@@ -76,9 +77,11 @@ class SettingsDraft:
                     'auto_answer_seconds': value or config.get('auto_answer_seconds', 10)}
         return {self.key: value}
 
+    # @llr LLR-TERM-CONFIG-019, LLR-TERM-AUDIO-009
     def move(self, direction):
         if self.editing:
-            self.index = max(0, min(len(self.options)-1, self.index+direction))
+            self.index = ((self.index+direction) % len(self.options) if self.key == 'ringtone'
+                          else max(0, min(len(self.options)-1, self.index+direction)))
         else:
             self.row = (self.row+direction) % len(FIELDS)
         self.error = False

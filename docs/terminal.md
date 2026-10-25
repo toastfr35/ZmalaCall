@@ -78,6 +78,10 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
+The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.
+
+Red on the Settings list asks whether to exit: green confirms; red keeps the same list selection. Red within an editor only discards that draft. Neither exit answer changes saved configuration.
+
 The eight-row Settings menu reserves a full text line for each label and saved value at both supported sizes; short values such as Nokia and the speaker percentage remain complete.
 
 The server supplies the main terminal configuration. The local Settings page lets

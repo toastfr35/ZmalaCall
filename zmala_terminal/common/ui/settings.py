@@ -92,7 +92,7 @@ class SettingsView:
         width, height = max(900, c.winfo_width()), max(620, c.winfo_height())
         draft = self.settings_draft
         signature = (width, height, self.language, self.settings_open, int(self.settings_hold.progress*100),
-                     draft.row, draft.editing, draft.index, draft.busy, draft.error,
+                     draft.row, draft.editing, draft.index, draft.busy, draft.error, draft.confirm_exit,
                      getattr(self, 'ringtone_preview_state', ''),
                      tuple(SettingsDraft.value(config, key) for key in FIELDS))
         if signature == self.settings_signature:
@@ -109,6 +109,9 @@ class SettingsView:
             self.settings_panel(x, y, bar_width, 32, PANEL)
             c.create_rectangle(x+5, y+5, x+5+(bar_width-10)*self.settings_hold.progress,
                                y+27, fill=BUTTON_RED, outline='', tags='settings-progress')
+            return
+        if draft.confirm_exit:
+            self.draw_settings_exit(width, height)
             return
         split, margin = int(width*.39), 28
         left_width, right_x = split-2*margin, split+margin
@@ -189,3 +192,21 @@ class SettingsView:
                 self.settings_panel(x+i*(part+gap), y, part, 40, fill, tags='settings-hint')
                 self.settings_label(label, x+i*(part+gap)+part/2, y+20, part-10, 17, FG, fill,
                                     True, anchor='center', max_height=32)
+
+    # @llr LLR-TERM-CONFIG-019
+    def draw_settings_exit(self, width, height):
+        self.settings_label(self.settings_text('settings'), width/2, height*.23, width-80,
+                            34, bold=True, anchor='center', max_height=height*.15)
+        self.settings_label(self.settings_text('exit')+' ?', width/2, height*.43, width-80,
+                            36, bold=True, anchor='center', max_height=height*.2,
+                            tags='settings-exit-question')
+        gap = 24
+        part = min(320, (width-80-gap)/2)
+        y = height*.65
+        for index, (answer, fill) in enumerate((('yes', BUTTON_GREEN), ('no', BUTTON_RED))):
+            x = width/2-gap/2-part if index == 0 else width/2+gap/2
+            tag = 'settings-exit-'+answer
+            self.settings_panel(x, y, part, 70, fill, tags=tag)
+            self.settings_label(('✓ ' if index == 0 else '× ')+self.text(answer),
+                                x+part/2, y+35, part-24, 26, FG, fill, True,
+                                anchor='center', max_height=60, tags=tag)

@@ -1,7 +1,7 @@
 # @test T-LLT-083
 # @requirements LLR-TERM-AUDIO-009, LLR-TERM-CONFIG-021
 # @environment portable
-# @plan Validate catalog IDs, names, paths, membership and normalized PCM hashes/limits. Exercise cache download, reuse, corruption, retry and reset cancellation with disposable files. Control player time, C20 readiness/volume and process outcomes to assert preview debounce, ten-second cutoff, selection replacement, incoming-call priority, mute and cleanup. Drive the real settings controller and verify cancellation, incoming-call interruption and requested file routing with substituted playback.
+# @plan Exercise left/right wrap across both ringtone boundaries and a one-choice catalog without changing configuration, while speaker-volume boundaries remain clamped. Validate catalog IDs, names, paths, membership and normalized PCM hashes/limits. Exercise cache download, reuse, corruption, retry and reset cancellation with disposable files. Control player time, C20 readiness/volume and process outcomes to assert preview debounce, ten-second cutoff, selection replacement, incoming-call priority, mute and cleanup. Drive the real settings controller and verify cancellation, incoming-call interruption and requested file routing with substituted playback.
 # @pass All named assertions pass without playing sound or contacting a live server; actual speaker audibility remains hardware verification.
 import hashlib
 from pathlib import Path
@@ -26,6 +26,19 @@ class RingtoneTests(unittest.TestCase):
         data = data or sound()
         key = hashlib.sha256(data).hexdigest()
         return key, {'ringtone': key, 'ringtones': DEFAULT_CHOICES+[{'id': key, 'name': 'Blackberry', 'url': f'/api/ringtones/{key}.wav'}]}
+
+    def test_ringtone_choices_wrap_both_ends_without_saving(self):
+        config = {'ringtone': 'nokia', 'ringtones': [
+            {'id': 'nokia'}, {'id': 'a'*64}, {'id': 'b'*64}]}
+        draft = SettingsDraft(); draft.row = FIELDS.index('ringtone'); draft.open(config)
+        draft.move(-1); self.assertEqual(draft.change(config), {'ringtone': 'b'*64})
+        self.assertEqual(config['ringtone'], 'nokia')
+        draft.move(1); self.assertEqual(draft.index, 0)
+        draft.open({}); draft.move(-1); self.assertEqual(draft.index, 0)
+        draft.move(1); self.assertEqual(draft.index, 0)
+        draft.row = FIELDS.index('c20_speaker_volume'); draft.open({'c20_speaker_volume': 0})
+        draft.move(-1); self.assertEqual(draft.index, 0)
+        draft.index = 100; draft.move(1); self.assertEqual(draft.index, 100)
 
     def test_catalog_and_pcm_boundaries(self):
         data=sound();key,config=self.catalog(data)

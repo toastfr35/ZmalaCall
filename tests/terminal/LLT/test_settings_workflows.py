@@ -1,7 +1,7 @@
 # @test T-LLT-071
 # @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-020, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022
 # @environment portable
-# @plan Exercise settings navigation, acknowledged writes and timeout reconciliation with real drafts and recording HTTP/Tk boundaries. Verify busy and cancelled drafts, captured enrollment generation, keyboard repeat release coalescing and stale-result rejection. Draw every setting with controlled image metrics; check serial footer, hint placement only on the active side, localized values, hold progress, busy feedback and bounded font size. With eight rows at both supported sizes and 22-pixel minimum text images, assert short saved values are rendered without ellipsis.
+# @plan Exercise settings navigation, acknowledged writes and timeout reconciliation with real drafts and recording HTTP/Tk boundaries. Verify busy and cancelled drafts, captured enrollment generation, both Settings-exit answers and ignored confirmation arrows, keyboard repeat release coalescing and stale-result rejection. Draw every setting with controlled image metrics; check serial footer, hint placement only on the active side, localized values, hold progress, busy feedback and bounded font size. With eight rows at both supported sizes and 22-pixel minimum text images, assert short saved values are rendered without ellipsis.
 # @pass Every navigation, request, state and drawing assertion passes without a display or server; no mocked pixel output is claimed as physical readability evidence.
 import queue
 from types import SimpleNamespace
@@ -26,7 +26,25 @@ class SettingsWorkflowTests(unittest.TestCase):
         d.error=True; c.settings_button('red'); self.assertFalse(d.editing); self.assertFalse(d.error); self.assertTrue(c.settings_open)
         c.settings_button('green'); c.save_local_setting=Mock(); c.settings_button('green'); c.save_local_setting.assert_called_once()
         d.busy=True; c.render.reset_mock(); c.settings_button('red'); self.assertTrue(c.settings_open); c.render.assert_not_called()
-        d.busy=False; d.editing=False; c.settings_button('red'); self.assertFalse(c.settings_open)
+        d.busy=False; d.editing=False; c.settings_button('red'); self.assertTrue(c.settings_open); self.assertTrue(d.confirm_exit)
+        c.settings_button('green'); self.assertFalse(c.settings_open)
+
+    def test_exit_requires_confirmation_and_preserves_list_and_configuration(self):
+        c = self.controller(); d = c.settings_draft; d.row = FIELDS.index('ringtone')
+        before = dict(c.model.config)
+        c.settings_button('red')
+        self.assertTrue(c.settings_open); self.assertTrue(d.confirm_exit)
+        for button in ('left', 'right'):
+            c.settings_button(button)
+            self.assertEqual(d.row, FIELDS.index('ringtone')); self.assertTrue(d.confirm_exit)
+        c.settings_button('red')
+        self.assertTrue(c.settings_open); self.assertFalse(d.confirm_exit)
+        self.assertEqual(d.row, FIELDS.index('ringtone'))
+        c.settings_button('green'); self.assertTrue(d.editing)
+        c.settings_button('red'); self.assertFalse(d.editing); self.assertFalse(d.confirm_exit)
+        c.settings_button('red'); c.settings_button('green')
+        self.assertFalse(c.settings_open); self.assertFalse(d.confirm_exit)
+        self.assertEqual(c.model.config, before); c.configuration.update_settings.assert_not_called()
 
     def test_write_reconciliation_preserves_generation_and_expected_values(self):
         for outcome in ['accepted','timeout-applied','timeout-rejected','offline']:

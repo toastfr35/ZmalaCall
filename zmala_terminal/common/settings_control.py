@@ -123,14 +123,20 @@ class SettingsControl:
         draft = self.settings_draft
         if draft.busy:
             return  # An accepted write may already have reached the server.
-        if button in ('left', 'right'):
+        if draft.confirm_exit:
+            if button == 'green':
+                draft.confirm_exit = False
+                self.settings_open = False
+                self.settings_hold.clear()
+            elif button == 'red':
+                draft.confirm_exit = False
+        elif button in ('left', 'right'):
             draft.move(-1 if button == 'left' else 1)
         elif button == 'red':
             if draft.editing:
                 draft.editing, draft.error = False, False
             else:
-                self.settings_open = False
-                self.settings_hold.clear()
+                draft.confirm_exit = True
         elif button == 'green':
             if draft.key == 'reset':
                 self.settings_open = False

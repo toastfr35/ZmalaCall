@@ -28,7 +28,9 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Settings shall offer the server ringtone list, defaulting to Nokia. A highlighted
+  Settings shall offer the server ringtone list, defaulting to Nokia. In its editor,
+  left from the first choice shall wrap to the last, and right from the last shall
+  wrap to the first; moving shall not change the saved choice. A highlighted
   editor choice shall preview after 400 ms without selection changes, through C20
   at the effective speaker volume. Preview shall wait for media readiness and
   volume convergence, respect mute and stop after ten seconds or earlier at file
@@ -47,4 +49,4 @@ verification: |
   Inject catalog, path, PCM/hash and download errors, valid/corrupt cache files and
   reset cancellation. Control time, player outcomes, readiness and volume; check
   debounce, routing, mute, cutoff, replacement, call priority, disabled power switching
-  and cleanup. Render supported languages/layouts. Check actual C20 output separately.
+  and cleanup. Exercise both wrapping boundaries and a one-choice catalog. Render supported languages/layouts. Check actual C20 output separately.
