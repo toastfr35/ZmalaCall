@@ -2,6 +2,7 @@
 # @requirements HLR-TERM-NAV-001, HLR-TERM-UI-012
 # @environment display
 # @plan Render real Tk/Linux text with a disposable profile and substituted hardware. Check complete status-label and symbol bounds, their separation and enclosing frames in 95 languages at three/five-card display sizes and during French carousel motion. Check full French labels at 720p, presence colours, stable selection, stale-preflight rejection and cancellation without placing SIP calls.
+# Check that settled short selected names use larger bold type than neighbours, and that short/long names remain above availability inside their cards at every display size and during movement.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Native canvas visibility and call guards, without placing a real SIP call."""
@@ -25,10 +26,12 @@ fixture = terminal_fixture()
 app, _ = fixture.__enter__()
 app.poll = lambda: None
 rendered_labels = {}
+rendered_fonts = {}
 original_photo = app.text_renderer.photo
 def recorded_photo(text, *args, **kwargs):
     image = original_photo(text, *args, **kwargs)
     rendered_labels[str(image)] = text
+    rendered_fonts[str(image)] = (args[1], args[5] if len(args) > 5 else False)
     return image
 app.text_renderer.photo = recorded_photo
 app.engine.dialed = []
@@ -58,6 +61,23 @@ def assert_status_bounds(code, moving=False):
         if not moving:  # Entering/leaving cards intentionally cross the canvas edge.
             assert 0 <= left < right <= app.avatar.winfo_width(), (code, 'screen width', enclosing)
         assert 0 <= top < bottom <= app.avatar.winfo_height(), (code, 'screen height', enclosing)
+    cards = [app.avatar.coords(item) for item in app.avatar.find_withtag('contact-card')]
+    for item in app.avatar.find_withtag('contact-name'):
+        box = app.avatar.bbox(item)
+        x, y = app.avatar.coords(item)
+        owner = [card for card in cards if card[0] < x < card[2] and card[1] < y < card[3]]
+        assert len(owner) == 1, (code, 'name owner', box, owner)
+        left, top, right, bottom = owner[0]
+        assert left <= box[0] < box[2] <= right, (code, 'name width', box, owner)
+        status_top = next(band[1] for band in bands if band[0] < x < band[2])
+        assert top <= box[1] < box[3] <= status_top, (code, 'name above status', box, owner)
+    if not moving:
+        items = app.avatar.find_withtag('contact-name-'+app.model.selected['id'])
+        selected = rendered_fonts[app.avatar.itemcget(items[0], 'image')]
+        others = [rendered_fonts[app.avatar.itemcget(i, 'image')] for i in app.avatar.find_withtag('contact-name') if i != items[0]]
+        assert selected[1] and all(not bold for size, bold in others), (code, 'selected bold', selected, others)
+        if len(app.model.selected['name']) <= 8:
+            assert all(selected[0] > size for size, bold in others), (code, 'selected size', selected, others)
 
 
 def pump():
@@ -86,6 +106,14 @@ try:
             for state in ('available', 'push', 'offline'):
                 assert app.avatar.find_withtag('presence-'+state), (code, state)
             assert_status_bounds(code)
+        original_names = [person['name'] for person in app.model.contacts]
+        for person in app.model.contacts:
+            person['name'] = 'Kristell & Antoine Éléonore Madeleine Alexandra'
+        app.render()
+        app.root.update_idletasks()
+        assert_status_bounds('long names')
+        for person, name in zip(app.model.contacts, original_names):
+            person['name'] = name
         app.language = 'fr'
         app.font_family = font_family('fr', app.available_fonts)
         for index in range(3):

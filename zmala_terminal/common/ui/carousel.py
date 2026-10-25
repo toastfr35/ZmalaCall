@@ -118,20 +118,22 @@ class CarouselView:
         # @llr LLR-TERM-UI-015
         if idle or focus < .8:
             text = person['name'] if person else '—'
-            label_size = 16
+            emphasize = idle and selected and not self.carousel_motion
+            label_size = 26 if emphasize else 16
             # Keep shaped labels reusable while cards resize. The smallest card
-            # determines a width that remains inside every moving card.
-            label_width = int(layout.portrait_size*.5+15) if idle else int(size+15)
+            # determines a width that remains inside every moving card; the
+            # settled selection can use its full width for a larger name.
+            label_width = int(layout.portrait_size*.5+15) if idle and not emphasize else int(size+15)
             color = FG if idle and selected else MUTED
-            label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width)
+            label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width, emphasize)
             while label.height() > 44 and label_size > 10:
                 label_size -= 1
-                label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width)
+                label = self.text_renderer.photo(text, self.font_family, label_size, '#211e32' if selected else PANEL, color, label_width, emphasize)
             shortened = text
             while label.height() > 44 and shortened:
                 shortened = shortened[:-1]
                 label = self.text_renderer.photo(shortened+'…', self.font_family, label_size,
-                                                 '#211e32' if selected else PANEL, color, label_width)
+                                                 '#211e32' if selected else PANEL, color, label_width, emphasize)
             self.current_text_images.append(label)
             self.avatar.create_image(x, bottom-22-(STATUS_HEIGHT if idle and person else 0), image=label,
                                      tags=('contact-name', 'contact-name-'+person['id']) if person else ())

@@ -4,6 +4,7 @@
 # @plan Record drawing calls at small and full-HD dimensions; check the selected-to-adjacent portrait size ratio, in-frame contact labels, portrait margins, localized rounded affirmative/negative controls, settings-only chrome and serial footer. Inject Pango to verify unchanged Unicode text and bounded shaping; force a tall translated settings label to check minimum-font ellipsis and intact combining marks. Test absolute carousel deadlines under delayed frames. Exercise real carousel composition with recording widgets, controlled shaped-label metrics and image failures; assert pending/missed badges, logo restoration, bounded labels and placeholder/ringing redraws.
 # Check three-state contact colours, labels and symbols; expire a six-second live snapshot and confirm push remains callable only while fresh. Change presence at the same configuration version and assert redraws without reconfiguration.
 # Fit two-line status text beside a separate icon at selected/adjacent widths, including animation; force minimum-font overflow and check bounded ellipsis without splitting combining marks.
+# Check the larger bold settled selected name and its full-card width; moving cards retain compact labels.
 # @pass Geometry, color, text and timing assertions must pass; these unit checks do not replace physical display or font-rendering acceptance.
 
 import importlib.util
@@ -176,7 +177,7 @@ class ViewContractTests(unittest.TestCase):
         view.draw_contact_status = Mock()
         label = Mock(); label.height.return_value = 24
         view.text_renderer = Mock(); view.text_renderer.photo.return_value = label
-        sizes = {}
+        sizes, names = {}, {}
         for slot in (-1, 0, 1):
             view.avatar.reset_mock()
             person = view.model.contacts[0]
@@ -187,11 +188,22 @@ class ViewContractTests(unittest.TestCase):
             portrait = calls[0]
             size = view.contact_image.call_args.args[1]
             sizes[slot] = size
+            names[slot] = view.text_renderer.photo.call_args.args
             self.assertGreater(name.args[1]-12, portrait.args[1]+size/2)
             self.assertLess(name.args[1]+12, frame[3]-39)
             self.assertGreater(name.args[0], frame[0]); self.assertLess(name.args[0], frame[2])
         self.assertEqual(sizes[-1], sizes[1])
         self.assertAlmostEqual(sizes[0], 2*sizes[1], delta=1)
+        self.assertGreater(names[0][2], names[1][2])
+        self.assertTrue(names[0][6])
+        self.assertFalse(names[1][6])
+        self.assertGreater(names[0][5], names[1][5])
+        view.carousel_motion = object()
+        view.draw_card(person, 0, 640, 300, 1280, 600, True)
+        moving = view.text_renderer.photo.call_args.args
+        self.assertEqual(moving[2], names[1][2])
+        self.assertEqual(moving[5], names[1][5])
+        self.assertFalse(moving[6])
 
     def test_confirmation_has_margins_and_localized_rounded_color_choices(self):
         for width, height in ((700, 500), (1920, 1080)):

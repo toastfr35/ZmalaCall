@@ -110,7 +110,10 @@ Incoming calls take priority over unfinished navigation and edits.
 ### 8. User interface and language
 
 The display uses large portraits, clear text and consistent action colors. Names
-stay inside their portrait cards. Status symbols and words give information without
+stay inside their portrait cards. The settled centre card uses a larger, bold name
+to emphasize the selected person; long names shrink to fit above availability.
+Moving cards retain the compact name style until navigation settles.
+Status symbols and words give information without
 relying on color alone. Confirmation pages make the proposed action clear.
 
 Normal operation uses the selected language. Early setup uses English before the
