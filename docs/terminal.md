@@ -374,8 +374,12 @@ Each asynchronous completion is checked against the current setup generation.
 Before enrollment, prompts use English. Enrollment applies the selected language;
 detailed diagnostic catalogs use English fallback where a translation is absent.
 Invalid codes, unreachable servers and rejected credentials retain the current
-stage with retry feedback. QR preview remains contained within the screen and
-its process releases the camera before call-engine startup.
+stage with retry feedback. Both QR stages show mint corner guides with a dark
+outline around a centred square in the unmirrored camera picture. Hold the whole
+code inside the guides; the centre stays clear. Guides resize with the displayed
+picture, including letterboxing, and are added only to its display copy: decoding
+still receives the entire untouched camera frame. QR preview remains contained
+within the screen and its process releases the camera before call-engine startup.
 
 Reset is entered through Settings with a separate confirmation. It invalidates
 workers and clears the current profile's enrollment, configuration cache, missed

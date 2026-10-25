@@ -174,6 +174,21 @@ def update_c20_guide():
     doc.save(path)
 
 
+def update_qr_guides():
+    """Describe the Pi scanner's positioning guides in the retained setup guide."""
+    path = ROOT / 'docs/terminal_config.docx'
+    doc = Document(path)
+    for paragraph in doc.paragraphs:
+        if paragraph.text.startswith('Hold the Wi-Fi QR steadily in front of the C20,'):
+            paragraph.text = ('Hold the Wi-Fi QR steadily in front of the C20, with the whole '
+                'code inside the four corner guides shown on the TV. Move the code closer '
+                'or farther away until it fits clearly. Wait for success and the ten-second '
+                'confirmation. When the server QR screen appears, show the server QR '
+                'inside the same guides. An incorrect or unreachable server leaves an '
+                'error and lets you try again.')
+    doc.save(path)
+
+
 def update_presence_guides():
     """Keep the retained terminal instructions aligned with three-state presence."""
     for filename in ('terminal_use.docx', 'terminal_config.docx'):
@@ -204,5 +219,6 @@ def update_presence_guides():
 if __name__ == '__main__':
     update_existing()
     update_c20_guide()
+    update_qr_guides()
     build_phone()
     update_presence_guides()
