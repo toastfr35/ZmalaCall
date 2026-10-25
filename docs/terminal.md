@@ -600,6 +600,13 @@ and shuts down the connection if a frame cannot finish within three seconds.
 This avoids dropping the middle of large keyframes when the SDK's small socket
 send buffer fills. The native TURN regression exercises exact output bytes,
 retry buffer identity, timeout and closed/error paths.
+The Pi correction also reads the actual operating-system socket error in the
+TLS callbacks. The pinned SDK instead negates `send`/`recv`'s `-1` result and
+mistakes temporary backpressure for a disconnected peer. Under video load that
+can close the video relay connection while the separate audio connection survives.
+`T-LLT-080` fills a real local socket buffer to EAGAIN, checks read/write retries
+and peer closure, and fails against the original SDK callbacks before passing
+against the correction. TLS verification and the three-second write bound remain.
 
 The local preview shares camera capture, averages pixels before final display
 scaling and uses NEON for common 2×/4× reductions with scalar fallback. Small
@@ -896,9 +903,12 @@ The normal user call and answer controls do not change.
 
 Debian Trixie mediastreamer2 5.3.105 has a fragmented TURN ChannelData padding bug
 which breaks SRTP authentication. `build_tools/linux/build-turn.py` fetches pinned,
-SHA-256-checked upstream source, applies `linux/native/turn-framing.patch`, and builds
+SHA-256-checked upstream source, applies the framing, complete-write and socket-error
+patches under `linux/native/`, and builds
 a process-local interposition library under `linux/turn-runtime/`. The original
 parser must reproduce the defect; the corrected parser must pass 3,804 chunk sizes.
+The socket callback fixture must likewise fail on original EAGAIN handling and
+pass with the correction, including a successful retry and real peer closure.
 The installer runs this build on the target architecture and retains upstream source
 and test evidence. It does not replace the system SDK library. Upstream source is
 AGPL-3.0-or-later, with its original notices retained in the downloaded files.

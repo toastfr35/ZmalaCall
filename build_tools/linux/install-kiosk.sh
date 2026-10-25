@@ -166,7 +166,7 @@ mkdir -p "$release/build_tools"
 cp -a "$task_root/zmala_terminal" "$release/"
 cp -a "$task_root/build_tools/linux" "$release/build_tools/"
 mkdir -p "$release/tests/terminal/LLT"
-cp "$task_root/tests/terminal/LLT/turn_parser.cpp" "$release/tests/terminal/LLT/"
+cp "$task_root/tests/terminal/LLT/turn_parser.cpp" "$task_root/tests/terminal/LLT/turn_socket_io.cpp" "$release/tests/terminal/LLT/"
 python3 "$release/build_tools/linux/build-turn.py"
 if [ -e "$release/zmala_terminal/data" ]; then
     echo 'Package unexpectedly contains runtime data; refusing installation' >&2; exit 1

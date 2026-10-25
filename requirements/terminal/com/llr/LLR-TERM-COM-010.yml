@@ -8,6 +8,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/linux/native/turn-socket-errors.patch
+  type: file
+- path: tests/terminal/LLT/turn_socket_io.cpp
+  type: file
 - path: zmala_terminal/common/native/turn-write.h
   type: file
 - path: zmala_terminal/linux/native/turn-write.patch
@@ -33,6 +37,9 @@ text: In secure relay mode, the terminal shall use SIP TLS and TURN TLS on the c
   before delivering each complete frame. The Pi shall load the parser correction only with the matching
   installed SDK version.
   TURN TLS writes shall retain a frame through short writes and temporary socket backpressure.
+  Socket callbacks shall use the operating system error code, distinguish temporary
+  read/write backpressure and interruption from a disconnected peer, and pass
+  retryable results to TLS without closing a healthy connection.
   A write that cannot complete within three seconds shall fail and shut down the connection so a
   partial frame is not followed by another frame on the same stream.
 verification: Unit-test configuration rejection, native policy calls, encryption and resource cleanup.
@@ -41,3 +48,5 @@ verification: Unit-test configuration rejection, native policy calls, encryption
   lengths.
   Inject short writes, WANT_READ/WANT_WRITE, timeout, peer closure and poll failure; assert exact
   output bytes, stable retry buffers and bounded failure.
+  Fill a real local socket buffer to EAGAIN and read an empty nonblocking socket;
+  require retryable TLS results, successful retry bytes and distinct peer closure.

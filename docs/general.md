@@ -646,9 +646,12 @@ state, certificate probes and firewall counters. Static media and software encod
 do not qualify physical C20 quality or Pi throughput. Clean up with
 `ZMALA_LAB_TLS=1 python3 tests/support/network_lab/lab.py down`.
 
-The parser LLT is built by `build_tools/linux/build-turn.py`; it runs both the known
-bad upstream implementation and the corrected implementation as a negative/positive
-control. Generated binaries, downloaded SDK sources and reports stay out of Git.
+The parser and socket callback LLTs are built by `build_tools/linux/build-turn.py`;
+each runs the known bad upstream implementation and the correction as a
+negative/positive control. The socket fixture uses real local backpressure and
+peer closure without a network service or TLS handshake. Linux CI runs both
+against the supported Trixie SDK, as does the Pi installer. Generated binaries,
+downloaded SDK sources and reports stay out of Git.
 Portable unit tests validate policy, temporary credentials, SDP rejection and native
 API configuration. Actual network and hardware results remain separate from unit
 coverage. Public endpoint provisioning is an operator deployment task; local lab
