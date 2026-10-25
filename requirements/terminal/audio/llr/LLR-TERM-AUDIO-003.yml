@@ -9,6 +9,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/LLT/test_c20_pcm.py
+  type: file
+- path: zmala_terminal/linux/media/audio/c20-alsa.conf
+  type: file
 - path: tests/terminal/LLT/test-echo-rate.c
   type: file
 - path: tests/terminal/LLT/test_audio_profile.py
@@ -36,6 +40,13 @@ text: |
   shall cap capture processing at 16 kHz while retaining the 48 kHz Opus clock and
   playback. Speech echo cancellation shall use a 500 ms window. Missing optional
   processing shall leave calling available and report the applied profile.
+  For both profiles, the Pi's C20 PCM path shall convert application audio to
+  16 kHz stereo capture and 48 kHz stereo playback, without routing capture
+  through a generic 48 kHz hardware-sharing buffer. This policy shall apply
+  before native device enumeration and survive C20 device renumbering.
 verification: |
   Inject plugin availability and registration failures. Inspect echo-rate parameters
   and the reported profile without assuming acoustic quality.
+  Expand the real ALSA configuration without opening hardware and inspect each
+  hardware direction's format, channels, rate and supplied card identity. Check
+  that policy selection precedes SDK loading and missing policy fails explicitly.

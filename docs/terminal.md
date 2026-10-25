@@ -629,6 +629,15 @@ peer or recording, and releases both cores afterwards.
 C20 microphone input is 16 kHz stereo; playback is 48 kHz stereo. The speech
 profile limits echo processing to the native input rate while retaining the
 48 kHz Opus clock and playback resampling. Normal processing remains selectable.
+Before loading Liblinphone, the Pi adapter selects the process-local
+`linux/media/audio/c20-alsa.conf` policy. It retains the distribution configuration
+for other cards and replaces only the Nuroum C20 default PCM with separate
+capture/playback converters to its hardware rates and stereo S16_LE format.
+The supplied ALSA card identity is retained, including after USB renumbering.
+This avoids generic `dsnoop` opening the C20 input at its default 48 kHz and
+keeps ringback/call conversion in software. Missing policy prevents SDK startup
+with an explicit installation diagnostic. The real ALSA parser regression
+expands both directions without opening hardware.
 Echo cancellation uses a 500 ms window/automatic delay; assess real speech before
 changing it. Packet counters alone do not establish intelligibility or acoustic
 echo performance. Earlier USB/control timeouts require separate capture/audio
@@ -644,6 +653,14 @@ at both ends (two app-closed, then two app-open, with the phone on cellular data
 The native filter regression passed, including a negative control against the
 old first-picture behavior. See `docs/android.md` for the bounded hardware run
 and its limitations; it does not establish sustained C20 reliability.
+
+On 25 October 2026, intermittent missing terminal video was reproduced together
+with C20 UVC/ALSA control timeouts and failed camera/microphone opens. A guarded
+USB power cycle restored the device. The C20 PCM policy above corrects the
+incompatible generic capture configuration; it does not establish that every
+possible USB timeout has the same trigger. Repeated real phone calls must still
+check decoded images at both ends, including alternating callers and USB wake;
+configured/sent FPS alone can remain nonzero when the camera has failed.
 
 ### Automatic framing
 

@@ -6,6 +6,7 @@
 import ctypes as C
 import hashlib
 import hmac
+import os
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -53,6 +54,7 @@ class LinuxMediaAdapterTests(unittest.TestCase):
     def test_native_library_and_resource_selection_honors_prefix_and_missing_defaults(self):
         from zmala_terminal.linux import native_runtime as runtime
         with tempfile.TemporaryDirectory() as directory, patch.object(runtime, 'SDK', Path(directory)), \
+                patch.dict(os.environ), \
                 patch.object(runtime.C, 'CDLL', side_effect=lambda path: path), \
                 patch.object(runtime.ctypes.util, 'find_library', return_value='liblinphone.so.system') as find:
             self.assertEqual(runtime.load_linphone(None), 'liblinphone.so.system')
