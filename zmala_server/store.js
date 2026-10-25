@@ -360,12 +360,7 @@ class Store extends AccountStore {
   // @llr LLR-SRV-CONFIG-024
   /** @param {unknown} name @param {Buffer} bytes @param {number} [expectedVersion] */
   async uploadRingtone(name, bytes, expectedVersion) {
-    if (
-      typeof name !== 'string' ||
-      !name.trim() ||
-      name.trim().length > 80 ||
-      /[\x00-\x1f\x7f-\x9f]/.test(name)
-    )
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 80 || /\p{Cc}/u.test(name))
       throw Error('Enter a ringtone name of up to 80 characters.');
     const id = validateSound(bytes);
     if (this.ringtoneUpload)

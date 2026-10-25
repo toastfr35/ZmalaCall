@@ -67,9 +67,7 @@ function validateFiles(files) {
     requireValue(ringtoneId(id) !== 'nokia');
     const sound = object(raw),
       data = files.get(`ringtones/${id}.wav`);
-    requireValue(
-      text(sound.name, 80) && sound.name.trim() && !/[\x00-\x1f\x7f-\x9f]/.test(sound.name),
-    );
+    requireValue(text(sound.name, 80) && sound.name.trim() && !/\p{Cc}/u.test(sound.name));
     requireValue(
       data && sound.bytes === data.length && validateSound(data) === id,
       'A referenced ringtone is missing or invalid.',

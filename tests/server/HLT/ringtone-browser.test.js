@@ -49,13 +49,11 @@ test(
     const upload = page.waitForResponse(
       (r) => r.url().includes('/api/ringtones?') && r.request().method() === 'POST',
     );
-    await page
-      .getByLabel('Add ringtone files', { exact: true })
-      .setInputFiles({
-        name: 'Fixture tone.wav',
-        mimeType: 'audio/wav',
-        buffer: fs.readFileSync(DEFAULT_SOUND),
-      });
+    await page.getByLabel('Add ringtone files', { exact: true }).setInputFiles({
+      name: 'Fixture tone.wav',
+      mimeType: 'audio/wav',
+      buffer: fs.readFileSync(DEFAULT_SOUND),
+    });
     assert.equal((await upload).status(), 201);
     await page
       .getByText('Ringtones added. Choose a tone and save changes.', { exact: true })
