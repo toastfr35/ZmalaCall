@@ -10,6 +10,8 @@ const { adminRoutes } = require('./admin-routes');
 const { PhotoStore } = require('../photos');
 const { authRoutes } = require('./auth-routes');
 const { localAdmin } = require('./admin-network');
+const { DEFAULT_SOUND, MAX_SOUND } = require('../ringtones');
+const { body } = require('./responses');
 const WEB = path.resolve(__dirname, '../web');
 const assets = Object.fromEntries(
   ['/', '/accounts', '/groups', '/terminals', '/activity', '/callbacks'].map((route) => [
@@ -84,6 +86,25 @@ function createHandler(context) {
       }
       const identity = { ...context, deviceId };
       if (await deviceRoutes(req, res, url, identity)) return;
+      // @llr LLR-SRV-CONFIG-024
+      const sound = url.pathname.match(/^\/api\/ringtones\/(nokia|[a-f0-9]{64})\.wav$/);
+      if (sound && req.method === 'GET') {
+        if (!admin && (!deviceId || !store.terminalAccount(deviceId)))
+          return send(res, 401, { error: 'Terminal or administrator authentication required.' });
+        if (sound[1] !== 'nokia' && !Object.hasOwn(store.value.ringtones || {}, sound[1]))
+          return send(res, 404, { error: 'Ringtone not found.' });
+        const file =
+          sound[1] === 'nokia'
+            ? DEFAULT_SOUND
+            : path.join(store.dir, 'ringtones', sound[1] + '.wav');
+        let bytes;
+        try {
+          bytes = await asyncFs.readFile(file);
+        } catch {
+          return send(res, 404, { error: 'Ringtone file unavailable.' });
+        }
+        return send(res, 200, bytes, 'audio/wav', 'private, max-age=31536000, immutable');
+      }
       if (/^\/photos\/[a-f0-9]+\.(png|jpg)$/.test(url.pathname) && req.method === 'GET') {
         if (!device && !admin) return send(res, 401, { error: 'Authentication required.' });
         const file = path.join(store.dir, url.pathname.slice(1));
@@ -137,6 +158,18 @@ function createHandler(context) {
         return send(res, 200, await asyncFs.readFile(path.join(WEB, file)), type);
       }
       if (!admin) return send(res, 401, { error: 'Sign in with the admin password.' });
+      // @llr LLR-SRV-CONFIG-024
+      if (url.pathname === '/api/ringtones' && req.method === 'POST') {
+        const version = Number(url.searchParams.get('version'));
+        if (!Number.isSafeInteger(version) || version < 1)
+          throw Error('Send the current configuration version.');
+        const bytes = await body(req, MAX_SOUND);
+        return send(
+          res,
+          201,
+          await store.uploadRingtone(url.searchParams.get('name'), bytes, version),
+        );
+      }
       if (await backupRoutes(req, res, url, context)) return;
       if (await adminRoutes(req, res, url, context)) return;
       if (url.pathname === '/api/photos' && req.method === 'POST')

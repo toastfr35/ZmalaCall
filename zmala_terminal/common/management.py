@@ -222,6 +222,7 @@ class ManagementLoop:
             self.update_video_message()
             self.iterate_scanner()
             self.drain_messages()
+            self.tick_ringtone(time.monotonic())
             self.tick_tv_setup()
             if self.configuration and self.configuration.photos.changed():
                 if self.model.state == State.HOME:

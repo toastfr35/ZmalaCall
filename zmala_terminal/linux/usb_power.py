@@ -46,6 +46,10 @@ class UsbPower:
         self.revision = self.refreshed = 0
         self.next_refresh = 0
         self.ringer = None
+        self.ringtone_file = self.root / 'common/assets/gentle-chime.wav'
+        self.preview_file, self.preview_state = None, ''
+        self.preview_serial, self.preview_started = 0, None
+        self.playback_key = None
         self.next_ring = 0
         self.worker = None
         if self.enabled:
@@ -91,6 +95,11 @@ class UsbPower:
     def stop_ringing(self):
         with self.lock:
             self.ringing = False
+            self.preview_file, self.preview_state = None, ''
+            self.stop_playback()
+
+    def stop_playback(self):
+        with self.lock:
             if self.ringer and self.ringer.poll() is None:
                 self.ringer.terminate()
                 try:
@@ -98,6 +107,90 @@ class UsbPower:
                 except subprocess.TimeoutExpired:
                     self.ringer.kill()
             self.ringer = None
+            self.playback_key = None
+
+    # @llr LLR-TERM-AUDIO-009
+    def set_ringtone(self, file):
+        with self.lock:
+            self.ringtone_file = Path(file)
+
+    def preview_tone(self, file):
+        with self.lock:
+            if self.ringing or self.stopped:
+                return
+            self.preview_file, self.preview_state = Path(file), 'waiting'
+            self.preview_serial += 1
+            self.preview_started = None
+            if not self.enabled and self.worker is None and sys.platform == 'linux':
+                self.worker = threading.Thread(target=self.preview_worker, name='ringtone-preview', daemon=True)
+                self.worker.start()
+        self.require()
+        self.changed.set()
+
+    # @llr LLR-TERM-AUDIO-009
+    def preview_worker(self):
+        """Preview also works when the host disables USB power switching."""
+        while not self.stopped:
+            self.changed.clear()
+            self.play_tone(time.monotonic())
+            with self.lock:
+                if self.preview_file is None:
+                    self.worker = None
+                    return
+            self.changed.wait(.2)
+        self.stop_playback()
+
+    def stop_preview(self):
+        with self.lock:
+            self.preview_file, self.preview_state = None, ''
+        self.changed.set()
+
+    @property
+    def ringtone_preview_status(self):
+        with self.lock:
+            return self.preview_state
+
+    # @llr LLR-TERM-AUDIO-009
+    def play_tone(self, now):
+        """One worker owns playback; incoming calls supersede bounded previews."""
+        with self.lock:
+            if self.ringing:
+                self.preview_file, self.preview_state = None, ''
+            preview = self.preview_file is not None
+            requested = self.ringing or preview
+            eligible = requested and self.ready
+            if eligible:
+                from zmala_terminal.linux.c20_volume import status
+                desired, applied, failed = status()
+                eligible = desired is not None and desired == applied and not failed and desired > 0
+                if preview and desired == 0:
+                    self.preview_state = 'muted'
+            if not eligible:
+                self.stop_playback()
+                return
+            key = ('preview', self.preview_serial) if preview else ('ring', self.ringtone_file)
+            if self.playback_key != key:
+                self.stop_playback()
+                self.playback_key, self.next_ring = key, 0
+            if preview and self.preview_started is not None and (
+                    now-self.preview_started >= 10 or self.ringer and self.ringer.poll() is not None):
+                result = self.ringer.poll() if self.ringer else 0
+                self.stop_playback()
+                self.preview_file = None
+                self.preview_state = 'error' if result not in (None, 0) else ''
+                return
+            if now >= self.next_ring and (not self.ringer or self.ringer.poll() is not None):
+                try:
+                    self.ringer = subprocess.Popen(['aplay', '-q', '-D', 'plughw:C20,0',
+                        str(self.preview_file if preview else self.ringtone_file)],
+                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except OSError:
+                    logging.exception('Could not start ringtone playback')
+                    if preview:
+                        self.preview_file, self.preview_state = None, 'error'
+                self.next_ring = now + 3
+                if preview and self.ringer:
+                    self.preview_started, self.preview_state = now, 'playing'
 
     # @llr LLR-TERM-POWER-015
     def refresh(self, engine):
@@ -166,7 +259,7 @@ class UsbPower:
                         self.state = 'switching'
                         self.powered = None
                     try:
-                        self.stop_ringing()
+                        self.stop_playback()
                         self.command(desired)
                         with self.lock:
                             self.powered = desired == 'on'
@@ -192,21 +285,7 @@ class UsbPower:
                             self.revision += 1
                         next_attempt = time.monotonic() + 10
                     continue
-                with self.lock:
-                    ring = self.ringing and self.ready
-                    if ring:
-                        from zmala_terminal.linux.c20_volume import status
-                        desired_volume, applied_volume, failed = status()
-                        ring = desired_volume is not None and applied_volume == desired_volume and not failed
-                        # The C20's 0% mixer floor is not digital silence.
-                        ring = ring and desired_volume > 0
-                    if ring and now >= self.next_ring and (not self.ringer or self.ringer.poll() is not None):
-                        self.ringer = subprocess.Popen(['aplay', '-q', '-D', 'plughw:C20,0',
-                            str(self.root / 'common/assets/gentle-chime.wav')],
-                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        self.next_ring = now + 3
-                    elif not ring and self.ringer:
-                        self.stop_ringing()
+                self.play_tone(now)
                 self.changed.wait(.2)
         finally:
             self.stop_ringing()

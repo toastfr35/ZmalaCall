@@ -189,6 +189,57 @@ def update_qr_guides():
     doc.save(path)
 
 
+def update_ringtone_guides():
+    """Describe private ringtone choices and bounded previews in retained guides."""
+    path = ROOT / 'docs/terminal_config.docx'
+    doc = Document(path)
+    table = doc.tables[0]
+    if not any(row.cells[0].text == 'Ringtone' for row in table.rows):
+        row = table.add_row()
+        row.cells[0].text = 'Ringtone'
+        row.cells[1].text = 'Nokia (default) and the sounds added on your server'
+        speaker = next(row for row in table.rows if row.cells[0].text == 'Speaker volume')
+        speaker._tr.addnext(row._tr)
+    text = ('To choose a ringtone, open Ringtone in Settings with green. Use left and right '
+            'to hear each choice through the C20 at the current speaker volume; a preview '
+            'plays for up to ten seconds after a short pause. A waking C20 may take a moment. '
+            'At zero volume the preview is silent. Press green to save, or red to cancel. '
+            'An incoming call stops the preview. Nokia remains available if a new sound '
+            'has not downloaded yet. The administrator can add sounds on the server.')
+    existing = next((p for p in doc.paragraphs if p.text.startswith('To choose a ringtone,')), None)
+    if existing is None:
+        anchor = next(p for p in doc.paragraphs if p.text.startswith('The terminal serial is shown'))
+        existing = doc.add_paragraph()
+        anchor._p.addnext(existing._p)
+    existing.text = text
+    doc.save(path)
+    path = ROOT / 'docs/server_prep.docx'
+    doc = Document(path)
+    text = ('To add ringtone choices, open Ringtone in Terminals. Preview plays on your '
+            'computer. Add ringtones accepts audio you have permission to use '
+            '(12 MB each, first 30 seconds). Choose a tone and Save changes. '
+            'Nokia is the default; the private library is included in backups.')
+    existing = next((p for p in doc.paragraphs if p.text.startswith('To add ringtone choices,')), None)
+    if existing is None:
+        anchor = next(p for p in doc.paragraphs if p.text.startswith('In Terminals, choose each'))
+        existing = doc.add_paragraph()
+        anchor._p.addnext(existing._p)
+    existing.text = text
+    existing.paragraph_format.space_after = Pt(0)
+    for p in doc.paragraphs:
+        if p.text.startswith('Use the server overview to keep a private copy'):
+            p.text = ('Use the server overview to keep a private copy of your accounts, '
+                      'settings, pictures and private ringtones. A backup also includes groups, '
+                      'terminal identities, passwords, callback records and console history. '
+                      'It does not contain Linux, Wi-Fi, SSH or TLS configuration.')
+        if p.text == 'Back up and restore the server':
+            previous = p._p.getprevious()
+            if previous is not None and previous.xpath('.//w:br[@w:type="page"]'):
+                previous.getparent().remove(previous)
+                p.paragraph_format.page_break_before = True
+    doc.save(path)
+
+
 def update_presence_guides():
     """Keep the retained terminal instructions aligned with three-state presence."""
     for filename in ('terminal_use.docx', 'terminal_config.docx'):
@@ -220,5 +271,6 @@ if __name__ == '__main__':
     update_existing()
     update_c20_guide()
     update_qr_guides()
+    update_ringtone_guides()
     build_phone()
     update_presence_guides()

@@ -179,7 +179,7 @@ class LocalSettingsTests(unittest.TestCase):
         messages = json.loads((Path(__file__).resolve().parents[3]/'zmala_terminal/common/shared/settings-messages.json').read_text(encoding='utf-8'))
         self.assertEqual(set(messages), set(LANGUAGES))
         for values in messages.values():
-            self.assertEqual(len(values), 12)
+            self.assertEqual(len(values), 13)
             self.assertTrue(all(isinstance(v, str) and v.strip() for v in values))
 
 

@@ -109,7 +109,8 @@ def source_blocks(filename, mode, styles):
 def build(name, destination):
     styles = {
         'body': ParagraphStyle('body', fontName='Helvetica', fontSize=10.5, leading=15,
-                               textColor=INK, spaceAfter=8, alignment=TA_LEFT),
+                               textColor=INK, spaceAfter=8, alignment=TA_LEFT,
+                               allowWidows=0, allowOrphans=0),
         'h1': ParagraphStyle('h1', fontName='Helvetica-Bold', fontSize=15, leading=19,
                              textColor=GREEN, spaceBefore=13, spaceAfter=8, keepWithNext=True),
         'h2': ParagraphStyle('h2', fontName='Helvetica-Bold', fontSize=11, leading=15,

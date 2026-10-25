@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { validateFiles, encodeBackup, parse } = require('./backup-format');
-const { readPhotos, stageRestore } = require('./backup-storage');
+const { readPhotos, readRingtones, stageRestore } = require('./backup-storage');
 const { httpError } = require('./http/responses');
 
 class ServerBackups {
@@ -36,6 +36,7 @@ class ServerBackups {
       ['console-jobs.json', Buffer.from(JSON.stringify(this.consoleJobs.jobs))],
     ]);
     await readPhotos(this.store.dir, files);
+    await readRingtones(this.store.dir, files);
     validateFiles(files);
     return files;
   }

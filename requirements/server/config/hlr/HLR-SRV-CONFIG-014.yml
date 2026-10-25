@@ -10,6 +10,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/HLT/ringtone-settings.test.js
+  type: file
 - path: tests/server/HLT/auto-framing.test.js
   type: file
 - path: tests/server/HLT/device-settings.test.js

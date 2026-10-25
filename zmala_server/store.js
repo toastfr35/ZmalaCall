@@ -15,6 +15,7 @@ const { AdminPassword, passwordFile } = require('./admin-password');
 const { validateCallbackSettings, validateSmtpSettings, smtpView } = require('./callback-settings');
 const DATA = path.resolve(__dirname, 'data');
 const LANGUAGES = require('../zmala_terminal/common/shared/terminal-languages.json');
+const { ringtoneList, validateSound, MAX_LIBRARY } = require('./ringtones');
 
 /** Authoritative configuration and derived views. Mutations commit one versioned snapshot. */
 class Store extends AccountStore {
@@ -33,6 +34,7 @@ class Store extends AccountStore {
     this.contactViews = new Map();
     this.dir = dataDir;
     this.file = file;
+    this.ringtoneUpload = false;
     // Custom stores (tests/setup tools) stay isolated from the real Pi boot partition.
     const credentialFile =
       dataDir === DATA ? process.env.ZMALA_ADMIN_PASSWORD_FILE || passwordFile(dataDir) : undefined;
@@ -228,6 +230,8 @@ class Store extends AccountStore {
       carousel_portraits: p.carousel_portraits ?? 3,
       tv_idle_seconds: p.tv_idle_seconds ?? 30,
       c20_speaker_volume: p.c20_speaker_volume ?? 50,
+      ringtone: p.ringtone ?? 'nokia',
+      ringtones: ringtoneList(v.ringtones),
       server_host: v.host,
       sip_port: v.sip_port,
       auto_answer: u.auto_answer,
@@ -265,6 +269,8 @@ class Store extends AccountStore {
       account = this.terminalAccount(id);
     if (!account) throw Error('Choose a terminal account.');
     const fields = terminalProfileFields(p, update);
+    if (fields.ringtone !== 'nokia' && !own(this.value.ringtones || {}, fields.ringtone || ''))
+      throw Error('Choose an available ringtone.');
     const answer = autoAnswerFields(update);
     Object.assign(p, fields);
     // Auto-answer remains stored on the account for existing terminal clients.
@@ -290,6 +296,7 @@ class Store extends AccountStore {
       'c20_speaker_volume',
       'carousel_portraits',
       'tv_idle_seconds',
+      'ringtone',
     ];
     const keys = Object.keys(changes);
     if (
@@ -350,10 +357,83 @@ class Store extends AccountStore {
     this.value.local_terminal_id = id;
     this.changed();
   }
+  // @llr LLR-SRV-CONFIG-024
+  /** @param {unknown} name @param {Buffer} bytes @param {number} [expectedVersion] */
+  async uploadRingtone(name, bytes, expectedVersion) {
+    if (
+      typeof name !== 'string' ||
+      !name.trim() ||
+      name.trim().length > 80 ||
+      /[\x00-\x1f\x7f-\x9f]/.test(name)
+    )
+      throw Error('Enter a ringtone name of up to 80 characters.');
+    const id = validateSound(bytes);
+    if (this.ringtoneUpload)
+      throw Object.assign(Error('Another ringtone is uploading. Try again.'), { status: 409 });
+    this.ringtoneUpload = true;
+    try {
+      const checkVersion = () => {
+        if (expectedVersion !== undefined && expectedVersion !== this.value.configuration_version)
+          throw Object.assign(Error('Configuration changed. Reopen settings before importing.'), {
+            status: 409,
+          });
+      };
+      checkVersion();
+      const library = this.value.ringtones || {};
+      const entries = Object.entries(library).filter(([key]) => key !== id);
+      if (
+        entries.length >= 64 ||
+        entries.reduce((sum, [, sound]) => sum + sound.bytes, bytes.length) > MAX_LIBRARY
+      )
+        throw Error('The ringtone library is full (64 sounds or 40 MB).');
+      const folder = path.join(this.dir, 'ringtones');
+      await fs.promises.mkdir(folder, { recursive: true });
+      const temporary = path.join(folder, crypto.randomUUID() + '.tmp');
+      try {
+        const handle = await fs.promises.open(temporary, 'wx', 0o600);
+        try {
+          await handle.writeFile(bytes);
+          await handle.sync();
+        } finally {
+          await handle.close();
+        }
+        checkVersion();
+        await fs.promises.rename(temporary, path.join(folder, id + '.wav'));
+        if (process.platform !== 'win32') {
+          const directory = await fs.promises.open(folder, 'r');
+          try {
+            await directory.sync();
+          } finally {
+            await directory.close();
+          }
+        }
+      } finally {
+        await fs.promises.rm(temporary, { force: true });
+      }
+      if (library[id]?.name !== name.trim() || library[id]?.bytes !== bytes.length) {
+        try {
+          checkVersion();
+        } catch (error) {
+          if (!this.value.ringtones?.[id])
+            await fs.promises.rm(path.join(folder, id + '.wav'), { force: true });
+          throw error;
+        }
+        this.value.ringtones = { ...library, [id]: { name: name.trim(), bytes: bytes.length } };
+        this.changed();
+      }
+      const configuration_version = this.value.configuration_version;
+      await this.flush();
+      return { id, name: name.trim(), url: `/api/ringtones/${id}.wav`, configuration_version };
+    } finally {
+      this.ringtoneUpload = false;
+    }
+  }
+
   admin() {
     const v = this.value;
     return {
       ...v,
+      ringtone_choices: ringtoneList(v.ringtones),
       sip_proxy: this.secureCalls?.proxy() || `sip:${v.host}:${v.sip_port};transport=udp`,
       call_transport: this.secureCalls ? 'TLS with encrypted TURN relay' : 'LAN UDP relay',
       // Administrative views include account provisioning credentials, but

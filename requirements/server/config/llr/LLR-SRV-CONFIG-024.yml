@@ -1,0 +1,51 @@
+active: true
+area: Terminal configuration
+derived: false
+header: |
+  Private terminal ringtone library
+level: 112.0
+links:
+- HLR-SRV-CONFIG-015: gAwE5SfEuMli9jsyFAWJL5kpzudqR3AiwEKc8FPLxo4=
+normative: true
+ref: ''
+references:
+- path: tests/server/LLT/ringtones.test.js
+  type: file
+- path: zmala_server/ringtones.js
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: zmala_server/terminal-settings.js
+  type: file
+- path: zmala_server/http/handler.js
+  type: file
+- path: zmala_server/web/admin-ringtones.js
+  type: file
+- path: zmala_server/web/admin-terminals.js
+  type: file
+- path: zmala_server/backup-format.js
+  type: file
+- path: zmala_server/backup-storage.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Terminal settings shall accept a library ringtone, defaulting to Nokia, through
+  administration and device-scoped compare-and-set. Configuration shall include
+  available choices and the saved selection. Administration shall offer preview
+  and private audio import. Import shall convert locally to mono 16-bit PCM at
+  16 kHz, retaining up to 30 seconds from input files bounded to 12 MB. The server
+  shall validate exact PCM format and RIFF/data lengths before storing immutable
+  SHA-256-named audio. Names shall be nonblank, at most 80 characters, without
+  control characters. The additional library shall hold at most 64 sounds and
+  40 MiB. Imports shall detect revision conflicts before commit, preserve other
+  edits and acknowledge durable storage. Only LAN-authenticated administrators
+  shall import. Audio reads shall require administrator or terminal authentication;
+  app and anonymous clients shall not read it. Paths shall be canonical.
+  Backups shall include referenced private audio, catalog and selection, and
+  validate hashes and format before restore. Nokia shall remain built in.
+verification: |
+  Exercise invalid PCM, names, IDs, duration/count/byte limits and revision conflicts.
+  Import/select through HTTP, reject unauthorized readers/writers, compare exact
+  audio bytes and reload state. Round-trip private audio through backup/restore,
+  rejecting missing/corrupt references. Check browser import conversion and preview.

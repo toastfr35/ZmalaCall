@@ -2,6 +2,7 @@
 'use strict';
 const { own } = require('./validation');
 const LANGUAGES = require('../zmala_terminal/common/shared/terminal-languages.json');
+const { ringtoneId } = require('./ringtones');
 
 /** Undefined preserves an existing setting; explicit null remains invalid.
  * @param {import('./types/contracts').JsonObject} update
@@ -97,6 +98,8 @@ function terminalProfileFields(profile, update) {
     c20_speaker_volume: speakerVolume(
       proposed(update, 'c20_speaker_volume', profile.c20_speaker_volume ?? 50),
     ),
+    // @llr LLR-SRV-CONFIG-024
+    ringtone: ringtoneId(proposed(update, 'ringtone', profile.ringtone ?? 'nokia')),
     terminal_settings: mediaDevices(update),
   };
 }

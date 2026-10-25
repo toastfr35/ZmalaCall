@@ -7,6 +7,7 @@ from pathlib import Path
 from zmala_terminal.common.config_validation import validate
 from zmala_terminal.common.json_storage import write_json
 from zmala_terminal.common.photo_cache import PhotoCache, MAX_BYTES
+from zmala_terminal.common.ringtones import RingtoneCache
 
 from zmala_terminal.common.paths import ROOT as ROOT
 
@@ -40,12 +41,14 @@ class Configuration:
         self.saved = None
         self.opener = urllib.request.build_opener(NoCredentialRedirect())
         self.photos = PhotoCache(ROOT / 'data', lambda route: self.request(route))
+        self.ringtones = RingtoneCache(ROOT / 'data/ringtones', lambda route: self.request(route))
 
     def deactivate(self, erase=False):
         """Cancel writes under the same lock as persist, so a late poll cannot recreate an erased cache."""
         with self.lock:
             self.cancelled = True
             self.photos.close()
+            self.ringtones.close()
             if erase:
                 self.cache.unlink(missing_ok=True)
 
@@ -125,6 +128,8 @@ class Configuration:
         # Enrollment candidates do not start background work until committed.
         if persist:
             self.photos.schedule(config['contacts'])
+            # @llr LLR-TERM-AUDIO-009
+            self.ringtones.configure(config)
         return config
 
     def report(self, status):

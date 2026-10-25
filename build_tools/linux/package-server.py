@@ -20,6 +20,7 @@ def package(destination=None):
     paths += [ROOT / 'build_tools/linux' / name for name in SCRIPTS]
     paths += [ROOT / 'build_tools' / name for name in ('build-admin.cjs', 'convert-photo.py')]
     paths += [ROOT / 'zmala_terminal/common/shared/terminal-languages.json']
+    paths += [ROOT / 'zmala_terminal/common/assets/gentle-chime.wav']
     paths += [ROOT / 'docs' / name for name in ('general.md', 'server.md', 'terminal.md')]
     paths += [ROOT / 'build_tools/assets/installation-connections.png',
               ROOT / 'zmala_terminal/common/assets/presenter-pairing.png']

@@ -9,7 +9,7 @@ from zmala_terminal.common.theme import BG, FG, MUTED, PANEL, ACCENT, BUTTON_GRE
 
 MESSAGES = json.loads((Path(__file__).resolve().parents[1] / 'shared/settings-messages.json').read_text(encoding='utf-8'))
 KEYS = ('settings', 'language', 'auto_answer', 'auto_framing', 'c20_speaker_volume',
-        'carousel_portraits', 'never', 'open', 'accept', 'exit', 'current', 'tv_idle_seconds')
+        'carousel_portraits', 'never', 'open', 'accept', 'exit', 'current', 'tv_idle_seconds', 'ringtone')
 
 
 class SettingsView:
@@ -33,6 +33,10 @@ class SettingsView:
             return self.settings_text('never') if not value else f'{value//60} min' if value % 60 == 0 else f'{value} s'
         if key == 'auto_framing':
             return self.text('yes' if value else 'no')
+        # @llr LLR-TERM-AUDIO-009
+        if key == 'ringtone':
+            choices = self.model.config.get('ringtones', [{'id': 'nokia', 'name': 'Nokia'}])
+            return next((item['name'] for item in choices if item['id'] == value), 'Nokia')
         return f'{value} %' if key == 'c20_speaker_volume' else str(value)
 
     def render_settings(self):
@@ -89,6 +93,7 @@ class SettingsView:
         draft = self.settings_draft
         signature = (width, height, self.language, self.settings_open, int(self.settings_hold.progress*100),
                      draft.row, draft.editing, draft.index, draft.busy, draft.error,
+                     getattr(self, 'ringtone_preview_state', ''),
                      tuple(SettingsDraft.value(config, key) for key in FIELDS))
         if signature == self.settings_signature:
             return
@@ -168,6 +173,11 @@ class SettingsView:
         if draft.busy or draft.error:
             self.settings_label(self.text('wait' if draft.busy else 'help'), right_x, height-116,
                                 right_width, 17, MUTED if draft.busy else RED, max_height=38)
+        elif draft.editing and key == 'ringtone':
+            preview = getattr(self, 'ringtone_preview_state', '')
+            caption = self.text('help') if preview == 'error' else self.text('wait') if preview == 'waiting' else '0 %' if preview == 'muted' else '♫' if preview == 'playing' else ''
+            self.settings_label(caption, right_x, height-116, right_width, 17,
+                                RED if preview == 'error' else MUTED, max_height=38, tags='ringtone-preview')
         if not draft.busy:
             # Hints belong exclusively to the active panel.
             y, gap = height-72, 8

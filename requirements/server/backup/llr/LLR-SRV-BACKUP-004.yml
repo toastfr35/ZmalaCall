@@ -18,6 +18,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Backup shall use a versioned gzip JSON file map with SHA-256 checksums. Compressed input and expanded JSON shall each be limited to 64 MiB. Only four state files and at most 1000 permitted portrait files shall be accepted.
+  Backup shall use a versioned gzip JSON file map with SHA-256 checksums. Compressed input and expanded JSON shall each be limited to 64 MiB. Only four state files and at most 1000 permitted portrait and ringtone files combined shall be accepted.
 verification: |
   Round-trip valid data and reject size, count and format boundaries. Checksums detect corruption, not archive authenticity.

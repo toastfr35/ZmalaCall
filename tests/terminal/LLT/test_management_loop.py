@@ -25,7 +25,7 @@ class ManagementPumpTests(unittest.TestCase):
         loop.outgoing_deadline=None; loop.carousel_motion=None; loop.root=Mock(); loop.case_fan=Mock()
         for name in ('render','draw_connectivity','apply_config','press','action','tick_settings_access',
                      'show_callback_available','update_video_message','iterate_scanner','tick_tv_setup',
-                     'update_setup_display','draw_avatar','animate_ringing','tick_tv_idle','local_settings_result',
+                     'update_setup_display','draw_avatar','animate_ringing','tick_tv_idle','local_settings_result','tick_ringtone',
                      'pointer_visible','dial_ready','setup_result'):
             setattr(loop,name,Mock())
         return loop

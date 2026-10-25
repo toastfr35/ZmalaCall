@@ -30,6 +30,7 @@ class Element {
   }
   setAttribute() {}
   addEventListener() {}
+  pause() {}
   remove() {}
   querySelector() {
     return null;
@@ -40,17 +41,26 @@ class Element {
 }
 
 test('every terminal setting is attached to its visible section, including frame rate', () => {
-  const model = { ...defaultState(), terminal_statuses: {}, terminal_languages: [] };
+  const model = {
+    ...defaultState(),
+    terminal_statuses: {},
+    terminal_languages: [],
+    ringtone_choices: [{ id: 'nokia', name: 'Nokia' }],
+  };
   model.profiles.term1.video_fps = 20;
   const context = {
     state: { model },
     el: (tag, text) => new Element(tag, text),
     HTMLInputElement: Element,
   };
-  const source = vm
-    .source(path.join(__dirname, '../../../zmala_server/web/admin-terminalfields.js'), 'utf8')
-    .replace(/^import[^;]+;\s*/gm, '')
-    .replace(/^export /gm, '');
+  const source = ['ringtones', 'terminalfields']
+    .map((name) =>
+      vm
+        .source(path.join(__dirname, `../../../zmala_server/web/admin-${name}.js`), 'utf8')
+        .replace(/^import[^;]+;\s*/gm, '')
+        .replace(/^export /gm, ''),
+    )
+    .join('\n');
   vm.runInNewContext(source, context);
   const form = { fields: {} };
   const sections = new Element('form');
@@ -70,7 +80,12 @@ test('every terminal setting is attached to its visible section, including frame
 test('terminal drafts retain their original revision and setup downloads propagate failures', async () => {
   const requests = [],
     actions = [];
-  const model = { ...defaultState(), terminal_statuses: {}, terminal_languages: [] };
+  const model = {
+    ...defaultState(),
+    terminal_statuses: {},
+    terminal_languages: [],
+    ringtone_choices: [{ id: 'nokia', name: 'Nokia' }],
+  };
   const context = {
     state: { model, refresh: async () => {} },
     el: (tag, text) => new Element(tag, text),
@@ -91,7 +106,7 @@ test('terminal drafts retain their original revision and setup downloads propaga
       return new Element('button', text);
     },
   };
-  for (const name of ['terminalfields', 'terminals']) {
+  for (const name of ['ringtones', 'terminalfields', 'terminals']) {
     const source = vm
       .source(path.join(__dirname, `../../../zmala_server/web/admin-${name}.js`), 'utf8')
       .replace(/^import[^;]+;\s*/gm, '')

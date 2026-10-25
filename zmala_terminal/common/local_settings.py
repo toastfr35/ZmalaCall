@@ -1,7 +1,7 @@
 """Settings drafts and the deliberate red-button hold; no native I/O."""
 from zmala_terminal.common.localization import LANGUAGES
 
-FIELDS = ('language', 'auto_answer', 'auto_framing', 'c20_speaker_volume', 'carousel_portraits', 'tv_idle_seconds', 'reset')
+FIELDS = ('language', 'auto_answer', 'auto_framing', 'c20_speaker_volume', 'ringtone', 'carousel_portraits', 'tv_idle_seconds', 'reset')
 TV_IDLE_DELAYS = (30, 60, 120, 300, 600, 1200, 0)
 ANSWER_DELAYS = (0, 10, 30, 60, 120, 300, 600)
 
@@ -49,15 +49,16 @@ class SettingsDraft:
         if key == 'auto_answer':
             return config.get('auto_answer_seconds', 10) if config.get(key) else 0
         return config.get(key, {'language': 'en', 'auto_framing': False,
-                               'c20_speaker_volume': 50, 'carousel_portraits': 3, 'tv_idle_seconds': 30}.get(key))
+                               'c20_speaker_volume': 50, 'ringtone': 'nokia', 'carousel_portraits': 3, 'tv_idle_seconds': 30}.get(key))
 
-    # @llr LLR-TERM-CONFIG-021
+    # @llr LLR-TERM-CONFIG-021, LLR-TERM-AUDIO-009
     def open(self, config):
         if self.key == 'reset':
             raise ValueError('Reset uses its own confirmation page')
         self.editing, self.error = True, False
         key, value = self.key, self.value(config, self.key)
         self.options = (sorted(LANGUAGES, key=lambda code: LANGUAGES[code]['name']) if key == 'language'
+                        else [item['id'] for item in config.get('ringtones', [{'id': 'nokia'}])] if key == 'ringtone'
                         else list(ANSWER_DELAYS) if key == 'auto_answer'
                         else list(TV_IDLE_DELAYS) if key == 'tv_idle_seconds'
                         else [False, True] if key == 'auto_framing'

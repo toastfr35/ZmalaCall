@@ -11,7 +11,8 @@
     "Accept",
     "Exit",
     "Current value",
-    "Return to TV"
+    "Return to TV",
+    "Ringtone"
   ],
   "fr": [
     "Réglages",
@@ -25,7 +26,8 @@
     "Accepter",
     "Quitter",
     "Valeur actuelle",
-    "Retour à la télévision"
+    "Retour à la télévision",
+    "Sonnerie"
   ],
   "es": [
     "Ajustes",
@@ -39,7 +41,8 @@
     "Aceptar",
     "Salir",
     "Valor actual",
-    "Volver a la televisión"
+    "Volver a la televisión",
+    "Tono de llamada"
   ],
   "pt": [
     "Definições",
@@ -53,7 +56,8 @@
     "Aceitar",
     "Sair",
     "Valor atual",
-    "Voltar à televisão"
+    "Voltar à televisão",
+    "Toque de chamada"
   ],
   "de": [
     "Einstellungen",
@@ -67,7 +71,8 @@
     "Übernehmen",
     "Verlassen",
     "Aktueller Wert",
-    "Zurück zum Fernsehen"
+    "Zurück zum Fernsehen",
+    "Klingelton"
   ],
   "it": [
     "Impostazioni",
@@ -81,7 +86,8 @@
     "Conferma",
     "Esci",
     "Valore attuale",
-    "Torna alla TV"
+    "Torna alla TV",
+    "Suoneria"
   ],
   "nl": [
     "Instellingen",
@@ -95,7 +101,8 @@
     "Bevestigen",
     "Sluiten",
     "Huidige waarde",
-    "Terug naar tv"
+    "Terug naar tv",
+    "Beltoon"
   ],
   "da": [
     "Indstillinger",
@@ -109,7 +116,8 @@
     "Godkend",
     "Afslut",
     "Nuværende værdi",
-    "Tilbage til TV"
+    "Tilbage til TV",
+    "Ringetone"
   ],
   "sv": [
     "Inställningar",
@@ -123,7 +131,8 @@
     "Godkänn",
     "Avsluta",
     "Nuvarande värde",
-    "Tillbaka till TV"
+    "Tillbaka till TV",
+    "Ringsignal"
   ],
   "nb": [
     "Innstillinger",
@@ -137,7 +146,8 @@
     "Godta",
     "Avslutt",
     "Gjeldende verdi",
-    "Tilbake til TV"
+    "Tilbake til TV",
+    "Ringetone"
   ],
   "nn": [
     "Innstillingar",
@@ -151,7 +161,8 @@
     "Godta",
     "Avslutt",
     "Gjeldande verdi",
-    "Tilbake til TV"
+    "Tilbake til TV",
+    "Ringjetone"
   ],
   "fi": [
     "Asetukset",
@@ -165,7 +176,8 @@
     "Hyväksy",
     "Poistu",
     "Nykyinen arvo",
-    "Takaisin televisioon"
+    "Takaisin televisioon",
+    "Soittoääni"
   ],
   "is": [
     "Stillingar",
@@ -179,7 +191,8 @@
     "Samþykkja",
     "Loka",
     "Núverandi gildi",
-    "Aftur í sjónvarp"
+    "Aftur í sjónvarp",
+    "Hringitónn"
   ],
   "fo": [
     "Stillingar",
@@ -193,7 +206,8 @@
     "Góðtak",
     "Far út",
     "Núverandi virði",
-    "Aftur til sjónvarp"
+    "Aftur til sjónvarp",
+    "Ringitóni"
   ],
   "et": [
     "Seaded",
@@ -207,7 +221,8 @@
     "Kinnita",
     "Välju",
     "Praegune väärtus",
-    "Tagasi telerisse"
+    "Tagasi telerisse",
+    "Helin"
   ],
   "lv": [
     "Iestatījumi",
@@ -221,7 +236,8 @@
     "Apstiprināt",
     "Iziet",
     "Pašreizējā vērtība",
-    "Atgriezties pie TV"
+    "Atgriezties pie TV",
+    "Zvana signāls"
   ],
   "lt": [
     "Nustatymai",
@@ -235,7 +251,8 @@
     "Patvirtinti",
     "Išeiti",
     "Dabartinė reikšmė",
-    "Grįžti į televiziją"
+    "Grįžti į televiziją",
+    "Skambėjimo tonas"
   ],
   "pl": [
     "Ustawienia",
@@ -249,7 +266,8 @@
     "Zatwierdź",
     "Wyjdź",
     "Obecna wartość",
-    "Powrót do telewizji"
+    "Powrót do telewizji",
+    "Dzwonek"
   ],
   "cs": [
     "Nastavení",
@@ -263,7 +281,8 @@
     "Potvrdit",
     "Zavřít",
     "Aktuální hodnota",
-    "Zpět k televizi"
+    "Zpět k televizi",
+    "Vyzvánění"
   ],
   "sk": [
     "Nastavenia",
@@ -277,7 +296,8 @@
     "Potvrdiť",
     "Zavrieť",
     "Aktuálna hodnota",
-    "Späť k televízii"
+    "Späť k televízii",
+    "Zvonenie"
   ],
   "hu": [
     "Beállítások",
@@ -291,7 +311,8 @@
     "Elfogadás",
     "Kilépés",
     "Jelenlegi érték",
-    "Vissza a tévéhez"
+    "Vissza a tévéhez",
+    "Csengőhang"
   ],
   "ro": [
     "Setări",
@@ -305,7 +326,8 @@
     "Acceptă",
     "Ieșire",
     "Valoare actuală",
-    "Înapoi la televizor"
+    "Înapoi la televizor",
+    "Ton de apel"
   ],
   "bg": [
     "Настройки",
@@ -319,7 +341,8 @@
     "Приемане",
     "Изход",
     "Текуща стойност",
-    "Обратно към телевизията"
+    "Обратно към телевизията",
+    "Мелодия на звънене"
   ],
   "hr": [
     "Postavke",
@@ -333,7 +356,8 @@
     "Prihvati",
     "Izađi",
     "Trenutna vrijednost",
-    "Povratak na TV"
+    "Povratak na TV",
+    "Melodija zvona"
   ],
   "bs": [
     "Postavke",
@@ -347,7 +371,8 @@
     "Prihvati",
     "Izađi",
     "Trenutna vrijednost",
-    "Povratak na TV"
+    "Povratak na TV",
+    "Melodija zvona"
   ],
   "sr": [
     "Подешавања",
@@ -361,7 +386,8 @@
     "Прихвати",
     "Изађи",
     "Тренутна вредност",
-    "Повратак на ТВ"
+    "Повратак на ТВ",
+    "Мелодија звона"
   ],
   "sl": [
     "Nastavitve",
@@ -375,7 +401,8 @@
     "Potrdi",
     "Izhod",
     "Trenutna vrednost",
-    "Nazaj na TV"
+    "Nazaj na TV",
+    "Zvonjenje"
   ],
   "mk": [
     "Поставки",
@@ -389,7 +416,8 @@
     "Прифати",
     "Излез",
     "Тековна вредност",
-    "Назад кон ТВ"
+    "Назад кон ТВ",
+    "Мелодија на ѕвонење"
   ],
   "sq": [
     "Cilësimet",
@@ -403,7 +431,8 @@
     "Prano",
     "Dil",
     "Vlera aktuale",
-    "Kthehu te TV"
+    "Kthehu te TV",
+    "Zilja"
   ],
   "el": [
     "Ρυθμίσεις",
@@ -417,7 +446,8 @@
     "Αποδοχή",
     "Έξοδος",
     "Τρέχουσα τιμή",
-    "Επιστροφή στην τηλεόραση"
+    "Επιστροφή στην τηλεόραση",
+    "Ήχος κλήσης"
   ],
   "tr": [
     "Ayarlar",
@@ -431,7 +461,8 @@
     "Kabul et",
     "Çık",
     "Geçerli değer",
-    "TV'ye dön"
+    "TV'ye dön",
+    "Zil sesi"
   ],
   "mt": [
     "Settings",
@@ -445,7 +476,8 @@
     "Aċċetta",
     "Oħroġ",
     "Valur attwali",
-    "Lura għat-TV"
+    "Lura għat-TV",
+    "Tonalità tas-sejħa"
   ],
   "ga": [
     "Socruithe",
@@ -459,7 +491,8 @@
     "Glac leis",
     "Scoir",
     "Luach reatha",
-    "Fill ar an teilifís"
+    "Fill ar an teilifís",
+    "Clingthon"
   ],
   "cy": [
     "Gosodiadau",
@@ -473,7 +506,8 @@
     "Derbyn",
     "Gadael",
     "Gwerth cyfredol",
-    "Dychwelyd i'r teledu"
+    "Dychwelyd i'r teledu",
+    "Tôn ffôn"
   ],
   "gd": [
     "Roghainnean",
@@ -487,7 +521,8 @@
     "Gabh ris",
     "Fàg",
     "Luach làithreach",
-    "Till dhan telebhisean"
+    "Till dhan telebhisean",
+    "Fonn-fòn"
   ],
   "ca": [
     "Configuració",
@@ -501,7 +536,8 @@
     "Accepta",
     "Surt",
     "Valor actual",
-    "Torna a la televisió"
+    "Torna a la televisió",
+    "To de trucada"
   ],
   "eu": [
     "Ezarpenak",
@@ -515,7 +551,8 @@
     "Onartu",
     "Irten",
     "Uneko balioa",
-    "Itzuli telebistara"
+    "Itzuli telebistara",
+    "Dei-tonua"
   ],
   "gl": [
     "Axustes",
@@ -529,7 +566,8 @@
     "Aceptar",
     "Saír",
     "Valor actual",
-    "Volver á televisión"
+    "Volver á televisión",
+    "Ton de chamada"
   ],
   "lb": [
     "Astellungen",
@@ -543,7 +581,8 @@
     "Akzeptéieren",
     "Zoumaachen",
     "Aktuelle Wäert",
-    "Zréck bei d'Tëlee"
+    "Zréck bei d'Tëlee",
+    "Klingeltoun"
   ],
   "br": [
     "Arventennoù",
@@ -557,7 +596,8 @@
     "Degemer",
     "Kuitaat",
     "Talvoud a-vremañ",
-    "Distreiñ d'ar skinwel"
+    "Distreiñ d'ar skinwel",
+    "Soniri"
   ],
   "co": [
     "Paràmetri",
@@ -571,7 +611,8 @@
     "Accetta",
     "Esci",
     "Valore attuale",
-    "Torna à a televisione"
+    "Torna à a televisione",
+    "Suneria"
   ],
   "oc": [
     "Paramètres",
@@ -585,7 +626,8 @@
     "Acceptar",
     "Sortir",
     "Valor actuala",
-    "Tornar a la television"
+    "Tornar a la television",
+    "Sonariá"
   ],
   "sc": [
     "Impostatziones",
@@ -599,7 +641,8 @@
     "Atzeta",
     "Essi",
     "Valore atuale",
-    "Torra a sa televisione"
+    "Torra a sa televisione",
+    "Soneria"
   ],
   "rm": [
     "Parameters",
@@ -613,7 +656,8 @@
     "Acceptar",
     "Sortir",
     "Valur actuala",
-    "Enavos a la televisiun"
+    "Enavos a la televisiun",
+    "Tun da clom"
   ],
   "ru": [
     "Настройки",
@@ -627,7 +671,8 @@
     "Принять",
     "Выйти",
     "Текущее значение",
-    "Возврат к телевидению"
+    "Возврат к телевидению",
+    "Мелодия звонка"
   ],
   "uk": [
     "Налаштування",
@@ -641,7 +686,8 @@
     "Прийняти",
     "Вийти",
     "Поточне значення",
-    "Повернення до телебачення"
+    "Повернення до телебачення",
+    "Мелодія дзвінка"
   ],
   "be": [
     "Налады",
@@ -655,7 +701,8 @@
     "Прыняць",
     "Выйсці",
     "Бягучае значэнне",
-    "Вярнуцца да тэлебачання"
+    "Вярнуцца да тэлебачання",
+    "Мелодыя званка"
   ],
   "hy": [
     "Կարգավորումներ",
@@ -669,7 +716,8 @@
     "Հաստատել",
     "Ելք",
     "Ընթացիկ արժեք",
-    "Վերադառնալ հեռուստացույցին"
+    "Վերադառնալ հեռուստացույցին",
+    "Զանգի ձայն"
   ],
   "ka": [
     "პარამეტრები",
@@ -683,7 +731,8 @@
     "დადასტურება",
     "გასვლა",
     "მიმდინარე მნიშვნელობა",
-    "ტელევიზიაზე დაბრუნება"
+    "ტელევიზიაზე დაბრუნება",
+    "ზარის მელოდია"
   ],
   "az": [
     "Parametrlər",
@@ -697,7 +746,8 @@
     "Qəbul et",
     "Çıx",
     "Cari dəyər",
-    "TV-yə qayıt"
+    "TV-yə qayıt",
+    "Zəng səsi"
   ],
   "kk": [
     "Баптаулар",
@@ -711,7 +761,8 @@
     "Қабылдау",
     "Шығу",
     "Ағымдағы мән",
-    "Теледидарға оралу"
+    "Теледидарға оралу",
+    "Қоңырау үні"
   ],
   "ky": [
     "Жөндөөлөр",
@@ -725,7 +776,8 @@
     "Кабыл алуу",
     "Чыгуу",
     "Учурдагы маани",
-    "Сыналгыга кайтуу"
+    "Сыналгыга кайтуу",
+    "Чалуу обону"
   ],
   "uz": [
     "Sozlamalar",
@@ -739,7 +791,8 @@
     "Qabul qilish",
     "Chiqish",
     "Joriy qiymat",
-    "Televizorga qaytish"
+    "Televizorga qaytish",
+    "Qo‘ng‘iroq ohangi"
   ],
   "tk": [
     "Sazlamalar",
@@ -753,7 +806,8 @@
     "Kabul et",
     "Çyk",
     "Häzirki baha",
-    "Telewizora dolanmak"
+    "Telewizora dolanmak",
+    "Jaň sazy"
   ],
   "tg": [
     "Танзимот",
@@ -767,7 +821,8 @@
     "Қабул кардан",
     "Баромадан",
     "Қимати ҷорӣ",
-    "Бозгашт ба телевизион"
+    "Бозгашт ба телевизион",
+    "Оҳанги занг"
   ],
   "mn": [
     "Тохиргоо",
@@ -781,7 +836,8 @@
     "Зөвшөөрөх",
     "Гарах",
     "Одоогийн утга",
-    "Зурагт руу буцах"
+    "Зурагт руу буцах",
+    "Дуудлагын ая"
   ],
   "zh-Hans": [
     "设置",
@@ -795,7 +851,8 @@
     "确认",
     "退出",
     "当前值",
-    "返回电视"
+    "返回电视",
+    "铃声"
   ],
   "zh-Hant": [
     "設定",
@@ -809,7 +866,8 @@
     "確認",
     "離開",
     "目前值",
-    "返回電視"
+    "返回電視",
+    "鈴聲"
   ],
   "ja": [
     "設定",
@@ -823,7 +881,8 @@
     "決定",
     "終了",
     "現在の値",
-    "テレビに戻る"
+    "テレビに戻る",
+    "着信音"
   ],
   "ko": [
     "설정",
@@ -837,7 +896,8 @@
     "확인",
     "나가기",
     "현재 값",
-    "TV로 돌아가기"
+    "TV로 돌아가기",
+    "벨소리"
   ],
   "vi": [
     "Cài đặt",
@@ -851,7 +911,8 @@
     "Xác nhận",
     "Thoát",
     "Giá trị hiện tại",
-    "Trở về TV"
+    "Trở về TV",
+    "Nhạc chuông"
   ],
   "th": [
     "การตั้งค่า",
@@ -865,7 +926,8 @@
     "ยืนยัน",
     "ออก",
     "ค่าปัจจุบัน",
-    "กลับไปดูทีวี"
+    "กลับไปดูทีวี",
+    "เสียงเรียกเข้า"
   ],
   "lo": [
     "ການຕັ້ງຄ່າ",
@@ -879,7 +941,8 @@
     "ຢືນຢັນ",
     "ອອກ",
     "ຄ່າປັດຈຸບັນ",
-    "ກັບໄປໂທລະພາບ"
+    "ກັບໄປໂທລະພາບ",
+    "ສຽງໂທເຂົ້າ"
   ],
   "km": [
     "ការកំណត់",
@@ -893,7 +956,8 @@
     "យល់ព្រម",
     "ចាកចេញ",
     "តម្លៃបច្ចុប្បន្ន",
-    "ត្រឡប់ទៅទូរទស្សន៍"
+    "ត្រឡប់ទៅទូរទស្សន៍",
+    "សំឡេងរោទ៍"
   ],
   "my": [
     "ဆက်တင်များ",
@@ -907,7 +971,8 @@
     "အတည်ပြုရန်",
     "ထွက်ရန်",
     "လက်ရှိတန်ဖိုး",
-    "တီဗီသို့ ပြန်သွားရန်"
+    "တီဗီသို့ ပြန်သွားရန်",
+    "ဖုန်းမြည်သံ"
   ],
   "id": [
     "Pengaturan",
@@ -921,7 +986,8 @@
     "Terima",
     "Keluar",
     "Nilai saat ini",
-    "Kembali ke TV"
+    "Kembali ke TV",
+    "Nada dering"
   ],
   "ms": [
     "Tetapan",
@@ -935,7 +1001,8 @@
     "Terima",
     "Keluar",
     "Nilai semasa",
-    "Kembali ke TV"
+    "Kembali ke TV",
+    "Nada dering"
   ],
   "fil": [
     "Mga setting",
@@ -949,7 +1016,8 @@
     "Tanggapin",
     "Lumabas",
     "Kasalukuyang halaga",
-    "Bumalik sa TV"
+    "Bumalik sa TV",
+    "Tunog ng tawag"
   ],
   "jv": [
     "Setelan",
@@ -963,7 +1031,8 @@
     "Tampa",
     "Metu",
     "Nilai saiki",
-    "Bali menyang TV"
+    "Bali menyang TV",
+    "Nada dering"
   ],
   "su": [
     "Setélan",
@@ -977,7 +1046,8 @@
     "Tampi",
     "Kaluar",
     "Nilai ayeuna",
-    "Balik ka TV"
+    "Balik ka TV",
+    "Nada hurung"
   ],
   "hi": [
     "सेटिंग्स",
@@ -991,7 +1061,8 @@
     "स्वीकारें",
     "बाहर जाएँ",
     "वर्तमान मान",
-    "टीवी पर वापस जाएँ"
+    "टीवी पर वापस जाएँ",
+    "रिंगटोन"
   ],
   "bn": [
     "সেটিংস",
@@ -1005,7 +1076,8 @@
     "গ্রহণ করুন",
     "বের হন",
     "বর্তমান মান",
-    "টিভিতে ফিরে যান"
+    "টিভিতে ফিরে যান",
+    "রিংটোন"
   ],
   "pa": [
     "ਸੈਟਿੰਗਾਂ",
@@ -1019,7 +1091,8 @@
     "ਸਵੀਕਾਰੋ",
     "ਬਾਹਰ ਜਾਓ",
     "ਮੌਜੂਦਾ ਮੁੱਲ",
-    "ਟੀਵੀ 'ਤੇ ਵਾਪਸ ਜਾਓ"
+    "ਟੀਵੀ 'ਤੇ ਵਾਪਸ ਜਾਓ",
+    "ਰਿੰਗਟੋਨ"
   ],
   "gu": [
     "સેટિંગ્સ",
@@ -1033,7 +1106,8 @@
     "સ્વીકારો",
     "બહાર નીકળો",
     "હાલનું મૂલ્ય",
-    "ટીવી પર પાછા જાઓ"
+    "ટીવી પર પાછા જાઓ",
+    "રિંગટોન"
   ],
   "mr": [
     "सेटिंग्ज",
@@ -1047,7 +1121,8 @@
     "स्वीकारा",
     "बाहेर पडा",
     "सध्याचे मूल्य",
-    "टीव्हीवर परत जा"
+    "टीव्हीवर परत जा",
+    "रिंगटोन"
   ],
   "ta": [
     "அமைப்புகள்",
@@ -1061,7 +1136,8 @@
     "ஏற்றுக்கொள்",
     "வெளியேறு",
     "தற்போதைய மதிப்பு",
-    "டிவிக்குத் திரும்பு"
+    "டிவிக்குத் திரும்பு",
+    "அழைப்பொலி"
   ],
   "te": [
     "సెట్టింగ్‌లు",
@@ -1075,7 +1151,8 @@
     "అంగీకరించు",
     "నిష్క్రమించు",
     "ప్రస్తుత విలువ",
-    "టీవీకి తిరిగి వెళ్ళండి"
+    "టీవీకి తిరిగి వెళ్ళండి",
+    "రింగ్‌టోన్"
   ],
   "kn": [
     "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
@@ -1089,7 +1166,8 @@
     "ಒಪ್ಪಿಕೊಳ್ಳಿ",
     "ನಿರ್ಗಮಿಸಿ",
     "ಪ್ರಸ್ತುತ ಮೌಲ್ಯ",
-    "ಟಿವಿಗೆ ಹಿಂತಿರುಗಿ"
+    "ಟಿವಿಗೆ ಹಿಂತಿರುಗಿ",
+    "ರಿಂಗ್‌ಟೋನ್"
   ],
   "ml": [
     "ക്രമീകരണങ്ങൾ",
@@ -1103,7 +1181,8 @@
     "അംഗീകരിക്കുക",
     "പുറത്തുകടക്കുക",
     "നിലവിലെ മൂല്യം",
-    "ടിവിയിലേക്ക് മടങ്ങുക"
+    "ടിവിയിലേക്ക് മടങ്ങുക",
+    "റിങ്‌ടോൺ"
   ],
   "or": [
     "ସେଟିଂସ୍",
@@ -1117,7 +1196,8 @@
     "ଗ୍ରହଣ କରନ୍ତୁ",
     "ବାହାରକୁ ଯାଆନ୍ତୁ",
     "ବର୍ତ୍ତମାନ ମୂଲ୍ୟ",
-    "ଟିଭିକୁ ଫେରନ୍ତୁ"
+    "ଟିଭିକୁ ଫେରନ୍ତୁ",
+    "ରିଙ୍ଗଟୋନ୍"
   ],
   "as": [
     "ছেটিংছ",
@@ -1131,7 +1211,8 @@
     "গ্ৰহণ কৰক",
     "বাহিৰ হওক",
     "বৰ্তমান মান",
-    "টিভিলৈ উভতি যাওক"
+    "টিভিলৈ উভতি যাওক",
+    "ৰিংটোন"
   ],
   "ne": [
     "सेटिङहरू",
@@ -1145,7 +1226,8 @@
     "स्वीकार्नुहोस्",
     "बाहिर निस्कनुहोस्",
     "हालको मान",
-    "टिभीमा फर्कनुहोस्"
+    "टिभीमा फर्कनुहोस्",
+    "रिङटोन"
   ],
   "si": [
     "සැකසුම්",
@@ -1159,7 +1241,8 @@
     "පිළිගන්න",
     "පිටවන්න",
     "වත්මන් අගය",
-    "රූපවාහිනියට ආපසු යන්න"
+    "රූපවාහිනියට ආපසු යන්න",
+    "නාද රටාව"
   ],
   "bo": [
     "སྒྲིག་འགོད།",
@@ -1173,7 +1256,8 @@
     "ངོས་ལེན།",
     "ཕྱིར་ཐོན།",
     "ད་ལྟའི་གྲངས་ཐང་།",
-    "བརྙན་འཕྲིན་ལ་ཕྱིར་ལོག"
+    "བརྙན་འཕྲིན་ལ་ཕྱིར་ལོག",
+    "ཁ་པར་འབོད་སྒྲ།"
   ],
   "dz": [
     "སྒྲིག་སྟངས།",
@@ -1187,7 +1271,8 @@
     "ངོས་ལེན།",
     "ཕྱིར་ཐོན།",
     "ད་ལྟོའི་གནས་གོང་།",
-    "བརྙན་འཕྲིན་ནང་ལོག་འགྱོ།"
+    "བརྙན་འཕྲིན་ནང་ལོག་འགྱོ།",
+    "ཁ་པར་འབོད་སྒྲ།"
   ],
   "ar": [
     "الإعدادات",
@@ -1201,7 +1286,8 @@
     "قبول",
     "خروج",
     "القيمة الحالية",
-    "العودة إلى التلفاز"
+    "العودة إلى التلفاز",
+    "نغمة الرنين"
   ],
   "he": [
     "הגדרות",
@@ -1215,7 +1301,8 @@
     "אישור",
     "יציאה",
     "ערך נוכחי",
-    "חזרה לטלוויזיה"
+    "חזרה לטלוויזיה",
+    "צלצול"
   ],
   "fa": [
     "تنظیمات",
@@ -1229,7 +1316,8 @@
     "تأیید",
     "خروج",
     "مقدار فعلی",
-    "بازگشت به تلویزیون"
+    "بازگشت به تلویزیون",
+    "آهنگ زنگ"
   ],
   "ur": [
     "ترتیبات",
@@ -1243,7 +1331,8 @@
     "قبول کریں",
     "باہر نکلیں",
     "موجودہ قدر",
-    "ٹی وی پر واپس جائیں"
+    "ٹی وی پر واپس جائیں",
+    "رنگ ٹون"
   ],
   "ps": [
     "امستنې",
@@ -1257,7 +1346,8 @@
     "منل",
     "وتل",
     "اوسنی ارزښت",
-    "تلویزیون ته بېرته تګ"
+    "تلویزیون ته بېرته تګ",
+    "د زنګ غږ"
   ],
   "ku": [
     "Mîheng",
@@ -1271,7 +1361,8 @@
     "Bipejirîne",
     "Derkeve",
     "Nirxa niha",
-    "Vegere televîzyonê"
+    "Vegere televîzyonê",
+    "Dengê telefonê"
   ],
   "ckb": [
     "ڕێکخستنەکان",
@@ -1285,7 +1376,8 @@
     "پەسەندکردن",
     "دەرچوون",
     "بەهای ئێستا",
-    "گەڕانەوە بۆ تەلەفزیۆن"
+    "گەڕانەوە بۆ تەلەفزیۆن",
+    "دەنگی زەنگ"
   ],
   "ug": [
     "تەڭشەكلەر",
@@ -1299,7 +1391,8 @@
     "قوبۇل قىلىش",
     "چىقىش",
     "ھازىرقى قىممەت",
-    "تېلېۋىزورغا قايتىش"
+    "تېلېۋىزورغا قايتىش",
+    "قوڭغۇراق ئاۋازى"
   ],
   "sd": [
     "سيٽنگون",
@@ -1313,7 +1406,8 @@
     "قبول ڪريو",
     "ٻاهر نڪرو",
     "موجوده قدر",
-    "ٽي وي ڏانهن واپس وڃو"
+    "ٽي وي ڏانهن واپس وڃو",
+    "رنگ ٽون"
   ],
   "dv": [
     "ސެޓިންގްސް",
@@ -1327,6 +1421,7 @@
     "ޤަބޫލުކުރޭ",
     "ނިކުމޭ",
     "މިހާރުގެ އަގު",
-    "ޓީވީއަށް އަނބުރާ ދިއުން"
+    "ޓީވީއަށް އަނބުރާ ދިއުން",
+    "ރިންގްޓޯން"
   ]
 }

@@ -1,6 +1,7 @@
 // Device field construction only; card identity, saving and navigation live in admin-terminals.
 import { el } from './admin-shared.js';
 import { state } from './admin-state.js';
+import { ringtoneField } from './admin-ringtones.js';
 
 /** @param {import('../types/admin-dom').TerminalForm} form @param {string} label @param {string} key @param {string | number} value @param {object} [options] */
 export function terminalField(form, label, key, value, options = {}) {
@@ -152,7 +153,7 @@ export function buildMediaFields(devices, media, id) {
     { type: 'number', min: '0', max: '100', step: '1', required: true },
   );
   volume.append(el('small', 'Linux C20 · calls and ringing. Applies when idle. Default: 50%.'));
-  media.append(hardware, resolution, frameRate, framing, audio, volume);
+  media.append(hardware, resolution, frameRate, framing, audio, volume, ringtoneField(devices, id));
 }
 
 /** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} general @param {string} id */

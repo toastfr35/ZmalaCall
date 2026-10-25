@@ -114,6 +114,7 @@ function buildDevicesForm(card, id) {
   // Keep the revision that produced these controls, even while polling updates state.model.
   const configurationVersion = state.model.configuration_version;
   const devices = terminalForm(card, 'Terminal settings', 'devices');
+  devices.configurationVersion = configurationVersion;
   query(devices, 'h3').remove();
   // Separate visual groups share one form and one save action.
   /** @param {string} title @param {string} [className] */
@@ -164,7 +165,7 @@ function buildDevicesForm(card, id) {
           currentId = terminalId(card);
         await api('/api/settings', 'PUT', {
           terminal_id: currentId,
-          configuration_version: configurationVersion,
+          configuration_version: devices.configurationVersion,
           display_name: state.model.profiles[currentId].display_name,
           auto_answer: terminalInput(devices, 'autoAnswer').checked,
           auto_answer_seconds: Number(fields.countdown.value),
@@ -177,6 +178,8 @@ function buildDevicesForm(card, id) {
           tv_idle_seconds: Number(fields.tvIdleSeconds.value),
           auto_framing: terminalInput(devices, 'autoFraming').checked,
           c20_speaker_volume: Number(fields.c20SpeakerVolume.value),
+          // @llr LLR-SRV-CONFIG-024
+          ringtone: fields.ringtone.value,
           camera: '',
           microphone: '',
           speaker: '',

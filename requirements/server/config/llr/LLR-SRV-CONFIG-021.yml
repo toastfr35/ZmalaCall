@@ -5,7 +5,7 @@ header: |
   Device-local compare-and-set
 level: 39.0
 links:
-- HLR-SRV-CONFIG-015: Qeg0QhgVf-TJOc4PKESBLgrxxD1VAR7LNyjK4LYM7dg=
+- HLR-SRV-CONFIG-015: gAwE5SfEuMli9jsyFAWJL5kpzudqR3AiwEKc8FPLxo4=
 normative: true
 ref: ''
 references:
@@ -24,6 +24,10 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Local writes shall permit only language, automatic answer, framing, volume, portrait count and TV timeout fields. Each field shall match its supplied previous value or already equal the requested value. A conflict shall return 409 before mutation. An unchanged retry shall preserve the revision and still wait for persistence.
+  Local writes shall permit only language, automatic answer, framing, volume,
+  ringtone, portrait count and TV timeout fields. Each field shall match its
+  supplied previous value or already equal the requested value. A conflict shall
+  return 409 before mutation. An unchanged retry shall preserve the revision and
+  still wait for persistence.
 verification: |
   Interleave local and administrator writes. Test forbidden fields, mismatched expected keys, conflicts, unchanged retries and delayed persistence.

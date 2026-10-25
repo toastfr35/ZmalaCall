@@ -1,6 +1,7 @@
 """Server deployment uses the terminal installer's SSH pinning and job monitor."""
 import ipaddress
 import json
+import re
 from pathlib import Path
 import shlex
 import sys
@@ -41,6 +42,13 @@ def migration_archive(directory, destination):
     files = [root / name for name in ('server.json', 'admin-password.json', 'callbacks.json', 'console-jobs.json')]
     files += list(root.glob('*-avatar.png'))
     files += list((root / 'photos').glob('*'))
+    for identity in state.get('ringtones', {}):
+        if not re.fullmatch(r'[a-f0-9]{64}', identity):
+            raise InstallError('Invalid ringtone identity in migration data.')
+        sound = root / 'ringtones' / (identity + '.wav')
+        if not sound.is_file():
+            raise InstallError('A referenced ringtone file is missing.')
+        files.append(sound)
     with tarfile.open(destination, 'w:gz') as archive:
         for path in files:
             if not path.exists():

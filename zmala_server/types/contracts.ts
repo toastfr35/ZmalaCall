@@ -51,9 +51,16 @@ export interface TerminalProfile {
   carousel_portraits: 3 | 5;
   tv_idle_seconds: number;
   c20_speaker_volume: number;
+  ringtone?: string;
   terminal_settings: TerminalSettings;
   /** Retained in older snapshots; current contacts are derived from accounts. */
   contacts?: { id: string }[];
+}
+export type RingtoneLibrary = Record<string, { name: string; bytes: number }>;
+export interface RingtoneChoice {
+  id: string;
+  name: string;
+  url: string;
 }
 export interface Group {
   name: string;
@@ -61,6 +68,7 @@ export interface Group {
   members: string[];
 }
 export interface ServerState {
+  ringtones?: RingtoneLibrary;
   schema_version: number;
   configuration_version: number;
   host: string;
@@ -102,6 +110,8 @@ export interface TerminalContact {
   presence?: 'available' | 'push' | 'offline';
 }
 export interface TerminalConfiguration {
+  ringtone?: string;
+  ringtones?: RingtoneChoice[];
   schema_version: number;
   configuration_version: number;
   device_id: string;

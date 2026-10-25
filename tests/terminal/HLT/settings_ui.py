@@ -1,14 +1,15 @@
 # @test T-HLT-012
-# @requirements HLR-TERM-CONFIG-016
+# @requirements HLR-TERM-CONFIG-016, HLR-TERM-AUDIO-001
 # @environment display
 # @plan Render settings on the real Tk UI and drive selection/draft transitions; assert only the active pane shows controls and cancellation preserves configuration.
+# Render the ringtone editor and exercise its debounced preview request through substituted playback; verify cancel and incoming-call interruption stop it without changing the selected ringtone.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Real Tk settings navigation/layout without SIP, camera or enrollment side effects."""
 from pathlib import Path
 import sys
 import time
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from zmala_terminal.common import main as main
 from zmala_terminal.common.local_settings import FIELDS
@@ -67,6 +68,23 @@ try:
                     hints = c.bbox('settings-hint')
                     split = c.winfo_width()*.39
                     assert (hints[0] > split) if editing else (hints[2] < split)
+    app.settings_draft.editing = False
+    app.settings_draft.row = FIELDS.index('ringtone')
+    app.usb_power = Mock(enabled=True, ringtone_preview_status='playing')
+    app.engine = None
+    app.press('green')
+    app.tick_ringtone(1000); app.tick_ringtone(1000.39)
+    app.usb_power.preview_tone.assert_not_called()
+    app.tick_ringtone(1000.4); app.root.update()
+    app.usb_power.preview_tone.assert_called_once()
+    assert app.settings_canvas.find_withtag('ringtone-preview')
+    saved_ringtone = app.model.config.get('ringtone', 'nokia')
+    app.press('red'); app.tick_ringtone(1001)
+    assert app.ringtone_preview_token is None and app.model.config.get('ringtone', 'nokia') == saved_ringtone
+    app.press('green'); app.tick_ringtone(1002)
+    app.model.state = State.RINGING; app.tick_ringtone(1003)
+    assert app.ringtone_preview_token is None
+    app.model.state = State.HOME; app.settings_draft.editing = False; app.settings_open = True
     app.settings_draft.row = FIELDS.index('reset')
     app.press('green')
     assert app.setup_stage == 'reset' and not app.settings_open
@@ -93,7 +111,7 @@ try:
         ImageGrab.grab(bbox=(app.root.winfo_rootx(), app.root.winfo_rooty(),
                             app.root.winfo_rootx()+app.root.winfo_width(),
                             app.root.winfo_rooty()+app.root.winfo_height())).save(sys.argv[1])
-    print('Settings: 95 languages, six editors, both focus sides at 900x620 and 1280x720; red hold, reset navigation and red cancel passed.')
+    print('Settings: 95 languages, seven editors, both focus sides at 900x620 and 1280x720; ringtone preview/cancel/call interruption, red hold and reset navigation passed.')
 finally:
     app.tv_control.close()
     app.text_renderer.close()

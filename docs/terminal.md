@@ -79,7 +79,7 @@ for portrait downloads. A late response cannot replace state from a newer operat
 ### 5. Configuration
 
 The server supplies the main terminal configuration. The local Settings page lets
-the user change language, automatic answer, framing, speaker volume, portrait count
+the user change language, automatic answer, framing, speaker volume, ringtone, portrait count
 and the return-to-TV timeout. Each editor lets the user accept or cancel a change.
 
 The terminal confirms a saved change only after the server accepts it. A rejected
@@ -430,9 +430,26 @@ inside the small-window layout.
 | Automatic answer | Never, 10 seconds, 30 seconds, 1, 2, 5 or 10 minutes |
 | Automatic framing | On/off; Pi C20 only |
 | Speaker volume | 0–100% |
+| Ringtone | Nokia (default) and the private server library |
 | Portraits | Three/five; short contact lists retain three positions |
 | Return to TV | 30 seconds (default), 1, 2, 5, 10, 20 minutes, Never |
 | Reset | Confirmed local reset and re-enrollment |
+
+Open Ringtone with green, then use left/right to hear the highlighted choice.
+Preview starts after 400 ms without another selection and plays for at most ten
+seconds through the C20 at the current speaker volume. It waits for a waking C20;
+zero volume remains silent. Green saves the choice after server acknowledgement;
+red cancels it. Leaving the editor or receiving a call stops preview immediately.
+The editor shows waiting, playing, muted or playback-failure feedback.
+
+`ringtones.py` downloads selected private audio asynchronously from the enrolled
+origin with terminal authentication, validates its canonical SHA-256 path and
+normalized PCM bytes, and atomically caches it under the profile's data folder.
+The catalog holds Nokia plus at most 64 private choices. Each custom WAV is mono
+16-bit PCM at 16 kHz and at most 30 seconds. Valid cached audio works offline;
+incoming calls use Nokia until a selected download becomes available. Reset
+cancels pending cache writes. `usb_power.py` owns bounded C20 preview playback,
+including installations without USB power switching; incoming ringing preempts it.
 
 Volume motion shows a vertical bar while held and for two seconds after release;
 a red exclamation indicates mixer failure. It changes speaker/ringtone playback,

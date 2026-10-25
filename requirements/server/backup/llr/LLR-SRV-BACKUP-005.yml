@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/LLT/ringtones.test.js
+  type: file
 - path: tests/server/LLT/backup-components.test.js
   type: file
 - path: zmala_server/backup-format.js
@@ -16,6 +18,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Backup validation shall reject unsupported schema versions, unsafe or duplicate paths, prototype keys and inconsistent account, profile, group or history records. It shall check credentials, picture dimensions, referenced pictures and checksums before changing live data.
+  Backup validation shall reject unsupported schema versions, unsafe or duplicate paths, prototype keys and inconsistent account, profile, group or history records. It shall check credentials, picture dimensions, referenced pictures and checksums before changing live data. Referenced ringtone files and catalog entries shall satisfy the normalized PCM format, content hash, name, count and byte limits before replacement.
 verification: |
   Mutate each structural boundary and verify validation fails with unchanged files and memory.
