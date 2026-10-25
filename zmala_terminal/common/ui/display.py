@@ -17,6 +17,9 @@ from zmala_terminal.common.configuration import ROOT
 # Match the visible webcam-to-battery gap to Bluetooth-to-terminal (~34 px).
 USB_STATUS_WIDTH = 60
 
+# @llr LLR-TERM-VIDEO-012
+INITIAL_VIDEO_GRACE = 8
+
 
 class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsView, UsbSetupView, TVSetupView):
     def build_ui(self):
@@ -58,13 +61,17 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         # Reserve the bottom-right fifth for the local camera child surface.
         self.missing_video_bottom = tk.Frame(self.video, bg=BG)
         self.missing_video_visible = False
+        self.video_started_at = None
+        self.video_seen = False
+        self.video_message_key = 'no_remote_video'
         message = tk.Frame(self.missing_video, bg=BG)
         message.place(relx=.5, rely=.5, anchor='center')
         camera = tk.Canvas(message, width=144, height=110, bg=BG, highlightthickness=0)
+        self.video_status_icon = camera
         camera.pack(pady=(0, 25))
         camera.create_rectangle(18, 25, 91, 85, outline=MUTED, width=5)
         camera.create_polygon(91, 42, 125, 26, 125, 84, 91, 68, fill=BG, outline=MUTED, width=5)
-        camera.create_line(12, 9, 133, 102, fill=FG, width=6)
+        camera.create_line(12, 9, 133, 102, fill=FG, width=6, tags='unavailable')
         self.video_message = tk.Label(message, text='', bg=BG, fg=FG)
         self.video_message.pack()
         self.video_reassurance = tk.Label(message, text='', bg=BG, fg=MUTED)
@@ -97,8 +104,8 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
     def fit_text(self):
         """Fit longer translations and scripts into the available display width."""
         width = max(700, self.root.winfo_width() - 80)
-        self.video_message.configure(text=self.text('no_remote_video'))
-        self.video_reassurance.configure(text=self.text('audio_continues'))
+        self.video_message.configure(text=self.text(self.video_message_key))
+        self.video_reassurance.configure(text=self.text('wait' if self.video_message_key == 'starting_video' else 'audio_continues'))
         signature = (width, self.language, *(w.cget('text') for w in [self.title, self.name, self.subtitle, self.video_message, self.video_reassurance, self.call_name]))
         if signature == self.layout_signature:
             return
@@ -163,12 +170,23 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
 
     # @llr LLR-TERM-CALL-014, LLR-TERM-VIDEO-012
     def update_video_message(self):
-        if not self.setup_stage and self.model.state == State.IN_CALL:
+        in_call = not self.setup_stage and self.model.state == State.IN_CALL
+        if in_call:
             self.local_video.place(relx=1, rely=1, relwidth=.2, relheight=.2, anchor='se')
             self.local_video.lift()
+            if self.video_started_at is None:
+                self.video_started_at = time.monotonic()
         else:
             self.local_video.place_forget()
-        visible = not self.setup_stage and self.model.state == State.IN_CALL and bool(self.engine) and not self.engine.incoming_video_active()
+            self.video_started_at = None
+            self.video_seen = False
+        active = bool(in_call and self.engine and self.engine.incoming_video_active())
+        if active:
+            self.video_seen = True
+        visible = bool(in_call and self.engine and not active)
+        starting = visible and not self.video_seen and time.monotonic()-self.video_started_at < INITIAL_VIDEO_GRACE
+        self.video_message_key = 'starting_video' if starting else 'no_remote_video'
+        self.video_status_icon.itemconfigure('unavailable', state='hidden' if starting else 'normal')
         if visible == self.missing_video_visible:
             return
         self.missing_video_visible = visible

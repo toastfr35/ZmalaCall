@@ -22,8 +22,12 @@ scope: Core
 text: |
   Camera capture shall accept complete MJPEG frames from an eligible C20 node and
   retain only the latest waiting frame. Failed startup shall release acquired buffers
-  and descriptors. Stop shall join the capture worker before memory unmapping. Frame
+  and descriptors. After camera startup, stop shall join the capture worker before
+  memory unmapping. A worker whose initialization fails may release its own partial
+  allocations before exiting. Frame
   transfer shall retain timestamps. Empty capture ticks shall not report a new frame.
 verification: |
   Inject V4L2 setup and read failures and mixed device catalogs. Check frame
   ownership, timestamps, unchanged empty-tick counters and join-before-unmap cleanup.
+  Distinguish partial initialization cleanup on the worker from stop-time cleanup
+  after a successful capture start.

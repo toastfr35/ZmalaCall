@@ -1,7 +1,7 @@
 # @test T-HLT-002
 # @requirements HLR-TERM-CALL-009, HLR-TERM-UI-012, HLR-TERM-VIDEO-001
-# @environment hardware
-# @plan With a disposable configured server profile and display prepared, Drive the real Tk UI through ringing, answering, stalled video and ending with controlled native feedback; assert visible state and retained widget geometry.
+# @environment display
+# @plan With disposable state and substituted hardware, drive the real Tk UI through confirmation, answering, initial video wait, stalled video and ending. Render initial and missing-video phases in all 95 languages; inspect the eight-second boundary, neutral/warning icon, first-frame recovery, retained self-view and text geometry. Check notification counts and input guards without a server or real calls.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Exercise confirmation input and missing-video layouts without real calls."""
@@ -11,76 +11,39 @@ from pathlib import Path
 import sys
 import time
 from types import SimpleNamespace
+from unittest.mock import Mock, patch
+from PIL import Image
 
 ROOT = (Path(__file__).resolve().parents[3] / 'zmala_terminal')
 sys.path.insert(0, str(ROOT.parent))
-from zmala_terminal.common import main as main
 from zmala_terminal.common import theme as theme
-from zmala_terminal.common.configuration import Configuration
+from zmala_terminal.common.ui import display
 from zmala_terminal.common.localization import LANGUAGES, font_family
 from zmala_terminal.common.model import State
+from tests.support.terminal.ui_fixture import terminal_fixture, configuration
 
 
-class QuietEngine:
-    registered, core, call, video_active = True, None, None, False
-
-    def __init__(self, config, *args, **kwargs):
-        self.config, self.dialed = config, []
-        self.video_settings = SimpleNamespace(resolution=config.get('video_resolution', '720p'))
-        self.audio_profile = config.get('audio_profile', 'normal')
-
-    def incoming_video_active(self):
-        return self.video_active
-
-    def apply_settings(self, settings):
-        pass
-
-    def apply_speaker_volume(self):
-        pass
-
-    def diagnostics(self):
-        return {}
-
-    def core_refresh_registers(self, *args):
-        pass
-
-    def iterate(self):
-        pass
-
-    def dial(self, uri):
-        self.dialed.append(uri)
-
-    def end(self, **kwargs):
-        pass
-
-    def hold_call(self, call):
-        self.call = call
-
-    def call_decline(self, *args):
-        pass
-
-    def close(self):
-        pass
-
-
-class QuietMaintenance:
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def stop(self):
-        pass
-
-
-main.Engine, main.MaintenanceAgent = QuietEngine, QuietMaintenance
-app = main.Terminal(profile='call-feedback-ui')
-app.poll = lambda: None
-base = Configuration().fetch()
+fixture = terminal_fixture()
+app, directory = fixture.__enter__()
+portrait = directory/'data/photos/abcdef.png'
+portrait.parent.mkdir(parents=True, exist_ok=True)
+Image.new('RGB', (256, 256), (50, 100, 150)).save(portrait)
+portrait_root = patch('zmala_terminal.common.ui.carousel.ROOT', directory)
+portrait_root.start()
+base = configuration()
 for contact in base['contacts']:
-    contact['online'] = True
+    contact['photo'] = '/photos/abcdef.png'
 app.apply_config(base)
+app.engine.video_active = False
+app.engine.incoming_video_active.side_effect = lambda: app.engine.video_active
+app.engine.dialed = []
+app.engine.dial.side_effect = lambda uri: app.engine.dialed.append(uri)
+app.poll = lambda: None
 app.server_seen = time.monotonic()
 app.root.geometry('900x620')
 app.root.update()
+app.configuration = Mock()  # Prepared permission replies, without server access.
+app.configuration.photos.changed.return_value = False
 app.configuration.request = lambda *args: json.dumps({'id': app.model.contact['id'], 'online': True, 'can_call': True}).encode()
 
 if '--preview' in sys.argv:
@@ -100,7 +63,8 @@ try:
         app.press('green')
         app.root.update_idletasks()
         assert app.model.state == State.CONFIRMING and not app.engine.dialed
-        assert app.confirmation.winfo_ismapped() and app.confirmation.find_withtag('confirmed-person')
+        assert app.confirmation.winfo_ismapped() and app.confirmation.find_withtag('confirmed-person'), (
+            app.root.winfo_geometry(), app.confirmation.winfo_manager(), app.confirmation.find_all(), app.setup_stage)
         assert app.confirmation.winfo_width() == app.root.winfo_width()
         assert app.confirmation.winfo_height() == app.root.winfo_height()
         app.press(button)
@@ -194,6 +158,7 @@ try:
     assert app.model.state == State.CALLING
     deadline = time.monotonic() + 2
     while not app.engine.dialed and time.monotonic() < deadline:
+        app.drain_messages()
         app.root.update()
         time.sleep(.01)
     assert app.engine.dialed == [app.model.contact['sip_uri']]
@@ -202,8 +167,21 @@ try:
     for code in LANGUAGES:
         app.language = code
         app.font_family = font_family(code, app.available_fonts)
-        app.render()
-        app.root.update_idletasks()
+        app.video_started_at, app.video_seen = None, False
+        for elapsed, key, icon in [(0, 'starting_video', 'hidden'), (7.99, 'starting_video', 'hidden'),
+                                   (8, 'no_remote_video', 'normal')]:
+            with patch.object(display.time, 'monotonic', return_value=100+elapsed):
+                app.render()
+                app.root.update_idletasks()
+            assert app.video_message.cget('text') == app.text(key), (code, elapsed)
+            assert app.video_reassurance.cget('text') == app.text('wait' if key == 'starting_video' else 'audio_continues')
+            assert app.video_status_icon.itemcget('unavailable', 'state') == icon
+            for widget in [app.video_message, app.video_reassurance]:
+                x = widget.winfo_rootx() - app.video.winfo_rootx()
+                y = widget.winfo_rooty() - app.video.winfo_rooty()
+                assert 0 <= x and x + widget.winfo_width() <= app.video.winfo_width(), (code, elapsed, 'width')
+                assert 0 <= y and y + widget.winfo_height() <= app.video.winfo_height(), (code, elapsed, 'height')
+                assert widget.image, (code, elapsed, 'text missing')
         assert app.missing_video.winfo_ismapped() and app.video.winfo_ismapped(), code
         assert app.missing_video_bottom.winfo_ismapped(), code
         assert app.local_video.winfo_ismapped(), code
@@ -369,4 +347,5 @@ try:
         assert len(colors-flat)>10, 'Connectivity icon edges are not anti-aliased'
     print('95-language questions and video feedback; red/white contact counters, combined corner total, partial acknowledgment, smooth transparent icons and input guards passed.')
 finally:
-    app.close()
+    portrait_root.stop()
+    fixture.__exit__(None, None, None)

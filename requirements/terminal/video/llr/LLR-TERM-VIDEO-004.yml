@@ -27,6 +27,8 @@ references:
   type: file
 - path: zmala_terminal/linux/media.py
   type: file
+- path: zmala_terminal/linux/media/video/mjpeg-stream.c
+  type: file
 - path: zmala_terminal/linux/native_runtime.py
   type: file
 reviewed: null

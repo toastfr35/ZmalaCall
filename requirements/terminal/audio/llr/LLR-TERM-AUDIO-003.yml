@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/LLT/c20_media_cycle.py
+  type: file
 - path: tests/terminal/LLT/test_c20_pcm.py
   type: file
 - path: zmala_terminal/linux/media/audio/c20-alsa.conf
@@ -50,3 +52,8 @@ verification: |
   Expand the real ALSA configuration without opening hardware and inspect each
   hardware direction's format, channels, rate and supplied card identity. Check
   that policy selection precedes SDK loading and missing policy fails explicitly.
+  On the physical Pi with the terminal service stopped, repeatedly start and stop
+  native-rate C20 capture and silent playback, then add MJPEG capture after
+  the C20 microphone has remained RUNNING for 750 ms.
+  Check successful completion, microphone byte count and complete camera data;
+  record the requested/completed cycle count separately from portable evidence.

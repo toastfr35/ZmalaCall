@@ -1,7 +1,7 @@
 // @test T-LLT-073
-// @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-018
+// @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-018, LLR-TERM-VIDEO-019
 // @environment native-sdk
-// @plan Replace V4L2 open/ioctl/mmap/poll and thread creation/join boundaries, retaining the real capture loop, frame-rate controller, buffers and cleanup. Inject each startup failure, driver format clamping, EINTR/EAGAIN, invalid buffers and queue errors. Verify requested dimensions never silently change, only valid frames replace the latest slot, and join precedes unmap/close on stop.
+// @plan Replace microphone status, monotonic time/sleep, V4L2 open/ioctl/mmap/poll and thread creation/join boundaries, retaining the real capture loop, frame-rate controller, buffers and cleanup. Assert thread scheduling performs no camera I/O, readiness must remain RUNNING for 750 ms, readiness loss resets that interval, and timeout/cancellation prevent device access. Inject each startup failure, driver format clamping, EINTR/EAGAIN, invalid buffers and queue errors. Verify requested dimensions never silently change, only valid frames replace the latest slot, and join precedes unmap/close on stop.
 // @pass Every buffer ownership, counter, format and cleanup assertion passes without opening any real device. Hardware USB reliability remains a separate system test.
 #include "../../../zmala_terminal/linux/media/video/mjpeg-stream.h"
 #include <mediastreamer2/msfactory.h>
@@ -11,6 +11,7 @@
 #include <linux/videodev2.h>
 #include <poll.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -21,10 +22,14 @@
 static unsigned long failure;
 static int open_error, clamp, short_count, huge_buffer, map_error, thread_error;
 static int opened, closed, mapped, unmapped, joined, streaming, dq, polls, interrupted, q_error, dq_error;
-static uint64_t clock_ms;
+static uint64_t clock_ms, first_open_ms, expected_open_ms, cancel_ms;
+static int status_mode;
+static MjpegCamera *active_camera;
 static void *(*entry)(void *);
 static void *argument;
 static int fake_open(const char *name, int flags) {
+    assert(clock_ms >= expected_open_ms);
+    if (!first_open_ms) first_open_ms=clock_ms;
     assert(strcmp(name,"/fixture/C20") == 0 && (flags & O_NONBLOCK));
     if (open_error) { errno=ENODEV; return -1; } ++opened; return 91;
 }
@@ -60,13 +65,28 @@ static void *fake_mmap(void *address, size_t length, int protection, int flags, 
     ++mapped; void *data=malloc(length); assert(data); memset(data,0x66,length); return data;
 }
 static int fake_munmap(void *address, size_t length) {
-    assert(length == 128); assert(!entry || joined); ++unmapped; free(address); return 0;
+    assert(length == 128); assert(!entry || !polls || joined); ++unmapped; free(address); return 0;
 }
 static int fake_poll(struct pollfd *fds, nfds_t count, int timeout) {
     assert(count == 1 && fds[0].fd == 91 && timeout == 100);
     clock_ms+=1000; return polls++ ? 1 : 0;
 }
 static uint64_t fake_time(void) { return clock_ms; }
+static FILE *fake_fopen(const char *path, const char *mode) {
+    assert(strcmp(path,"/proc/asound/C20/pcm0c/sub0/status") == 0 && strcmp(mode,"r") == 0);
+    if (status_mode == 1) return NULL;
+    FILE *f=tmpfile(); assert(f);
+    if (status_mode == 4 || status_mode == 5) {
+        fputs(status_mode == 4 ? "owner_pid: 42\n" : "state:\n",f); rewind(f); return f;
+    }
+    int ready=status_mode != 2 && !(status_mode == 3 && clock_ms >= 501 && clock_ms < 1001);
+    fputs(ready ? "state: RUNNING\n" : "state: SETUP\n",f); rewind(f); return f;
+}
+static int fake_sleep(useconds_t microseconds) {
+    assert(microseconds == 20000); clock_ms+=20;
+    if (cancel_ms && clock_ms >= cancel_ms) atomic_store(&active_camera->stopping,true);
+    return 0;
+}
 static int fake_create(pthread_t *thread, const pthread_attr_t *attr, void *(*worker)(void *), void *data) {
     (void)attr; if (thread_error) return EAGAIN; *thread=pthread_self(); entry=worker; argument=data; return 0;
 }
@@ -80,12 +100,15 @@ static int fake_join(pthread_t thread, void **result) { (void)thread; (void)resu
 #define pthread_create fake_create
 #define pthread_join fake_join
 #define bctbx_get_cur_time_ms fake_time
+#define fopen fake_fopen
+#define usleep fake_sleep
 #include "../../../zmala_terminal/linux/media/video/mjpeg-stream.c"
 
 static void reset(MjpegCamera *c) {
     memset(c,0,sizeof(*c)); c->fd=-1; c->device="/fixture/C20"; c->size=(MSVideoSize){1920,1080}; c->fps=20;
     pthread_mutex_init(&c->mutex,NULL); atomic_init(&c->stopping,true); atomic_init(&c->received,0); atomic_init(&c->copied,0); atomic_init(&c->rejected,0);
     failure=0; open_error=clamp=short_count=huge_buffer=map_error=thread_error=0;
+    status_mode=0; first_open_ms=expected_open_ms=cancel_ms=0; active_camera=c;
     opened=closed=mapped=unmapped=joined=streaming=dq=polls=interrupted=q_error=dq_error=0; clock_ms=1; entry=NULL; argument=NULL;
 }
 static void cleanup(MjpegCamera *c) {
@@ -97,20 +120,42 @@ int main(void) {
     MSFactory *factory=ms_factory_new_with_voip(); MjpegCamera c;
     const unsigned long requests[]={VIDIOC_S_FMT,VIDIOC_REQBUFS,VIDIOC_QUERYBUF,VIDIOC_QBUF,VIDIOC_STREAMON};
     for (size_t i=0;i<sizeof(requests)/sizeof(requests[0]);++i) {
-        reset(&c); failure=requests[i]; int result=zmala_mjpeg_start(&c); assert(result == -1); cleanup(&c);
+        reset(&c); failure=requests[i]; int result=prepare_capture(&c); assert(result == -1); cleanup(&c);
     }
-    for (int which=0;which<7;++which) {
+    for (int which=0;which<6;++which) {
         reset(&c);
         if (which == 0) open_error=1; else if (which == 1) clamp=1; else if (which == 2) clamp=2;
-        else if (which == 3) short_count=1; else if (which == 4) huge_buffer=1; else if (which == 5) map_error=1; else thread_error=1;
-        int result=zmala_mjpeg_start(&c); assert(result == -1 && c.size.width == 1920 && c.size.height == 1080); cleanup(&c);
+        else if (which == 3) short_count=1; else if (which == 4) huge_buffer=1; else map_error=1;
+        int result=prepare_capture(&c); assert(result == -1 && c.size.width == 1920 && c.size.height == 1080); cleanup(&c);
     }
+    int result;
+    for (int configured=0;configured<2;++configured) {
+        reset(&c);
+        if (configured) { result=zmala_mjpeg_configure(&c); assert(result == 0 && opened == 1); }
+        thread_error=1; result=zmala_mjpeg_start(&c);
+        assert(result == -1 && !c.started && atomic_load(&c.stopping) && opened == closed); cleanup(&c);
+    }
+    for (int mode=0;mode<6;++mode) {
+        reset(&c); status_mode=mode < 2 ? mode+1 : mode >= 4 ? mode : 0;
+        if (mode == 2) cancel_ms=101;
+        result=zmala_mjpeg_start(&c); assert(result == 0 && c.started && !opened && clock_ms == 1);
+        if (mode == 3) atomic_store(&c.stopping,true);
+        entry(argument); assert(!opened && !mapped);
+        assert((mode < 2 || mode >= 4) ? clock_ms == 5001 : clock_ms == (mode == 2 ? 101u : 1u)); cleanup(&c);
+    }
+    reset(&c); status_mode=3; expected_open_ms=1751;
+    result=zmala_mjpeg_start(&c); assert(result == 0); entry(argument);
+    assert(first_open_ms >= 1751 && first_open_ms <= 1771); cleanup(&c);
+    reset(&c); failure=VIDIOC_QBUF; result=zmala_mjpeg_start(&c); assert(result == 0);
+    entry(argument); assert(mapped == unmapped && opened == closed && !polls); cleanup(&c);
     for (int mode=0;mode<3;++mode) {
-        reset(&c); int result=zmala_mjpeg_start(&c); assert(result == 0 && c.started && c.count == 4);
-        result=zmala_mjpeg_configure(&c); assert(result == 0 && opened == 1);
+        reset(&c); expected_open_ms=751; result=zmala_mjpeg_start(&c); assert(result == 0 && c.started && c.count == 0 && !opened);
+        result=zmala_mjpeg_start(&c); assert(result == 0 && !opened && clock_ms == 1);
         if (mode == 1) q_error=1;
         if (mode == 2) dq_error=1;
         entry(argument);
+        assert(first_open_ms >= 751 && first_open_ms <= 771 && opened == 1);
+        result=zmala_mjpeg_configure(&c); assert(result == 0 && opened == 1);
         assert(atomic_load(&c.received) == (mode == 0 ? 5u : mode == 1 ? 1u : 0u));
         assert(atomic_load(&c.copied) == (mode == 0 ? 2u : mode == 1 ? 1u : 0u));
         assert(atomic_load(&c.rejected) == (mode == 0 ? 3u : 0u));
