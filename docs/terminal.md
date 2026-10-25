@@ -670,10 +670,37 @@ check decoded images at both ends, including alternating callers and USB wake;
 configured/sent FPS alone can remain nonzero when the camera has failed.
 The C20 was also configured for USB runtime autosuspend after two idle seconds.
 The host rule `linux/99-zmalacall-c20.rules` now keeps only that USB device awake
-while powered, including after re-enumeration. This avoids the firmware's stalled
-audio/video resume path; it does not change the opt-in guarded five-minute hub
+while powered, including after re-enumeration. This removes automatic runtime
+suspend from the idle path; it does not change the opt-in guarded five-minute hub
 power-off. Confirm `power/control` is `on` on the actual C20 USB device when
 investigating an installation or upgrade.
+
+Further checks on the same day reproduced a C20 stall with `power/control=on`
+and zero runtime-suspended time. Independent, concurrent ALSA/V4L2 start/stop
+cycles also reproduced audio-parameter failures and video `STREAMON` errors,
+without either calling application. Runtime-suspend prevention alone is therefore
+not a complete resolution of this intermittent device-control failure. A USB
+power cycle recovers the tested unit; successful short call sequences cannot
+establish that a particular workaround eliminates the fault. Trials of fixed-rate,
+interface-close and settling-delay driver quirks were inconclusive; long control
+runs also passed without those overrides, so they are not installed as fixes.
+
+The explicit hardware plan `tests/terminal/LLT/c20_media_cycle.py` requires the
+terminal service to be stopped. It captures one second of native 16 kHz stereo
+microphone data, plays native 48 kHz stereo silence and captures 30 full-HD MJPEG
+frames concurrently per cycle. Results contain aggregate byte counts; temporary
+capture files are removed. Run it with the installed `c20-alsa.conf` policy and a
+private `--output` path, specifying the intended `--cycles` count. This verifies
+USB media startup, not speech quality, call transport or indefinite reliability.
+
+Successful October 25 test calls through the encrypted relay made received video
+available about 2.1–3.5 seconds after answer at the terminal and 2.3–2.8 seconds at
+the OnePlus phone. Phone measurements use its decoded-frame callback; the Pi
+measurement uses the decoded-video gate sampled by its UI. These are bounded
+samples with healthy C20 media, not a latency guarantee or display-scanout measure.
+The failed C20 case is excluded from that range and remains a separate reliability
+issue. In the captured successful trace, relay ICE checks completed about 1.9
+seconds after answer, before the first usable video picture.
 
 ### Automatic framing
 
