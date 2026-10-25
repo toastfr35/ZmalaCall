@@ -78,6 +78,8 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
+The speaker-volume editor uses 5% steps. Existing values between steps open at the nearest step and stay unchanged until accepted.
+
 The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.
 
 Red on the Settings list asks whether to exit: green confirms; red keeps the same list selection. Red within an editor only discards that draft. Neither exit answer changes saved configuration.
@@ -435,7 +437,7 @@ inside the small-window layout.
 | Language | Server-supported languages |
 | Automatic answer | Never, 10 seconds, 30 seconds, 1, 2, 5 or 10 minutes |
 | Automatic framing | On/off; Pi C20 only |
-| Speaker volume | 0–100% |
+| Speaker volume | 0–100%, in 5% steps |
 | Ringtone | Nokia (default) and the private server library |
 | Portraits | Three/five; short contact lists retain three positions |
 | Return to TV | 30 seconds (default), 1, 2, 5, 10, 20 minutes, Never |

@@ -4,6 +4,7 @@
 # @plan Render settings on the real Tk UI and drive selection/draft transitions; assert only the active pane shows controls and cancellation preserves configuration.
 # At both sizes, render French short values with the real Pango font and assert their final images retain the full text without ellipsis and stay inside their rows.
 # Render the exit confirmation in every supported language at both sizes; verify bounded question/buttons, red returns to the same selection and green exits without modifying configuration.
+# Open speaker volume at 50%, navigate right/left to 55%/50% and cancel; the saved value stays unchanged.
 # Render the ringtone editor and exercise its debounced preview request through substituted playback; verify left/right wrap selects the last/first visible choice without saving, and cancel and incoming-call interruption stop it without changing the selected ringtone.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
@@ -101,6 +102,14 @@ try:
                 assert bounds[1] >= 0 and bounds[3] <= c.winfo_height(), (language, size, tag, bounds)
             app.settings_draft.confirm_exit = False
     app.settings_draft.editing = False
+    app.model.config['c20_speaker_volume'] = 50
+    app.settings_draft.row = FIELDS.index('c20_speaker_volume')
+    app.press('green'); app.press('right'); app.root.update()
+    assert app.settings_draft.change(app.model.config)['c20_speaker_volume'] == 55
+    app.press('left'); app.root.update()
+    assert app.settings_draft.change(app.model.config)['c20_speaker_volume'] == 50
+    app.press('red')
+    assert app.model.config['c20_speaker_volume'] == 50
     app.settings_draft.row = FIELDS.index('ringtone')
     app.model.config['ringtones'] = [
         {'id': 'nokia', 'name': 'Nokia', 'url': '/api/ringtones/nokia.wav'},

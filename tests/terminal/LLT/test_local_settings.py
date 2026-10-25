@@ -1,7 +1,7 @@
 # @test T-LLT-019
 # @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-018, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022, LLR-TERM-CONFIG-023
 # @environment portable
-# @plan Drive timed red holds, setting drafts, incoming calls and delayed server acknowledgements with fake controllers; assert access timing, cancel/accept behavior, allowed values, revision ownership and deferred media changes.
+# @plan Drive timed red holds, setting drafts, incoming calls and delayed server acknowledgements with fake controllers; assert access timing, cancel/accept behavior, allowed values including every 5-percent volume step, clamped endpoints and nearest-step display for an existing saved value, revision ownership and deferred media changes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 import json
@@ -87,8 +87,21 @@ class LocalSettingsTests(unittest.TestCase):
         self.assertEqual(json.dumps(c), original)
         draft.index = 0
         self.assertEqual(draft.change(c), {'auto_answer': False, 'auto_answer_seconds': 10})
-        draft.row = 3; draft.open(c); draft.index = 100; draft.move(1)
-        self.assertEqual(draft.index, 100)
+        draft.row = 3; draft.open(c); draft.index = 20; draft.move(1)
+        self.assertEqual(draft.options[draft.index], 100)
+
+    def test_speaker_volume_choices_use_five_percent_steps_and_preserve_saved_value(self):
+        config_value = config() | {'c20_speaker_volume': 53}
+        draft = SettingsDraft(); draft.row = FIELDS.index('c20_speaker_volume'); draft.open(config_value)
+        self.assertEqual(draft.options, list(range(0, 101, 5)))
+        self.assertEqual(draft.change(config_value), {'c20_speaker_volume': 55})
+        self.assertEqual(draft.expected, {'c20_speaker_volume': 53})
+        self.assertEqual(config_value['c20_speaker_volume'], 53)
+        draft.move(-1); self.assertEqual(draft.options[draft.index], 50)
+        draft.move(1); self.assertEqual(draft.options[draft.index], 55)
+        for value, direction in ((0, -1), (100, 1)):
+            draft.open(config_value | {'c20_speaker_volume': value}); draft.move(direction)
+            self.assertEqual(draft.options[draft.index], value)
 
     def test_legacy_answer_delay_selects_next_supported_delay_not_never(self):
         for old, selected in ((5, 10), (20, 30), (90, 120)):

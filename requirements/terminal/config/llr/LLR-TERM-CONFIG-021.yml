@@ -30,11 +30,14 @@ text: |
   - Language: a supported language.
   - Automatic answer: Never, 10, 30, 60, 120, 300 or 600 seconds.
   - Automatic framing: on or off.
-  - Speaker volume: an integer from 0 through 100 percent.
+  - Speaker volume: 0 through 100 percent in 5-percent steps. An existing value
+    between steps shall open at the nearest step without changing the saved value
+    until accepted.
   - Ringtone: a choice from the server list, defaulting to Nokia.
   - Portrait count: 3 or 5.
   - TV return: Never, 30, 60, 120, 300, 600 or 1200 seconds.
   The default TV return interval shall be 30 seconds.
 verification: |
   Enumerate every editor option and check defaults, numeric limits and rejection of
-  unsupported values.
+  unsupported values. Check each volume step, both limits and opening an existing
+  between-step value without saving.

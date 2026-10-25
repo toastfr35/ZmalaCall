@@ -63,8 +63,10 @@ class SettingsDraft:
                         else list(ANSWER_DELAYS) if key == 'auto_answer'
                         else list(TV_IDLE_DELAYS) if key == 'tv_idle_seconds'
                         else [False, True] if key == 'auto_framing'
-                        else list(range(101)) if key == 'c20_speaker_volume' else [3, 5])
+                        else list(range(0, 101, 5)) if key == 'c20_speaker_volume' else [3, 5])
         self.index = self.options.index(value) if value in self.options else 0
+        if key == 'c20_speaker_volume' and value not in self.options:
+            self.index = min(range(len(self.options)), key=lambda i: abs(self.options[i]-value))
         if key == 'auto_answer' and value and value not in self.options:
             # Existing administrator values such as 5 or 90 seconds should
             # select the next supported delay, never silently select Never.

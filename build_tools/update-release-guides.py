@@ -178,6 +178,9 @@ def update_c20_guide():
                 'the draft, green saves and red discards it. Red on the list asks to exit: '
                 'green confirms; red stays. Saved changes go to the server. If saving fails, '
                 'retry after restoring the connection.')
+    for row in doc.tables[0].rows:
+        if row.cells[0].text == 'Speaker volume':
+            row.cells[1].text = '0–100%, in steps of 5%'
     doc.core_properties.author = 'ZmalaCall'
     doc.core_properties.last_modified_by = ''
     doc.save(path)

@@ -38,7 +38,7 @@ class RingtoneTests(unittest.TestCase):
         draft.move(1); self.assertEqual(draft.index, 0)
         draft.row = FIELDS.index('c20_speaker_volume'); draft.open({'c20_speaker_volume': 0})
         draft.move(-1); self.assertEqual(draft.index, 0)
-        draft.index = 100; draft.move(1); self.assertEqual(draft.index, 100)
+        draft.index = 20; draft.move(1); self.assertEqual(draft.options[draft.index], 100)
 
     def test_catalog_and_pcm_boundaries(self):
         data=sound();key,config=self.catalog(data)
