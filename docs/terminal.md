@@ -78,7 +78,7 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
-All terminal volume UI uses 5% steps, including Settings, held-middle motion and the server terminal editor. A held-middle gesture moves an existing between-step level to the next boundary in its motion direction. The speaker-volume editor uses 5% steps. Existing values between steps open at the nearest step and stay unchanged until accepted.
+All terminal volume UI uses 5% steps, including Settings, the middle-button volume page and the server terminal editor. Left/right on the volume page moves an existing between-step level to the next boundary in the chosen direction. The speaker-volume editor uses 5% steps. Existing values between steps open at the nearest step and stay unchanged until accepted.
 
 The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.
 
@@ -98,7 +98,7 @@ configuration wait until the terminal is idle. Supported live changes do not end
 
 The remote has left, right, green, red and middle controls. Green and red stickers
 identify the two action buttons. Button actions depend on the current page or call
-state. Holding the middle button permits relative speaker-volume adjustment by motion.
+state. Pressing the middle button opens a dedicated volume page; left/right changes volume and a second middle press closes it.
 
 The terminal detects remote connection, battery level and external charging power
 where the device reports them. It shows help when the remote is unavailable.
@@ -414,13 +414,14 @@ coalesces mixer work. The following mappings are implementation behavior, while
 | Green | Open confirmation, call/request/answer, open a setting or accept its draft |
 | Red | Cancel/decline/end, cancel a selected callback request, or discard/leave an editor |
 | Hold red for 7 seconds on the carousel | Open Settings; progress appears after two seconds |
-| Hold middle and move up/down | Relative speaker adjustment: five percentage points per 128 motion units |
+| Press middle | Open/close the dedicated horizontal volume page |
+| Left/right while volume is open | Decrease/increase speaker volume in 5% steps |
 
 Windows equivalents are Left/Right, Enter and Escape. F11 toggles fullscreen
 outside confirmation. Button repeat cannot confirm a call; release, another
 button, focus loss, disconnect or an incoming call cancels the settings hold.
 The Presenter green sticker covers the microphone button; red covers Teams.
-Middle is Pointer. Horizontal motion is ignored for volume.
+Middle is Pointer. Remote motion is ignored for volume. While the volume page is open, buttons do not navigate contacts, dial, hang up or open Settings. Call/state changes and setup/focus changes dismiss the page; an existing call continues.
 
 Settings has a list and editor; only the active side shows button hints, status
 icons are hidden, and the terminal serial appears at the bottom. Confirmed edits
@@ -459,11 +460,14 @@ incoming calls use Nokia until a selected download becomes available. Reset
 cancels pending cache writes. `usb_power.py` owns bounded C20 preview playback,
 including installations without USB power switching; incoming ringing preempts it.
 
-Volume motion shows a vertical bar while held and for two seconds after release;
-a red exclamation indicates mixer failure. It changes speaker/ringtone playback,
-not microphone gain/mute. Mixer requests coalesce on one worker at at most ten
-per second. Motion changes survive calls/core replacement in the current session;
-restart or a changed server volume restores the saved setting.
+The volume page covers the UI with one centered horizontal control, direction
+icons and the current percentage. Press middle to open it, click left/right for
+5% steps, and press middle again to close it. Button release does not close it,
+and it has no automatic timeout. A red exclamation indicates mixer failure.
+It changes speaker/ringtone playback, not microphone gain/mute. Mixer requests
+coalesce on one worker at at most ten per second, with a final pending value
+flushed on closing. Volume changes survive calls/core replacement in the current
+session; restart or a changed server volume restores the saved setting.
 
 Contact names stay within portrait frames. Online/offline bands use symbols and
 words. Green opens a separate call confirmation for an online contact or callback
@@ -515,8 +519,8 @@ different Pi does not transfer the Bluetooth controller identity.
 
 The first mapped button when TV power/input hides the UI wakes/selects the
 terminal and is consumed, as are presses while HDMI settles. It cannot also dial
-or change contacts. This includes the first middle/Pointer press: motion during
-that consumed hold does not adjust volume. Release and press again to adjust it.
+or change contacts. This includes the first middle/Pointer press: that consumed
+press does not open volume. Release and press again to open the volume page.
 With no CEC, normal button behavior remains available; unknown routing limits
 detection.
 After restart, a missing power observation still permits a previously qualified

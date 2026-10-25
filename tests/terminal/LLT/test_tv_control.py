@@ -331,12 +331,12 @@ class TVControlTests(unittest.TestCase):
         app.tv_control.handle_button.assert_called_once()
         Terminal.pointer_button(app, False)
         app.volume_control.pointer.assert_called_once_with(False)
-        # Once visible, the NEXT deliberate hold adjusts volume normally.
+        # Once visible, the NEXT deliberate click opens the volume page normally.
         app.tv_control.handle_button.return_value = False
         Terminal.pointer_button(app, True)
         app.volume_control.pointer.assert_called_with(True)
 
-    def test_delayed_pointer_visibility_requires_same_unreleased_press(self):
+    def test_delayed_pointer_visibility_requires_same_click_context(self):
         from zmala_terminal.common.main import Terminal
         app = SimpleNamespace(pointer_serial=1, keys_down={'pointer'}, volume_control=Mock(),
                               generation=1, model=TerminalModel(), closed=False)
@@ -344,10 +344,13 @@ class TVControlTests(unittest.TestCase):
         Terminal.pointer_visible(app, 1, state, 1)
         app.volume_control.pointer.assert_called_once_with(True)
         app.volume_control.reset_mock()
-        for generation, serial, held in ((0, 1, True), (1, 0, True), (1, 1, False)):
+        for generation, serial, held in ((0, 1, True), (1, 0, True)):
             app.keys_down = {'pointer'} if held else set()
             Terminal.pointer_visible(app, generation, state, serial)
         app.volume_control.pointer.assert_not_called()
+        app.keys_down=set()
+        Terminal.pointer_visible(app,1,state,1)
+        self.assertEqual([x.args for x in app.volume_control.pointer.call_args_list],[(True,),(False,)])
 
     def call_app(self):
         model = TerminalModel()

@@ -67,7 +67,7 @@ class LocalSettingsTests(unittest.TestCase):
             self.assertIsNone(app.settings_hold.started)
         self.assertEqual(app._press_action.call_count, 4)
 
-    def test_focus_loss_releases_motion_and_invalidates_pending_pointer(self):
+    def test_focus_loss_closes_volume_page_and_invalidates_pending_pointer(self):
         app = self.controller()
         app.keys_down.add('pointer')
         app.pointer_serial = 4
@@ -76,6 +76,7 @@ class LocalSettingsTests(unittest.TestCase):
         self.assertEqual(app.keys_down, set())
         self.assertEqual(app.pointer_serial, 5)
         app.volume_control.pointer.assert_called_once_with(False)
+        app.volume_control.dismiss.assert_called_once()
 
     def test_drafts_do_not_mutate_config_and_combine_auto_answer(self):
         c = config() | {'auto_answer': False, 'auto_answer_seconds': 10}

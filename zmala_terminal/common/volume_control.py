@@ -1,119 +1,122 @@
-"""Pointer-held vertical volume gesture and a transient, non-interactive overlay."""
+"""Middle-button volume page; left/right adjust C20 playback in five-percent steps."""
 import time
 import tkinter as tk
-from zmala_terminal.linux import c20_volume as c20_volume
-from zmala_terminal.common.theme import PANEL, FG, MUTED, GREEN, RED
+from zmala_terminal.linux import c20_volume
+from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED
 
 
-class VolumeGesture:
-    UNITS_PER_STEP = 128
-    PERCENT_PER_STEP = 5
-
+class VolumeLevel:
     def __init__(self, percent):
         self.percent = percent
-        self.held = False
-        self.remainder = 0
-
-    def hold(self, held):
-        self.held = held
-        self.remainder = 0
 
     # @llr LLR-TERM-REMOTE-016
-    def move(self, dy):
-        if not self.held:
-            return
-        self.remainder -= dy  # HID Y is negative when the remote moves up.
-        steps = int(self.remainder / self.UNITS_PER_STEP)
-        self.remainder -= steps * self.UNITS_PER_STEP
-        if steps:
-            step = self.PERCENT_PER_STEP
-            base = self.percent//step if steps > 0 else (self.percent+step-1)//step
-            self.percent = max(0, min(100, (base+steps)*step))
-        if self.percent in (0, 100):
-            self.remainder = 0  # Reversing direction at a limit responds immediately.
+    def adjust(self, button):
+        if button == 'right':
+            self.percent = min(100, (self.percent//5+1)*5)
+        elif button == 'left':
+            self.percent = max(0, ((self.percent+4)//5-1)*5)
 
 
 class VolumeControl:
-    def __init__(self, root, enabled, activity):
+    def __init__(self, root, enabled, activity, context=lambda: None):
         self.root, self.enabled, self.activity = root, enabled, activity
-        self.gesture = VolumeGesture(50)
+        self.context = context
+        self.opened_context = None
+        self.level = VolumeLevel(50)
+        self.active = False
+        self.pressed = False
         self.canvas = None
         self.timer = None
-        self.hide_at = 0
         self.sent = None
         self.last_write = 0
         self.closed = False
 
+    # @llr LLR-TERM-REMOTE-016
     def pointer(self, held):
-        if self.closed or held and not self.enabled():
+        if not held:
+            self.pressed = False
             return
-        if held:
-            desired, _, _ = c20_volume.status()
-            if desired is None:
-                return
-            self.gesture.percent = desired
-            self.sent = desired
-            self.activity()
-        elif not self.gesture.held:
+        if self.closed or self.pressed:
             return
-        self.gesture.hold(held)
-        self.hide_at = time.monotonic() + 2
-        if self.timer is None:
-            self.refresh()
+        self.pressed = True
+        if self.active:
+            self.dismiss()
+            return
+        if not self.enabled():
+            return
+        desired, _, _ = c20_volume.status()
+        if desired is None:
+            return
+        self.level.percent = desired
+        self.sent = desired
+        self.active = True
+        self.opened_context = self.context()
+        self.activity()
+        self.refresh()
 
-    def motion(self, dy):
-        if not self.closed:
-            self.gesture.move(dy)
+    def button(self, button):
+        if not self.active or self.closed:
+            return
+        self.activity()
+        self.level.adjust(button)
+
+    # @llr LLR-TERM-AUDIO-007
+    def flush(self, force=False):
+        now = time.monotonic()
+        if self.sent != self.level.percent and (force or now-self.last_write >= .1):
+            c20_volume.request(self.level.percent)
+            self.sent, self.last_write = self.level.percent, now
+
+    def dismiss(self):
+        if self.active:
+            self.flush(force=True)
+        self.active = False
+        if self.timer is not None:
+            self.root.after_cancel(self.timer)
+            self.timer = None
+        if self.canvas:
+            self.canvas.place_forget()
 
     def refresh(self):
         self.timer = None
-        if self.closed:
+        if self.closed or not self.active:
             return
-        now = time.monotonic()
-        if self.gesture.held:
-            self.activity()
-        if self.sent != self.gesture.percent and now - self.last_write >= .1:
-            c20_volume.request(self.gesture.percent)
-            self.sent, self.last_write = self.gesture.percent, now
-        if not self.gesture.held and now >= self.hide_at:
-            if self.canvas:
-                self.canvas.place_forget()
+        if not self.enabled() or self.context() != self.opened_context:
+            self.dismiss()
             return
+        self.flush()
         self.draw()
         self.timer = self.root.after(50, self.refresh)
 
-    # @llr LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007
+    # @llr LLR-TERM-AUDIO-006
     def draw(self):
         if self.canvas is None:
-            self.canvas = tk.Canvas(self.root, width=84, height=300, bg=PANEL,
-                                    highlightthickness=1, highlightbackground=MUTED,
-                                    takefocus=False)
+            self.canvas = tk.Canvas(self.root, bg=BG, highlightthickness=0, takefocus=False)
         c = self.canvas
-        percent = self.gesture.percent
+        w, h = max(1, self.root.winfo_width()), max(1, self.root.winfo_height())
+        percent = self.level.percent
         _, _, failed = c20_volume.status()
         color = RED if failed else GREEN
         c.delete('all')
-        # Speaker geometry avoids platform-dependent emoji/font glyphs.
-        c.create_polygon(19, 23, 27, 23, 37, 15, 37, 45, 27, 37, 19, 37, fill=FG)
+        width = min(900, w*.65)
+        left, right, y = (w-width)/2, (w+width)/2, h/2
+        # A single centered horizontal control, with language-independent icons.
+        c.create_polygon(left-70, y-12, left-62, y-12, left-48, y-24,
+                         left-48, y+24, left-62, y+12, left-70, y+12, fill=FG)
+        c.create_line(left-24, y-12, left-36, y, left-24, y+12, fill=FG, width=4)
+        c.create_line(right+24, y-12, right+36, y, right+24, y+12, fill=FG, width=4)
+        c.create_rectangle(left, y-22, right, y+22, outline=MUTED, width=2,
+                           tags='volume-track')
         if percent:
-            c.create_arc(31, 17, 56, 43, start=-60, extent=120, style='arc', outline=FG, width=2)
-        else:
-            c.create_line(45, 23, 57, 37, fill=MUTED, width=2)
-            c.create_line(45, 37, 57, 23, fill=MUTED, width=2)
-        c.create_rectangle(30, 62, 54, 252, outline=MUTED, width=2)
-        if percent:
-            c.create_rectangle(33, 249-184*percent/100, 51, 249, fill=color, outline='')
-        c.create_text(42, 277, text=f'{percent}%' if not failed else '!', fill=color,
-                      font=('Segoe UI', 16, 'bold'))
-        c.place(relx=1, rely=.5, x=-24, anchor='e')
-        tk.Misc.lift(c)  # Also above confirmation and native-video sibling surfaces.
+            c.create_rectangle(left+3, y-19, left+3+(width-6)*percent/100, y+19,
+                               fill=color, outline='', tags='volume-fill')
+        c.create_text(w/2, y+66, text=f'{percent}%' if not failed else '!',
+                      fill=color, font=('Segoe UI', 28, 'bold'), tags='volume-level')
+        c.place(x=0, y=0, relwidth=1, relheight=1)
+        tk.Misc.lift(c)
 
     def close(self):
+        self.dismiss()
         self.closed = True
-        if self.timer is not None:
-            self.root.after_cancel(self.timer)
-        # Flush a final adjustment without blocking shutdown on the mixer worker.
-        if self.sent is not None and self.sent != self.gesture.percent:
-            c20_volume.request(self.gesture.percent)
         if self.canvas:
             self.canvas.destroy()

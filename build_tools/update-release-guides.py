@@ -294,10 +294,15 @@ def update_terminal_volume_guides():
         path = ROOT / 'docs' / filename
         doc = Document(path)
         for paragraph in doc.paragraphs:
-            if paragraph.text.startswith('Hold the middle button. Move the remote gently up'):
-                paragraph.text = ('Hold the middle button. Move the remote gently up for louder sound '
-                    'or down for quieter sound, in 5% steps. The vertical bar at the right shows '
-                    'the volume. Release the button to stop changing it; the bar disappears shortly afterward.')
+            if paragraph.text.startswith(('Hold the middle button. Move the remote gently up', 'Press the middle button to open the volume page')):
+                paragraph.text = ('Press the middle button to open the volume page. '
+                    'Click left for quieter sound or right for louder sound, in 5% steps. '
+                    'The horizontal bar shows the volume. Press middle again to return. '
+                    'Calls continue while adjusting volume; moving the remote has no effect.')
+            elif paragraph.text.startswith(('The movement is relative:', 'The volume page changes')):
+                paragraph.text = ('The volume page changes the sound you hear, not microphone volume. '
+                    'It stays open until you press middle again. Incoming calls close it automatically. '
+                    'For a saved starting volume, change Speaker volume in Settings.')
             elif paragraph.text.startswith(('If a person is offline, select them and press green.', 'Select an offline contact, press green and confirm')):
                 paragraph.text = ('Select an offline contact, press green and confirm to request a callback. '
                     'A return-arrow badge marks your request. After an unanswered, declined or cancelled '
@@ -307,6 +312,16 @@ def update_terminal_volume_guides():
             elif paragraph.text.startswith(("In Terminals, choose each terminal's language and settings", "In Terminals, save language and settings")):
                 paragraph.text = ("In Terminals, save language and settings (volume: 5% steps, rounding existing values). "
                     'Open Setup for the Wi-Fi/server QR PDFs, then follow ZmalaTerminal-Guide.pdf.')
+        if filename == 'terminal_use.docx':
+            from copy import deepcopy
+            for table in doc.tables:
+                for row in table.rows:
+                    if row.cells[0].text == 'Middle long button':
+                        paragraph = row.cells[1].paragraphs[0]
+                        properties = deepcopy(paragraph.runs[0]._r.rPr) if paragraph.runs else None
+                        paragraph.text = 'Open/close volume; left/right changes it in 5% steps'
+                        if properties is not None:
+                            paragraph.runs[0]._r.insert(0, properties)
         doc.save(path)
 
 if __name__ == '__main__':

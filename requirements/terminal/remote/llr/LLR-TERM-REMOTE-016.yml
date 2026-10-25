@@ -1,8 +1,9 @@
 active: true
 area: Remote control
 derived: false
-header: |
-  Relative volume motion
+header: 'Volume page controls
+
+  '
 level: 39.0
 links:
 - HLR-TERM-REMOTE-011: O6uSfKbsdDtz3OTEy6qhQAzoa0jG0VZ6sXMcJjVgKcY=
@@ -19,14 +20,21 @@ references:
   type: file
 - path: zmala_terminal/linux/presenter_input.py
   type: file
+- path: zmala_terminal/common/settings_control.py
+  type: file
 reviewed: null
 scope: Core
-text: |
-  Vertical motion shall adjust volume only while middle is held. Each 128 relative
-  units shall change volume by five percentage points. Upward motion shall increase
-  volume. The value shall remain from 0 through 100 percent. Horizontal or unheld
-  motion shall have no effect. An existing between-step level shall move to the next
-  5-percent boundary in the chosen direction on the first motion step.
-verification: |
-  Apply positive, negative, partial and large motion. Release and re-hold middle.
-  Check direction, remainder reset and limits.
+text: 'A distinct middle-button press shall open a dedicated volume page. Left/right clicks
+  shall decrease/increase C20 playback volume by five percentage points, bounded to 0 through
+  100. An existing between-step level shall move to the next boundary in the chosen direction.
+  A second distinct middle press shall close the page. Motion shall not change volume. Duplicate
+  held reports and release alone shall not toggle it. While open, other buttons shall not dial,
+  navigate contacts, hang up or open settings. Incoming call/state, setup or focus changes shall
+  dismiss the page without changing the underlying call or selection.
+
+  '
+verification: 'Open the page, feed movement, duplicate down/release reports and distinct left/right
+  clicks. Check five-percent boundaries, limits, unchanged call/selection, second-click closure
+  and context/focus preemption.
+
+  '

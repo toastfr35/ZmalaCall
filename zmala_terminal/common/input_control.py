@@ -25,9 +25,10 @@ class InputControl:
         self.root.bind('<F11>', self.toggle_fullscreen)
         self.volume_control = VolumeControl(self.root,
                                             lambda: bool(self.engine) and not self.setup_stage and not self.settings_open,
-                                            self.volume_activity)
+                                            self.volume_activity,
+                                            lambda: (self.generation, self.model.state, self.setup_stage, self.settings_open))
         self.presenter_input = PresenterInput(self.root, self.keypress, self.keyrelease,
-                                               self.pointer_button, self.volume_control.motion,
+                                               self.pointer_button, None,
                                                self.remote_test_event)
 
     def pointer_button(self, held):
@@ -37,11 +38,11 @@ class InputControl:
             return
         if held and 'pointer' in self.keys_down:
             return
-        self.pointer_serial += 1
         if not held:
             self.keys_down.discard('pointer')
             self.volume_control.pointer(False)
             return
+        self.pointer_serial += 1
         self.keys_down.add('pointer')
         self.cancel_settings_hold()
         self.last_button = time.monotonic()
@@ -52,11 +53,13 @@ class InputControl:
             self.volume_control.pointer(True)
 
     def pointer_visible(self, generation, state, serial):
-        # A released/repressed pointer or a newly arrived call invalidates a
-        # delayed visibility check; it must never start volume by itself.
+        # A released click remains valid after a slow visibility check. A newer
+        # click, call/state, focus change or enrollment invalidates the result.
         if (not self.closed and generation == self.generation and state == self.model.state
-                and serial == self.pointer_serial and 'pointer' in self.keys_down):
+                and serial == self.pointer_serial):
             self.volume_control.pointer(True)
+            if 'pointer' not in self.keys_down:
+                self.volume_control.pointer(False)
 
     def volume_activity(self):
         self.input_activity()
@@ -64,6 +67,8 @@ class InputControl:
     def other_key(self, event):
         self.input_activity()
         self.cancel_settings_hold()
+        if self.volume_control.active is True:
+            return 'break'
         if self.settings_open or self.settings_hold.capturing:
             return
         if self.model.state in (State.CONFIRMING, State.CONFIRM_CALLBACK, State.REQUESTING_CALLBACK):
