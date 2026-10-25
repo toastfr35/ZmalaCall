@@ -24,6 +24,8 @@ class TerminalModel:
         self.contact = None
         self.deadline = None
         self.callback_request = None
+        self.outgoing_attempt = False
+        self.callback_after_call = False
         self.missed_calls = set()
         self.notification_counts = {}
         # Legacy flag-based callers still use missed_calls. Missing counts mean
@@ -75,6 +77,14 @@ class TerminalModel:
         return next((r for r in self.config.get('callbacks', [])
                      if r.get('status') == 'pending' and r.get('from') == own and r.get('to') == person['id']), None)
 
+    # @llr LLR-TERM-HISTORY-022
+    def incoming_callback(self, person):
+        if not self.config or not person or not any(c['id'] == person['id'] for c in self.contacts):
+            return None
+        own = self.config['sip']['username']
+        return next((r for r in self.config.get('callbacks', [])
+                     if r.get('status') == 'pending' and r.get('from') == person['id'] and r.get('to') == own), None)
+
     def confirm_callback_cancellation(self):
         request = self.pending_callback(self.selected)
         if request:
@@ -105,6 +115,8 @@ class TerminalModel:
             return False
         self.contact = dict(contact)
         self.state = State.RINGING
+        self.outgoing_attempt = False
+        self.callback_after_call = False
         auto_answer = self.config.get('auto_answer', contact.get('auto_answer', False))
         self.deadline = time.monotonic() + self.config['auto_answer_seconds'] if auto_answer else None
         return True
@@ -126,6 +138,7 @@ class TerminalModel:
                 return 'cancel_callback' if self.callback_request else 'request_callback'
             elif registered:
                 self.state = State.CALLING
+                self.outgoing_attempt = True
                 return 'dial'
         elif self.state == State.REQUESTING_CALLBACK:
             if button != 'green':
@@ -156,10 +169,23 @@ class TerminalModel:
             if self.contact:
                 changed = self.acknowledge_notifications(self.contact['id'])
             self.state = State.IN_CALL
+            self.outgoing_attempt = False
             self.deadline = None
         return changed
 
+    # @llr LLR-TERM-HISTORY-021
+    def offer_callback_after_call(self, contact):
+        current = next((c for c in self.contacts if contact and c['id'] == contact['id']), None)
+        if not current or self.pending_callback(current):
+            return False
+        self.contact = dict(current)
+        self.callback_request = None
+        self.callback_after_call = True
+        self.state = State.CONFIRM_CALLBACK
+        return True
+
     def confirm_selected(self, online):
+        self.callback_after_call = False
         self.contact = dict(self.selected)
         self.callback_request = None
         self.acknowledge_notifications(self.contact['id'])
@@ -174,4 +200,6 @@ class TerminalModel:
         self.state = State.HOME
         self.contact = None
         self.callback_request = None
+        self.callback_after_call = False
+        self.outgoing_attempt = False
         self.deadline = None

@@ -116,7 +116,7 @@ class SettingsWorkflowTests(unittest.TestCase):
                 self.assertIn(expected, [image.text for image in images], (width, height, key))
 
     def test_hold_progress_bounded_labels_and_localized_values(self):
-        v=self.view(); v.settings_open=False; v.settings_hold.start(100); v.settings_hold.update(105)
+        v=self.view(); v.settings_open=False; v.settings_hold.start(100); v.settings_hold.update(103.5)
         with patch.object(settings.tk.Misc,'lift'): self.assertTrue(v.render_settings())
         progress=[call for call in v.settings_canvas.create_rectangle.call_args_list if call.kwargs.get('tags')=='settings-progress']; self.assertEqual(len(progress),1)
         self.assertAlmostEqual(progress[0].args[2]-progress[0].args[0],(1280*.6-10)*.5)

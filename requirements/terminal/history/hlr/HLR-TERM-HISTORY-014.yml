@@ -10,6 +10,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/HLT/test_notifications_ui.py
+  type: file
 - path: tests/terminal/HLT/callbacks_live.py
   type: file
 reviewed: null
@@ -19,4 +21,6 @@ text: |
   availability notice shall not start a call automatically.
 verification: |
   Create, reject and cancel requests. Change contact availability and check tags,
-  notices and absence of automatic dialing.
+  notices and absence of automatic dialing. Render a pending request from an app
+  contact on the receiving terminal; check its visible flag and removal after
+  cancellation or completion without dialing.

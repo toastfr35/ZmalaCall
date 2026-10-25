@@ -1,7 +1,7 @@
 // @test S-HLT-035
 // @requirements HLR-SRV-CONFIG-015, HLR-SRV-UI-010, HLR-SRV-UI-011
 // @environment display
-// @plan Use the actual isolated server and Chromium to import a WAV through the file picker, verify normalized audio and saved selection, and play/pause its authenticated preview. Preserve an unsaved volume change across import, check phone/desktop layout bounds, and verify navigation stops playback. No API or media-control mocks.
+// @plan Use the actual isolated server and Chromium to import a WAV through the file picker, verify normalized audio and saved selection, and play/pause its authenticated preview. Verify all 5-percent speaker-volume choices and preserve an unsaved volume change across import, check phone/desktop layout bounds, and verify navigation stops playback. No API or media-control mocks.
 // @pass Accepted imports and edits persist, preview decodes, navigation pauses it, both layouts fit and no page errors occur. This does not establish physical speaker audibility.
 'use strict';
 /* global document, innerWidth */
@@ -45,7 +45,13 @@ test(
     );
     assert.equal(await page.locator('#error').innerText(), '', errors.join('; '));
     await page.getByLabel('Select terminal', { exact: true }).selectOption('term1');
-    await page.locator('input[name="c20SpeakerVolume"]').fill('73');
+    await page.locator('select[name="c20SpeakerVolume"]').selectOption('75');
+    assert.deepEqual(
+      await page
+        .locator('select[name="c20SpeakerVolume"]')
+        .evaluate((el) => Array.from(el.options, (option) => option.value)),
+      Array.from({ length: 21 }, (_, i) => String(i * 5)),
+    );
     const upload = page.waitForResponse(
       (r) => r.url().includes('/api/ringtones?') && r.request().method() === 'POST',
     );
@@ -61,7 +67,7 @@ test(
     const select = page.getByLabel('Ringtone', { exact: true }),
       value = await select.inputValue();
     assert.match(value, /^[a-f0-9]{64}$/);
-    assert.equal(await page.locator('input[name="c20SpeakerVolume"]').inputValue(), '73');
+    assert.equal(await page.locator('select[name="c20SpeakerVolume"]').inputValue(), '75');
     const file = require('node:path').join(fixture.directory, 'ringtones', value + '.wav');
     assert.equal(validateSound(fs.readFileSync(file)), value);
     const audio = page.getByLabel('Ringtone preview', { exact: true });
@@ -74,14 +80,14 @@ test(
     await page.waitForFunction((element) => element.paused, element);
     await page.getByLabel('Select terminal', { exact: true }).selectOption('term1');
     assert.equal(await page.getByLabel('Ringtone', { exact: true }).inputValue(), value);
-    assert.equal(await page.locator('input[name="c20SpeakerVolume"]').inputValue(), '73');
+    assert.equal(await page.locator('select[name="c20SpeakerVolume"]').inputValue(), '75');
     const saved = page.waitForResponse(
       (r) => r.url().endsWith('/api/settings') && r.request().method() === 'PUT',
     );
     await page.getByRole('button', { name: 'Save changes', exact: true }).click();
     assert.equal((await saved).status(), 200);
     assert.equal(fixture.store.config('term1').ringtone, value);
-    assert.equal(fixture.store.config('term1').c20_speaker_volume, 73);
+    assert.equal(fixture.store.config('term1').c20_speaker_volume, 75);
     for (const width of [320, 1920]) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(

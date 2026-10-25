@@ -1,7 +1,7 @@
 # @test T-LLT-041
 # @requirements LLR-TERM-CONFIG-024, LLR-TERM-REMOTE-016, LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007, LLR-TERM-AUDIO-008
 # @environment portable
-# @plan Feed signed motion around deadband and limits while holding/releasing middle; assert relative volume increments, throttled mixer writes, overlay lifetime, default changes retry after failed writes and reapplication after USB wake. Reject invalid API levels before spawning workers; ignore pointer input before mixer state is known.
+# @plan Feed signed motion around deadband and limits while holding/releasing middle; assert 5-percent volume increments and directional snapping of existing between-step levels, throttled mixer writes, overlay lifetime, default changes retry after failed writes and reapplication after USB wake. Reject invalid API levels before spawning workers; ignore pointer input before mixer state is known.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Held-pointer volume has bounded motion, throttled writes and no call actions."""
@@ -26,9 +26,9 @@ class VolumeTests(unittest.TestCase):
             self.assertEqual(canvas.create_rectangle.call_args.args,(33,157,51,249))
             control.gesture.percent=0; canvas.reset_mock(); control.draw(); canvas.create_arc.assert_not_called(); self.assertEqual(canvas.create_line.call_count,2)
             status.return_value=(50,None,True); control.draw(); self.assertEqual(canvas.create_text.call_args.kwargs['text'],'!'); self.assertEqual(canvas.create_text.call_args.kwargs['fill'],RED)
-            control.timer='pending'; control.sent=50; control.gesture.percent=54; control.close()
-            root.after_cancel.assert_called_once_with('pending'); request.assert_called_once_with(54); canvas.destroy.assert_called_once()
-            control.pointer(True); control.motion(-100); control.refresh(); self.assertEqual(control.gesture.percent,54)
+            control.timer='pending'; control.sent=50; control.gesture.percent=55; control.close()
+            root.after_cancel.assert_called_once_with('pending'); request.assert_called_once_with(55); canvas.destroy.assert_called_once()
+            control.pointer(True); control.motion(-100); control.refresh(); self.assertEqual(control.gesture.percent,55)
 
     def test_motion_sign_jitter_release_and_limits(self):
         gesture = VolumeGesture(50)
@@ -38,21 +38,32 @@ class VolumeTests(unittest.TestCase):
         for _ in range(100):
             gesture.move(5); gesture.move(-5)
         self.assertEqual(gesture.percent, 50)
-        gesture.move(-128)
-        self.assertEqual(gesture.percent, 54)
-        gesture.move(64)
-        self.assertEqual(gesture.percent, 52)
+        gesture.move(-64)
+        self.assertEqual(gesture.percent, 50, 'Half a motion step must not change volume')
+        gesture.hold(False); gesture.hold(True)
+        gesture.move(-256)
+        self.assertEqual(gesture.percent, 60)
+        gesture.move(128)
+        self.assertEqual(gesture.percent, 55)
         gesture.move(-64000)
         self.assertEqual(gesture.percent, 100)
-        gesture.move(64)
-        self.assertEqual(gesture.percent, 98)
+        gesture.move(128)
+        self.assertEqual(gesture.percent, 95)
         gesture.move(64000)
         self.assertEqual(gesture.percent, 0)
-        gesture.move(-64)
-        self.assertEqual(gesture.percent, 2)
-        gesture.move(-63)
+        gesture.move(-128)
+        self.assertEqual(gesture.percent, 5)
+        gesture.move(-127)
         gesture.hold(False); gesture.hold(True); gesture.move(-1)
-        self.assertEqual(gesture.percent, 2, 'A new hold must not retain old motion')
+        self.assertEqual(gesture.percent, 5, 'A new hold must not retain old motion')
+
+    def test_existing_between_step_levels_wait_for_motion_then_follow_direction(self):
+        for direction, expected in ((-128, 55), (128, 50)):
+            gesture = VolumeGesture(53); gesture.hold(True)
+            gesture.move(-1 if direction < 0 else 1)
+            self.assertEqual(gesture.percent, 53)
+            gesture.move(direction+1 if direction < 0 else direction-1)
+            self.assertEqual(gesture.percent, expected)
 
     def test_overlay_throttles_writes_flushes_release_and_hides(self):
         root = Mock()
@@ -64,16 +75,16 @@ class VolumeTests(unittest.TestCase):
                 patch.object(c20_volume, 'request') as request:
             control.pointer(True)
             request.assert_not_called()
-            control.motion(64*5); control.refresh()
-            request.assert_called_once_with(70)
+            control.motion(128*5); control.refresh()
+            request.assert_called_once_with(55)
             clock.return_value = 10.05
-            control.motion(64*5); control.refresh()
-            request.assert_called_once_with(70)
+            control.motion(128*5); control.refresh()
+            request.assert_called_once_with(55)
             control.pointer(False)
             control.motion(64000)
             clock.return_value = 10.2
             control.refresh()
-            self.assertEqual(request.call_args.args, (60,))
+            self.assertEqual(request.call_args.args, (30,))
             clock.return_value = 12.1
             control.refresh()
             control.canvas.place_forget.assert_called_once()

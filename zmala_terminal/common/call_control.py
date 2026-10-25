@@ -58,7 +58,7 @@ class CallControl:
         elif state in (13, 14, 19):
             failed = state == 13
             # @llr LLR-TERM-HISTORY-015
-            self.model.ended(remote=not failed)
+            self.finish_call(remote=not failed)
             self.missed_calls_store.save(self.model.config, self.model.notifications)
             self.outgoing_deadline = None
             self.engine.hold_call(None)
@@ -66,6 +66,14 @@ class CallControl:
             if getattr(self, 'tv_control', None):
                 self.tv_control.cancel()
         self.root.after_idle(self.render)
+
+    # @llr LLR-TERM-HISTORY-021
+    def finish_call(self, remote=False):
+        if self.model.state == State.CONFIRM_CALLBACK and self.model.callback_after_call:
+            return True  # A synchronous end callback already opened this prompt.
+        contact = dict(self.model.contact) if self.model.outgoing_attempt and self.model.contact else None
+        self.model.ended(remote=remote)
+        return self.model.offer_callback_after_call(contact) if contact else False
 
     # @llr LLR-TERM-HISTORY-024
     def show_callback_available(self, now):
@@ -168,7 +176,7 @@ class CallControl:
                     self.tv_control.cancel()
                 self.engine.end(decline=action == 'decline')
                 if not self.engine.call:
-                    self.model.ended()
+                    self.finish_call()
                     self.outgoing_deadline = None
                     if action != 'decline' and getattr(self, 'tv_control', None):
                         self.tv_control.cancel()
@@ -176,7 +184,7 @@ class CallControl:
             logging.exception('Call action failed')
             if self.engine and self.engine.call:
                 self.engine.end()
-            self.model.ended()
+            self.finish_call()
             self.notice = 'unavailable'
             if getattr(self, 'tv_control', None):
                 self.tv_control.cancel()
@@ -200,7 +208,7 @@ class CallControl:
         if not available or not current or not self.engine or not self.engine.registered:
             if current:
                 current['online'] = False
-            self.model.ended()
+            self.finish_call()
             self.outgoing_deadline = None
             self.notice = 'offline'
         else:
@@ -217,7 +225,7 @@ class CallControl:
                 return
             except Exception:
                 logging.exception('Call could not be started')
-                self.model.ended()
+                self.finish_call()
                 self.outgoing_deadline = None
                 self.notice = 'unavailable'
         self.render()

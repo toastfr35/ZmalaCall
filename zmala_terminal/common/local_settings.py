@@ -8,6 +8,9 @@ ANSWER_DELAYS = (0, 10, 30, 60, 120, 300, 600)
 
 # @llr LLR-TERM-CONFIG-018
 class SettingsHold:
+    HOLD_SECONDS = 7
+    PROGRESS_AFTER_SECONDS = 2
+
     def __init__(self):
         self.clear()
 
@@ -17,7 +20,7 @@ class SettingsHold:
 
     @property
     def capturing(self):
-        return self.started is not None and self.progress >= .2
+        return self.started is not None and self.progress >= self.PROGRESS_AFTER_SECONDS/self.HOLD_SECONDS
 
     def start(self, now):
         if self.started is None:
@@ -25,7 +28,7 @@ class SettingsHold:
 
     def update(self, now):
         if self.started is not None:
-            self.progress = min(1.0, max(0.0, (now-self.started)/10))
+            self.progress = min(1.0, max(0.0, (now-self.started)/self.HOLD_SECONDS))
             return self.progress >= 1
         return False
 

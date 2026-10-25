@@ -22,7 +22,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  A continuous ten-second red hold on the carousel shall open Settings. Progress shall
+  A continuous seven-second red hold on the carousel shall open Settings. Progress shall
   appear after two seconds. Release, another button, focus loss, remote disconnection
   or an incoming call shall cancel the hold. Repeated down reports shall not restart
   its timer.

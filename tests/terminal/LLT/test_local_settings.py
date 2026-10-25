@@ -20,14 +20,14 @@ from tests.terminal.LLT.test_terminal import config
 
 
 class LocalSettingsTests(unittest.TestCase):
-    def test_hold_indicator_after_two_seconds_opens_after_ten(self):
+    def test_hold_indicator_after_two_seconds_opens_after_seven(self):
         hold = SettingsHold(); hold.start(100)
         self.assertFalse(hold.update(101.99)); self.assertFalse(hold.capturing)
         self.assertFalse(hold.update(102)); self.assertTrue(hold.capturing)
-        self.assertAlmostEqual(hold.progress, .2)
+        self.assertAlmostEqual(hold.progress, 2/7)
         hold.start(105)  # Repeated down events must not restart the clock.
-        self.assertFalse(hold.update(109.99))
-        self.assertTrue(hold.update(110))
+        self.assertFalse(hold.update(106.99))
+        self.assertTrue(hold.update(107))
         hold.clear()
         self.assertFalse(hold.update(120)); self.assertFalse(hold.capturing)
 
@@ -41,7 +41,7 @@ class LocalSettingsTests(unittest.TestCase):
         return app
 
     def test_early_release_focus_loss_and_other_input_cancel_hold(self):
-        for duration in (.5, 2, 9.99):
+        for duration in (.5, 2, 6.99):
             app = self.controller(); app.keys_down.add('red')
             with patch('zmala_terminal.common.settings_control.time.monotonic', return_value=100):app.press('red')
             app.tick_settings_access(100+duration)
@@ -153,7 +153,7 @@ class LocalSettingsTests(unittest.TestCase):
         self.assertEqual(actions, [None, 'dial'])
         app.model.ended(); app.keys_down.add('red')
         with patch('zmala_terminal.common.settings_control.time.monotonic', return_value=100):app.press('red')
-        app.tick_settings_access(110)
+        app.tick_settings_access(107)
         self.assertTrue(app.settings_open)
         app.keyrelease('red')
         self.assertTrue(app.settings_open)

@@ -1557,14 +1557,20 @@ function buildMediaFields(devices, media, id) {
     ),
   );
   audio.append(info);
-  const volume = terminalField(
+  // @llr LLR-SRV-UI-017
+  const volume = terminalSelect(
     devices,
     'C20 speaker volume (%)',
     'c20SpeakerVolume',
-    profile.c20_speaker_volume ?? 50,
-    { type: 'number', min: '0', max: '100', step: '1', required: true },
+    Array.from({ length: 21 }, (_, index) => [String(index * 5), `${index * 5}%`]),
+    String(Math.round((profile.c20_speaker_volume ?? 50) / 5) * 5),
   );
-  volume.append(el('small', 'Linux C20 · calls and ringing. Applies when idle. Default: 50%.'));
+  volume.append(
+    el(
+      'small',
+      'Linux C20 · calls and ringing. 5% steps; existing values round to the nearest step when saved. Default: 50%.',
+    ),
+  );
   media.append(hardware, resolution, frameRate, framing, audio, volume, ringtoneField(devices, id));
 }
 

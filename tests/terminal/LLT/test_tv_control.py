@@ -92,6 +92,7 @@ class TVControlTests(unittest.TestCase):
         app = SimpleNamespace(model=model, engine=Mock(), tv_control=Mock(),
                               reset_gesture=Mock(), setup_stage=None, root=Mock(),
                               render=Mock(), missed_calls_store=Mock())
+        app.finish_call = lambda **kwargs: CallControl.finish_call(app, **kwargs)
         CallControl.call_event(app, 'call', 1, 'unknown', 'family.test')
         app.tv_control.wake.assert_not_called()
         CallControl.call_event(app, 'call', 1, 'alice', 'family.test')

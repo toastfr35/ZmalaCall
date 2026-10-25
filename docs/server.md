@@ -869,3 +869,5 @@ and cached configurations discard both live fields. Android clears the directory
 when a configuration refresh fails. Name buttons show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
+
+Terminal C20 speaker-volume controls offer 0–100% in 5% steps. Existing between-step values display the nearest step and are changed only when Save changes is accepted. The Pi Settings editor and held-middle volume gesture use the same 5% grid.

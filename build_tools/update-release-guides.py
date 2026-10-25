@@ -172,6 +172,8 @@ def update_c20_guide():
                 'to cancel. Sound never switches to the TV. The server offers video '
                 'resolution, frame rate, audio processing and C20 volume. Fresh video '
                 'settings are 720p at 15 fps; media changes may wait until the call ends.')
+        elif paragraph.text.startswith('From the contact carousel, hold red for '):
+            paragraph.text = paragraph.text.replace('ten seconds', 'seven seconds', 1)
         elif paragraph.text.startswith(('Use left and right to select a setting.', 'Use left/right to choose a setting;')):
             paragraph.text = (
                 'Use left/right to choose a setting; green opens it. Inside, left/right changes '
@@ -180,7 +182,13 @@ def update_c20_guide():
                 'retry after restoring the connection.')
     for row in doc.tables[0].rows:
         if row.cells[0].text == 'Speaker volume':
-            row.cells[1].text = '0–100%, in steps of 5%'
+            paragraph = row.cells[1].paragraphs[0]
+            paragraph.text = '0–100%, in steps of 5%'
+            paragraph.paragraph_format.space_after = Pt(0)
+            paragraph.paragraph_format.line_spacing = 1.05
+            for run in paragraph.runs:
+                run.font.size = Pt(11.5)
+                run.bold = False
     doc.core_properties.author = 'ZmalaCall'
     doc.core_properties.last_modified_by = ''
     doc.save(path)
@@ -279,10 +287,33 @@ def update_presence_guides():
         doc.save(path)
 
 
+
+def update_terminal_volume_guides():
+    """Use the same five-percent volume grid across terminal-facing controls."""
+    for filename in ('terminal_use.docx', 'server_prep.docx'):
+        path = ROOT / 'docs' / filename
+        doc = Document(path)
+        for paragraph in doc.paragraphs:
+            if paragraph.text.startswith('Hold the middle button. Move the remote gently up'):
+                paragraph.text = ('Hold the middle button. Move the remote gently up for louder sound '
+                    'or down for quieter sound, in 5% steps. The vertical bar at the right shows '
+                    'the volume. Release the button to stop changing it; the bar disappears shortly afterward.')
+            elif paragraph.text.startswith(('If a person is offline, select them and press green.', 'Select an offline contact, press green and confirm')):
+                paragraph.text = ('Select an offline contact, press green and confirm to request a callback. '
+                    'A return-arrow badge marks your request. After an unanswered, declined or cancelled '
+                    'outgoing call, Zmala asks: green requests a callback; red returns home. Incoming '
+                    'requests show a large yellow Please call back flag over the requester’s picture '
+                    'until completed or cancelled. Nothing dials automatically.')
+            elif paragraph.text.startswith(("In Terminals, choose each terminal's language and settings", "In Terminals, save language and settings")):
+                paragraph.text = ("In Terminals, save language and settings (volume: 5% steps, rounding existing values). "
+                    'Open Setup for the Wi-Fi/server QR PDFs, then follow ZmalaTerminal-Guide.pdf.')
+        doc.save(path)
+
 if __name__ == '__main__':
     update_existing()
     update_c20_guide()
     update_qr_guides()
     update_ringtone_guides()
+    update_terminal_volume_guides()
     build_phone()
     update_presence_guides()

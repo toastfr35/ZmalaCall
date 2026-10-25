@@ -22,10 +22,11 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Vertical motion shall adjust volume only while middle is held. Each 64 relative
-  units shall change volume by two percentage points. Upward motion shall increase
+  Vertical motion shall adjust volume only while middle is held. Each 128 relative
+  units shall change volume by five percentage points. Upward motion shall increase
   volume. The value shall remain from 0 through 100 percent. Horizontal or unheld
-  motion shall have no effect.
+  motion shall have no effect. An existing between-step level shall move to the next
+  5-percent boundary in the chosen direction on the first motion step.
 verification: |
   Apply positive, negative, partial and large motion. Release and re-hold middle.
   Check direction, remainder reset and limits.

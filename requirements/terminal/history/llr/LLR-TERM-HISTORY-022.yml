@@ -5,15 +5,21 @@ header: |
   Pending callback control
 level: 92.0
 links:
-- HLR-TERM-HISTORY-014: rYJPkKsSwXCDvKbjdyI6Mcjd9kFi4LqMv_P0XP9RrWs=
+- HLR-TERM-HISTORY-014: k1LndChP4W1BcDBOK-wx3qZ-HVC6ZSNPK3cKld2AEBQ=
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/localization.py
+  type: file
+- path: zmala_terminal/common/shared/incoming-callback-messages.json
+  type: file
 - path: tests/terminal/LLT/test_call_orchestration.py
   type: file
 - path: tests/terminal/LLT/test_callbacks.py
   type: file
 - path: tests/terminal/LLT/test_view_contracts.py
+  type: file
+- path: zmala_terminal/common/model.py
   type: file
 - path: zmala_terminal/common/call_control.py
   type: file
@@ -27,8 +33,16 @@ reviewed: null
 scope: Core
 text: |
   A pending callback shall show a return-arrow tag on its contact without an extra
-  footer. Red shall open cancellation confirmation. Green shall open cancellation for
+  footer. A pending request received from a current contact shall show a persistent
+  high-contrast yellow banner with a flag and a localized request to call back over
+  that contact picture, on selected and adjacent cards. Completed, cancelled and
+  unrelated requests shall not show this banner. Incoming wording shall request
+  action (English Please call back, French À rappeler), distinct from outgoing
+  confirmation that a request was sent. It shall not obscure the name or
+  availability band or start a call. Red shall open cancellation confirmation. Green shall open cancellation for
   an unavailable contact and call confirmation for an available contact.
 verification: |
   Render tagged contacts in both availability states. Send green and red and check the
-  selected confirmation action.
+  selected confirmation action. Render incoming requests, both directions and
+  cancelled/completed/unrelated requests; check banner visibility, bounded geometry
+  and no automatic dialing.

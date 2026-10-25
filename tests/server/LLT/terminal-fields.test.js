@@ -1,7 +1,7 @@
 // @test S-LLT-010
 // @requirements LLR-SRV-UI-016, LLR-SRV-UI-017, LLR-SRV-UI-019
 // @environment portable
-// @plan Render terminal field definitions with DOM/API doubles; assert controls attach to the intended sections, frame-rate choices are present and drafts/download errors retain ownership.
+// @plan Render terminal field definitions with DOM/API doubles; assert controls attach to the intended sections, frame-rate choices and all 5-percent speaker-volume choices are present, existing between-step levels show the nearest choice without changing the model and drafts/download errors retain ownership.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -48,6 +48,7 @@ test('every terminal setting is attached to its visible section, including frame
     ringtone_choices: [{ id: 'nokia', name: 'Nokia' }],
   };
   model.profiles.term1.video_fps = 20;
+  model.profiles.term1.c20_speaker_volume = 53;
   const context = {
     state: { model },
     el: (tag, text) => new Element(tag, text),
@@ -70,6 +71,12 @@ test('every terminal setting is attached to its visible section, including frame
   for (const [name, field] of Object.entries(form.fields))
     assert.ok(sections.contains(field), `${name} must be attached to the visible form`);
   assert.equal(form.fields.videoFps.value, '20');
+  assert.equal(form.fields.c20SpeakerVolume.value, '55');
+  assert.equal(model.profiles.term1.c20_speaker_volume, 53);
+  assert.deepEqual(
+    Array.from(form.fields.c20SpeakerVolume.children, (option) => option.value),
+    Array.from({ length: 21 }, (_, i) => String(i * 5)),
+  );
   assert.deepEqual(
     Array.from(form.fields.videoFps.children, (option) => option.value),
     ['10', '15', '20', '25', '30'],

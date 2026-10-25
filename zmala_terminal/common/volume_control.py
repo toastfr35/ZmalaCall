@@ -6,8 +6,8 @@ from zmala_terminal.common.theme import PANEL, FG, MUTED, GREEN, RED
 
 
 class VolumeGesture:
-    UNITS_PER_STEP = 64
-    PERCENT_PER_STEP = 2
+    UNITS_PER_STEP = 128
+    PERCENT_PER_STEP = 5
 
     def __init__(self, percent):
         self.percent = percent
@@ -25,7 +25,10 @@ class VolumeGesture:
         self.remainder -= dy  # HID Y is negative when the remote moves up.
         steps = int(self.remainder / self.UNITS_PER_STEP)
         self.remainder -= steps * self.UNITS_PER_STEP
-        self.percent = max(0, min(100, self.percent + steps * self.PERCENT_PER_STEP))
+        if steps:
+            step = self.PERCENT_PER_STEP
+            base = self.percent//step if steps > 0 else (self.percent+step-1)//step
+            self.percent = max(0, min(100, (base+steps)*step))
         if self.percent in (0, 100):
             self.remainder = 0  # Reversing direction at a limit responds immediately.
 

@@ -115,6 +115,8 @@ class CarouselView:
             self.current_photos.append(badge)
             self.avatar.create_image(x-size/2+18, y-size/2+18, image=badge,
                                      tags=('callback-pending', 'callback-pending-'+person['id']))
+        if idle and self.model.incoming_callback(current):
+            self.draw_callback_flag(person, x, y, size, selected)
         # @llr LLR-TERM-UI-015
         if idle or focus < .8:
             text = person['name'] if person else '—'
@@ -145,6 +147,36 @@ class CarouselView:
                                               28, BG, GREEN, 55)
             self.current_text_images.append(phone)
             self.avatar.create_image(center_x+size/2+62, center_y, image=phone, tags='ring-phone')
+
+    # @llr LLR-TERM-HISTORY-022
+    def draw_callback_flag(self, person, x, y, size, selected):
+        background, ink = '#ffd166', '#1a2433'
+        left, right, bottom = x-size/2, x+size/2, y+size/2
+        height = min(64, max(40, size*.23))
+        top = bottom-height
+        tags = ('callback-received', 'callback-received-'+person['id'])
+        self.avatar.create_rectangle(left, top, right, bottom, fill=background, outline='',
+                                     tags=tags+('callback-banner',))
+        flag_x, flag_y = left+10, top+height/2-12
+        self.avatar.create_line(flag_x, flag_y, flag_x, flag_y+26, fill=ink, width=3,
+                                tags=tags+('callback-flag',))
+        self.avatar.create_polygon(flag_x, flag_y, flag_x+22, flag_y+3, flag_x+17, flag_y+11,
+                                   flag_x, flag_y+8, fill=ink, outline='', tags=tags+('callback-flag',))
+        text, font = self.text('callback_received'), 20 if selected else 14
+        width = max(16, int(size-46))
+        while True:
+            label = self.text_renderer.photo(text, self.font_family, font, background, ink, width, True)
+            if label.height() <= height-6 or font <= 11:
+                break
+            font -= 1
+        while label.height() > height-6 and len(text) > 1:
+            while text and unicodedata.category(text[-1]).startswith('M'):
+                text = text[:-1]
+            text = text[:-1].rstrip()
+            label = self.text_renderer.photo(text+'…', self.font_family, font, background, ink, width, True)
+        self.current_text_images.append(label)
+        self.avatar.create_image(left+38+width/2, top+height/2, image=label,
+                                 tags=tags+('callback-label',))
 
     # @llr LLR-TERM-NAV-005, LLR-TERM-UI-015
     def draw_contact_status(self, x, bottom, size, padding, selected, available, label_width=None, presence=None):

@@ -16,6 +16,10 @@ for language, values in VIDEO_MESSAGES.items():
 CALL_QUESTIONS = json.loads((Path(__file__).resolve().parent / 'shared/call-questions.json').read_text(encoding='utf-8'))
 for language, values in CALL_QUESTIONS.items():
     LANGUAGES[language]['messages'].update(zip(['call_question', 'callback_question', 'callback_requested'], values))
+# @llr LLR-TERM-HISTORY-022
+INCOMING_CALLBACK_MESSAGES = json.loads((Path(__file__).resolve().parent / 'shared/incoming-callback-messages.json').read_text(encoding='utf-8'))
+for language, message in INCOMING_CALLBACK_MESSAGES.items():
+    LANGUAGES[language]['messages']['callback_received'] = message
 CONFIRMATION_PROMPTS = json.loads((Path(__file__).resolve().parent / 'shared/confirmation-prompts.json').read_text(encoding='utf-8'))
 for language, values in CONFIRMATION_PROMPTS.items():
     LANGUAGES[language]['messages'].update(zip(['yes', 'no', 'contact_unavailable'], values))

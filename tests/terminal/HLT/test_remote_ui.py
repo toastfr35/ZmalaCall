@@ -1,7 +1,7 @@
 # @test T-HLT-023
 # @requirements HLR-TERM-REMOTE-011, HLR-TERM-REMOTE-012, HLR-TERM-NAV-002, HLR-TERM-AUDIO-002
 # @environment display
-# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and relative volume. Replace only device discovery, Bluetooth status and the external mixer process. Check that all mixer commands address C20 playback only.
+# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and relative volume in 5-percent steps. Replace only device discovery, Bluetooth status and the external mixer process. Check that all mixer commands address C20 playback only.
 # @pass One held press cannot confirm a call; red cancels; only held-pointer motion changes volume and the overlay disappears after release. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
 
 import os
@@ -82,15 +82,17 @@ class RemoteUITests(unittest.TestCase):
                 report('03000000c0ff00000000')  # Motion without middle held.
                 self.assertEqual(c20_volume.status()[0], 50)
                 report('043d010000000000')
-                report('03000000c0ff00000000')  # -64 -> +2%.
-                pump(app, lambda: c20_volume.status()[1] == 52 and c20_volume._worker is None)
+                report('03000000c0ff00000000')  # First -64 remains below the 128-unit threshold.
+                self.assertEqual(app.volume_control.gesture.percent, 50)
+                report('03000000c0ff00000000')  # Second -64 -> +5%.
+                pump(app, lambda: c20_volume.status()[1] == 55 and c20_volume._worker is None)
                 self.assertTrue(app.volume_control.canvas.winfo_ismapped())
-                self.assertIn('52%', [app.volume_control.canvas.itemcget(i, 'text')
+                self.assertIn('55%', [app.volume_control.canvas.itemcget(i, 'text')
                               for i in app.volume_control.canvas.find_all()
                               if app.volume_control.canvas.type(i) == 'text'])
                 report('043d000000000000')
                 report('03000000c0ff00000000')
-                self.assertEqual(app.volume_control.gesture.percent, 52)
+                self.assertEqual(app.volume_control.gesture.percent, 55)
                 pump(app, lambda: not app.volume_control.canvas.winfo_ismapped(), timeout=3)
                 self.assertTrue(commands)
                 for command, thread in commands:

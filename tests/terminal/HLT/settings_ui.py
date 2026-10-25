@@ -45,7 +45,7 @@ try:
     app.tick_settings_access(102)
     app.root.update()
     assert app.settings_canvas.find_withtag('settings-progress')
-    app.tick_settings_access(110)
+    app.tick_settings_access(107)
     app.keyrelease('red')
     assert app.settings_open and not app.actions, app.actions
     for size in ('900x620', '1280x720'):

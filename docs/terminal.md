@@ -78,7 +78,7 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
-The speaker-volume editor uses 5% steps. Existing values between steps open at the nearest step and stay unchanged until accepted.
+All terminal volume UI uses 5% steps, including Settings, held-middle motion and the server terminal editor. A held-middle gesture moves an existing between-step level to the next boundary in its motion direction. The speaker-volume editor uses 5% steps. Existing values between steps open at the nearest step and stay unchanged until accepted.
 
 The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.
 
@@ -413,8 +413,8 @@ coalesces mixer work. The following mappings are implementation behavior, while
 | Left/right | Select contacts; navigate settings/options or change a value |
 | Green | Open confirmation, call/request/answer, open a setting or accept its draft |
 | Red | Cancel/decline/end, cancel a selected callback request, or discard/leave an editor |
-| Hold red for 10 seconds on the carousel | Open Settings; progress appears after two seconds |
-| Hold middle and move up/down | Relative speaker adjustment: two percentage points per 64 motion units |
+| Hold red for 7 seconds on the carousel | Open Settings; progress appears after two seconds |
+| Hold middle and move up/down | Relative speaker adjustment: five percentage points per 128 motion units |
 
 Windows equivalents are Left/Right, Enter and Escape. F11 toggles fullscreen
 outside confirmation. Button repeat cannot confirm a call; release, another
@@ -1045,3 +1045,7 @@ combining marks with their base. French status phrases fit in full in the 720p
 and full-HD three/five-card TV layouts. Animation uses the smallest card's label
 width to reuse shaped images without overlapping the symbol. The display HLT
 checks actual text/icon bounds, rather than only the coloured band's rectangle.
+
+Incoming callback requests from a current app contact show a persistent yellow flag banner over that contact portrait, including adjacent cards. The localized callback-requested label stays separate from the name and availability. The flag disappears when the server reports cancellation or completion. Outgoing requests keep their existing return-arrow tag and cancellation controls. Neither marker starts a call.
+
+When an outgoing call ends before answer, including timeout, refusal or caller cancellation, the terminal offers to request a callback from the same contact. Green submits the request; red returns home. It waits for media teardown, does not repeat an existing pending request, and does not show this question after a connected call or declined incoming call. Late native events cannot dismiss the offer or start a cancelled call.

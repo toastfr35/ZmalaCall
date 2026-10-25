@@ -29,5 +29,9 @@ reviewed: null
 scope: Core
 text: |
   The Terminals page shall select one device card and separate association from settings changes. Settings shall appear under Calls, Video and audio, and General. Registered controls shall remain attached to the visible form.
+  C20 speaker volume shall offer 0 through 100 percent in 5-percent steps.
+  Existing values between steps shall show the nearest step without changing the
+  saved configuration until Save changes is accepted.
 verification: |
-  Select different devices, inspect section controls and save association separately from profile settings.
+  Select different devices, inspect section controls and save association separately from profile settings. Enumerate volume choices,
+  open a between-step value and verify it is not saved until submission.
