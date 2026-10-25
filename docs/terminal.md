@@ -945,3 +945,11 @@ and cached configurations discard both live fields. Android clears the directory
 when a configuration refresh fails. Name buttons show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
+
+Terminal cards reserve a 56-pixel status area below the name, with separate
+regions for the symbol and shaped label. Text fits within 48 pixels vertically
+at no less than 11 points; exceptionally narrow cards elide overflow while keeping
+combining marks with their base. French status phrases fit in full in the 720p
+and full-HD three/five-card TV layouts. Animation uses the smallest card's label
+width to reuse shaped images without overlapping the symbol. The display HLT
+checks actual text/icon bounds, rather than only the coloured band's rectangle.

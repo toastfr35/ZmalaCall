@@ -10,6 +10,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/HLT/contact_presence_ui.py
+  type: file
 - path: tests/terminal/HLT/call_feedback_ui.py
   type: file
 - path: tests/terminal/HLT/linux_qr_embedding.py

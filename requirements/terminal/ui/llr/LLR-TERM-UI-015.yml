@@ -2,10 +2,10 @@ active: true
 area: User interface and language
 derived: false
 header: |
-  Names inside portrait cards
+  Names and status inside portrait cards
 level: 50.0
 links:
-- HLR-TERM-UI-012: oGtUUTddZ_nmYzq5oqJRjVPaN4_KxriLlc03R9qaalI=
+- HLR-TERM-UI-012: 8a2nkqu6JfSDSoVz4s2q965fKQwlmvc6DvgjMSasK6M=
 normative: true
 ref: ''
 references:
@@ -27,6 +27,14 @@ text: |
   Each card shall place its contact name directly below the picture and above
   availability, inside the frame. The selected card shall use the same placement. The
   idle page shall not add a separate selected-name footer or mouse action controls.
+  Localized availability labels and their separate status symbols shall fit inside
+  the status band without overlapping each other, the name or the frame, including
+  during carousel motion. The supported TV layouts shall show French labels in
+  full. Labels shall retain at least an 11-point font; narrower layouts may elide
+  overflow without separating combining marks from their base characters.
 verification: |
   Render selected and adjacent cards. Inspect name bounds and absence of the separate
   footer and action controls.
+  Measure real text and symbol bounds for every language in three/five-card layouts
+  at 900x620, 1280x720 and 1920x1080. Check full French labels at TV sizes and
+  French animation frames. Force minimum-font overflow and verify bounded ellipsis.

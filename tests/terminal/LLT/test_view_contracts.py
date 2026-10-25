@@ -3,6 +3,7 @@
 # @environment portable
 # @plan Record drawing calls at small and full-HD dimensions; check the selected-to-adjacent portrait size ratio, in-frame contact labels, portrait margins, localized rounded affirmative/negative controls, settings-only chrome and serial footer. Inject Pango to verify unchanged Unicode text and bounded shaping; force a tall translated settings label to check minimum-font ellipsis and intact combining marks. Test absolute carousel deadlines under delayed frames. Exercise real carousel composition with recording widgets, controlled shaped-label metrics and image failures; assert pending/missed badges, logo restoration, bounded labels and placeholder/ringing redraws.
 # Check three-state contact colours, labels and symbols; expire a six-second live snapshot and confirm push remains callable only while fresh. Change presence at the same configuration version and assert redraws without reconfiguration.
+# Fit two-line status text beside a separate icon at selected/adjacent widths, including animation; force minimum-font overflow and check bounded ellipsis without splitting combining marks.
 # @pass Geometry, color, text and timing assertions must pass; these unit checks do not replace physical display or font-rendering acceptance.
 
 import importlib.util
@@ -57,6 +58,35 @@ class ViewContractTests(unittest.TestCase):
             view.draw_contact_status(200, 300, 180, 12, True, state != 'offline', presence=state)
             self.assertEqual(view.avatar.create_text.call_args.kwargs['fill'], color)
             self.assertEqual(view.text_renderer.photo.call_args.args[0], label)
+            self.assertEqual(view.avatar.create_text.call_args.kwargs['text'], {'available': '✓', 'push': '?', 'offline': '×'}[state])
+
+    def test_status_content_stays_in_its_band_with_separate_icon_space(self):
+        import math
+        view = CarouselView(); view.avatar = Mock(); view.font_family = 'Sans'
+        view.current_text_images = []; view.text = lambda key: 'Essayer d’appeler'
+        view.text_renderer = Mock()
+        def photo(text, family, size, background, color, width, bold):
+            height = math.ceil(len(text)*size*.8/width)*size*1.5+4
+            return SimpleNamespace(height=lambda: height)
+        view.text_renderer.photo.side_effect = photo
+        for size, selected, moving in ((132, False, False), (264, True, False), (180, True, True), (40, False, False)):
+            view.carousel_motion = object() if moving else None
+            view.draw_contact_status(200, 300, size, 12, selected, True,
+                                     min(size, 132) if moving else size, 'push')
+            band = view.avatar.create_rectangle.call_args.args
+            image = view.avatar.create_image.call_args
+            width = view.text_renderer.photo.call_args.args[5]
+            height = image.kwargs['image'].height()
+            self.assertGreaterEqual(image.args[0]-width/2, band[0]+35)
+            self.assertLessEqual(image.args[0]+width/2, band[2]-5)
+            self.assertGreaterEqual(image.args[1]-height/2, band[1])
+            self.assertLessEqual(image.args[1]+height/2, band[3])
+            self.assertGreaterEqual(view.text_renderer.photo.call_args.args[2], 11)
+        view.text = lambda key: 'Cafe\u0301 Cafe\u0301 Cafe\u0301'
+        view.draw_contact_status(200, 300, 70, 12, False, True, presence='push')
+        text = view.text_renderer.photo.call_args.args[0]
+        self.assertTrue(text.endswith('…'))
+        self.assertNotIn('e…', text)  # Never remove an accent while retaining its base.
 
     def test_settings_labels_elide_without_splitting_combining_marks(self):
         view = SettingsView(); view.language = 'en'; view.available_fonts = ['Sans']
@@ -91,7 +121,7 @@ class ViewContractTests(unittest.TestCase):
         view.contact_online = lambda person: bool(person and person.get('online'))
         view.icon_renderer = Mock(); view.text_renderer = Mock()
         view.text = lambda key: key
-        view.text_renderer.photo.side_effect = lambda text, family, size, *args: Mock(height=lambda: 60 if size > 10 or len(text) > 10 else 20)
+        view.text_renderer.photo.side_effect = lambda text, family, size, *args: Mock(height=lambda: 60 if size > 11 or len(text) > 10 else 20)
         with patch.object(carousel.time, 'monotonic', return_value=10.1):
             view.draw_avatar(person)
         self.assertTrue(view.current_photos)
