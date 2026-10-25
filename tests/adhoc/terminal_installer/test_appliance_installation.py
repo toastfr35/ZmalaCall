@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 from tests.support.linux_units import ROOT, load, shell
 from tests.adhoc.terminal_installer.test_windows_installer import target
