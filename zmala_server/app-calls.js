@@ -1,7 +1,6 @@
 'use strict';
 const { AppPush } = require('./app-push');
-const samePeer = (/** @type {import('sip').Remote} */ a, /** @type {import('sip').Remote} */ b) =>
-  a.address === b.address && a.port === b.port && a.protocol === b.protocol;
+const { samePeer } = require('./sip-guards');
 
 // @llr LLR-SRV-APP-005
 /** Bounded authenticated INVITEs awaiting an app's fresh registration. No media is allocated yet. */

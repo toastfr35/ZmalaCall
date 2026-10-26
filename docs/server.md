@@ -494,6 +494,8 @@ the relay does not reduce the terminal's camera/codec workload.
 ## ZmalaPhone push sender
 
 `app-push.js` uses FCM HTTP v1 with an OAuth JWT scoped to Firebase Messaging.
+Concurrent sends share one bounded token refresh. Failed or malformed refreshes
+remain retryable; a late rejection of an older token cannot invalidate a newer one.
 Install a dedicated service-account key outside the release and server data,
 owned by root and readable only by the server service group (0640). The dedicated
 `push-sender@YOUR_PROJECT_ID.iam.gserviceaccount.com` account has the Firebase Cloud
@@ -598,12 +600,13 @@ Paths below are relative to `zmala_server/`.
 
 | Modules | Responsibility |
 | --- | --- |
+| `validation.js`, `terminal-status.js` | Separate account/configuration validation and bounded device telemetry; receipt times belong to the server |
 | `main.js`, `shutdown.js` | Composition, bootstrap publication and coordinated shutdown |
 | `http/handler.js`, `responses.js`, `admin-routes.js`, `device-routes.js` | Host/origin/authentication boundary and scoped API operations |
 | `store.js`, `accounts.js`, `terminal-settings.js`, `migrations.js` | Validated configuration, identities and migration |
 | `json-file.js`, `snapshot-file.js`, `history.js` | Startup/tool persistence, asynchronous snapshots and bounded history |
 | `backups.js`, `backup-format.js`, `backup-storage.js`, `http/backup-routes.js` | Validated export, restore transaction and recovery |
-| `sip-server.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP dialogs, validation, exact-flow presence and messaging |
+| `sip-server.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP dialogs, shared exact-transport ownership checks, validation, presence and messaging |
 | `media.js` | RTP/RTCP ports and transactional SDP updates |
 | `callbacks.js`, `callback-*.js`, `console-jobs.js` | Callback/reminder jobs and maintenance leases/results |
 | `photos.js`, `setup-pdf.js` | Python/Pillow portrait conversion and PDFKit QR documents |

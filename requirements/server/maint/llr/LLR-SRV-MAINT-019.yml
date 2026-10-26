@@ -17,7 +17,7 @@ references:
   type: file
 - path: zmala_server/sip-server.js
   type: file
-- path: zmala_server/validation.js
+- path: zmala_server/terminal-status.js
   type: file
 reviewed: null
 scope: Core

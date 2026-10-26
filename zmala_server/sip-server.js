@@ -5,14 +5,11 @@ const proxy = require('sip/proxy');
 const crypto = require('node:crypto');
 const { MediaRelay } = require('./media');
 const { IceMedia } = require('./secure-calls');
-/** @param {import('sip').Remote} a @param {import('sip').Remote} b */
-const samePeer = (a, b) =>
-  a.address === b.address && a.port === b.port && a.protocol === b.protocol;
 /** @param {string} uri */
 const username = (uri) => sip.parseUri(uri)?.user;
 const { RegistrationMonitor, registrationOnline } = require('./registrations');
 const { SipMessages } = require('./sip-messages');
-const { validRequest, maxForwards } = require('./sip-guards');
+const { validRequest, maxForwards, samePeer } = require('./sip-guards');
 const { startProxy } = require('./sip-transport');
 const { AppCalls } = require('./app-calls');
 /** SIP transport and dialog ownership. Presence and messaging have separate controllers. */

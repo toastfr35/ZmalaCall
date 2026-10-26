@@ -9,7 +9,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const sip = require('../../../zmala_server/node_modules/sip');
 const proxy = require('../../../zmala_server/node_modules/sip/proxy');
-const { maxForwards, validRequest } = require('../../../zmala_server/sip-guards');
+const { maxForwards, validRequest, samePeer } = require('../../../zmala_server/sip-guards');
 const { startProxy } = require('../../../zmala_server/sip-transport');
 const { SipServer } = require('../../../zmala_server/sip-server');
 
@@ -446,4 +446,11 @@ test('successful renegotiation commits once and retransmits the rewritten final 
   assert.deepEqual(sent[1], sent[2]);
   assert.equal(dialog.mediaUpdate, undefined);
   s.closeDialog('guard-test');
+});
+
+test('call ownership requires the same address, port and transport protocol', () => {
+  const peer = { address: '192.0.2.1', port: 5060, protocol: 'TCP' };
+  assert.equal(samePeer(peer, { ...peer }), true);
+  for (const change of [{ address: '192.0.2.2' }, { port: 5061 }, { protocol: 'UDP' }])
+    assert.equal(samePeer(peer, { ...peer, ...change }), false);
 });

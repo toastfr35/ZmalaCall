@@ -1,7 +1,7 @@
 // @test S-LLT-061
 // @requirements LLR-SRV-APP-005
 // @environment portable
-// @plan Register and replace push destinations in a private store; check account/enrollment scope, expiry, HMAC payloads and invalid-token removal. Mock Google's endpoints to verify signed OAuth scope, caching and high-priority data-only sends. Drive pending calls through registration, foreign/valid CANCEL, decline, expiry, revocation, failure and shutdown without allocating media.
+// @plan Register and replace push destinations in a private store; check account/enrollment scope, expiry, HMAC payloads and invalid-token removal. Mock Google's endpoints to verify signed OAuth scope, caching, shared concurrent refresh, failed/malformed refresh recovery, stale-401 isolation and high-priority data-only sends. Drive pending calls through registration, foreign/valid CANCEL, decline, expiry, revocation, failure and shutdown without allocating media.
 // @pass Only current App enrollments receive signed pushes; cancelled/expired/revoked waits cannot resume, deadlines and duplicate call IDs are bounded, and credentials remain outside backups.
 'use strict';
 const test = require('node:test');
@@ -225,4 +225,97 @@ test('sender failure and the real deadline close pending calls', async (t) => {
   expire();
   assert.equal(await pending, false);
   assert.equal(calls.waiting.size, 0);
+});
+
+function oauthSender() {
+  const sender = new FcmSender('');
+  const pair = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  sender.credentials = {
+    project_id: 'test-project',
+    client_email: 'sender@example.invalid',
+    private_key: pair.privateKey.export({ type: 'pkcs8', format: 'pem' }),
+  };
+  return sender;
+}
+
+test('concurrent push authorizations share one refresh and reuse its cached token', async (t) => {
+  const sender = oauthSender();
+  let release;
+  let requests = 0;
+  t.mock.method(global, 'fetch', () => {
+    requests++;
+    return new Promise((resolve) => {
+      release = resolve;
+    });
+  });
+  const first = sender.authorization(),
+    second = sender.authorization();
+  assert.equal(requests, 1);
+  release({ ok: true, json: async () => ({ access_token: 'shared-token', expires_in: 3600 }) });
+  assert.deepEqual(await Promise.all([first, second]), ['shared-token', 'shared-token']);
+  assert.equal(await sender.authorization(), 'shared-token');
+  assert.equal(requests, 1);
+});
+
+test('failed or malformed OAuth refresh does not strand concurrent callers or the next retry', async (t) => {
+  const sender = oauthSender();
+  let requests = 0;
+  let fail = true;
+  t.mock.method(global, 'fetch', async () => {
+    requests++;
+    return fail
+      ? { ok: false }
+      : { ok: true, json: async () => ({ access_token: 'retry-token', expires_in: 3600 }) };
+  });
+  const results = await Promise.allSettled([sender.authorization(), sender.authorization()]);
+  assert.ok(results.every((r) => r.status === 'rejected'));
+  assert.equal(requests, 1);
+  fail = false;
+  assert.equal(await sender.authorization(), 'retry-token');
+  assert.equal(requests, 2);
+  for (const invalid of [
+    null,
+    {},
+    { access_token: 42, expires_in: 3600 },
+    { access_token: '', expires_in: 3600 },
+    { access_token: 'secret', expires_in: 0 },
+    { access_token: 'secret', expires_in: 'bad' },
+  ]) {
+    const fresh = oauthSender();
+    let value = invalid;
+    t.mock.method(global, 'fetch', async () => ({ ok: true, json: async () => value }));
+    await assert.rejects(fresh.authorization(), {
+      message: 'Firebase sender authorization failed.',
+    });
+    assert.equal(fresh.access, '');
+    value = { access_token: 'valid-after-malformed', expires_in: 3600 };
+    assert.equal(await fresh.authorization(), 'valid-after-malformed');
+  }
+});
+
+test('late FCM rejection of an old token cannot invalidate a newer authorization', async (t) => {
+  const sender = oauthSender();
+  sender.access = 'old-token';
+  sender.expires = Date.now() + 3600000;
+  let refreshes = 0;
+  const sends = [];
+  t.mock.method(global, 'fetch', async (url) => {
+    if (url === 'https://oauth2.googleapis.com/token') {
+      refreshes++;
+      return { ok: true, json: async () => ({ access_token: 'new-token', expires_in: 3600 }) };
+    }
+    return new Promise((resolve) => sends.push(resolve));
+  });
+  const first = sender.send('one', {}),
+    second = sender.send('two', {});
+  await Promise.resolve();
+  assert.equal(sends.length, 2);
+  const denied = { ok: false, status: 401, json: async () => ({}) };
+  sends[0](denied);
+  await assert.rejects(first);
+  assert.equal(await sender.authorization(), 'new-token');
+  sends[1](denied);
+  await assert.rejects(second);
+  assert.equal(await sender.authorization(), 'new-token');
+  assert.equal(refreshes, 1);
 });

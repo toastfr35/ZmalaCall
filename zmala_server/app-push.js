@@ -11,12 +11,25 @@ class FcmSender {
     this.credentials = file ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
     this.access = '';
     this.expires = 0;
+    /** @type {Promise<string> | null} */
+    this.authorizationPending = null;
   }
   get enabled() {
     return !!this.credentials;
   }
   async authorization() {
     if (this.access && this.expires > Date.now() + 60000) return this.access;
+    // Concurrent incoming calls share one bounded OAuth request. Clear only
+    // this promise: a rejected refresh must not strand a later retry.
+    const pending = this.authorizationPending || this.refreshAuthorization();
+    this.authorizationPending = pending;
+    try {
+      return await pending;
+    } finally {
+      if (this.authorizationPending === pending) this.authorizationPending = null;
+    }
+  }
+  async refreshAuthorization() {
     if (!this.credentials) throw Error('Push sender is not configured.');
     const now = Math.floor(Date.now() / 1000);
     const encode = (/** @type {unknown} */ value) =>
@@ -44,8 +57,16 @@ class FcmSender {
     });
     if (!response.ok) throw Error('Firebase sender authorization failed.');
     const result = await response.json();
+    const expires = Number(result?.expires_in);
+    if (
+      typeof result?.access_token !== 'string' ||
+      !result.access_token ||
+      !Number.isFinite(expires) ||
+      expires <= 0
+    )
+      throw Error('Firebase sender authorization failed.');
     this.access = result.access_token;
-    this.expires = Date.now() + Math.min(3600, Number(result.expires_in)) * 1000;
+    this.expires = Date.now() + Math.min(3600, expires) * 1000;
     return this.access;
   }
   /** @param {string} token @param {Record<string,string>} data */
@@ -62,7 +83,8 @@ class FcmSender {
         }),
       },
     );
-    if (response.status === 401) {
+    // A late failure for an old access token must not clear a newer refresh.
+    if (response.status === 401 && this.access === authorization) {
       this.access = '';
       this.expires = 0;
     }

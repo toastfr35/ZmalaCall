@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 // Device API routes use the bearer token identity, not a terminal ID supplied by the request.
-const { terminalStatus } = require('../validation');
+const { terminalStatus } = require('../terminal-status');
 const { contactPresence } = require('../registrations');
 const { send, readJson, requireDevice, httpError } = require('./responses');
 // @llr LLR-SRV-CONFIG-022

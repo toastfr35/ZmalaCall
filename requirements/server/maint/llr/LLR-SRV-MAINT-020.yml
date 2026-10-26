@@ -21,8 +21,6 @@ references:
   type: file
 - path: zmala_server/sip-server.js
   type: file
-- path: zmala_server/validation.js
-  type: file
 reviewed: null
 scope: Core
 text: |
