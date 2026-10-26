@@ -29,6 +29,7 @@ class VolumeControl:
         self.canvas = None
         self.timer = None
         self.sent = None
+        self.default_revision = c20_volume.default_revision()
         self.last_write = 0
         self.closed = False
 
@@ -50,6 +51,7 @@ class VolumeControl:
             return
         self.level.percent = desired
         self.sent = desired
+        self.default_revision = c20_volume.default_revision()
         self.active = True
         self.opened_context = self.context()
         self.activity()
@@ -63,6 +65,15 @@ class VolumeControl:
 
     # @llr LLR-TERM-AUDIO-007
     def flush(self, force=False):
+        # @llr LLR-TERM-AUDIO-008
+        # A saved default supersedes unsent clicks, including when the new default
+        # equals the last written value. Comparing volume values alone misses it.
+        revision = c20_volume.default_revision()
+        if revision != self.default_revision:
+            self.default_revision = revision
+            desired, _, _ = c20_volume.status()
+            if desired is not None:
+                self.level.percent = self.sent = desired
         now = time.monotonic()
         if self.sent != self.level.percent and (force or now-self.last_write >= .1):
             c20_volume.request(self.level.percent)

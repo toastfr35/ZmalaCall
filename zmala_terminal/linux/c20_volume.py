@@ -8,21 +8,30 @@ _desired = None
 _applied = None
 _worker = None
 _configured = None
+_default_revision = 0
 _failed = False
 
 
 # @llr LLR-TERM-AUDIO-008
 def configure(percent):
     """Keep local adjustments across core rebuilds; a changed server default wins."""
-    global _configured
+    global _configured, _default_revision
     if type(percent) is not int or not 0 <= percent <= 100:
         raise ValueError('C20 speaker volume must be 0–100 percent')
     with _condition:
         if _configured != percent:
             _configured = percent
+            _default_revision += 1
             request(percent)
         elif _desired is not None:
             request(_desired)
+
+
+# @llr LLR-TERM-AUDIO-008
+def default_revision():
+    """Identify a changed saved default even when its value equals the current volume."""
+    with _condition:
+        return _default_revision
 
 
 def status():

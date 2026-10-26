@@ -12,6 +12,8 @@ ref: ''
 references:
 - path: tests/terminal/LLT/test_presenter_input.py
   type: file
+- path: tests/terminal/LLT/test_input_dispatch.py
+  type: file
 - path: tests/terminal/LLT/test_volume_control.py
   type: file
 - path: zmala_terminal/common/input_control.py
@@ -28,13 +30,15 @@ text: 'A distinct middle-button press shall open a dedicated volume page. Left/r
   shall decrease/increase C20 playback volume by five percentage points, bounded to 0 through
   100. An existing between-step level shall move to the next boundary in the chosen direction.
   A second distinct middle press shall close the page. Motion shall not change volume. Duplicate
-  held reports and release alone shall not toggle it. While open, other buttons shall not dial,
+  held reports and release alone shall not toggle it. While open, other physical buttons shall not dial,
   navigate contacts, hang up or open settings. Incoming call/state, setup or focus changes shall
-  dismiss the page without changing the underlying call or selection.
+  dismiss the page without changing the underlying call or selection. Internal timeout and
+  permission-revocation actions shall remain effective while the page is open.
 
   '
 verification: 'Open the page, feed movement, duplicate down/release reports and distinct left/right
   clicks. Check five-percent boundaries, limits, unchanged call/selection, second-click closure
-  and context/focus preemption.
+  and context/focus preemption. Verify that logical call cancellation bypasses the physical
+  volume-input handler.
 
   '

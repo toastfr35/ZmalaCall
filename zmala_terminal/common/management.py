@@ -5,6 +5,7 @@ import queue
 import threading
 import time
 from zmala_terminal.common.model import State
+from zmala_terminal.common.peripherals import collect_peripheral_status
 from zmala_terminal.common.connectivity import wifi_link_available
 
 POLL_SECONDS = 2
@@ -57,43 +58,9 @@ class ManagementLoop:
             self.messages.put(('network-done', None))
         threading.Thread(target=worker, daemon=True).start()
 
-    # @llr LLR-TERM-MAINT-018
     def peripheral_status(self):
-        """Publish observed peripheral state, including unknowns, without waking USB."""
-        remote = getattr(self, 'presenter_input', None)
-        status = getattr(remote, 'status', None)
-        if status not in ('connected', 'disconnected', 'unpaired', 'blocked',
-                          'bluetooth_unavailable', 'input_unavailable'):
-            status = 'unknown'
-        battery = getattr(remote, 'battery', None)
-        battery = battery if type(battery) is int and 0 <= battery <= 100 else None
-        charger = getattr(remote, 'charger_connected', None)
-        charger = charger if type(charger) is bool else None
-        power = getattr(self, 'usb_power', None)
-        enabled = power is not None and power.enabled is True
-        powered = power.power_state if enabled else None
-        powered = powered if type(powered) is bool else None
-        detector = getattr(self, 'c20_status', None)
-        try:
-            connected = detector.read() if detector else None
-        except OSError:
-            connected = None
-        connected = connected if type(connected) is bool else None
-        camera = 'connected' if connected is True else 'disconnected' if connected is False else 'unknown'
-        if enabled:
-            if power.state == 'error':
-                camera = 'error'
-            elif power.state in ('starting', 'switching'):
-                camera = 'switching'
-            elif powered is False:
-                camera = 'off'
-            elif power.ready is False:
-                camera = 'waking'
-            elif camera == 'unknown' and powered is True:
-                camera = 'on'
-        return {'remote_status': status, 'remote_battery': battery,
-                'remote_charger_connected': charger, 'camera_powered': powered,
-                'camera_connected': connected, 'camera_status': camera}
+        return collect_peripheral_status(getattr(self, 'presenter_input', None),
+            getattr(self, 'usb_power', None), getattr(self, 'c20_status', None))
 
     # @llr LLR-TERM-COM-007
     def poll(self):
@@ -140,7 +107,7 @@ class ManagementLoop:
             # A delayed visibility query must not answer a newly arrived call
             # or act on an enrollment that has since been replaced.
             if not self.closed and generation == self.generation and state == self.model.state:
-                self.press(button)
+                self.physical_press(button)
         elif kind == 'dial-ready':
             self.dial_ready(*value)
         elif kind == 'callback-result':

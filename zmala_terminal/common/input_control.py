@@ -107,9 +107,23 @@ class InputControl:
             if not self.tv_control.handle_button(
                     lambda: self.messages.put(('tv-button', (generation, state, button))),
                     preserve_restore=state in (State.RINGING, State.CONNECTING, State.IN_CALL)):
-                self.press(button)
+                self.physical_press(button)
         self.last_key[button] = now
         return 'break'
+
+    # @llr LLR-TERM-REMOTE-016
+    def physical_press(self, button):
+        """Consume only user input in volume mode; internal call actions bypass it.
+
+        Delayed TV visibility checks use this entry point too, so a queued remote
+        press cannot dial behind a volume panel opened while that check was pending.
+        """
+        volume = getattr(self, 'volume_control', None)
+        if volume and volume.active is True:
+            self.cancel_settings_hold()
+            volume.button(button)
+        else:
+            self.press(button)
 
     def _press_action(self, button):
         self.last_button = time.monotonic()

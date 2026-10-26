@@ -304,6 +304,7 @@ class TVControlTests(unittest.TestCase):
 
     def test_visibility_result_cannot_answer_a_new_call_or_reset_enrollment(self):
         app = SimpleNamespace(closed=False, generation=3, model=TerminalModel(), press=Mock())
+        app.physical_press=app.press
         state = app.model.state
         ManagementLoop.handle_worker_message(app, 'tv-button', (3, state, 'green'))
         app.press.assert_called_once_with('green')

@@ -29,6 +29,7 @@ class ManagementPumpTests(unittest.TestCase):
                      'update_setup_display','draw_avatar','animate_ringing','tick_tv_idle','local_settings_result','tick_ringtone',
                      'pointer_visible','dial_ready','setup_result'):
             setattr(loop,name,Mock())
+        loop.physical_press=loop.press
         return loop
 
     def test_poll_captures_generation_revision_and_status_then_releases_busy_flag(self):

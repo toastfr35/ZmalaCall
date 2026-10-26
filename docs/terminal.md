@@ -205,7 +205,8 @@ battery state favors retaining power. The webcam indicator reports confirmed hub
 The terminal reports application, connection and media status to the server.
 Each two-second management poll captures remote input/connection, battery and
 charger state, C20 USB presence, confirmed power and transition/recovery state.
-These observations do not wake USB or open the camera; unsupported or stale
+`peripherals.py` collects these read-only observations separately from the
+management scheduler. They do not wake USB or open the camera; unsupported or stale
 sensor values remain unknown. The server displays them on the selected terminal
 card and suppresses stale readings after 20 seconds.
 Authorized maintenance jobs run with limited duration and output. Cancellation,
@@ -426,7 +427,7 @@ Windows equivalents are Left/Right, Enter and Escape. F11 toggles fullscreen
 outside confirmation. Button repeat cannot confirm a call; release, another
 button, focus loss, disconnect or an incoming call cancels the settings hold.
 The Presenter green sticker covers the microphone button; red covers Teams.
-Middle is Pointer. Remote motion is ignored for volume. While the volume page is open, buttons do not navigate contacts, dial, hang up or open Settings. Call/state changes and setup/focus changes dismiss the page; an existing call continues.
+Middle is Pointer. Remote motion is ignored for volume. While the volume page is open, physical buttons do not navigate contacts, dial, hang up or open Settings. Internal timeouts and permission revocations still cancel calls. `input_control.py` routes physical input (including delayed TV checks) through `physical_press`; logical `press` remains available to the call/timer controllers. Call/state changes and setup/focus changes dismiss the page; an existing call continues.
 
 Settings has a list and editor; only the active side shows button hints, status
 icons are hidden, and the terminal serial appears at the bottom. Confirmed edits
@@ -473,7 +474,9 @@ and it has no automatic timeout. A red exclamation indicates mixer failure.
 It changes speaker/ringtone playback, not microphone gain/mute. Mixer requests
 coalesce on one worker at at most ten per second, with a final pending value
 flushed on closing. Volume changes survive calls/core replacement in the current
-session; restart or a changed server volume restores the saved setting.
+session; restart or a changed server volume restores the saved setting. A saved-
+default revision also invalidates any pending volume click, so closing an open
+control cannot overwrite a newly applied default.
 
 Contact names stay within portrait frames. Online/offline bands use symbols and
 words. Green opens a separate call confirmation for an online contact or callback

@@ -1,7 +1,7 @@
 # @test T-LLT-041
 # @requirements LLR-TERM-CONFIG-024, LLR-TERM-REMOTE-016, LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007, LLR-TERM-AUDIO-008
 # @environment portable
-# @plan Toggle the dedicated volume page with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal full-page/compact in-call feedback, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately.
+# @plan Toggle the dedicated volume page with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal full-page/compact in-call feedback, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately; change a saved default while an unsent volume click is pending and verify it cannot overwrite that default.
 # @pass Named assertions pass; skips and visual/hardware checks are recorded separately.
 
 """Dedicated volume page and bounded C20 playback writes."""
@@ -90,6 +90,24 @@ class VolumeTests(unittest.TestCase):
             placement=canvas.place.call_args.kwargs
             self.assertEqual((placement['relwidth'],placement['relheight']),(1,1))
             self.assertEqual(placement['anchor'],'nw')
+
+    def test_changed_default_supersedes_pending_click_even_if_current_value_is_unchanged(self):
+        with patch.multiple(c20_volume, _desired=None, _applied=None, _worker=None,
+                            _configured=None, _default_revision=0, _failed=False), patch.object(c20_volume, 'apply', return_value=True):
+            def settle():
+                worker=c20_volume._worker
+                if worker:worker.join(2);self.assertFalse(worker.is_alive())
+            c20_volume.configure(80);settle()
+            c20_volume.request(50);settle()
+            control=VolumeControl(Mock(),lambda:True,Mock());control.draw=Mock()
+            control.pointer(True);control.button('right')
+            self.assertEqual(control.level.percent,55)
+            c20_volume.configure(50);settle()  # New saved default, same hardware value.
+            control.dismiss();settle()
+            self.assertEqual(c20_volume.status(),(50,50,False))
+            self.assertEqual(control.level.percent,50)
+            control.pointer(False);control.pointer(True);control.button('right');control.dismiss();settle()
+            self.assertEqual(c20_volume.status(),(55,55,False),'A later deliberate click still works')
 
     def test_local_level_survives_engine_reconfiguration_but_changed_default_wins(self):
         with patch.multiple(c20_volume, _desired=None, _applied=None, _worker=None,

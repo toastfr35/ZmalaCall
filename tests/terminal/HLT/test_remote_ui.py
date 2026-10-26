@@ -1,12 +1,13 @@
 # @test T-HLT-023
 # @requirements HLR-TERM-REMOTE-011, HLR-TERM-REMOTE-012, HLR-TERM-NAV-002, HLR-TERM-AUDIO-002
 # @environment display
-# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a dedicated horizontal volume page in 5-percent steps. Also render video and open a compact volume overlay during a simulated established call, assert most video remains uncovered, block call actions and preempt it on incoming ringing. Replace only device discovery, Bluetooth status and the external mixer process. Check that all mixer commands address C20 playback only.
+# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a dedicated horizontal volume page in 5-percent steps. Also render video and open a compact volume overlay during a simulated established call, assert most video remains uncovered, block physical call actions, preserve programmatic cancellation and expired outgoing-call deadlines and preempt it on incoming ringing. Replace only device discovery, Bluetooth status and the external mixer process. Check that all mixer commands address C20 playback only.
 # @pass One held press cannot confirm a call; red cancels; middle toggles the volume page, arrows change only volume, movement is ignored and the page closes on the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
 
 import os
 import sys
 import threading
+import time
 import tkinter as tk
 import unittest
 from types import SimpleNamespace
@@ -126,11 +127,29 @@ class RemoteUITests(unittest.TestCase):
                 report('043e010000000000');report('043e000000000000')
                 self.assertEqual(app.model.state,State.IN_CALL)
                 app.engine.hangup.assert_not_called()
+                # A logical timeout/revocation remains effective despite the overlay.
+                app.press('red')
+                self.assertNotEqual(app.model.state,State.IN_CALL)
+                app.engine.end.assert_called()
+                pump(app,lambda:not app.volume_control.active)
+                report('043d010000000000');report('043d000000000000')
                 app.model.state=State.RINGING
+                app.model.contact=app.model.selected
                 pump(app,lambda:not app.volume_control.active)
                 self.assertFalse(app.volume_control.canvas.winfo_ismapped())
                 self.assertEqual(app.model.state,State.RINGING)
-                app.model.state=State.HOME
+                app.model.ended()
+                # An expired outgoing call must still end with volume open.
+                app.model.state=State.CALLING;app.model.contact=app.model.selected
+                app.model.outgoing_attempt=True;app.engine.call=99
+                report('043d010000000000');report('043d000000000000')
+                self.assertTrue(app.volume_control.active)
+                app.outgoing_deadline=0.1
+                app.update_timers(time.monotonic())
+                self.assertEqual(app.model.state,State.CONFIRM_CALLBACK)
+                pump(app,lambda:not app.volume_control.active)
+                app.press('red')
+                self.assertEqual(app.model.state,State.HOME)
 
                 # A disappearing raw device releases held buttons.
                 report('043d010000000000')

@@ -1,7 +1,7 @@
 # @test T-LLT-074
-# @requirements LLR-TERM-REMOTE-015, LLR-TERM-NAV-004, LLR-TERM-NAV-005, LLR-TERM-NAV-007, LLR-TERM-TV-026, LLR-TERM-POWER-014
+# @requirements LLR-TERM-REMOTE-015, LLR-TERM-REMOTE-016, LLR-TERM-NAV-004, LLR-TERM-NAV-005, LLR-TERM-NAV-007, LLR-TERM-TV-026, LLR-TERM-POWER-014
 # @environment portable
-# @plan Invoke real physical-input dispatch with a configured model and mocked Tk/HID/TV boundaries. Verify wake-only presses, debounce/repeat cancellation, pairing-test isolation, pointer-generation guards, fullscreen/cancel dispatch and serialized carousel movement. Change contact presence between confirmation presses and assert the stale selection cannot start a call.
+# @plan Invoke real physical-input dispatch with a configured model and mocked Tk/HID/TV boundaries. Verify wake-only presses, debounce/repeat cancellation, pairing-test isolation, pointer-generation guards, fullscreen/cancel dispatch and serialized carousel movement. Verify volume consumes physical input through both immediate and delayed dispatch, while internal cancellation remains separate. Change contact presence between confirmation presses and assert the stale selection cannot start a call.
 # @pass All action, activity, queue, callback and model assertions pass without real remote events, TV commands or native calls.
 import queue
 import unittest
@@ -68,6 +68,16 @@ class InputDispatchTests(unittest.TestCase):
         self.assertEqual(c.toggle_fullscreen(None),'break'); c.root.attributes.assert_not_called()
         c.model.state=State.HOME; c.root.attributes.return_value=False; c.toggle_fullscreen(None); c.root.attributes.assert_called_with('-fullscreen',True)
         c.settings_open=True; c.press.reset_mock(); c.other_key(None); c.press.assert_not_called(); c.volume_activity(); c.usb_power.require.assert_called_with(urgent=True)
+
+    def test_volume_consumes_physical_actions_but_not_the_logical_entry_point(self):
+        c=self.controller();c.volume_control.active=True
+        for button in ('left','right','green','red'):c.physical_press(button)
+        c.press.assert_not_called()
+        self.assertEqual([call.args for call in c.volume_control.button.call_args_list],
+                         [('left',),('right',),('green',),('red',)])
+        c.press('red');c.press.assert_called_once_with('red')
+        c.volume_control.active=False;c.physical_press('green')
+        c.press.assert_called_with('green')
 
     def test_carousel_serializes_moves_and_confirming_unavailable_contact_never_dials(self):
         c=self.controller(); settings=config(); settings['contacts'].append(settings['contacts'][0]|{'id':'bob','name':'Bob','sip_uri':'sip:bob@family.test'}); c.model.configure(settings)

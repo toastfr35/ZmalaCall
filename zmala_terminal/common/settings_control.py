@@ -103,13 +103,8 @@ class SettingsControl:
             volume.pointer(False)
             volume.dismiss()
 
-    # @llr LLR-TERM-REMOTE-016
     def press(self, button):
-        volume = getattr(self, 'volume_control', None)
-        if volume and volume.active is True:
-            self.cancel_settings_hold()
-            volume.button(button)
-            return
+        """Logical actions also serve timeouts/revocations; modal UI must not swallow them."""
         if self.setup_stage == 'tv' and self.tv_setup_button(button):
             return
         self.last_button = time.monotonic()
