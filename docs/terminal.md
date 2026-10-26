@@ -78,16 +78,16 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
-All terminal volume UI uses 5% steps, including Settings, the middle-button volume page and the server terminal editor. Left/right on the volume page moves an existing between-step level to the next boundary in the chosen direction. The speaker-volume editor uses 5% steps. Existing values between steps open at the nearest step and stay unchanged until accepted.
+All terminal volume UI uses 5% steps. Settings has separate Ringtone volume and Button sounds volume editors; the middle-button overlay adjusts received call sound. The server exposes all three defaults. Left/right on the overlay moves an existing between-step level to the next boundary in the chosen direction. Settings editors display the nearest step without saving until accepted.
 
 The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.
 
 Red on the Settings list asks whether to exit: green confirms; red keeps the same list selection. Red within an editor only discards that draft. Neither exit answer changes saved configuration.
 
-The eight-row Settings menu reserves a full text line for each label and saved value at both supported sizes; short values such as Nokia and the speaker percentage remain complete.
+The nine-row Settings menu scrolls a seven-row window to keep the selected row visible. Each row reserves a text line for its label and saved value at both supported sizes.
 
 The server supplies the main terminal configuration. The local Settings page lets
-the user change language, automatic answer, framing, speaker volume, ringtone, portrait count
+the user change language, automatic answer, framing, ringtone volume, button-sound volume, ringtone, portrait count
 and the return-to-TV timeout. Each editor lets the user accept or cancel a change.
 
 The terminal confirms a saved change only after the server accepts it. A rejected
@@ -98,7 +98,7 @@ configuration wait until the terminal is idle. Supported live changes do not end
 
 The remote has left, right, green, red and middle controls. Green and red stickers
 identify the two action buttons. Button actions depend on the current page or call
-state. Pressing the middle button opens a dedicated volume page; left/right changes volume and a second middle press closes it.
+state. Pressing the middle button opens a compact call-volume overlay; left/right changes volume and a second middle press closes it.
 
 The terminal detects remote connection, battery level and external charging power
 where the device reports them. It shows help when the remote is unavailable.
@@ -128,6 +128,12 @@ Normal operation uses the selected language. Early setup uses English before the
 server supplies that preference. Text rendering supports Unicode names and scripts.
 Missing pictures or translations use the defined fallback presentation.
 
+The shared catalog contains 16 languages in displayed-native-name alphabetical order:
+Deutsch, English, Español, Français, Polski, Português, Ελληνικά, Русский,
+اردو, العربية الفصحى, हिन्दी, বাংলা, ไทย, 한국어, 日本語 and 普通话.
+The terminal and server retain this catalog order. Language navigation wraps at
+both ends; an older unsupported server preference migrates to English once.
+
 ### 9. Call control
 
 The user confirms an outgoing call before the terminal starts it. The terminal
@@ -142,14 +148,16 @@ normal call completion return the terminal to the appropriate idle state.
 ### 10. Audio
 
 The terminal uses the C20 microphone and speaker for calls. It plays an incoming
-ringtone and an outgoing waiting tone on the C20 speaker. Speaker volume can
-change without changing microphone gain or television volume.
+ringtone and an outgoing waiting tone on the C20 speaker. Call, ringtone and
+button-sound levels are independent, including their 0% silent setting, without
+changing microphone gain or television volume. Idle remote navigation plays a
+short low tap; calls, ringing and ringtone previews suppress button feedback.
 
 Audio processing provides the configured echo-control behavior. The Pi waits for
 all C20 media instead of starting a receive-only call or selecting TV audio.
 Missing devices or rejected routes retry once per second while SIP and remote
 buttons remain responsive. A cancelled or superseded call cannot resume.
-USB wake restores the requested speaker level before media is ready.
+USB wake restores the C20 playback route and fixed hardware gain before media is ready.
 
 ### 11. Video
 
@@ -420,14 +428,14 @@ coalesces mixer work. The following mappings are implementation behavior, while
 | Green | Open confirmation, call/request/answer, open a setting or accept its draft |
 | Red | Cancel/decline/end, cancel a selected callback request, or discard/leave an editor |
 | Hold red for 7 seconds on the carousel | Open Settings; progress appears after two seconds |
-| Press middle | Open/close the dedicated horizontal volume page |
-| Left/right while volume is open | Decrease/increase speaker volume in 5% steps |
+| Press middle | Open/close the compact horizontal call-volume overlay |
+| Left/right while volume is open | Decrease/increase received call volume in 5% steps |
 
 Windows equivalents are Left/Right, Enter and Escape. F11 toggles fullscreen
 outside confirmation. Button repeat cannot confirm a call; release, another
 button, focus loss, disconnect or an incoming call cancels the settings hold.
 The Presenter green sticker covers the microphone button; red covers Teams.
-Middle is Pointer. Remote motion is ignored for volume. While the volume page is open, physical buttons do not navigate contacts, dial, hang up or open Settings. Internal timeouts and permission revocations still cancel calls. `input_control.py` routes physical input (including delayed TV checks) through `physical_press`; logical `press` remains available to the call/timer controllers. Call/state changes and setup/focus changes dismiss the page; an existing call continues.
+Middle is Pointer. Remote motion is ignored for volume. While the overlay is open, physical buttons do not navigate contacts, dial, hang up or open Settings. Internal timeouts and permission revocations still cancel calls. `input_control.py` routes physical input (including delayed TV checks) through `physical_press`; logical `press` remains available to the call/timer controllers. Call/state changes and setup/focus changes dismiss the overlay; an existing call continues.
 
 Settings has a list and editor; only the active side shows button hints, status
 icons are hidden, and the terminal serial appears at the bottom. Confirmed edits
@@ -441,10 +449,11 @@ inside the small-window layout.
 
 | Setting | Local choices |
 | --- | --- |
-| Language | Server-supported languages |
+| Language | 16 native labels in alphabetical order, wrapping at both ends |
 | Automatic answer | Never, 10 seconds, 30 seconds, 1, 2, 5 or 10 minutes |
 | Automatic framing | On/off; Pi C20 only |
-| Speaker volume | 0–100%, in 5% steps |
+| Ringtone volume | 0–100%, in 5% steps; incoming/outgoing tones and previews |
+| Button sounds volume | 0–100%, in 5% steps; idle navigation feedback |
 | Ringtone | Nokia (default) and the private server library |
 | Portraits | Three/five; short contact lists retain three positions |
 | Return to TV | 30 seconds (default), 1, 2, 5, 10, 20 minutes, Never |
@@ -452,7 +461,7 @@ inside the small-window layout.
 
 Open Ringtone with green, then use left/right to hear the highlighted choice.
 Preview starts after 400 ms without another selection and plays for at most ten
-seconds through the C20 at the current speaker volume. It waits for a waking C20;
+seconds through the C20 at Ringtone volume. The Ringtone volume editor also previews the selected tone. It waits for a waking C20;
 zero volume remains silent. Green saves the choice after server acknowledgement;
 red cancels it. Leaving the editor or receiving a call stops preview immediately.
 The editor shows waiting, playing, muted or playback-failure feedback.
@@ -466,17 +475,40 @@ incoming calls use Nokia until a selected download becomes available. Reset
 cancels pending cache writes. `usb_power.py` owns bounded C20 preview playback,
 including installations without USB power switching; incoming ringing preempts it.
 
-Outside calls the volume page covers the UI with one centered horizontal control,
-direction icons and the current percentage. During a connected call it becomes a
-compact overlay above the video, leaving most of the picture visible. Press middle to open it, click left/right for
+The call-volume overlay uses a black frame, direction icons and the current
+percentage above the existing page or video. Its width is at most 900 pixels
+and its height at most 160 pixels, leaving most of the screen visible.
+Press middle to open it, click left/right for
 5% steps, and press middle again to close it. Button release does not close it,
 and it has no automatic timeout. A red exclamation indicates mixer failure.
-It changes speaker/ringtone playback, not microphone gain/mute. Mixer requests
+It changes received call playback, not ringtone or microphone gain/mute. Level requests
 coalesce on one worker at at most ten per second, with a final pending value
 flushed on closing. Volume changes survive calls/core replacement in the current
 session; restart or a changed server volume restores the saved setting. A saved-
 default revision also invalidates any pending volume click, so closing an open
 control cannot overwrite a newly applied default.
+
+`c20_speaker_volume` retains its historical configuration key for the call default.
+`ringtone_volume` defaults to the old call value for older profiles; new profiles
+start at 50%. `action_sound_volume` starts at 20%. The C20 hardware PCM stays at
+100% without changing its mute switch. `media.py` applies the logical call level
+through the SDK playback gain on its owner thread (50% is -14 dB; 0% is -120 dB).
+`sound_levels.py` scales validated ringtone PCM into a private RAM-backed temporary
+file, replacing and deleting it when the tone or level changes and on shutdown.
+
+`action_sounds.py` keeps one idle raw-PCM player warm to avoid C20 startup lag.
+It feeds paced 5 ms frames through a 4 KiB nonblocking pipe with a 200 ms write
+deadline; left/right/middle use a 400 Hz tap for 20 ms with a soft decay. Green
+adds a 600 Hz note; red uses two 250 Hz taps separated by 30 ms of silence.
+Cold, busy or stale presses
+are dropped instead of queued. Calls and ringtone playback stop/reap the feedback
+player before taking the exclusive C20 route. Helpers remove the inherited SIP
+`LD_PRELOAD` while preserving the ALSA configuration. Button feedback is not mixed
+with call or ringtone audio.
+Before starting visual navigation, input yields for up to 20 ms for the worker's
+first PCM frame. A successful handoff gives playback another 20 ms head start,
+so portrait rendering does not starve sound startup. Missing audio skips that
+head start and cannot block navigation beyond the bounded handoff wait.
 
 Contact names stay within portrait frames. Online/offline bands use symbols and
 words. Green opens a separate call confirmation for an online contact or callback
@@ -529,7 +561,7 @@ different Pi does not transfer the Bluetooth controller identity.
 The first mapped button when TV power/input hides the UI wakes/selects the
 terminal and is consumed, as are presses while HDMI settles. It cannot also dial
 or change contacts. This includes the first middle/Pointer press: that consumed
-press does not open volume. Release and press again to open the volume page.
+press does not open volume. Release and press again to open the volume overlay.
 With no CEC, normal button behavior remains available; unknown routing limits
 detection.
 After restart, a missing power observation still permits a previously qualified
@@ -1063,3 +1095,21 @@ checks actual text/icon bounds, rather than only the coloured band's rectangle.
 Incoming callback requests from a current app contact show a persistent yellow flag banner over that contact portrait, including adjacent cards. The localized callback-requested label stays separate from the name and availability. The flag disappears when the server reports cancellation or completion. Outgoing requests keep their existing return-arrow tag and cancellation controls. Neither marker starts a call.
 
 When an outgoing call ends before answer, including timeout, refusal or caller cancellation, the terminal offers to request a callback from the same contact. Green submits the request; red returns home. It waits for media teardown, does not repeat an existing pending request, and does not show this question after a connected call or declined incoming call. Late native events cannot dismiss the offer or start a cancelled call.
+
+### Sound and settings verification on 26 October 2026
+
+The candidate passed 506 portable terminal LLTs (11 platform-specific skips),
+the two real-Tk feedback/remote controller HLTs and the Settings display scenario
+across all 16 languages at 900x620 and 1280x720. Thirteen focused server tests
+checked field validation, independent defaults and legacy language migration.
+`make lint requirements` passed with reciprocal code/test traces intact.
+
+On term2, the user confirmed immediate first-press feedback with the warmed
+stream, approved the lower navigation pitch and confirmed the rising green cue.
+The compact black overlay was inspected over the live carousel. The isolated
+T-HLT-034 native call test also passed on the C20, restoring both routes from an
+obsolete HDMI output before connected streams. This checks native routing, not
+acoustic quality. Fresh phone-to-terminal call-volume and video acceptance is
+pending because the phone was unavailable. The final bounded audio-first handoff
+has automated lifecycle coverage; term2 logged first-frame submission in 5-12 ms
+and the user confirmed that the sound now precedes carousel movement and feels right.

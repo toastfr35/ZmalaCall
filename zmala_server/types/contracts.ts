@@ -51,6 +51,8 @@ export interface TerminalProfile {
   carousel_portraits: 3 | 5;
   tv_idle_seconds: number;
   c20_speaker_volume: number;
+  ringtone_volume?: number;
+  action_sound_volume?: number;
   ringtone?: string;
   terminal_settings: TerminalSettings;
   /** Retained in older snapshots; current contacts are derived from accounts. */
@@ -126,6 +128,8 @@ export interface TerminalConfiguration {
   carousel_portraits: 3 | 5;
   tv_idle_seconds: number;
   c20_speaker_volume: number;
+  ringtone_volume?: number;
+  action_sound_volume?: number;
   server_host: string;
   sip_port: number;
   auto_answer: boolean;

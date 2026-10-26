@@ -1,5 +1,5 @@
 # @test T-LLT-019
-# @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-018, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022, LLR-TERM-CONFIG-023
+# @requirements LLR-TERM-SETUP-032, LLR-TERM-CONFIG-018, LLR-TERM-CONFIG-019, LLR-TERM-CONFIG-021, LLR-TERM-CONFIG-022, LLR-TERM-CONFIG-023, LLR-TERM-UI-023
 # @environment portable
 # @plan Drive timed red holds, setting drafts, incoming calls and delayed server acknowledgements with fake controllers; assert access timing, cancel/accept behavior, allowed values including every 5-percent volume step, clamped endpoints and nearest-step display for an existing saved value, revision ownership and deferred media changes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
@@ -92,16 +92,16 @@ class LocalSettingsTests(unittest.TestCase):
         self.assertEqual(draft.options[draft.index], 100)
 
     def test_speaker_volume_choices_use_five_percent_steps_and_preserve_saved_value(self):
-        config_value = config() | {'c20_speaker_volume': 53}
-        draft = SettingsDraft(); draft.row = FIELDS.index('c20_speaker_volume'); draft.open(config_value)
+        config_value = config() | {'ringtone_volume': 53}
+        draft = SettingsDraft(); draft.row = FIELDS.index('ringtone_volume'); draft.open(config_value)
         self.assertEqual(draft.options, list(range(0, 101, 5)))
-        self.assertEqual(draft.change(config_value), {'c20_speaker_volume': 55})
-        self.assertEqual(draft.expected, {'c20_speaker_volume': 53})
-        self.assertEqual(config_value['c20_speaker_volume'], 53)
+        self.assertEqual(draft.change(config_value), {'ringtone_volume': 55})
+        self.assertEqual(draft.expected, {'ringtone_volume': 53})
+        self.assertEqual(config_value['ringtone_volume'], 53)
         draft.move(-1); self.assertEqual(draft.options[draft.index], 50)
         draft.move(1); self.assertEqual(draft.options[draft.index], 55)
         for value, direction in ((0, -1), (100, 1)):
-            draft.open(config_value | {'c20_speaker_volume': value}); draft.move(direction)
+            draft.open(config_value | {'ringtone_volume': value}); draft.move(direction)
             self.assertEqual(draft.options[draft.index], value)
 
     def test_legacy_answer_delay_selects_next_supported_delay_not_never(self):
@@ -193,8 +193,18 @@ class LocalSettingsTests(unittest.TestCase):
         messages = json.loads((Path(__file__).resolve().parents[3]/'zmala_terminal/common/shared/settings-messages.json').read_text(encoding='utf-8'))
         self.assertEqual(set(messages), set(LANGUAGES))
         for values in messages.values():
-            self.assertEqual(len(values), 13)
+            self.assertEqual(len(values), 14)
             self.assertTrue(all(isinstance(v, str) and v.strip() for v in values))
+
+    def test_native_language_alphabet_order_and_both_wrap_boundaries(self):
+        expected=['de','en','es','fr','pl','pt','el','ru','ur','ar','hi','bn','th','ko','ja','zh-Hans']
+        self.assertEqual(list(LANGUAGES),expected)
+        draft=SettingsDraft();draft.row=FIELDS.index('language');draft.open(config())
+        self.assertEqual(draft.options,expected)
+        draft.index=0;draft.move(-1);self.assertEqual(draft.options[draft.index],'zh-Hans')
+        draft.move(1);self.assertEqual(draft.options[draft.index],'de')
+        self.assertEqual(LANGUAGES['ar']['native'],'العربية الفصحى')
+        self.assertEqual(LANGUAGES['zh-Hans']['native'],'普通话')
 
 
 if __name__ == '__main__':

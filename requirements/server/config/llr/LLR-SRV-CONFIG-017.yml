@@ -1,8 +1,9 @@
 active: true
 area: Terminal configuration
 derived: false
-header: |
-  Presentation and volume choices
+header: 'Presentation and volume choices
+
+  '
 level: 35.0
 links:
 - HLR-SRV-CONFIG-014: d-Yo985hxA4M24USal23tJGG4wZC5V325QvJClmGLtY=
@@ -19,9 +20,18 @@ references:
   type: file
 - path: zmala_server/validation.js
   type: file
+- path: zmala_server/defaults.js
+  type: file
 reviewed: null
 scope: Core
-text: |
-  Profiles shall accept supported language codes, boolean framing, integer volume from 0 to 100, and 3 or 5 portraits. TV timeouts shall be 0, 30, 60, 120, 300, 600 or 1200 seconds. New defaults shall be English, framing off, volume 50, 3 portraits and 30 seconds.
-verification: |
-  Test accepted choices, explicit nulls, wrong types and out-of-range values. Compare fresh defaults with device responses.
+text: 'Profiles shall accept the 16 supported terminal language codes, boolean framing, independent integer call/ringtone/button-sound
+  volumes from 0 to 100, and 3 or 5 portraits. TV timeouts shall be 0, 30, 60, 120, 300, 600 or 1200 seconds. New
+  defaults shall be English, framing off, call/ringtone volume 50, button-sound volume 20, 3 portraits and 30 seconds.
+  Older profiles without ringtone volume shall use their existing configured speaker level; omitted button volume
+  shall use 20.
+
+  '
+verification: 'Test accepted choices, explicit nulls, wrong types and out-of-range values. Compare fresh defaults
+  with device responses.
+
+  '

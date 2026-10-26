@@ -170,6 +170,8 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
         if self.closed:
             return
         self.closed = True
+        if getattr(self, 'action_sounds', None):
+            self.action_sounds.close()
         self.case_fan.close()
         self.usb_power.close()
         self.presenter_input.close()

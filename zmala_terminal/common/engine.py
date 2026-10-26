@@ -124,7 +124,7 @@ class Engine(LinphoneAPI):
 
         # Bundle the same synthesized melody on both platforms; the historical
         # asset name is retained for compatibility with installed terminals.
-        self.core_set_ring(self.core, encoded(ROOT / 'common/assets/gentle-chime.wav'))
+        self.core_set_ring(self.core, encoded(ROOT / 'common/assets/gentle-chime.wav') if WINDOWS else None)
         self.core_set_ringback(self.core, encoded(SDK / 'share/sounds/linphone/ringback.wav'))
 
     def configure_video_target(self):

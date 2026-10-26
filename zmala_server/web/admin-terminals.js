@@ -242,6 +242,8 @@ function buildDevicesForm(card, id) {
           tv_idle_seconds: Number(fields.tvIdleSeconds.value),
           auto_framing: terminalInput(devices, 'autoFraming').checked,
           c20_speaker_volume: Number(fields.c20SpeakerVolume.value),
+          ringtone_volume: Number(fields.ringtoneVolume.value),
+          action_sound_volume: Number(fields.actionSoundVolume.value),
           // @llr LLR-SRV-CONFIG-024
           ringtone: fields.ringtone.value,
           camera: '',

@@ -5,7 +5,7 @@ header: |
   Bounded speaker writes
 level: 69.0
 links:
-- HLR-TERM-AUDIO-002: hoGaDJ4c4UQMUiQOpR48fOu56WLz-Q6EyYwf-5lKJRI=
+- HLR-TERM-AUDIO-002: lW9hiMouJja9WRBJlUZBmYmMaSUkNugF77_2t71epGE=
 normative: true
 ref: ''
 references:
@@ -22,6 +22,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Volume-page mixer updates shall occur at most ten times per second while the terminal is active, with a final pending level flushed when closing the page. One worker shall combine pending level requests. The command shall change C20 playback volume without changing microphone gain, hardware mute or TV volume.
+  Volume-overlay requests shall occur at most ten times per second, with the final pending level flushed on close. One worker shall combine pending requests and establish the fixed C20 hardware playback gain. The core owner shall apply the desired call-only software gain without changing microphone gain, hardware mute, ringtone/button levels or TV volume.
 verification: |
-  Inject rapid button adjustments and mixer delay. Check write intervals, final close flush and exact playback-only command.
+  Inject rapid adjustments and a delayed mixer. Check request intervals, final close flush, fixed playback-only mixer command and call-only gain updates.

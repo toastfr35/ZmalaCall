@@ -148,7 +148,7 @@ export function buildMediaFields(devices, media, id) {
   // @llr LLR-SRV-UI-017
   const volume = terminalSelect(
     devices,
-    'C20 speaker volume (%)',
+    'Call volume (%)',
     'c20SpeakerVolume',
     Array.from({ length: 21 }, (_, index) => [String(index * 5), `${index * 5}%`]),
     String(Math.round((profile.c20_speaker_volume ?? 50) / 5) * 5),
@@ -156,18 +156,36 @@ export function buildMediaFields(devices, media, id) {
   volume.append(
     el(
       'small',
-      'Linux C20 · calls and ringing. 5% steps; existing values round to the nearest step when saved. Default: 50%.',
+      'C20 call playback only. 5% steps. Default: 50%. Ringtone and button sounds have separate levels.',
     ),
   );
   media.append(hardware, resolution, frameRate, framing, audio, volume, ringtoneField(devices, id));
+  for (const [key, field, title, fallback] of [
+    ['ringtone_volume', 'ringtoneVolume', 'Ringtone volume (%)', profile.c20_speaker_volume ?? 50],
+    ['action_sound_volume', 'actionSoundVolume', 'Button sounds volume (%)', 20],
+  ]) {
+    media.append(
+      terminalSelect(
+        devices,
+        String(title),
+        String(field),
+        Array.from({ length: 21 }, (_, i) => [String(i * 5), `${i * 5}%`]),
+        String(
+          Math.round(
+            Number(
+              profile[/** @type {'ringtone_volume' | 'action_sound_volume'} */ (key)] ?? fallback,
+            ) / 5,
+          ) * 5,
+        ),
+      ),
+    );
+  }
 }
 
 /** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} general @param {string} id */
 export function buildGeneralFields(devices, general, id) {
   const profile = state.model.profiles[id];
-  const languages = [...state.model.terminal_languages]
-    .sort((a, b) => a.name.localeCompare(b.name, 'en'))
-    .map((l) => [l.code, l.name === l.native ? l.name : `${l.name} · ${l.native}`]);
+  const languages = state.model.terminal_languages.map((l) => [l.code, l.native]);
   general.append(
     terminalSelect(devices, 'Language', 'language', languages, profile.language || 'en'),
     terminalSelect(

@@ -5,7 +5,7 @@ header: |
   Language selection and fallback
 level: 58.0
 links:
-- HLR-TERM-UI-013: DOfVscBFggXhItStZWu3_lqUPTHFo5oO6VjKqqe4LcQ=
+- HLR-TERM-UI-013: zCt-E1sboXmU2pGzP1qNYYOy43c4RFO53UUH-4jvy4c=
 normative: true
 ref: ''
 references:
@@ -45,13 +45,12 @@ references:
   type: file
 - path: zmala_terminal/linux/text_renderer.py
   type: file
+- path: tests/terminal/LLT/test_local_settings.py
+  type: file
 reviewed: null
 scope: Core
 text: |
-  Normal pages and Settings shall use the selected language from the supplied
-  catalogs. Early setup shall use English. A help text without a selected-language
-  translation shall use English. Core prompts shall support the 95 supplied language
-  catalogs.
+  Normal pages and Settings shall use the selected language from the supplied catalogs. Early setup shall use English. A help text without a selected-language translation shall use English. Core prompts shall support exactly English, Mandarin Chinese, Hindi, Spanish, French, Modern Standard Arabic, Bengali, Russian, Portuguese, Urdu, German, Japanese, Greek, Korean, Polish and Thai. Language choices shall display native names, ordered alphabetically by those labels using the shared catalog order.
 verification: |
   Render all core catalogs and the available help translations. Check English fallback
   without claiming every diagnostic is translated.

@@ -1,8 +1,9 @@
 active: true
 area: User interface and language
 derived: false
-header: |
-  Language and text support
+header: 'Language and text support
+
+  '
 level: 17.0
 links:
 - PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
@@ -17,11 +18,17 @@ references:
   type: file
 - path: tests/terminal/HLT/terminal_languages_ui.py
   type: file
+- path: tests/terminal/HLT/test_sound_feedback_ui.py
+  type: file
 reviewed: null
 scope: Core
-text: |
-  The terminal shall use the selected language during normal operation. It shall
+text: 'The terminal shall use the selected language during normal operation. It shall
+
   preserve contact names and display the supported writing systems.
-verification: |
-  Render each supplied language and representative Unicode names. Inspect shaping,
+
+  '
+verification: 'Render each supplied language and representative Unicode names. Inspect shaping,
+
   direction, fallback and text bounds.
+
+  '

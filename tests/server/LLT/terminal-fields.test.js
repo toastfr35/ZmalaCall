@@ -72,6 +72,13 @@ test('every terminal setting is attached to its visible section, including frame
     assert.ok(sections.contains(field), `${name} must be attached to the visible form`);
   assert.equal(form.fields.videoFps.value, '20');
   assert.equal(form.fields.c20SpeakerVolume.value, '55');
+  assert.equal(form.fields.ringtoneVolume.value, '50');
+  assert.equal(form.fields.actionSoundVolume.value, '20');
+  for (const name of ['ringtoneVolume', 'actionSoundVolume'])
+    assert.deepEqual(
+      Array.from(form.fields[name].children, (option) => option.value),
+      Array.from({ length: 21 }, (_, i) => String(i * 5)),
+    );
   assert.equal(model.profiles.term1.c20_speaker_volume, 53);
   assert.deepEqual(
     Array.from(form.fields.c20SpeakerVolume.children, (option) => option.value),

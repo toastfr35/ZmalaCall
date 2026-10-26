@@ -1,8 +1,9 @@
 active: true
 area: Configuration
 derived: false
-header: |
-  Local setting choices
+header: 'Local setting choices
+
+  '
 level: 32.0
 links:
 - HLR-TERM-CONFIG-016: tF6jWzImg7gepg3fagqe56SUaj2ierhVysKpWA6YeEU=
@@ -25,19 +26,31 @@ references:
   type: file
 reviewed: null
 scope: Core
-text: |
-  The local editors shall provide these choices:
-  - Language: a supported language.
+text: 'The local editors shall provide these choices:
+
+  - Language: one of the 16 supported languages, displayed in native-label alphabetic order, wrapping at both ends.
+
   - Automatic answer: Never, 10, 30, 60, 120, 300 or 600 seconds.
+
   - Automatic framing: on or off.
-  - Speaker volume: 0 through 100 percent in 5-percent steps. An existing value
-    between steps shall open at the nearest step without changing the saved value
-    until accepted.
+
+  - Ringtone volume and button-sound volume: independently 0 through 100 percent in 5-percent steps. Existing between-step
+  values shall open at the nearest step without changing the saved value until accepted. Call volume shall be controlled
+  separately by the middle-button overlay.
+
   - Ringtone: a choice from the server list, defaulting to Nokia.
+
   - Portrait count: 3 or 5.
+
   - TV return: Never, 30, 60, 120, 300, 600 or 1200 seconds.
+
   The default TV return interval shall be 30 seconds.
-verification: |
-  Enumerate every editor option and check defaults, numeric limits and rejection of
+
+  '
+verification: 'Enumerate every editor option and check defaults, numeric limits and rejection of
+
   unsupported values. Check each volume step, both limits and opening an existing
+
   between-step value without saving.
+
+  '

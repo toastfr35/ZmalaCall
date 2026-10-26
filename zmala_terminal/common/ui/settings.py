@@ -8,8 +8,8 @@ from zmala_terminal.common.localization import LANGUAGES, font_family
 from zmala_terminal.common.theme import BG, FG, MUTED, PANEL, ACCENT, BUTTON_GREEN, BUTTON_RED, RED
 
 MESSAGES = json.loads((Path(__file__).resolve().parents[1] / 'shared/settings-messages.json').read_text(encoding='utf-8'))
-KEYS = ('settings', 'language', 'auto_answer', 'auto_framing', 'c20_speaker_volume',
-        'carousel_portraits', 'never', 'open', 'accept', 'exit', 'current', 'tv_idle_seconds', 'ringtone')
+KEYS = ('settings', 'language', 'auto_answer', 'auto_framing', 'ringtone_volume',
+        'carousel_portraits', 'never', 'open', 'accept', 'exit', 'current', 'tv_idle_seconds', 'ringtone', 'action_sound_volume')
 
 
 class SettingsView:
@@ -37,7 +37,7 @@ class SettingsView:
         if key == 'ringtone':
             choices = self.model.config.get('ringtones', [{'id': 'nokia', 'name': 'Nokia'}])
             return next((item['name'] for item in choices if item['id'] == value), 'Nokia')
-        return f'{value} %' if key == 'c20_speaker_volume' else str(value)
+        return f'{value} %' if key in ('ringtone_volume', 'action_sound_volume') else str(value)
 
     def render_settings(self):
         sequence = getattr(self, 'settings_hold', None)
@@ -118,9 +118,12 @@ class SettingsView:
         right_width = width-right_x-margin
         c.create_line(split, 28, split, height-50, fill='#2b3547')
         self.settings_label(self.settings_text('settings'), margin, 28, left_width, 32, bold=True, max_height=66)
-        row_height = min(88, (height-210-6*(len(FIELDS)-1))/len(FIELDS))
-        for index, key in enumerate(FIELDS):
-            y = 112+index*(row_height+6)
+        visible = min(7, len(FIELDS))
+        start = max(0, min(draft.row-visible//2, len(FIELDS)-visible))
+        row_height = min(88, (height-230-6*(visible-1))/visible)
+        for index in range(start, start+visible):
+            key = FIELDS[index]
+            y = 112+(index-start)*(row_height+6)
             selected = draft.row == index
             fill = '#303b50' if selected else PANEL
             self.settings_panel(margin, y, left_width, row_height, fill,
@@ -129,7 +132,7 @@ class SettingsView:
                                 22, color=RED if key == 'reset' else FG, background=fill, bold=True, max_height=row_height/2-1)
             value = self.settings_value(key, SettingsDraft.value(config, key))
             self.settings_label(value, margin+14, y+row_height/2, left_width-28,
-                                19, MUTED, fill, max_height=row_height/2, tags=('settings-value', key))
+                                19, MUTED, fill, max_height=row_height/2-3, tags=('settings-value', key))
         key = draft.key
         self.settings_label(self.settings_text(key), right_x, 28, right_width, 30, bold=True, max_height=72)
         shown = draft
@@ -140,7 +143,7 @@ class SettingsView:
         if key == 'reset':
             self.settings_label(self.text('factory_reset'), right_x, 180, right_width,
                                 28, RED, bold=True, max_height=150)
-        elif key == 'c20_speaker_volume':
+        elif key in ('ringtone_volume', 'action_sound_volume'):
             value = shown.options[shown.index]
             self.settings_label(f'‹   {value} %   ›', right_x+right_width/2, 190,
                                 right_width, 40, ACCENT if draft.editing else MUTED, anchor='center')

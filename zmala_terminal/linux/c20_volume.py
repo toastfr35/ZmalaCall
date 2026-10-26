@@ -1,7 +1,8 @@
-"""Set the C20's hardware playback level without touching HDMI or microphone gain."""
+"""Call-volume state and fixed C20 output gain; individual streams attenuate independently."""
 import logging
 import subprocess
 import threading
+from zmala_terminal.linux.sound_levels import playback_environment
 
 _condition = threading.Condition()
 _desired = None
@@ -85,9 +86,12 @@ def apply(percent):
     try:
         # ALSA card identity survives USB re-enumeration. Do not pass "unmute":
         # changing the level must preserve any existing hardware mute state.
-        subprocess.run(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', f'{percent}%'],
-                       check=True, capture_output=True, timeout=5)
-        logging.info('C20 speaker volume: %s%%', percent)
+        # @llr LLR-TERM-AUDIO-010
+        # A shared hardware gain would couple calls, ringtones and button sounds.
+        # Keep it fixed; Engine applies the call-only gain on its owning thread.
+        subprocess.run(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', '100%'],
+                       check=True, capture_output=True, timeout=5, env=playback_environment())
+        logging.info('C20 output ready; call volume: %s%%', percent)
         return True
     except (OSError, subprocess.SubprocessError) as error:
         # A missing mixer must not prevent SIP registration or end a call.

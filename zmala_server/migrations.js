@@ -3,6 +3,7 @@
 const { randomUUID } = require('node:crypto');
 const { random } = require('./defaults');
 const { own } = require('./validation');
+const LANGUAGES = require('../zmala_terminal/common/shared/terminal-languages.json');
 const { defaultCallbackSettings, defaultSmtpSettings } = require('./callback-settings');
 /** @param {import('./types/migrations').MigrationState} v */
 function migrateLegacy(v) {
@@ -106,6 +107,11 @@ function migrate(state) {
   migrateLegacy(v);
   let resolutionChanged = false;
   for (const profile of Object.values(v.profiles)) {
+    // Removed language choices fall back once, without changing account identity.
+    if (profile.language && !own(LANGUAGES, profile.language)) {
+      profile.language = 'en';
+      resolutionChanged = true;
+    }
     if (profile.video_fps === undefined) {
       profile.video_fps = 15;
       resolutionChanged = true;

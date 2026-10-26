@@ -24,6 +24,8 @@ test('fresh terminal settings and accepted choices survive save and restart', (t
     carousel_portraits: 3,
     tv_idle_seconds: 30,
     c20_speaker_volume: 50,
+    ringtone_volume: 50,
+    action_sound_volume: 20,
     audio_profile: 'normal',
   }))
     assert.equal(initial[key], expected, key);
@@ -35,6 +37,8 @@ test('fresh terminal settings and accepted choices survive save and restart', (t
     carousel_portraits: [5, 3],
     tv_idle_seconds: [0, 30, 60, 120, 300, 600, 1200],
     c20_speaker_volume: [0, 1, 99, 100],
+    ringtone_volume: [0, 5, 50, 100],
+    action_sound_volume: [0, 5, 20, 100],
     audio_profile: ['speech', 'normal'],
     command_shell: ['sh', 'bash'],
     auto_answer: [false, true],
@@ -66,6 +70,8 @@ test('invalid settings reject the whole candidate before any change or disk writ
     carousel_portraits: [0, 4, 6, '5', null],
     tv_idle_seconds: [-1, 10, 1800, '30', null],
     c20_speaker_volume: [-1, 101, 50.5, '50', null, NaN],
+    ringtone_volume: [-1, 101, 50.5, '50', null, NaN],
+    action_sound_volume: [-1, 101, 20.5, '20', null, NaN],
     audio_profile: ['music', '', null],
     command_shell: ['sh -c', '', null, false],
     auto_answer: [0, 'true', null],

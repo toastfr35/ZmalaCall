@@ -877,4 +877,6 @@ when a configuration refresh fails. Name buttons show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
 
-Terminal C20 speaker-volume controls offer 0–100% in 5% steps. Existing between-step values display the nearest step and are changed only when Save changes is accepted. The Pi Settings editor and held-middle volume gesture use the same 5% grid.
+Terminal controls expose independent Call volume (`c20_speaker_volume`), Ringtone volume (`ringtone_volume`) and Button sounds volume (`action_sound_volume`), each 0–100% in 5% steps. New defaults are 50%, 50% and 20%. An older profile without ringtone volume inherits its call default. Existing between-step values display the nearest step and change only when Save changes is accepted. The Pi Settings editors and middle-button call-volume overlay use the same 5% grid. Button taps play only during idle navigation/settings, with no taps during calls, ringing or ringtone previews.
+
+The terminal language selector displays native labels in the shared 16-language catalog order, alphabetized by those labels. Removed legacy language choices migrate to English once without changing enrollment or user identity.

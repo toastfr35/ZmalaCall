@@ -14,20 +14,32 @@ class SettingsControl:
         cache = cache if isinstance(cache, RingtoneCache) else None
         power = self.usb_power
         config = self.model.config or {}
+        draft = self.settings_draft
+        percent = config.get('ringtone_volume', config.get('c20_speaker_volume', 50))
+        if self.settings_open and draft.editing and draft.key == 'ringtone_volume':
+            percent = draft.options[draft.index]
         selected = config.get('ringtone', 'nokia')
         file = cache.path(selected) if cache else DEFAULT_SOUND
-        power.set_ringtone(file or DEFAULT_SOUND)
+        power.set_ringtone(file or DEFAULT_SOUND, percent)
         if self.engine and not power.enabled and self.model.state == State.HOME:
             # Development/host policy without USB switching keeps SDK ringing.
-            applied = str(file or DEFAULT_SOUND)
+            import sys
+            applied = '' if sys.platform == 'linux' else str(file or DEFAULT_SOUND)
             key = (id(self.engine), applied)
             if key != getattr(self, 'sdk_ringtone_file', None):
-                self.engine.core_set_ring(self.engine.core, applied.encode())
+                self.engine.core_set_ring(self.engine.core, applied.encode() if applied else None)
                 self.sdk_ringtone_file = key
-        draft = self.settings_draft
-        editing = (self.settings_open and draft.editing and draft.key == 'ringtone' and
+        editing = (self.settings_open and draft.editing and draft.key in ('ringtone', 'ringtone_volume') and
                    not draft.busy and self.model.state == State.HOME and not self.setup_stage)
-        token = (self.generation, draft.options[draft.index]) if editing else None
+        feedback = getattr(self, 'action_sounds', None)
+        if feedback:
+            level = (draft.options[draft.index] if self.settings_open and draft.editing
+                     and draft.key == 'action_sound_volume' else config.get('action_sound_volume',20))
+            feedback.set_enabled(bool(level and power.ready and not editing and not self.setup_stage
+                and self.model.state in (State.HOME, State.CONFIRMING, State.CONFIRM_CALLBACK)
+                and not (self.engine and self.engine.call)
+                and not power.ringing and not power.ringtone_preview_status and not power.playback_active))
+        token = (self.generation, draft.options[draft.index] if draft.key == 'ringtone' else selected, percent) if editing else None
         if token != getattr(self, 'ringtone_preview_token', None):
             power.stop_preview()
             self.ringtone_preview_token = token

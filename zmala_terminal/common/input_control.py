@@ -1,5 +1,6 @@
 """Physical input dispatch, wake-only presses and carousel selection."""
 import time
+import logging
 from zmala_terminal.common.carousel import CarouselMotion
 from zmala_terminal.common.model import State
 from zmala_terminal.linux.presenter_input import PresenterInput
@@ -16,6 +17,8 @@ class InputControl:
             power.require(urgent=True)
 
     def bind_inputs(self):
+        from zmala_terminal.linux.action_sounds import ActionSounds
+        self.action_sounds = ActionSounds()
         self.root.bind('<Configure>', self.resize)
         for key, button in [('Left', 'left'), ('Prior', 'left'), ('Right', 'right'), ('Next', 'right'), ('Return', 'green'), ('Escape', 'red')]:
             self.root.bind_all('<' + key + '>', lambda event, b=button: self.keypress(b))
@@ -45,6 +48,7 @@ class InputControl:
             return
         self.pointer_serial += 1
         self.keys_down.add('pointer')
+        InputControl.button_feedback(self, 'pointer')
         self.cancel_settings_hold()
         self.last_button = time.monotonic()
         generation, state, serial = self.generation, self.model.state, self.pointer_serial
@@ -64,6 +68,30 @@ class InputControl:
 
     def volume_activity(self):
         self.input_activity()
+
+    # @llr LLR-TERM-AUDIO-010
+    def button_feedback(self, button='left'):
+        player = getattr(self, 'action_sounds', None)
+        power = getattr(self, 'usb_power', None)
+        if player and power:
+            logging.debug('Button feedback ready=%s state=%s call=%s ringing=%s preview=%s',
+                power.ready, self.model.state, bool(self.engine and self.engine.call),
+                power.ringing, power.ringtone_preview_status)
+        if not player or not power or not power.ready:
+            return  # Waking USB must not delay navigation or replay old clicks.
+        if (self.model.state not in (State.HOME, State.CONFIRMING, State.CONFIRM_CALLBACK)
+                or self.engine and self.engine.call
+                or power.ringing or power.ringtone_preview_status in ('waiting', 'playing')):
+            player.cancel()
+            return
+        if self.settings_open and self.settings_draft.editing and self.settings_draft.key in ('ringtone','ringtone_volume'):
+            player.cancel()
+            return
+        config = self.model.config or {}
+        draft = self.settings_draft
+        percent = (draft.options[draft.index] if self.settings_open and draft.editing
+                   and draft.key == 'action_sound_volume' else config.get('action_sound_volume', 20))
+        player.play(percent, button)
 
     def other_key(self, event):
         self.input_activity()
@@ -97,6 +125,7 @@ class InputControl:
         if button in self.keys_down:
             return 'break'
         self.keys_down.add(button)
+        InputControl.button_feedback(self, button)
         self.last_button = now  # Even a consumed/debounced press resets idle return.
         if self.tv_setup_button(button):
             return 'break'

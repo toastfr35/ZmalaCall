@@ -98,6 +98,16 @@ function terminalProfileFields(profile, update) {
     c20_speaker_volume: speakerVolume(
       proposed(update, 'c20_speaker_volume', profile.c20_speaker_volume ?? 50),
     ),
+    ringtone_volume: speakerVolume(
+      proposed(
+        update,
+        'ringtone_volume',
+        profile.ringtone_volume ?? profile.c20_speaker_volume ?? 50,
+      ),
+    ),
+    action_sound_volume: speakerVolume(
+      proposed(update, 'action_sound_volume', profile.action_sound_volume ?? 20),
+    ),
     // @llr LLR-SRV-CONFIG-024
     ringtone: ringtoneId(proposed(update, 'ringtone', profile.ringtone ?? 'nokia')),
     terminal_settings: mediaDevices(update),

@@ -1,7 +1,7 @@
 """Settings drafts and the deliberate red-button hold; no native I/O."""
 from zmala_terminal.common.localization import LANGUAGES
 
-FIELDS = ('language', 'auto_answer', 'auto_framing', 'c20_speaker_volume', 'ringtone', 'carousel_portraits', 'tv_idle_seconds', 'reset')
+FIELDS = ('language', 'auto_answer', 'auto_framing', 'ringtone_volume', 'action_sound_volume', 'ringtone', 'carousel_portraits', 'tv_idle_seconds', 'reset')
 TV_IDLE_DELAYS = (30, 60, 120, 300, 600, 1200, 0)
 ANSWER_DELAYS = (0, 10, 30, 60, 120, 300, 600)
 
@@ -50,10 +50,12 @@ class SettingsDraft:
 
     @staticmethod
     def value(config, key):
+        if key == 'ringtone_volume':
+            return config.get(key, config.get('c20_speaker_volume', 50))
         if key == 'auto_answer':
             return config.get('auto_answer_seconds', 10) if config.get(key) else 0
         return config.get(key, {'language': 'en', 'auto_framing': False,
-                               'c20_speaker_volume': 50, 'ringtone': 'nokia', 'carousel_portraits': 3, 'tv_idle_seconds': 30}.get(key))
+                               'action_sound_volume': 20, 'ringtone': 'nokia', 'carousel_portraits': 3, 'tv_idle_seconds': 30}.get(key))
 
     # @llr LLR-TERM-CONFIG-021, LLR-TERM-AUDIO-009
     def open(self, config):
@@ -61,14 +63,14 @@ class SettingsDraft:
             raise ValueError('Reset uses its own confirmation page')
         self.editing, self.error = True, False
         key, value = self.key, self.value(config, self.key)
-        self.options = (sorted(LANGUAGES, key=lambda code: LANGUAGES[code]['name']) if key == 'language'
+        self.options = (list(LANGUAGES) if key == 'language'
                         else [item['id'] for item in config.get('ringtones', [{'id': 'nokia'}])] if key == 'ringtone'
                         else list(ANSWER_DELAYS) if key == 'auto_answer'
                         else list(TV_IDLE_DELAYS) if key == 'tv_idle_seconds'
                         else [False, True] if key == 'auto_framing'
-                        else list(range(0, 101, 5)) if key == 'c20_speaker_volume' else [3, 5])
+                        else list(range(0, 101, 5)) if key in ('ringtone_volume', 'action_sound_volume') else [3, 5])
         self.index = self.options.index(value) if value in self.options else 0
-        if key == 'c20_speaker_volume' and value not in self.options:
+        if key in ('ringtone_volume', 'action_sound_volume') and value not in self.options:
             self.index = min(range(len(self.options)), key=lambda i: abs(self.options[i]-value))
         if key == 'auto_answer' and value and value not in self.options:
             # Existing administrator values such as 5 or 90 seconds should
@@ -85,7 +87,7 @@ class SettingsDraft:
     # @llr LLR-TERM-CONFIG-019, LLR-TERM-AUDIO-009
     def move(self, direction):
         if self.editing:
-            self.index = ((self.index+direction) % len(self.options) if self.key == 'ringtone'
+            self.index = ((self.index+direction) % len(self.options) if self.key in ('ringtone', 'language')
                           else max(0, min(len(self.options)-1, self.index+direction)))
         else:
             self.row = (self.row+direction) % len(FIELDS)

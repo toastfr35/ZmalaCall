@@ -1,8 +1,9 @@
 active: true
 area: Saved state
 derived: false
-header: |
-  Identity-preserving schema migration
+header: 'Identity-preserving schema migration
+
+  '
 level: 86.0
 links:
 - HLR-SRV-DATA-013: Po6DzFfz0bey3rvj60S781rj25v5tlbuFKjl_oCcHWc=
@@ -27,7 +28,11 @@ references:
   type: file
 reviewed: null
 scope: Core
-text: |
-  Supported state migration shall retain account credentials and existing device identity, fill current defaults and normalize supported older settings. It shall derive groups only from permitted older relationships and shall not invent contact emails.
-verification: |
-  Migrate old credentials, mutual contact edges, video presets, frame rates and callback deadlines. Repeat migration and verify stable results.
+text: "Supported state migration shall retain account credentials and existing device identity, fill current defaults\
+  \ and normalize supported older settings. It shall derive groups only from permitted older relationships and shall\
+  \ not invent contact emails.\n A removed terminal language shall migrate once to English, retaining account credentials\
+  \ and device identity.\n"
+verification: 'Migrate old credentials, mutual contact edges, video presets, frame rates and callback deadlines.
+  Repeat migration and verify stable results.
+
+  '

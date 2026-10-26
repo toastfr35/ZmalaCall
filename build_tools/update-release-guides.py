@@ -1,4 +1,5 @@
 """Maintain release download instructions and the two phone Word authoring sources."""
+from copy import deepcopy
 from pathlib import Path
 
 from docx import Document
@@ -420,6 +421,66 @@ def update_terminal_volume_guides():
                             paragraph.runs[0]._r.insert(0, properties)
         doc.save(path)
 
+def update_terminal_feedback_guides():
+    """Separate sound categories and retain the current page under volume controls."""
+    for filename in ('terminal_use.docx', 'terminal_config.docx', 'server_prep.docx'):
+        path = ROOT / 'docs' / filename
+        doc = Document(path)
+        for paragraph in doc.paragraphs:
+            text = paragraph.text
+            if text.startswith('Webcam icon (if shown):'):
+                paragraph.style = 'Normal'
+            if text.startswith(('Press the middle button to open the volume page',
+                                'Press the middle button to show the call-volume overlay')):
+                paragraph.text = ('Press the middle button to show the call-volume overlay. '
+                    'Click left for quieter received call sound or right for louder sound, in 5% steps. '
+                    'The horizontal bar and percentage sit in a black frame over the current page, '
+                    'including during calls. Most of the page or video stays visible. '
+                    'Press middle again to close it; moving the remote has no effect.')
+            elif text.startswith(('The volume page changes', 'The call-volume overlay changes')):
+                paragraph.text = ('The call-volume overlay changes only the sound you receive in a call. '
+                    'Microphone gain stays unchanged. Ringtone volume and Button sounds volume are '
+                    'separate Settings choices, each in 5% steps; 0% silences that category. '
+                    'During idle navigation and Settings, left/right and middle play a short low tap, '
+                    'green a rising tone and red a low double tap. '
+                    'It is silent during calls, ringing and ringtone previews. '
+                    'Incoming calls close the overlay automatically.')
+            elif text.startswith('To choose a ringtone, open Ringtone'):
+                paragraph.text = ('To choose a ringtone, open Ringtone in Settings with green. '
+                    'Left/right browses the list, wrapping at either end, and previews through the C20 '
+                    'at Ringtone volume after a short pause, for up to ten seconds. '
+                    'Ringtone volume can be adjusted separately with the same preview. '
+                    'Green saves after server confirmation; red cancels. A waking C20 may take a moment. '
+                    'A call or leaving the editor stops the preview. Nokia remains available offline.')
+            elif text.startswith(('In Terminals, save language and settings',
+                                  'In Terminals, choose native-language labels')):
+                paragraph.text = ('In Terminals, choose native-language labels from the same alphabetically '
+                    'ordered 16-language list as the terminal. Set independent Call volume, Ringtone volume '
+                    'and Button sounds volume in 5% steps. Open Setup for the Wi-Fi/server QR PDFs and '
+                    'follow ZmalaTerminal-Guide.pdf. Device cards report remote battery/charger and C20 '
+                    'connection/power; stale reports become unavailable.')
+            elif text.startswith('Setup starts in English.'):
+                paragraph.text = ('Setup starts in English. After enrollment, Language in Settings offers '
+                    '16 native-language labels in alphabetic order, wrapping at both ends. '
+                    'The same list is on the server. An older unsupported choice falls back to English '
+                    'on upgrade. Detailed help may use English fallback.')
+        for table in doc.tables:
+            for row in table.rows:
+                if row.cells[0].text == 'Middle long button':
+                    row.cells[1].text = 'Open/close call-volume overlay; left/right changes it in 5% steps'
+                elif row.cells[0].text in ('Speaker volume', 'Ringtone volume'):
+                    row.cells[0].text = 'Ringtone volume'
+                    row.cells[1].text = '0-100%, in 5% steps; separate from call volume'
+                    if not any(r.cells[0].text == 'Button sounds volume' for r in table.rows):
+                        added = deepcopy(row._tr)
+                        row._tr.addnext(added)
+                        for updated in table.rows:
+                            if updated._tr is added:
+                                updated.cells[0].text = 'Button sounds volume'
+                                updated.cells[1].text = '0-100%, in 5% steps; quiet during calls and ringing'
+        doc.save(path)
+
+
 if __name__ == '__main__':
     update_existing()
     update_c20_guide()
@@ -428,3 +489,4 @@ if __name__ == '__main__':
     update_terminal_volume_guides()
     build_phone()
     update_presence_guides()
+    update_terminal_feedback_guides()

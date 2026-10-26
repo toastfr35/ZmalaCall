@@ -1,8 +1,8 @@
 # @test T-HLT-023
 # @requirements HLR-TERM-REMOTE-011, HLR-TERM-REMOTE-012, HLR-TERM-NAV-002, HLR-TERM-AUDIO-002
 # @environment display
-# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a dedicated horizontal volume page in 5-percent steps. Also render video and open a compact volume overlay during a simulated established call, assert most video remains uncovered, block physical call actions, preserve programmatic cancellation and expired outgoing-call deadlines and preempt it on incoming ringing. Replace only device discovery, Bluetooth status and the external mixer process. Check that all mixer commands address C20 playback only.
-# @pass One held press cannot confirm a call; red cancels; middle toggles the volume page, arrows change only volume, movement is ignored and the page closes on the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
+# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a compact horizontal volume overlay in 5-percent steps. Also render video beneath the overlay during a simulated established call, assert most video remains uncovered, block physical call actions, preserve programmatic cancellation and expired outgoing-call deadlines and preempt it on incoming ringing. Replace device discovery, Bluetooth status, button audio and the external mixer process. Check that all mixer commands address C20 playback only.
+# @pass One held press cannot confirm a call; red cancels; middle toggles the volume overlay, arrows change only volume, movement is ignored and the overlay closes on the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
 
 import os
 import sys
@@ -31,6 +31,7 @@ class RemoteUITests(unittest.TestCase):
 
         health = SimpleNamespace(battery=77, charger_connected=True, state='disconnected', close=lambda: None)
         with terminal_fixture() as (app, _), \
+                patch('zmala_terminal.linux.action_sounds.ActionSounds'), \
                 patch.object(PresenterInput, 'discover'), \
                 patch('zmala_terminal.linux.presenter_input.RemoteHealth', return_value=health), \
                 patch.object(c20_volume.subprocess, 'run', side_effect=mixer):

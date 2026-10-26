@@ -66,7 +66,8 @@ class VolumeTests(unittest.TestCase):
         root=Mock();root.winfo_width.return_value=1280;root.winfo_height.return_value=720
         canvas=Mock();control=VolumeControl(root,lambda:True,Mock())
         with patch.object(volume_control.tk,'Canvas',return_value=canvas),patch.object(volume_control.tk.Misc,'lift'),patch.object(c20_volume,'status',return_value=(50,50,False)) as status:
-            control.draw();canvas.place.assert_called_with(x=0,y=0,relx=0,rely=0,anchor='nw',width=0,height=0,relwidth=1,relheight=1)
+            control.draw();canvas.place.assert_called_with(x=0,y=0,relx=.5,rely=.68,anchor='center',width=900,height=160,relwidth=0,relheight=0)
+            canvas.configure.assert_called_with(bg='#000000')
             self.assertEqual(canvas.create_text.call_args.kwargs['text'],'50%')
             self.assertEqual(canvas.create_text.call_args.kwargs['fill'],GREEN)
             track=canvas.create_rectangle.call_args_list[0].args
@@ -88,8 +89,10 @@ class VolumeTests(unittest.TestCase):
             self.assertEqual(placement['anchor'],'center');lift.assert_called_with(canvas)
             in_call.return_value=False;control.draw()
             placement=canvas.place.call_args.kwargs
-            self.assertEqual((placement['relwidth'],placement['relheight']),(1,1))
-            self.assertEqual(placement['anchor'],'nw')
+            self.assertEqual((placement['relwidth'],placement['relheight']),(0,0))
+            self.assertEqual(placement['anchor'],'center')
+            self.assertLess(placement['width'],1280)
+            self.assertLess(placement['height'],720/3)
 
     def test_changed_default_supersedes_pending_click_even_if_current_value_is_unchanged(self):
         with patch.multiple(c20_volume, _desired=None, _applied=None, _worker=None,

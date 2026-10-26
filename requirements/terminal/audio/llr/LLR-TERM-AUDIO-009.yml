@@ -5,7 +5,7 @@ header: |
   Selectable ringtone and bounded preview
 level: 128.0
 links:
-- HLR-TERM-AUDIO-001: PJEudp-O1HpOIL8BT1xKnRKd64RP6hr4TVbkjQJLzXA=
+- HLR-TERM-AUDIO-001: cVKxa_fbE3jqHlRqzMygvKL9QU0rhZYQf5OW-GB5HCg=
 normative: true
 ref: ''
 references:
@@ -25,6 +25,10 @@ references:
   type: file
 - path: zmala_terminal/linux/usb_power.py
   type: file
+- path: tests/terminal/LLT/test_sound_levels.py
+  type: file
+- path: zmala_terminal/linux/sound_levels.py
+  type: file
 reviewed: null
 scope: Core
 text: |
@@ -32,8 +36,8 @@ text: |
   left from the first choice shall wrap to the last, and right from the last shall
   wrap to the first; moving shall not change the saved choice. A highlighted
   editor choice shall preview after 400 ms without selection changes, through C20
-  at the effective speaker volume. Preview shall wait for media readiness and
-  volume convergence, respect mute and stop after ten seconds or earlier at file
+  at the independently configured ringtone volume. Preview shall wait for media readiness and
+  hardware readiness, respect ringtone mute independently of call mute and stop after ten seconds or earlier at file
   end, selection change, cancellation, leaving the editor, incoming call or shutdown.
   Preview shall work without USB power switching; incoming calls take priority.
   The saved choice shall ring incoming calls, temporarily falling back to Nokia
