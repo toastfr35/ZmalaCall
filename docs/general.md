@@ -89,7 +89,7 @@ dependencies; ordinary calls do not download code or models.
 | `zmala_terminal/linux/` | Pi adapters, native media, Bluetooth, CEC and peripheral control |
 | `build_tools/` | Packaging, installers, launchers, source checks and hardware probes |
 | `requirements/` | Doorstop product (`PROD`), themed server (`*-SRV-*`), Pi terminal (`*-TERM-*`) and Android (`*-AND-*`) records |
-| `docs/` | Four implementation guides and four Word user guides |
+| `docs/` | Four implementation guides and six Word user-guide sources |
 
 Source launches keep state in component `data/` directories. Pi installations
 link those paths to private `/var/lib/zmalacall` or `/var/lib/zmalacall-server`;

@@ -9,6 +9,8 @@
 // vertical swipes, taps, horizontal drags, cancellation and a second pointer to the video.
 // Supply changing live-stream definitions through SDK doubles; bind the real capture view,
 // apply the statistics-refresh path and verify nonzero SDK dimensions and fitted camera ratio.
+// Measure the incoming screen with enlarged text; inspect portrait clipping, caller text and both actions.
+// Reveal visible short labels, inspect first-call help and persistent independent mute indicators.
 // @pass Controls start hidden, remain in one row, hide after five seconds and reappear on a tap.
 // Vertical swipes adjust only listening volume and show feedback; other gestures do not.
 // Preview surfaces survive rotation with correct bounds and aspect ratio on the first layout pass.
@@ -27,6 +29,46 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.*;
 
 public class CallScreenTest {
+  @Test public void firstCallHelpAndPersistentMuteStatusAreVisibleWithoutControls() {
+    PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+      CallScreen view = new CallScreen(PhoneFixture.INSTRUMENTATION.getTargetContext(), true,
+          CallEngine.Output.MUTED, new CallScreen.Actions() {
+            public void mute(boolean value) {} public CallEngine.Output output(CallEngine.Output value) { return value; }
+            public int volume(int steps) { return 50; } public void camera() {} public void end() {}
+          });
+      view.firstCallHint();
+      assertEquals(View.VISIBLE, PhoneFixture.text(view, "Tap for controls · Swipe up/down for volume").getVisibility());
+      assertEquals(View.VISIBLE, PhoneFixture.description(view, "Call audio status: Microphone muted · Sound muted").getVisibility());
+      assertEquals(View.INVISIBLE, view.controls.getVisibility());
+      view.showControls();
+      for (String label : new String[]{"Mic", "Sound", "Camera", "End"}) assertNotNull(PhoneFixture.text(view, label));
+      view.progress(CallScreen.Progress.DELAYED);
+      assertEquals(View.VISIBLE, PhoneFixture.text(view, "Video hasn't arrived yet.\nThe call is still connected.").getVisibility());
+      assertEquals(View.GONE, PhoneFixture.description(view, "Connecting video").getVisibility());
+      view.dispose();
+    });
+  }
+  @Test public void incomingCallerAndActionsRemainAccessibleWithLargeText() {
+    PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+      android.content.Context original = PhoneFixture.INSTRUMENTATION.getTargetContext();
+      android.content.res.Configuration config = new android.content.res.Configuration(original.getResources().getConfiguration());
+      config.fontScale = 2f;
+      android.content.Context context = original.createConfigurationContext(config);
+      int[] actions = {0, 0};
+      IncomingCallScreen view = new IncomingCallScreen(context, "A family member with a long name",
+          () -> actions[0]++, () -> actions[1]++);
+      view.measure(View.MeasureSpec.makeMeasureSpec(360, View.MeasureSpec.EXACTLY),
+          View.MeasureSpec.makeMeasureSpec(320, View.MeasureSpec.EXACTLY));
+      view.layout(0, 0, 360, 320);
+      assertTrue(view.portrait.getClipToOutline());
+      assertNotNull(PhoneFixture.text(view, "A family member with a long name"));
+      assertNotNull(PhoneFixture.text(view, "Incoming video call"));
+      assertTrue(view.getChildAt(0).getMeasuredHeight() > view.getMeasuredHeight());
+      PhoneFixture.text(view, "Answer video call").performClick();
+      PhoneFixture.text(view, "Decline").performClick();
+      assertArrayEquals(new int[]{1, 1}, actions);
+    });
+  }
   @Test public void previewReceivesCurrentStreamDimensionsAndAdaptation() {
     PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
       try {
@@ -113,8 +155,8 @@ public class CallScreenTest {
           });
       float density = view.getResources().getDisplayMetrics().density;
       for (boolean landscape : new boolean[]{false, true}) {
-        view.progress("Ringing…");
-        view.progress("Connecting video…");
+        view.progress(CallScreen.Progress.RINGING);
+        view.progress(CallScreen.Progress.CONNECTING);
         int width = Math.round((landscape ? 640 : 320) * density);
         int height = Math.round((landscape ? 320 : 640) * density);
         view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
@@ -249,7 +291,11 @@ public class CallScreenTest {
     PhoneFixture.snapshot("call-controls-portrait");
     // Check before and after the five-second idle deadline, without depending on exact frame
     // timing.
-    PhoneFixture.INSTRUMENTATION.runOnMainSync(call::showControls);
+    PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+      // performClick does not switch Android into touch mode. Move keyboard focus back to
+      // video so this case measures idle hiding, separately from focused-control retention.
+      call.remote.setFocusableInTouchMode(true); call.remote.requestFocus(); call.showControls();
+    });
     Thread.sleep(4000);
     PhoneFixture.INSTRUMENTATION.runOnMainSync(
         () -> assertEquals(View.VISIBLE, call.controls.getVisibility()));
@@ -276,7 +322,7 @@ public class CallScreenTest {
     PhoneFixture.INSTRUMENTATION.runOnMainSync(
         () -> {
           checkLayout(call);
-          call.progress("Ringing…");
+          call.progress(CallScreen.Progress.RINGING);
         });
     PhoneFixture.snapshot("call-ringing-landscape");
     checkPulse(call);
@@ -290,11 +336,11 @@ public class CallScreenTest {
             android.animation.ObjectAnimator pulse =
                 (android.animation.ObjectAnimator) field.get(call);
             assertTrue(pulse.isStarted());
-            call.progress("Connecting video…");
+            call.progress(CallScreen.Progress.CONNECTING);
             assertFalse(pulse.isStarted());
             assertTrue(PhoneFixture.text(call, "Connecting video…").isShown());
             assertTrue(PhoneFixture.description(call, "Connecting video").isShown());
-            call.progress(null);
+            call.progress(CallScreen.Progress.NONE);
             assertFalse(pulse.isStarted());
           } catch (ReflectiveOperationException error) {
             throw new AssertionError(error);
@@ -313,7 +359,9 @@ public class CallScreenTest {
     assertEquals(View.VISIBLE, call.controls.getVisibility());
     int[] prior = null;
     for (int i = 0; i < 4; i++) {
-      View control = call.controls.getChildAt(i);
+      android.view.ViewGroup slot = (android.view.ViewGroup) call.controls.getChildAt(i);
+      View control = slot.getChildAt(0);
+      assertTrue(slot.getChildAt(1) instanceof android.widget.TextView);
       assertTrue(control instanceof ImageButton);
       assertNotNull(control.getContentDescription());
       assertEquals(control.getWidth(), control.getHeight());
@@ -380,7 +428,7 @@ public class CallScreenTest {
     PhoneFixture.INSTRUMENTATION.runOnMainSync(
         () -> {
           try {
-            call.progress("Ringing…");
+            call.progress(CallScreen.Progress.RINGING);
             java.lang.reflect.Field field = CallScreen.class.getDeclaredField("pulse");
             field.setAccessible(true);
             android.animation.ObjectAnimator pulse =

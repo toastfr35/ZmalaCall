@@ -47,6 +47,11 @@ final class VideoStartup {
     return call != null && call == tracked && ready;
   }
 
+  boolean delayed(Call call) {
+    return call != null && call == tracked && !ready && answeredAt >= 0
+        && clock.getAsLong() - answeredAt >= 15000;
+  }
+
   void reset() {
     Call previous = tracked;
     CallListenerStub previousListener = listener;

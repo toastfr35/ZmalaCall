@@ -19,6 +19,7 @@ import org.linphone.mediastream.video.capture.CaptureTextureView;
 // @llr LLR-AND-UI-002
 /** Video surfaces remain attached while controls, call progress and display size change. */
 final class CallScreen extends FrameLayout {
+  enum Progress { NONE, CALLING, RINGING, CONNECTING, DELAYED }
   interface Actions {
     void mute(boolean muted);
 
@@ -40,6 +41,8 @@ final class CallScreen extends FrameLayout {
   private final RingingView ringing;
   private final ProgressBar connecting;
   private final ImageButton mute, speaker;
+  private final TextView muteStatus;
+  private final TextView connectionStatus;
   private boolean muted;
   private CallEngine.Output output;
   private final TextView feedback;
@@ -47,6 +50,11 @@ final class CallScreen extends FrameLayout {
   private final Runnable hideControls = this::hideControls;
 
   private void hideControls() {
+    android.view.accessibility.AccessibilityManager accessibility = getContext().getSystemService(android.view.accessibility.AccessibilityManager.class);
+    if (controls.hasFocus() || (accessibility != null && accessibility.isTouchExplorationEnabled())) {
+      postDelayed(hideControls, controlTimeout());
+      return;
+    }
     controls.setVisibility(INVISIBLE);
     positionOverlays();
   }
@@ -60,10 +68,10 @@ final class CallScreen extends FrameLayout {
     muted = initiallyMuted;
     output = initiallyOutput;
     setBackgroundColor(Color.BLACK);
-    setContentDescription("Video call. Tap to show call controls.");
+    setContentDescription(getContext().getString(R.string.video_call_description));
     setOnClickListener(v -> showControls());
     remote = new TextureView(context);
-    remote.setContentDescription("Remote video. Tap to show call controls.");
+    remote.setContentDescription(getContext().getString(R.string.remote_video_description));
     remote.setOnClickListener(v -> showControls());
     addView(remote, new LayoutParams(-1, -1));
     View.OnTouchListener volumeGesture = new View.OnTouchListener() {
@@ -93,7 +101,7 @@ final class CallScreen extends FrameLayout {
               if (steps != applied) {
                 int percent = actions.volume(steps - applied);
                 applied = steps;
-                notice((output == CallEngine.Output.MUTED ? "Sound muted · " : "Call volume ") + percent + "%");
+                notice(getContext().getString(output == CallEngine.Output.MUTED ? R.string.muted_volume : R.string.call_volume, percent));
               }
             }
             return true;
@@ -119,7 +127,7 @@ final class CallScreen extends FrameLayout {
     progress.addView(ringing, new LinearLayout.LayoutParams(dp(108), dp(108)));
     connecting = new ProgressBar(context);
     connecting.setIndeterminateTintList(ColorStateList.valueOf(MainActivity.GREEN));
-    connecting.setContentDescription("Connecting video");
+    connecting.setContentDescription(getContext().getString(R.string.connecting_video_description));
     connecting.setVisibility(GONE);
     progress.addView(connecting, new LinearLayout.LayoutParams(dp(60), dp(60)));
     progressLabel = new TextView(context);
@@ -156,31 +164,39 @@ final class CallScreen extends FrameLayout {
     // The SDK supplies camera dimensions and sensor/display rotation to this view.
     // A plain TextureView stretches the buffer and cannot consume those updates.
     preview = new CameraPreview(context);
-    preview.setContentDescription("Your camera. Tap to show call controls.");
+    preview.setContentDescription(getContext().getString(R.string.preview_description));
     preview.setOnClickListener(v -> showControls());
     preview.setOnTouchListener(volumeGesture);
     addView(preview, new LayoutParams(dp(96), dp(128), Gravity.BOTTOM | Gravity.RIGHT));
 
     controls = new LinearLayout(context);
     controls.setGravity(Gravity.CENTER);
-    controls.setContentDescription("Call controls");
-    mute = icon(Kind.MIC, muted, muted ? "Unmute microphone" : "Mute microphone", MainActivity.PANEL);
+    controls.setContentDescription(getContext().getString(R.string.controls_description));
+    mute = icon(Kind.MIC, muted, muted ? getContext().getString(R.string.unmute_microphone) : getContext().getString(R.string.mute_microphone), MainActivity.PANEL);
     speaker = icon(outputKind(), false, outputLabel(), MainActivity.PANEL);
-    ImageButton camera = icon(Kind.CAMERA, false, "Switch camera", MainActivity.PANEL);
-    ImageButton end = icon(Kind.END, false, "End call", MainActivity.RED);
-    for (ImageButton button : new ImageButton[] {mute, speaker, camera, end}) {
-      LinearLayout.LayoutParams slot = new LinearLayout.LayoutParams(dp(60), dp(60));
-      slot.setMargins(dp(4), 0, dp(4), 0);
-      controls.addView(button, slot);
+    ImageButton camera = icon(Kind.CAMERA, false, getContext().getString(R.string.switch_camera), MainActivity.PANEL);
+    ImageButton end = icon(Kind.END, false, getContext().getString(R.string.end_call), MainActivity.RED);
+    ImageButton[] buttons = {mute, speaker, camera, end};
+    String[] names = {getContext().getString(R.string.mic_label), getContext().getString(R.string.sound_label), getContext().getString(R.string.camera_label), getContext().getString(R.string.end_label)};
+    for (int i = 0; i < buttons.length; i++) {
+      LinearLayout slot = new LinearLayout(context); slot.setOrientation(LinearLayout.VERTICAL);
+      slot.setGravity(Gravity.CENTER_HORIZONTAL);
+      slot.addView(buttons[i], new LinearLayout.LayoutParams(dp(60), dp(60)));
+      TextView name = new TextView(context); name.setText(names[i]); name.setTextColor(MainActivity.FG);
+      name.setTextSize(12); name.setGravity(Gravity.CENTER); name.setMaxLines(2);
+      name.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+      slot.addView(name, new LinearLayout.LayoutParams(-1, -2));
+      controls.addView(slot, new LinearLayout.LayoutParams(dp(68), -2));
     }
     mute.setOnClickListener(
         v -> {
           muted = !muted;
           actions.mute(muted);
           mute.setImageDrawable(new Glyph(Kind.MIC, muted));
-          mute.setContentDescription(muted ? "Unmute microphone" : "Mute microphone");
+          mute.setContentDescription(muted ? getContext().getString(R.string.unmute_microphone) : getContext().getString(R.string.mute_microphone));
           mute.setSelected(muted);
-          notice(muted ? "Microphone muted" : "Microphone on");
+          updateMuteStatus();
+          notice(muted ? getContext().getString(R.string.microphone_muted) : getContext().getString(R.string.microphone_on));
           showControls();
         });
     speaker.setOnClickListener(
@@ -189,8 +205,9 @@ final class CallScreen extends FrameLayout {
           speaker.setImageDrawable(new Glyph(outputKind(), false));
           speaker.setContentDescription(outputLabel());
           speaker.setSelected(output == CallEngine.Output.MUTED);
-          notice(output == CallEngine.Output.SPEAKER ? "Loudspeaker"
-              : output == CallEngine.Output.EARPIECE ? "Earpiece" : "Call sound muted");
+          updateMuteStatus();
+          notice(output == CallEngine.Output.SPEAKER ? getContext().getString(R.string.loudspeaker)
+              : output == CallEngine.Output.EARPIECE ? getContext().getString(R.string.earpiece) : getContext().getString(R.string.call_sound_muted));
           showControls();
         });
     camera.setOnClickListener(
@@ -199,7 +216,7 @@ final class CallScreen extends FrameLayout {
           showControls();
         });
     end.setOnClickListener(v -> actions.end());
-    addView(controls, new LayoutParams(-2, dp(60), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
+    addView(controls, new LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
     controls.setVisibility(INVISIBLE);
     feedback = new TextView(context);
     feedback.setTextColor(MainActivity.FG);
@@ -215,6 +232,20 @@ final class CallScreen extends FrameLayout {
     LayoutParams feedbackSlot = new LayoutParams(-2, -2, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
     feedbackSlot.topMargin = dp(24);
     addView(feedback, feedbackSlot);
+    muteStatus = new TextView(context); muteStatus.setTextColor(MainActivity.FG);
+    muteStatus.setTextSize(14); muteStatus.setPadding(dp(10), dp(6), dp(10), dp(6));
+    muteStatus.setBackgroundColor(0xe6192230);
+    muteStatus.setAccessibilityLiveRegion(ACCESSIBILITY_LIVE_REGION_POLITE);
+    LayoutParams statusSlot = new LayoutParams(-2, -2, Gravity.TOP | Gravity.LEFT);
+    statusSlot.setMargins(dp(12), dp(12), dp(12), 0); addView(muteStatus, statusSlot);
+    updateMuteStatus();
+    connectionStatus = new TextView(context); connectionStatus.setTextColor(MainActivity.FG);
+    connectionStatus.setTextSize(14); connectionStatus.setGravity(Gravity.CENTER);
+    connectionStatus.setPadding(dp(12), dp(6), dp(12), dp(6)); connectionStatus.setBackgroundColor(0xe6192230);
+    connectionStatus.setAccessibilityLiveRegion(ACCESSIBILITY_LIVE_REGION_POLITE);
+    LayoutParams connectionSlot = new LayoutParams(-1, -2, Gravity.TOP);
+    connectionSlot.setMargins(dp(12), dp(54), dp(12), 0); addView(connectionStatus, connectionSlot);
+    connectionStatus.setVisibility(GONE);
     setOnApplyWindowInsetsListener(
         (v, insets) -> {
           setPadding(
@@ -233,10 +264,22 @@ final class CallScreen extends FrameLayout {
         : output == CallEngine.Output.MUTED ? Kind.SILENT : Kind.SPEAKER;
   }
 
+  private void updateMuteStatus() {
+    String text = muted ? getContext().getString(R.string.microphone_muted) : "";
+    if (output == CallEngine.Output.MUTED) text += (text.isEmpty() ? "" : " · ") + getContext().getString(R.string.sound_muted);
+    muteStatus.setText(text); muteStatus.setContentDescription(getContext().getString(R.string.audio_status, text));
+    muteStatus.setVisibility(text.isEmpty() ? GONE : VISIBLE);
+  }
+
+  void firstCallHint() {
+    notice(getContext().getString(R.string.call_hint));
+    removeCallbacks(hideFeedback); postDelayed(hideFeedback, 5000);
+  }
+
   private String outputLabel() {
-    return output == CallEngine.Output.SPEAKER ? "Loudspeaker. Switch to earpiece"
-        : output == CallEngine.Output.EARPIECE ? "Earpiece. Mute call sound"
-        : "Call sound muted. Switch to loudspeaker";
+    return output == CallEngine.Output.SPEAKER ? getContext().getString(R.string.output_to_earpiece)
+        : output == CallEngine.Output.EARPIECE ? getContext().getString(R.string.output_to_muted)
+        : getContext().getString(R.string.output_to_speaker);
   }
 
   private void notice(String text) {
@@ -275,18 +318,38 @@ final class CallScreen extends FrameLayout {
   void showControls() {
     controls.setVisibility(VISIBLE);
     removeCallbacks(hideControls);
-    postDelayed(hideControls, 5000);
+    postDelayed(hideControls, controlTimeout());
     positionOverlays();
   }
 
-  void progress(String text) {
-    if (text == null) {
+  private int controlTimeout() {
+    if (android.os.Build.VERSION.SDK_INT < 29) return 5000;
+    android.view.accessibility.AccessibilityManager accessibility = getContext().getSystemService(android.view.accessibility.AccessibilityManager.class);
+    return accessibility == null ? 5000 : accessibility.getRecommendedTimeoutMillis(5000,
+        android.view.accessibility.AccessibilityManager.FLAG_CONTENT_CONTROLS
+        | android.view.accessibility.AccessibilityManager.FLAG_CONTENT_TEXT
+        | android.view.accessibility.AccessibilityManager.FLAG_CONTENT_ICONS);
+  }
+
+  void connectionNotice(String text) {
+    connectionStatus.setText(text);
+    connectionStatus.setVisibility(text == null ? GONE : VISIBLE);
+  }
+
+  void progress(Progress state) {
+    if (state == Progress.NONE) {
       progress.setVisibility(GONE);
       pulse.cancel();
     } else {
-      boolean waitingForVideo = "Connecting video…".equals(text);
+      boolean waitingForVideo = state == Progress.CONNECTING || state == Progress.DELAYED;
       ringing.setVisibility(waitingForVideo ? GONE : VISIBLE);
-      connecting.setVisibility(waitingForVideo ? VISIBLE : GONE);
+      connecting.setVisibility(state == Progress.CONNECTING ? VISIBLE : GONE);
+      String text = switch (state) {
+        case CALLING -> getContext().getString(R.string.calling); case RINGING -> getContext().getString(R.string.ringing);
+        case CONNECTING -> getContext().getString(R.string.connecting_video);
+        case DELAYED -> getContext().getString(R.string.video_delayed);
+        default -> "";
+      };
       progressLabel.setText(text);
       progress.setVisibility(VISIBLE);
       if (waitingForVideo) pulse.cancel();
@@ -307,12 +370,18 @@ final class CallScreen extends FrameLayout {
     local.width = Math.min(maximumWidth, Math.round(maximumHeight * ratio));
     local.height = Math.min(maximumHeight, Math.round(maximumWidth / ratio));
     super.onMeasure(widthSpec, heightSpec);
+    int bottom = controls.getVisibility() == VISIBLE ? controls.getMeasuredHeight() + dp(24) : dp(12);
+    if (local.bottomMargin != bottom) {
+      local.bottomMargin = bottom;
+      super.onMeasure(widthSpec, heightSpec);
+    }
   }
 
   private void positionOverlays() {
     if (controls == null || preview == null) return;
     LayoutParams local = (LayoutParams) preview.getLayoutParams();
-    local.setMargins(dp(12), dp(12), dp(12), dp(controls.getVisibility() == VISIBLE ? 88 : 12));
+    local.setMargins(dp(12), dp(12), dp(12), controls.getVisibility() == VISIBLE
+        ? Math.max(dp(88), controls.getMeasuredHeight()) + dp(24) : dp(12));
     preview.setLayoutParams(local);
     LayoutParams bar = (LayoutParams) controls.getLayoutParams();
     bar.bottomMargin = dp(12);

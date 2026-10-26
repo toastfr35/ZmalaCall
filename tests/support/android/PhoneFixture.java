@@ -18,6 +18,9 @@ import java.util.function.BooleanSupplier;
 import org.json.*;
 
 public final class PhoneFixture {
+  public static void endSession() {
+    INSTRUMENTATION.runOnMainSync(() -> { if (CallSession.peek() != null) CallSession.peek().stop(); });
+  }
   public static final String TOKEN = "abcdefghijklmnopqrstuvwx",
       ID = "ZP-12345678-1234-1234-1234-123456789abc";
   public static final Instrumentation INSTRUMENTATION =
@@ -86,6 +89,8 @@ public final class PhoneFixture {
           View view = text(activity.getWindow().getDecorView(), label);
           if (view == null) view = description(activity.getWindow().getDecorView(), label);
           assertNotNull(label, view);
+          while (!view.isClickable() && view.getParent() instanceof View)
+            view = (View) view.getParent();
           assertTrue("Control must be visible: " + label, view.isShown());
           assertTrue(view.performClick());
         });
@@ -192,6 +197,7 @@ public final class PhoneFixture {
     public volatile String lastRequest = "", lastBody = "";
     public volatile int callbackRequests;
     public volatile int callbackCancellations;
+    public volatile int configurationStatus = 200, configurationRequests;
     public volatile String callbackRecipient;
     private final Thread thread;
 
@@ -222,6 +228,8 @@ public final class PhoneFixture {
                     }
                     lastBody = new String(received, 0, offset);
                     lastRequest = request.toString();
+                    int status = lastRequest.startsWith("GET /api/app/config ") ? configurationStatus : 200;
+                    if (lastRequest.startsWith("GET /api/app/config ")) configurationRequests++;
                     if (lastRequest.startsWith("POST /api/app/callbacks ")) {
                       callbackRecipient = new JSONObject(lastBody).getString("to");
                       callbackRequests++;
@@ -238,7 +246,7 @@ public final class PhoneFixture {
                     socket
                         .getOutputStream()
                         .write(
-                            ("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: "
+                            ("HTTP/1.1 " + status + " Fixture\r\nContent-Type: application/json\r\nContent-Length: "
                                     + body.length
                                     + "\r\nConnection: close\r\n\r\n")
                                 .getBytes(StandardCharsets.US_ASCII));

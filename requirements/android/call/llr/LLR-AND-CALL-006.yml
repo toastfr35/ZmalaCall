@@ -22,9 +22,14 @@ text: The app shall accept the tls-relay policy only from HTTPS enrollment with 
   TURN TLS writes shall retain a frame through short writes and temporary socket backpressure.
   A write that cannot complete within three seconds shall fail and shut down the connection so a
   partial frame is not followed by another frame on the same stream.
+  Temporary configuration HTTP transport failures shall preserve an established call and show a
+  reconnecting notice. Revocation or malformed identity/security configuration shall still stop
+  registration and media; recovery shall not apply unvalidated data or clear pending credential changes.
 area: Audio and video calls
 scope: Experimental
 references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallSession.java
+  type: file
 - path: zmala_terminal/common/native/turn-write.h
   type: file
 - path: zmala_phone/app/src/main/cpp/turn-framing.cpp
@@ -40,6 +45,10 @@ references:
 - path: zmala_phone/app/src/main/java/org/zmala/phone/Enrollment.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/ServerApi.java
+  type: file
+- path: tests/android/LLT/unit/RecoveryPolicyTest.java
   type: file
 - path: tests/android/LLT/unit/SecureCallsTest.java
   type: file

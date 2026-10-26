@@ -6,8 +6,9 @@ import org.json.JSONObject;
 import org.linphone.core.*;
 
 // @llr LLR-AND-CALL-002
-// The core is owned by the activity's main thread; no SIP credentials are written to disk.
+// CallSession owns the core on the main thread; no SIP credentials are written to disk.
 public final class CallEngine {
+  boolean remoteVideoDelayed() { return videoStartup.delayed(call); }
   public enum Output {
     SPEAKER, EARPIECE, MUTED;
 
@@ -162,7 +163,7 @@ public final class CallEngine {
         });
     core.start();
     // The core starts after Activity.onResume, so the SDK lifecycle observer misses it.
-    // This engine exists only while the activity is visible; onStop releases it.
+    // A visible screen starts the core; CallService may retain it for an active call.
     core.enterForeground();
     JSONObject sip = config.getJSONObject("sip");
     Address identity =
@@ -327,6 +328,17 @@ public final class CallEngine {
       core.setNativePreviewWindowId(preview);
       updatePreviewSize();
     }
+  }
+
+  // @llr LLR-AND-CALL-002
+  void background(boolean hidden) {
+    if (core == null) return;
+    // ActivityMonitor may enter SDK background after two seconds. Active call service ownership
+    // still needs the normal signalling cadence, not the idle 500 ms schedule.
+    core.setAutoIterateBackgroundSchedule(hidden ? 20 : 500);
+    if (call != null) call.setCameraEnabled(!hidden);
+    if (hidden) video(null, null);
+    else core.enterForeground();
   }
 
   // @llr LLR-AND-UI-002

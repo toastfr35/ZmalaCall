@@ -3,6 +3,7 @@
 // @environment portable
 // @plan Deliver duplicate push/native rings, cancellations, answers and expiry, serialize and reload
 // history, clear counts, prune removed contacts and classify incoming/sent/completed callbacks.
+// Format absent notices, singular/plural missed counts and simultaneous incoming/sent callbacks.
 // @pass A missed call counts once across delivery paths and restart; answered/declined calls do not
 // count, count clearing is retained, and callback badges apply only to the correct pending pair.
 package org.zmala.phone;
@@ -12,6 +13,17 @@ import org.json.*;
 import org.junit.Test;
 
 public class NoticeBookTest {
+  private static String summary(int count, int callbacks) {
+    return ContactNotice.summary(count, callbacks, n -> n + (n == 1 ? " missed call" : " missed calls"),
+        "Please call back", "Callback requested");
+  }
+  @Test public void readableNoticesDistinguishBothCallbackDirections() {
+    assertEquals("", summary(0, 0));
+    assertEquals("1 missed call", summary(1, 0));
+    assertEquals("2 missed calls · Please call back · Callback requested", summary(2, 3));
+    assertEquals("Please call back", summary(0, 1));
+    assertEquals("Callback requested", summary(0, 2));
+  }
   @Test public void duplicateMissedAndAnsweredCallsPersist() {
     NoticeBook book = new NoticeBook("");
     book.ring("call1", "peer", 100);

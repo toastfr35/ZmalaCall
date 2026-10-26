@@ -75,6 +75,7 @@ public class UpdaterFlowTest {
       PhoneFixture.waitFor(() -> c.getSharedPreferences("updates", 0).getString("release", "").contains(version));
       sip.ringOutgoing = true;
       PhoneFixture.click(screen, "Living room");
+      PhoneFixture.click(screen, "Call");
       assertNotNull(sip.invites.poll(10, TimeUnit.SECONDS));
       java.lang.reflect.Method download = AppUpdates.class.getDeclaredMethod("startDownload"); download.setAccessible(true);
       PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {

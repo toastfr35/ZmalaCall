@@ -13,6 +13,7 @@ text: The product shall provide a ZmalaPhone Android companion using the termina
   QR setup and mutually exclusive App or Terminal account types. It shall support authorized video calling,
   Firebase incoming-call wake-up and encrypted server-relayed calls between separate NAT networks when
   secure mode is deployed. It shall support missed-call notices, shared callback requests and optional
-  verified application updates that do not interrupt calls.
+  verified application updates that do not interrupt calls. User-started or answered calls shall retain
+  audio while switching apps or locking the screen, with camera sending paused until return.
 verification: Exercise app enrollment, authorized contacts and native call signaling on Android. Separately
   qualify camera, microphone and bidirectional media against the Pi terminal on physical hardware.

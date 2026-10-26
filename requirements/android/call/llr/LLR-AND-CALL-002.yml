@@ -8,6 +8,20 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallSession.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallService.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallLifetime.java
+  type: file
+- path: zmala_phone/app/src/main/res/drawable/ic_call_notification.xml
+  type: file
+- path: zmala_phone/app/src/main/AndroidManifest.xml
+  type: file
+- path: tests/android/LLT/unit/CallLifetimeTest.java
+  type: file
+- path: tests/android/LLT/device/CallServiceFailureTest.java
+  type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/CallEngine.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/Enrollment.java
@@ -24,7 +38,8 @@ references:
   type: file
 reviewed: null
 scope: Experimental
-text: The app shall own at most one foreground Linphone call, use the configured SIP proxy and credentials,
+text: The app shall own at most one main-thread Linphone call through application-scoped call ownership,
+  use the configured SIP proxy and credentials,
   negotiate audio and video without RTP bundle in LAN mode, and reject incoming calls unless the contact
   permits reception and X-Family-Auth matches the HMAC over call ID and caller. Answer, hangup, mute,
   audio output and camera controls shall operate on the current call, and stopping shall release registration
@@ -41,6 +56,14 @@ text: The app shall own at most one foreground Linphone call, use the configured
   The foreground-owned core shall explicitly enter foreground mode after startup so active
   signalling and media negotiation use the SDK foreground iteration cadence.
   Display rotation shall update the native video orientation without recreating the core or call.
+  User-started/answered calls shall use a microphone/camera foreground service started while the
+  activity is visible. Home, screen lock and activity recreation shall retain the core/call and audio
+  focus. Hidden views shall detach native surfaces and disable the current call's camera; returning
+  shall reattach surfaces and restore it without SDP renegotiation. Background call iteration shall
+  retain the 20 ms cadence. An ongoing private notification shall offer Return and call-ID-scoped End.
+  Stale End actions shall not affect another call. No service restart shall create a call after process
+  death. Hangup, revocation, service failure or idle closure shall release media, registration, audio
+  focus, notification and wake ownership; idle closed apps shall not retain SIP or a foreground service.
 verification: Test valid and forged HMACs and permission/directory mismatch; exercise native registration
   and assert AVPF feedback and NACK policy on the real core,
   and call state with bounded waits, then perform physical camera/audio control checks before release.
@@ -51,3 +74,6 @@ verification: Test valid and forged HMACs and permission/directory mismatch; exe
   Verify foreground state and the native 20 ms iteration timer after the SDK startup boost expires.
 
   Verify idle and active routing, independent microphone/output mute and missing-earpiece fallback.
+  Test stale notification identity and visibility changes with SDK doubles. On Android, preserve the
+  same core/call through Home, screen lock and activity recreation, verify camera pause/restore and
+  notification hangup cleanup. Qualify physical audio/video and vendor background policies separately.

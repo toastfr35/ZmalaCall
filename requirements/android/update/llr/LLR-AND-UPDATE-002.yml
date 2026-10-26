@@ -22,6 +22,9 @@ text: The app shall check the fixed public ZmalaCall latest-release endpoint on 
   action. Failed or partial downloads shall be removed and retries bounded. Enrollment shall be retained.
   A discreet installed version and Updates action shall appear only on the contact screen, never setup
   or call screens.
+  Discovery shall show a contact-footer Update available action without opening an unsolicited dialog.
+  A selected update shall show bounded download percentage and checking/preparing/installing stages.
+  Automatic-update idle time shall reset on user interaction and exclude a person's contact-action page.
 verification: Unit-test metadata, origins, archive identity and signature matching, and call/install exclusion.
   Inject HTTP responses to verify fixed-origin metadata, per-hop APK redirect checks and redirect limits,
   ten-second connection/read timeouts, a one-MiB metadata limit and connection/stream cleanup on failures.

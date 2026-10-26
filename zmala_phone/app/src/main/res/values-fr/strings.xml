@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @llr LLR-AND-UI-002 -->
+<resources>
+  <string name="welcome" formatted="false">Bienvenue</string>
+  <string name="ready" formatted="false">Prêt à appeler</string>
+  <string name="tagline" formatted="false">Ensemble, où que vous soyez</string>
+  <string name="setup_intro" formatted="false">Utilisez le QR code de configuration reçu par e-mail ou sur papier.</string>
+  <string name="scan_qr" formatted="false">Scanner le QR code</string>
+  <string name="open_qr_image" formatted="false">Ouvrir une image QR</string>
+  <string name="qr_image_hint" formatted="false">Choisissez une image QR enregistrée depuis votre e-mail, ou scannez le code imprimé.</string>
+  <string name="scanner_prompt" formatted="false">Scannez votre QR code de configuration</string>
+  <string name="qr_image_error" formatted="false">Aucun QR code lisible trouvé. Choisissez une image du code ou scannez sa version imprimée.</string>
+  <string name="no_picker" formatted="false">Aucun sélecteur d’image disponible. Scannez votre QR code imprimé.</string>
+  <string name="connect_title" formatted="false">Se connecter à ZmalaCall</string>
+  <string name="connect" formatted="false">Se connecter</string>
+  <string name="cancel" formatted="false">Annuler</string>
+  <string name="retry_connection" formatted="false">Réessayer la connexion</string>
+  <string name="connecting_server" formatted="false">Connexion au serveur…</string>
+  <string name="reconnecting_server" formatted="false">Reconnexion au serveur…</string>
+  <string name="reconnect_help" formatted="false">Reconnexion au serveur… Vérifiez votre connexion.</string>
+  <string name="cannot_connect" formatted="false">Connexion au serveur d’appels impossible</string>
+  <string name="cannot_reach" formatted="false">Serveur inaccessible. Vérifiez votre connexion, puis réessayez.</string>
+  <string name="start_call_failed" formatted="false">Impossible de lancer l’appel.</string>
+  <string name="call_failed" formatted="false">Impossible d’établir l’appel</string>
+  <string name="call_ended" formatted="false">Appel terminé</string>
+  <string name="in_call" formatted="false">Appel vidéo en cours</string>
+  <string name="connecting" formatted="false">Connexion…</string>
+  <string name="no_contacts" formatted="false">Aucun contact pour le moment. Demandez à la personne qui vous a donné le QR code de vous ajouter à un groupe.</string>
+  <string name="available" formatted="false">Disponible</string>
+  <string name="try_calling" formatted="false">Essayez d’appeler</string>
+  <string name="offline" formatted="false">Hors ligne</string>
+  <string name="please_call_back" formatted="false">Merci de rappeler</string>
+  <string name="callback_requested" formatted="false">Rappel demandé</string>
+  <string name="request_callback" formatted="false">Demander un rappel</string>
+  <string name="cancel_request" formatted="false">Annuler la demande</string>
+  <string name="callback_cancelled" formatted="false">Demande de rappel annulée</string>
+  <string name="clear_missed" formatted="false">Effacer les appels manqués</string>
+  <string name="callback_failed" formatted="false">Impossible de modifier la demande de rappel. Vérifiez votre connexion et réessayez.</string>
+  <string name="call_not_answered" formatted="false">Appel sans réponse</string>
+  <string name="not_now" formatted="false">Pas maintenant</string>
+  <string name="close" formatted="false">Fermer</string>
+  <string name="ok" formatted="false">OK</string>
+  <string name="contacts" formatted="false">Contacts</string>
+  <string name="call" formatted="false">Appeler</string>
+  <string name="please_wait" formatted="false">Veuillez patienter…</string>
+  <string name="calling_unavailable" formatted="false">L’appel est momentanément indisponible.</string>
+  <string name="calling_unavailable_callback" formatted="false">L’appel est momentanément indisponible. Vous pouvez demander un rappel.</string>
+  <string name="incoming_video" formatted="false">Appel vidéo entrant</string>
+  <string name="answer_video" formatted="false">Répondre à l’appel vidéo</string>
+  <string name="decline" formatted="false">Refuser</string>
+  <string name="video_call_description" formatted="false">Appel vidéo. Touchez l’écran pour afficher les commandes.</string>
+  <string name="remote_video_description" formatted="false">Vidéo de votre correspondant. Touchez pour afficher les commandes.</string>
+  <string name="preview_description" formatted="false">Votre caméra. Touchez pour afficher les commandes.</string>
+  <string name="controls_description" formatted="false">Commandes de l’appel</string>
+  <string name="mic_label" formatted="false">Micro</string>
+  <string name="sound_label" formatted="false">Son</string>
+  <string name="camera_label" formatted="false">Caméra</string>
+  <string name="end_label" formatted="false">Fin</string>
+  <string name="mute_microphone" formatted="false">Couper le micro</string>
+  <string name="unmute_microphone" formatted="false">Activer le micro</string>
+  <string name="microphone_muted" formatted="false">Micro coupé</string>
+  <string name="microphone_on" formatted="false">Micro activé</string>
+  <string name="loudspeaker" formatted="false">Haut-parleur</string>
+  <string name="earpiece" formatted="false">Écouteur</string>
+  <string name="sound_muted" formatted="false">Son coupé</string>
+  <string name="call_sound_muted" formatted="false">Son de l’appel coupé</string>
+  <string name="output_to_earpiece" formatted="false">Haut-parleur. Passer à l’écouteur</string>
+  <string name="output_to_muted" formatted="false">Écouteur. Couper le son de l’appel</string>
+  <string name="output_to_speaker" formatted="false">Son coupé. Passer au haut-parleur</string>
+  <string name="switch_camera" formatted="false">Changer de caméra</string>
+  <string name="end_call" formatted="false">Raccrocher</string>
+  <string name="call_hint" formatted="false">Touchez pour les commandes · Glissez vers le haut ou le bas pour le volume</string>
+  <string name="calling" formatted="false">Appel en cours…</string>
+  <string name="ringing" formatted="false">Sonnerie…</string>
+  <string name="connecting_video" formatted="false">Connexion vidéo…</string>
+  <string name="connecting_video_description" formatted="false">Connexion vidéo</string>
+  <string name="video_delayed" formatted="false">La vidéo n’est pas encore arrivée.\nL’appel reste connecté.</string>
+  <string name="incoming_enabled" formatted="false">Alertes d’appel activées</string>
+  <string name="notifications_off" formatted="false">Notifications désactivées\nActiver les notifications</string>
+  <string name="alerts_server_off" formatted="false">Alertes d’appel indisponibles\nEn savoir plus</string>
+  <string name="alerts_preparing" formatted="false">Préparation des alertes d’appel…</string>
+  <string name="alerts_retry" formatted="false">Alertes d’appel indisponibles\nRéessayer</string>
+  <string name="incoming_calls" formatted="false">Appels entrants</string>
+  <string name="alerts_server_help" formatted="false">Gardez ZmalaPhone ouvert pour recevoir les appels. Demandez à la personne qui vous a donné le QR code d’activer les alertes sur le serveur.</string>
+  <string name="notification_settings_help" formatted="false">Ouvrez Paramètres Android &gt; Applications &gt; ZmalaPhone &gt; Notifications pour activer les appels entrants.</string>
+  <string name="notification_explanation_title" formatted="false">Recevoir les appels quand ZmalaPhone est fermé</string>
+  <string name="continue_action" formatted="false">Continuer</string>
+  <string name="notification_channel_help" formatted="false">Sonnerie lorsque quelqu’un vous appelle sur ZmalaPhone.</string>
+  <string name="updates" formatted="false">Mises à jour</string>
+  <string name="update_available" formatted="false">Mise à jour disponible</string>
+  <string name="check_updates_description" formatted="false">Rechercher les mises à jour de ZmalaPhone</string>
+  <string name="updates_title" formatted="false">Mises à jour de ZmalaPhone</string>
+  <string name="automatic_updates" formatted="false">Mises à jour automatiques en Wi-Fi</string>
+  <string name="update" formatted="false">Mettre à jour</string>
+  <string name="check_now" formatted="false">Vérifier</string>
+  <string name="later" formatted="false">Plus tard</string>
+  <string name="check_newer" formatted="false">Rechercher une nouvelle version.</string>
+  <string name="checking_updates" formatted="false">Recherche de mises à jour…</string>
+  <string name="latest_version" formatted="false">Vous disposez de la dernière version disponible.</string>
+  <string name="ready_download" formatted="false">Prêt à télécharger.</string>
+  <string name="check_failed" formatted="false">Recherche impossible. Réessayez plus tard.</string>
+  <string name="download_zero" formatted="false">Téléchargement de la mise à jour… 0%</string>
+  <string name="checking_update" formatted="false">Vérification de la mise à jour…</string>
+  <string name="preparing_install" formatted="false">Préparation de l’installation…</string>
+  <string name="installing_update" formatted="false">Installation de la mise à jour…</string>
+  <string name="installation_failed" formatted="false">Installation impossible. Réessayez plus tard.</string>
+  <string name="confirmation_needed" formatted="false">Android demande votre confirmation. Touchez Mettre à jour pour continuer.</string>
+  <string name="update_installed" formatted="false">Mise à jour installée.</string>
+  <string name="update_not_installed" formatted="false">Mise à jour non installée. Vous pouvez réessayer.</string>
+  <string name="install_permission" formatted="false">Autorisez l’installation dans les paramètres Android, puis réessayez.</string>
+  <string name="update_paused" formatted="false">Mise à jour en pause jusqu’à la réouverture de l’application et la fin des appels.</string>
+  <string name="download_failed" formatted="false">Téléchargement ou vérification impossible. Réessayez plus tard.</string>
+  <string name="scan_new_qr" formatted="false">Utilisez un nouveau QR code de configuration.</string>
+  <string name="calling_setup_failed" formatted="false">Impossible de démarrer les appels. Vérifiez les autorisations et la configuration.</string>
+  <string name="setup_invalid" formatted="false">Ce QR code n’est pas valide pour ZmalaPhone. Demandez un QR code App à jour à la personne qui vous l’a donné.</string>
+  <string name="access_revoked" formatted="false">L’accès à ce compte a été retiré. Utilisez un QR code App à jour.</string>
+  <string name="media_permissions" formatted="false">Les appels vidéo nécessitent l’accès à la caméra, au micro et au réseau local. Activez ces autorisations dans les paramètres Android.</string>
+  <string name="notification_explanation" formatted="false">Autorisez les notifications pour que les appels sonnent lorsque vous utilisez une autre application ou que le téléphone est en veille. Internet et l’accès au serveur sont nécessaires. Après un arrêt forcé Android, ouvrez à nouveau ZmalaPhone.</string>
+  <string name="update_explanation" formatted="false">Les mises à jour attendent la fin des appels et des sonneries. L’installation automatique attend que ZmalaPhone soit ouvert et inactif. Android peut demander une confirmation. Votre configuration est conservée.</string>
+  <string name="lan_warning" formatted="false">\n\nMode local : la configuration et les appels ne sont pas chiffrés. Utilisez votre réseau domestique de confiance.</string>
+  <string name="secure_confirm" formatted="false">\n\nUtiliser ce serveur pour votre compte ?</string>
+  <string name="open_contact_suffix" formatted="false">. Ouvrir ce contact</string>
+  <string name="photo_of">Portrait de %1$s</string>
+  <string name="callback_prompt">Demander à %1$s de vous rappeler ?</string>
+  <string name="audio_status">État audio de l’appel : %1$s</string>
+  <string name="call_volume">Volume de l’appel : %1$d%%</string>
+  <string name="muted_volume">Son coupé · %1$d%%</string>
+  <string name="downloading_percent">Téléchargement de la mise à jour… %1$d%%</string>
+  <string name="version_available">La version %1$s est disponible.\n\n%2$s</string>
+  <plurals name="missed_calls">
+    <item quantity="one">%d appel manqué</item>
+    <item quantity="other">%d appels manqués</item>
+    <item quantity="many">%d appels manqués</item>
+  </plurals>
+  <string name="ongoing_calls">Appels en cours</string>
+  <string name="call_in_progress">Appel en cours</string>
+  <string name="return_to_call">Revenir à l’appel</string>
+  <string name="background_audio">Audio maintenu · Caméra en pause</string>
+  <string name="update_busy">Une mise à jour est en cours. Réessayez dans un instant.</string>
+</resources>

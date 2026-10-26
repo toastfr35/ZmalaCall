@@ -8,6 +8,12 @@ import org.json.JSONObject;
 
 // @llr LLR-AND-ENROLL-002
 public final class ServerApi {
+  static final class AccessRevoked extends IllegalStateException {
+    AccessRevoked() { super("Account access was revoked. Scan a current App QR code."); }
+  }
+
+  // @llr LLR-AND-CALL-006
+  static boolean temporaryFailure(Exception error) { return error instanceof java.io.IOException; }
   public static JSONObject configuration(Enrollment enrollment) throws Exception {
     return enrollment.validate(
         new JSONObject(
@@ -70,11 +76,8 @@ public final class ServerApi {
         }
       }
       int status = connection.getResponseCode();
-      if (status != 200)
-        throw new IllegalStateException(
-            status == 401 || status == 403
-                ? "Account access was revoked. Scan a current App QR code."
-                : "Server is unavailable (" + status + ").");
+      if (status == 401 || status == 403) throw new AccessRevoked();
+      if (status != 200) throw new java.io.IOException("Server is unavailable (" + status + ").");
       try (InputStream stream = connection.getInputStream();
           ByteArrayOutputStream output = new ByteArrayOutputStream()) {
         byte[] buffer = new byte[8192];

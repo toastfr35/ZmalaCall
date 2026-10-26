@@ -47,8 +47,8 @@ public final class PushAlerts {
 
   static void channel(Context context) {
     NotificationChannel channel =
-        new NotificationChannel(CHANNEL, "Incoming calls", NotificationManager.IMPORTANCE_HIGH);
-    channel.setDescription("Rings when someone calls your ZmalaPhone account.");
+        new NotificationChannel(CHANNEL, context.getString(R.string.incoming_calls), NotificationManager.IMPORTANCE_HIGH);
+    channel.setDescription(context.getString(R.string.notification_channel_help));
     channel.enableVibration(true);
     channel.setSound(
         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
@@ -223,7 +223,7 @@ public final class PushAlerts {
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(android.R.drawable.sym_call_incoming)
-            .setContentTitle("Incoming video call")
+            .setContentTitle(context.getString(R.string.incoming_video))
             .setContentText(name)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setPriority(NotificationCompat.PRIORITY_MAX)
