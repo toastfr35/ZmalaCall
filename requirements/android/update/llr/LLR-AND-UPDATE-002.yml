@@ -23,6 +23,8 @@ text: The app shall check the fixed public ZmalaCall latest-release endpoint on 
   A discreet installed version and Updates action shall appear only on the contact screen, never setup
   or call screens.
 verification: Unit-test metadata, origins, archive identity and signature matching, and call/install exclusion.
+  Inject HTTP responses to verify fixed-origin metadata, per-hop APK redirect checks and redirect limits,
+  ten-second connection/read timeouts, a one-MiB metadata limit and connection/stream cleanup on failures.
   Exercise the actual update UI and an Android PackageInstaller self-update with a same-key higher-version
   fixture; verify rejection paths, retained enrollment and confirmation fallback separately on older Android.
 links:
@@ -33,6 +35,10 @@ references:
 - path: zmala_phone/app/src/main/java/org/zmala/phone/UpdateGate.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/AppUpdates.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/UpdateHttp.java
+  type: file
+- path: tests/android/LLT/unit/UpdateHttpTest.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/UpdateJob.java
   type: file

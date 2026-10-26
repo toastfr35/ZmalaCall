@@ -10,8 +10,8 @@ import android.provider.Settings;
 import android.widget.*;
 import java.io.*;
 import java.lang.ref.WeakReference;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.concurrent.Executors;
@@ -195,17 +195,9 @@ final class AppUpdates {
       UpdatePolicy candidate = null;
       String json = null, message;
       try {
-        HttpURLConnection connection = connect(new URI(UpdatePolicy.API), false);
-        try (InputStream in = connection.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          byte[] buffer = new byte[8192]; int count;
-          while ((count = in.read(buffer)) != -1) {
-            if (out.size() + count > 1048576) throw new IOException("Metadata limit");
-            out.write(buffer, 0, count);
-          }
-          String received = out.toString(StandardCharsets.UTF_8.name());
-          candidate = UpdatePolicy.parse(received, version());
-          json = received;
-        } finally { connection.disconnect(); }
+        String received = UpdateHttp.metadata();
+        candidate = UpdatePolicy.parse(received, version());
+        json = received;
         message = candidate == null ? "You have the latest available version." : "Ready to download.";
       } catch (Exception error) { message = "Could not check for updates. Try again later."; }
       UpdatePolicy result = candidate; String cached = json, text = message;
@@ -215,29 +207,6 @@ final class AppUpdates {
         render(); finished.run();
       });
     });
-  }
-
-  static HttpURLConnection connect(URI start, boolean download) throws Exception {
-    URI uri = start;
-    for (int hop = 0; hop < 6; hop++) {
-      if (download ? !UpdatePolicy.allowedDownload(uri) : !UpdatePolicy.API.equals(uri.toString()))
-        throw new IOException("Untrusted update address");
-      HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
-      connection.setConnectTimeout(10000); connection.setReadTimeout(10000);
-      connection.setInstanceFollowRedirects(false);
-      connection.setRequestProperty("User-Agent", "ZmalaPhone-updater");
-      connection.setRequestProperty("Accept", download ? "application/octet-stream" : "application/vnd.github+json");
-      int code;
-      try { code = connection.getResponseCode(); }
-      catch (Exception error) { connection.disconnect(); throw error; }
-      if (code == 200) return connection;
-      String location = connection.getHeaderField("Location");
-      connection.disconnect();
-      if (!download || !java.util.Arrays.asList(301, 302, 303, 307, 308).contains(code) || location == null)
-        throw new IOException("Update server unavailable");
-      uri = uri.resolve(location);
-    }
-    throw new IOException("Too many redirects");
   }
 
   private boolean continueDownload() {
@@ -254,7 +223,7 @@ final class AppUpdates {
       File apk = new File(context.getCacheDir(), "zmalaphone-update.apk");
       try {
         if (!continueDownload()) throw new InterruptedException();
-        HttpURLConnection connection = connect(new URI(release.url), true);
+        HttpURLConnection connection = UpdateHttp.connect(new URI(release.url), true);
         try (InputStream in = connection.getInputStream(); OutputStream out = new FileOutputStream(apk)) {
           MessageDigest hash = MessageDigest.getInstance("SHA-256");
           byte[] buffer = new byte[65536]; long size = 0, start = SystemClock.elapsedRealtime(); int count;

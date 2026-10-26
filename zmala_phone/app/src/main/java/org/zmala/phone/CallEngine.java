@@ -224,6 +224,7 @@ public final class CallEngine {
     if (!permitted) return;
     core.setMicEnabled(true);
     output(Output.SPEAKER);
+    // Construct from the enrolled domain; never dial an arbitrary URI supplied by a contact row.
     Address address =
         Factory.instance()
             .createAddress(

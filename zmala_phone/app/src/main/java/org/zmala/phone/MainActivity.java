@@ -45,6 +45,7 @@ public final class MainActivity extends Activity {
       RED = Color.rgb(183, 47, 63);
   private final Handler main = new Handler(Looper.getMainLooper());
   private final ExecutorService network = Executors.newSingleThreadExecutor();
+  private final PortraitQueue portraits = new PortraitQueue();
   private final CallEngine engine = new CallEngine(this::callChanged);
   private Enrollment enrollment;
   private JSONObject config;
@@ -117,6 +118,7 @@ public final class MainActivity extends Activity {
     if (foreground.get() == this) foreground.clear();
     ((DisplayManager) getSystemService(DISPLAY_SERVICE)).unregisterDisplayListener(displayListener);
     generation++;
+    portraits.begin();
     fetching = false;
     main.removeCallbacks(poll);
     engine.stop();
@@ -132,6 +134,7 @@ public final class MainActivity extends Activity {
   @Override
   public void onDestroy() {
     network.shutdownNow();
+    portraits.close();
     super.onDestroy();
   }
 
@@ -380,6 +383,7 @@ public final class MainActivity extends Activity {
   }
 
   private void directory() {
+    long portraitTicket = portraits.begin();
     setRequestedOrientation(enrollment != null && config != null
         ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
@@ -488,31 +492,7 @@ public final class MainActivity extends Activity {
             actionSize.setMargins(dp(6), 0, 0, 0);
             card.addView(actions, actionSize);
           }
-          String path = contact.optString("photo");
-          int ticket = generation;
-          Enrollment target = enrollment;
-          if (!path.isEmpty())
-            network.execute(
-                () -> {
-                  try {
-                    byte[] bytes = ServerApi.photo(target, path);
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inJustDecodeBounds = true;
-                    BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-                    options.inSampleSize =
-                        Math.max(1, Math.max(options.outWidth, options.outHeight) / 256);
-                    options.inJustDecodeBounds = false;
-                    android.graphics.Bitmap bitmap =
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-                    main.post(
-                        () -> {
-                          if (visible && ticket == generation && bitmap != null)
-                            photo.setImageBitmap(bitmap);
-                        });
-                  } catch (Exception ignored) {
-                    /* Keep the common logo when a portrait is unavailable. */
-                  }
-                });
+          loadPortrait(photo, contact.optString("photo"), portraitTicket);
         }
       if (count == 0)
         contacts.addView(
@@ -545,6 +525,27 @@ public final class MainActivity extends Activity {
     }
   }
 
+  private void loadPortrait(ImageView photo, String path, long ticket) {
+    Enrollment target = enrollment;
+    if (path.isEmpty()) return;
+    portraits.execute(ticket, () -> {
+      try {
+        byte[] bytes = ServerApi.photo(target, path);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        options.inSampleSize = Math.max(1, Math.max(options.outWidth, options.outHeight) / 256);
+        options.inJustDecodeBounds = false;
+        android.graphics.Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        main.post(() -> {
+          if (visible && portraits.current(ticket) && bitmap != null) photo.setImageBitmap(bitmap);
+        });
+      } catch (Exception ignored) {
+        // Keep the common logo when a portrait is unavailable.
+      }
+    });
+  }
+
   // @llr LLR-AND-CALL-002, LLR-AND-UI-002
   private void callChanged(String text) {
     // @llr LLR-AND-UPDATE-002
@@ -575,6 +576,7 @@ public final class MainActivity extends Activity {
       }
       return;
     }
+    portraits.begin();
     setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     if (displayedCall == engine.call && callScreen != null) {
       updateCallProgress();

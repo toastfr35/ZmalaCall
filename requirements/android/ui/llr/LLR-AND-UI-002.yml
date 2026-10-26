@@ -26,6 +26,10 @@ references:
   type: file
 - path: tests/android/LLT/unit/VideoStartupTest.java
   type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/PortraitQueue.java
+  type: file
+- path: tests/android/LLT/unit/PortraitQueueTest.java
+  type: file
 reviewed: null
 scope: Experimental
 text: |
@@ -35,6 +39,8 @@ text: |
   Welcome instructions shall describe scanning a supplied setup QR code, received by email or on paper,
   without requiring the phone user to access server administration.
   Contacts shall use compact horizontal rows with a rounded portrait beside the name.
+  Portrait downloads shall use a bounded background queue separate from configuration and callback
+  requests. Replacing or leaving the contact view shall discard obsolete queued work and results.
   Name buttons shall include a smaller status label: Available on green for recently confirmed
   activity, Try calling on blue for unconfirmed push eligibility, and Offline on red
   otherwise. Green and blue buttons shall initiate a call when tapped while registered;
@@ -75,6 +81,9 @@ verification: Exercise labels and actions on an Android display, check minimum t
   Test icon actions, timed visibility, ringing-animation lifecycle and both call layouts; inspect
   preview placement and preserve the video surfaces across a rotation during a native fixture call.
   Render the pulse at several animation phases and verify a full circular perimeter with clear margins.
+
+  Block a portrait download while replacing the contact view; assert obsolete work/results are
+  discarded, current work completes, overload remains bounded and closing invalidates outstanding tickets.
 
   Test answered-but-no-frame progress, decoder re-arming, stale callbacks and cleanup.
 

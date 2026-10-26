@@ -56,8 +56,21 @@ public final class Enrollment {
     if (config.has("secure_calls") && !"https".equals(server.getScheme()))
       throw new IllegalArgumentException("Secure calls need a new HTTPS setup QR from your administrator.");
     SecureCalls.validate(config, System.currentTimeMillis() / 1000);
-    if (config.getJSONArray("contacts").length() > 40)
+    JSONArray contacts = config.getJSONArray("contacts");
+    if (contacts.length() > 40)
       throw new IllegalArgumentException("Too many contacts.");
+    // Validate once at the API boundary: rendering and history reconciliation need real objects
+    // with unique account IDs, rather than optJSONObject(null) failures on the UI thread.
+    java.util.HashSet<String> ids = new java.util.HashSet<>();
+    for (int i = 0; i < contacts.length(); i++) {
+      JSONObject contact = contacts.getJSONObject(i);
+      if (!(contact.get("id") instanceof String) || !(contact.get("name") instanceof String))
+        throw new IllegalArgumentException("Invalid contact configuration.");
+      String id = contact.getString("id");
+      if (!id.matches("[a-z][a-z0-9_-]{0,30}") || !ids.add(id)
+          || contact.getString("name").trim().isEmpty())
+        throw new IllegalArgumentException("Invalid contact configuration.");
+    }
     return config;
   }
 

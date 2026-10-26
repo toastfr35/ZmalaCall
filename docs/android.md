@@ -222,6 +222,10 @@ only to paths on the enrolled origin, refuses redirects, applies six-second
 
 connection/read timeouts and bounds configuration and photo response sizes.
 
+`Enrollment.validate` checks contact objects, unique valid account IDs and nonblank string
+names before the configuration reaches rendering or notice reconciliation. Calls build
+their target from the validated account ID and enrolled SIP domain, rather than a contact URL.
+
 `MainActivity` owns asynchronous configuration refresh, generation-based stale
 
 response rejection, screen state and private enrollment storage. Only the QR
@@ -229,6 +233,19 @@ response rejection, screen state and private enrollment storage. Only the QR
 payload is retained in `getNoBackupFilesDir()`; fetched SIP passwords are in memory.
 
 The app does not save them into Linphone's configuration or a call-history database.
+
+`PortraitQueue` runs best-effort portrait downloads on a separate single worker with at
+most forty queued jobs. A new contact view clears obsolete queued work; leaving the
+view invalidates its tickets, so an old in-flight image cannot update a newer screen.
+Configuration, presence and callback requests retain their own executor and cannot
+be delayed behind image downloads. Missing or discarded images keep the logo placeholder.
+
+`UpdateHttp` owns public update HTTP connections, bounded metadata reads and explicit
+redirect checks. Metadata uses only the fixed API URL and never redirects; APK redirects
+are revalidated before each connection and limited to six connections. Rejected or failed
+connections are disconnected by the helper; the downloader owns a successful APK connection.
+This channel receives no enrolled-server credentials. `AppUpdates` retains scheduling,
+call priority, dialogs and PackageInstaller lifecycle ownership.
 
 `CallEngine` owns the SDK on Android's main thread. It uses the supplied proxy,
 
