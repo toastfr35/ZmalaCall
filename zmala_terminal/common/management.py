@@ -163,7 +163,11 @@ class ManagementLoop:
         self.server_seen = time.monotonic()
         changed = getattr(self, 'callback_requests', []) != config.get('callbacks', [])
         self.callback_requests = config.get('callbacks', [])
-        if not self.model.config or config['configuration_version'] != self.model.config['configuration_version']:
+        # @llr LLR-TERM-COM-010
+        # Hourly relay credentials change without an administrator's revision bump.
+        # Route them through the normal idle/deferred engine replacement as well.
+        if (not self.model.config or config['configuration_version'] != self.model.config['configuration_version']
+                or config.get('secure_calls') != self.model.config.get('secure_calls')):
             self.apply_config(config)
             return
         # Reachability changes independently of the persisted configuration version.

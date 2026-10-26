@@ -623,8 +623,10 @@ A push registration is not proof that the app is installed, online or ready to a
 The API adds `presence` (`available`, `push`, `offline`) to full, delta and preflight
 responses; `online` remains true for both callable states for older clients.
 Terminal live information expires after six seconds without a successful refresh,
-and cached configurations discard both live fields. Android clears the directory
-when a configuration refresh fails. Name buttons show a smaller status line;
+and cached configurations discard both live fields. Android retains the last validated
+directory during a temporary configuration failure, shows reconnect help and disables
+new calls until its registration returns. Revoked or invalid configuration clears access.
+Contact cards show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
 
@@ -646,3 +648,23 @@ After the bridge correction, the corner surface followed 480 by 640 portrait,
 switches retained the call. Ten targeted emulator native/display scenarios also
 passed, covering icon states, independent mute, volume gestures/bounds, preview
 size propagation, pixel scaling, timed controls and call/rotation ownership.
+
+## UI and live-call check on 26 October 2026
+
+The signed 0.3.17 candidate was installed over 0.3.16 on the OnePlus 8T running
+Android 14 without replacing its enrollment. Real contact cards, the person page,
+offline Call-disabled behavior, caller portrait and separate answer/decline actions
+were inspected. The disposable emulator separately covered request/cancel behavior,
+French app-locale switching, enlarged fonts and permission failures.
+
+Initial live calls exposed a terminal renewal-dispatch fault: its poll controller
+ignored fresh relay credentials at an unchanged configuration revision. After the
+backed-up terminal fix, phone-to-terminal and terminal-to-phone calls displayed
+video on both devices. The handset logged first decoded frames 2.611 and 2.285
+seconds after answer respectively. The reverse call began with the app behind Home
+and was opened through its Firebase notification.
+
+During an answered call, Home retained the foreground call service and paused the
+phone camera; returning through the ongoing notification restored both video views.
+Hangup removed the foreground service. These observations do not qualify audible
+speech, cellular relay connectivity, deep Doze or vendor battery restrictions.

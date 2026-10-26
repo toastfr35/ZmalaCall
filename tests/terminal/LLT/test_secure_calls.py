@@ -1,7 +1,7 @@
 # @test T-LLT-077
 # @requirements LLR-TERM-COM-010
 # @environment portable
-# @plan Validate complete, expired and malformed secure profiles with a fixed clock, including default 443 and separate 5061/5349 endpoints and invalid port bounds. Substitute only native ABI functions and local CA discovery; verify TLS TURN, ICE, forced relay, certificate/hostname checks and mandatory SRTP. Inject allocation failure and verify owned policy release. Check outgoing call encryption in the existing Engine adapter tests.
+# @plan Validate complete, expired and malformed secure profiles with a fixed clock, including default 443 and separate 5061/5349 endpoints and invalid port bounds. Substitute only native ABI functions and local CA discovery; verify TLS TURN, ICE, forced relay, certificate/hostname checks and mandatory SRTP. Inject allocation failure and verify owned policy release. Deliver changed relay credentials through polling at an unchanged revision and require normal configuration application. Check outgoing call encryption in the existing Engine adapter tests.
 # @pass Invalid profiles fail before native configuration; valid profiles request the stated secure policy and release references. Real handshakes and decoded media are verified by the network HLT.
 import copy
 import unittest
@@ -16,6 +16,30 @@ def config():
 
 
 class SecureCallTests(unittest.TestCase):
+    def test_poll_dispatches_same_revision_relay_changes_to_idle_or_deferred_apply(self):
+        from zmala_terminal.common.management import ManagementLoop
+        from zmala_terminal.common.model import State
+        from tests.terminal.LLT.test_terminal import config as full_config
+        loop = ManagementLoop()
+        previous = full_config() | config()
+        loop.model = Mock(config=previous, state=State.HOME)
+        loop.apply_config = Mock()
+        loop.render = Mock()
+        loop.apply_poll_config(copy.deepcopy(previous))
+        loop.apply_config.assert_not_called()
+        for state in (State.HOME, State.IN_CALL):
+            loop.model.state = state
+            updated = copy.deepcopy(previous)
+            updated['secure_calls']['turn_password'] = 'renewed-fixture-password'
+            loop.apply_poll_config(updated)
+            loop.apply_config.assert_called_with(updated)
+        # Removal also needs engine reconfiguration, rather than retaining TLS policy.
+        updated = copy.deepcopy(previous)
+        updated.pop('secure_calls')
+        loop.apply_poll_config(updated)
+        loop.apply_config.assert_called_with(updated)
+        self.assertEqual(loop.apply_config.call_count, 3)
+
     def test_dial_keeps_srtp_and_credential_refresh_rebuilds_once_at_idle(self):
         from zmala_terminal.common.engine import Engine
         from zmala_terminal.common.configuration_control import ConfigurationControl

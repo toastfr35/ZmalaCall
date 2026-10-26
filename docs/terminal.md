@@ -1007,8 +1007,9 @@ For a private deployment, install its CA in the OS trust store before enrollment
 
 Configuration validation rejects incomplete or expired TURN credentials and secure
 configuration received through an HTTP enrollment. Re-enroll using the server's
-new HTTPS QR code when changing deployment mode. Hourly credential changes rebuild
-the core only while idle, preserving active calls. An offline cache with expired
+new HTTPS QR code when changing deployment mode. Hourly credential changes pass
+through normal configuration application even when the server revision is unchanged;
+they rebuild the core only while idle, preserving active calls. An offline cache with expired
 credentials cannot start a secure call; reconnect to the configuration server.
 The normal user call and answer controls do not change.
 

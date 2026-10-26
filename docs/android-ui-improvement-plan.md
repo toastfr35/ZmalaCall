@@ -114,3 +114,27 @@ Final local integration on 26 October 2026:
 - Version is 0.3.17 (code 26), above main's 0.3.16. No phone or terminal deployment
   was performed. Emulator media-state checks do not establish real camera/audio
   quality, physical locked-screen delivery or vendor battery-policy behavior.
+
+Additional hardware session after the user connected the OnePlus and powered term2:
+
+- Installed the signed 0.3.17 candidate over 0.3.16 on the OnePlus 8T (Android 14),
+  preserving its enrollment and directory. Inspected the real person page and offline
+  Call-disabled behavior without sending test callback notifications to family members.
+- The first two calls exposed a terminal credential-renewal fault: configuration caching
+  contained a fresh relay policy but the poll controller ignored it at an unchanged
+  revision. TURN rejected the expired native credential. Added a direct LLT and a real
+  Tk controller HLT for same-revision renewal and deferred application during a call.
+  Ten focused LLTs, four display HLTs, repository lint and requirements passed; the full
+  terminal LLT run passed (496 cases, 11 platform-specific skips).
+- Installed only the small renewal-dispatch fix on idle term2, with a private backup of
+  its previous file. The next phone-to-terminal call displayed video on both devices;
+  the phone reported its first decoded frame 2.611 seconds after answer. Home paused
+  camera sending while the foreground call service remained active. The ongoing
+  notification returned to the same call and both video views resumed. Hangup removed
+  the foreground call service. Physical sound quality and vendor/Doze behavior remain
+  separate qualification work.
+- The reverse terminal-to-phone call reached the phone from Home through Firebase
+  notification, displayed the caller portrait and separate answer/decline actions,
+  and showed decoded video on both devices after answer. The phone's first frame was
+  recorded at 2.285 seconds. This is a real handset smoke check on Wi-Fi, not a
+  cellular, deep-Doze or acoustic qualification.
