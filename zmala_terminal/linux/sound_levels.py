@@ -3,6 +3,7 @@ import array
 import io
 import math
 import os
+from functools import lru_cache
 from pathlib import Path
 import sys
 import tempfile
@@ -78,21 +79,28 @@ class ToneLevels:
 
 
 # @llr LLR-TERM-AUDIO-010
-def click_pcm(percent, button='left'):
-    """Soft navigation tap, rising green cue or low red double tap; never a ringtone."""
-    tones = {'left': ((400,960),), 'right': ((400,960),), 'pointer': ((400,960),),
-             'green': ((400,960),(600,960)),
+@lru_cache(maxsize=3)
+def _click_wave(button):
+    """Generate the three unscaled shapes once, outside the button-press path."""
+    tones = {'left': ((400,960),), 'green': ((400,960),(600,960)),
              'red': ((250,960),(0,1440),(250,960))}
-    if button not in tones:
+    return tuple(14000*math.sin(2*math.pi*frequency*i/48000)
+                 *min(1,i/96)*(1-i/frames)**2
+                 for frequency, frames in tones[button] for i in range(frames))
+
+
+# @llr LLR-TERM-AUDIO-010
+def click_pcm(percent, button='left'):
+    """Scale a cached shape; the playback worker prepares every level before warming."""
+    button = 'left' if button in ('left','right','pointer') else button
+    if button not in ('left','green','red'):
         raise ValueError('Unknown feedback button')
     db = gain_db(percent)
     gain = 10 ** (db/20) if percent else 0
     samples = array.array('h')
-    for frequency, frames in tones[button]:
-        for i in range(frames):
-            envelope = min(1,i/96)*(1-i/frames)**2
-            value = round(14000*gain*math.sin(2*math.pi*frequency*i/48000)*envelope)
-            samples.extend((value,value))
+    for value in _click_wave(button):
+        value = round(value*gain)
+        samples.extend((value,value))
     if sys.byteorder != 'little':
         samples.byteswap()
     return samples.tobytes()

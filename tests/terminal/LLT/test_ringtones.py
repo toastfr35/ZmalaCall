@@ -149,10 +149,14 @@ class RingtoneTests(unittest.TestCase):
         self.assertIsNone(c.ringtone_preview_token);self.assertEqual(c.usb_power.preview_tone.call_count,1)
 
     def test_sdk_ringtone_is_reapplied_to_a_recreated_core(self):
-        c=test_local_settings.LocalSettingsTests().controller();c.generation=1;c.settings_open=False;c.settings_draft=SettingsDraft()
-        c.usb_power=Mock(enabled=False);c.engine=Mock();c.configuration=None
-        c.tick_ringtone(1);c.engine.core_set_ring.assert_called_once_with(c.engine.core,str(DEFAULT_SOUND).encode())
-        c.engine=Mock();c.tick_ringtone(2);c.engine.core_set_ring.assert_called_once()
+        for platform in ('linux','win32'):
+            with self.subTest(platform=platform),patch('sys.platform',platform):
+                c=test_local_settings.LocalSettingsTests().controller();c.generation=1;c.settings_open=False;c.settings_draft=SettingsDraft()
+                c.usb_power=Mock(enabled=False);c.engine=Mock();c.configuration=None
+                expected=None if platform=='linux' else str(DEFAULT_SOUND).encode()
+                c.tick_ringtone(1);c.engine.core_set_ring.assert_called_once_with(c.engine.core,expected)
+                c.engine=Mock();c.tick_ringtone(2)
+                c.engine.core_set_ring.assert_called_once_with(c.engine.core,expected)
 
     @patch('zmala_terminal.linux.usb_power.sys.platform','linux')
     @patch('zmala_terminal.linux.usb_power.threading.Thread')

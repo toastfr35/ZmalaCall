@@ -44,8 +44,13 @@ text: |
   Duplicate held
   reports, releases and internal timer actions shall not request extra clicks.
   A single feedback PCM stream shall remain warm only while idle navigation or
-  Settings is eligible. It shall feed paced five-millisecond stereo 48 kHz frames
+  Settings is eligible. It shall feed paced 2.5-millisecond stereo 48 kHz frames
   from one worker, with a 4 KiB nonblocking pipe and a 200 ms write deadline.
+  All three cue shapes at every nonzero integer volume shall be prepared in
+  at most 4 MiB of process memory before warming playback. Prepared frames shall
+  survive call/preview pauses and volume changes, with no disk reads, synthesis
+  or scaling on the warmed request path. Cancellation during preparation shall
+  prevent the worker opening the audio device afterward.
   Requests during the initial 150 ms warmup or while a cue is playing shall be
   discarded; a request older than 200 ms shall not replay. To prioritize feedback
   before visual animation, input shall yield for at most
@@ -54,11 +59,12 @@ text: |
   Audio helpers shall
   exclude the SDK TURN preloader while retaining the C20 ALSA policy. Stopping
   before a call, ringing or ringtone preview shall terminate and reap the player
-  with bounded 200 ms termination escalation. Missing or
+  with bounded 200 ms termination escalation, including a starting worker. Missing or
   waking audio shall not delay navigation or calls. Closing shall discard pending
   feedback and terminate its player. Scaled ringtone files shall use disposable
   private storage and be removed on replacement or shutdown.
 verification: |
   Assert category-isolated gains, zero/full PCM, bounded workers, duplicate handling,
-  stale/zero requests, call/preview suppression, player timeout and cleanup. On term2,
+  all-level RAM bank bounds/reuse, startup cancellation, stale/zero requests,
+  call/preview suppression, player timeout and cleanup. On term2,
   check idle clicks, independent ringtone/call levels, silent call controls and C20-only routing.

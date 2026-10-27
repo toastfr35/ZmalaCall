@@ -6,7 +6,9 @@
 # and the ordered rising green/low red double tap. Drive feedback enable/warmup, bursts,
 # stale events, bounded audio-before-animation handoff, suppression and cancellation with controlled clocks and subprocess boundaries.
 # Feed a complete synthesized cue through actual worker framing, bound nonblocking short writes
-# and pipe timeouts, and verify termination escalation and no backlog. No physical audio is used.
+# and pipe timeouts, and verify termination escalation and no backlog. Warm every integer
+# level in memory, prove pause/resume reuses it without synthesis, and cancel during startup.
+# No physical audio is used.
 # @pass PCM and lifecycle assertions pass; one warm player is used, inactive/busy/old requests
 # do not replay, call/preview input remains quiet and audio helpers exclude the SIP preloader.
 import array
@@ -19,7 +21,7 @@ import unittest
 from unittest.mock import Mock,patch
 import wave
 from zmala_terminal.linux.sound_levels import gain_db,scale_wav,click_pcm,ToneLevels,playback_environment
-from zmala_terminal.linux.action_sounds import ActionSounds,FRAME
+from zmala_terminal.linux.action_sounds import ActionSounds,FRAME,PERIOD,click_bank
 from zmala_terminal.linux import media
 
 
@@ -97,14 +99,18 @@ class SoundLevelsTests(unittest.TestCase):
             sound.play(50);self.assertIsNone(sound.pending)
 
     def test_actual_worker_frames_complete_cue_and_discards_old_requests(self):
-        for age,expected in [(0,click_pcm(20)),(1,b'\0'*FRAME*4)]:
-            ready=Mock();sound=ActionSounds();sound.pending=(20,10-age,'left',ready)
+        bank=click_bank()
+        for button,age in [('left',0),('green',0),('red',0),('left',1)]:
+            expected=click_pcm(20,button) if age==0 else bytes(48000*4*20//1000)
+            count=len(expected)//FRAME
+            ready=Mock();sound=ActionSounds();sound.pending=(20,10-age,button,ready)
             frames=[]
             def write(player,data):
                 frames.append(data)
-                if len(frames)==4:sound.stop.set()
+                if len(frames)==count:sound.stop.set()
                 return True
             with patch('zmala_terminal.linux.action_sounds.subprocess.Popen') as popen, \
+                    patch('zmala_terminal.linux.action_sounds.click_pcm',side_effect=AssertionError('synthesis on hot path')), \
                     patch('zmala_terminal.linux.action_sounds.os.set_blocking'), \
                     patch('zmala_terminal.linux.action_sounds.time.monotonic',return_value=10), \
                     patch.object(sound,'_write',side_effect=write),patch.object(sound.stop,'wait'):
@@ -112,9 +118,51 @@ class SoundLevelsTests(unittest.TestCase):
                 self.assertEqual(b''.join(frames),expected)
                 self.assertEqual(ready.set.call_count,1 if age==0 else 0)
                 self.assertIn('raw',popen.call_args.args[0]);self.assertIn('default:C20',popen.call_args.args[0])
+                self.assertIn('--buffer-time=5000',popen.call_args.args[0])
+                self.assertIn('--period-time=2500',popen.call_args.args[0])
+                self.assertEqual(PERIOD,.0025)
                 self.assertEqual(popen.call_args.kwargs['pipesize'],4096)
                 self.assertIsNone(sound.worker);self.assertIsNone(sound.pending)
+                self.assertEqual(sound.retry_at,0)
                 popen.return_value.stdin.close.assert_called_once()
+        self.assertIs(click_bank(),bank)
+
+    def test_entire_feedback_bank_is_bounded_and_built_once(self):
+        import sys
+        click_bank.cache_clear()
+        try:
+            bank=click_bank()
+            self.assertEqual(len(bank),300)
+            for percent in range(1,101):
+                for button in ('left','green','red'):
+                    frames=bank[percent,button]
+                    self.assertTrue(all(len(frame)==FRAME for frame in frames))
+                    self.assertEqual(b''.join(frames),click_pcm(percent,button))
+            size=sys.getsizeof(bank)+sum(sys.getsizeof(k)+sys.getsizeof(v)
+                +sum(sys.getsizeof(frame) for frame in v) for k,v in bank.items())
+            self.assertLess(size,4*1024*1024)
+            with patch('zmala_terminal.linux.action_sounds.click_pcm',side_effect=AssertionError('rebuilt')):
+                self.assertIs(click_bank(),bank)
+        finally:click_bank.cache_clear()
+
+    def test_cancel_during_bank_preparation_never_opens_alsa(self):
+        sound=ActionSounds()
+        def prepare():
+            sound.stop.set()
+            return {}
+        with patch('zmala_terminal.linux.action_sounds.click_bank',side_effect=prepare), \
+                patch('zmala_terminal.linux.action_sounds.subprocess.Popen') as popen:
+            sound.run()
+            popen.assert_not_called()
+            self.assertIsNone(sound.worker)
+
+    def test_cancel_joins_a_starting_player_within_the_existing_stop_budget(self):
+        sound=ActionSounds();sound.worker=Mock()
+        with patch('zmala_terminal.linux.action_sounds.time.monotonic',side_effect=[10,10.05]), \
+                patch.object(sound,'_stop_player'):
+            sound.cancel()
+            self.assertTrue(sound.stop.is_set())
+            self.assertAlmostEqual(sound.worker.join.call_args.kwargs['timeout'],.15)
 
     def test_handoff_yields_before_animation_with_a_bounded_head_start(self):
         sound=ActionSounds();sound.enabled=sound.warmed=True

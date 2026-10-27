@@ -497,7 +497,7 @@ through the SDK playback gain on its owner thread (50% is -14 dB; 0% is -120 dB)
 file, replacing and deleting it when the tone or level changes and on shutdown.
 
 `action_sounds.py` keeps one idle raw-PCM player warm to avoid C20 startup lag.
-It feeds paced 5 ms frames through a 4 KiB nonblocking pipe with a 200 ms write
+It feeds paced 2.5 ms frames through a 4 KiB nonblocking pipe with a 200 ms write
 deadline; left/right/middle use a 400 Hz tap for 20 ms with a soft decay. Green
 adds a 600 Hz note; red uses two 250 Hz taps separated by 30 ms of silence.
 Cold, busy or stale presses
@@ -505,6 +505,14 @@ are dropped instead of queued. Calls and ringtone playback stop/reap the feedbac
 player before taking the exclusive C20 route. Helpers remove the inherited SIP
 `LD_PRELOAD` while preserving the ALSA configuration. Button feedback is not mixed
 with call or ringtone audio.
+Before opening PCM for the first time, the worker prepares all three cues at
+every nonzero integer volume into a bounded RAM bank (under 4 MiB, about 3 MiB).
+The three waveform shapes are synthesized once. Scaled frames remain available
+across calls, previews and volume changes: warmed playback only indexes existing
+frames, without file reads, synthesis or slicing. The ALSA buffer is 5 ms with
+2.5 ms periods. Normal pauses resume immediately; only a failed player has a
+one-second retry backoff. Cancellation checks preparation before opening PCM and
+shares a 200 ms stop/join budget with player termination.
 Before starting visual navigation, input yields for up to 20 ms for the worker's
 first PCM frame. A successful handoff gives playback another 20 ms head start,
 so portrait rendering does not starve sound startup. Missing audio skips that
@@ -1113,3 +1121,17 @@ acoustic quality. Fresh phone-to-terminal call-volume and video acceptance is
 pending because the phone was unavailable. The final bounded audio-first handoff
 has automated lifecycle coverage; term2 logged first-frame submission in 5-12 ms
 and the user confirmed that the sound now precedes carousel movement and feels right.
+
+On 27 October, further feedback optimization passed 509 terminal LLTs on Linux
+and Windows (11 Windows platform-specific skips), both feedback/remote display
+HLTs and `make lint requirements`. The Linux ringtone regression now explicitly
+checks that SDK ringing stays disabled on Linux and retains its legacy Windows
+behavior when a core is replaced.
+
+On term2, preparing the complete PCM bank took 562 ms once on the background
+worker and used 2,747,304 bytes for its frames/indexes. Warm lookup measured
+about 1 microsecond. The C20 accepted 120-frame periods and a 240-frame buffer
+(2.5 and 5 ms). Twelve alternating navigation presses logged first-frame handoff
+in 2.3-4.6 ms; 773 PCM status samples remained RUNNING with one start timestamp.
+The pipe held 2.5 ms of PCM instead of 5 ms. These are software/driver measurements,
+not an acoustic button-to-speaker latency measurement.

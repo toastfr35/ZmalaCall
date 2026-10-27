@@ -5,9 +5,30 @@ import select
 import subprocess
 import threading
 import time
+from functools import lru_cache
 from zmala_terminal.linux.sound_levels import click_pcm, playback_environment
 
-FRAME = 960  # Five milliseconds of stereo 16-bit PCM at 48 kHz.
+PERIOD = .0025
+FRAME = 480  # 2.5 milliseconds of stereo 16-bit PCM at 48 kHz.
+SILENCE = bytes(FRAME)
+
+
+# @llr LLR-TERM-AUDIO-010
+@lru_cache(maxsize=1)
+def click_bank():
+    """About 3 MiB of ready-to-write PCM, retained across calls and volume changes.
+
+    Build on the audio worker before opening ALSA. A press never synthesizes,
+    scales, slices or reads a sound from disk, including its first use at a level.
+    Zero is suppressed by play(); every other integer server/UI level is covered.
+    """
+    sounds = {}
+    for percent in range(1,101):
+        for button in ('left','green','red'):
+            data = click_pcm(percent,button)
+            sounds[percent,button] = tuple(data[i:i+FRAME].ljust(FRAME,b'\0')
+                                          for i in range(0,len(data),FRAME))
+    return sounds
 
 
 # @llr LLR-TERM-AUDIO-010
@@ -33,6 +54,8 @@ class ActionSounds:
     def play(self, percent, button='left'):
         if type(percent) is not int or not 0 <= percent <= 100:
             raise ValueError('Invalid button-sound volume')
+        if button not in ('left','right','pointer','green','red'):
+            raise ValueError('Unknown feedback button')
         started = None
         with self.lock:
             if not percent:
@@ -82,16 +105,19 @@ class ActionSounds:
     def run(self):
         player = None
         try:
+            sounds = click_bank()
+            if self.stop.is_set():
+                return  # Cancellation during preparation must not open the call's PCM.
             player = subprocess.Popen(['/usr/bin/aplay', '-q', '-D', 'default:C20',
                 '-t', 'raw', '-f', 'S16_LE', '-c', '2', '-r', '48000',
-                '--buffer-time=10000', '--period-time=5000', '--start-delay=1'],
+                '--buffer-time=5000', '--period-time=2500', '--start-delay=1'],
                 stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 env=playback_environment(), bufsize=0, pipesize=4096)
             os.set_blocking(player.stdin.fileno(), False)
             with self.lock:
                 self.player = player
             warmed_since = next_frame = time.monotonic()
-            cue, sounds, started = b'', {}, None
+            cue, position, started = (), 0, None
             while not self.stop.is_set():
                 now = time.monotonic()
                 with self.lock:
@@ -100,19 +126,22 @@ class ActionSounds:
                     if request and now-request[1] <= .2 and not cue:
                         percent, queued, button, started = request
                         key = (percent, 'left' if button in ('left','right','pointer') else button)
-                        if key not in sounds:
-                            sounds[key] = click_pcm(percent, button)
                         cue = sounds[key]
+                        position = 0
                     self.sounding = bool(cue)
-                frame, cue = cue[:FRAME], cue[FRAME:]
-                if not self._write(player, frame.ljust(FRAME, b'\0')):
+                frame = cue[position] if cue else SILENCE
+                if not self._write(player, frame):
                     break
+                if cue:
+                    position += 1
+                    if position == len(cue):
+                        cue = ()
                 if started:
                     logging.debug('Button cue %s first frame after %.1f ms',
                                   button, (time.monotonic()-queued)*1000)
                     started.set()
                     started = None
-                next_frame += .005
+                next_frame += PERIOD
                 if next_frame < time.monotonic()-.02:
                     next_frame = time.monotonic()  # Never stuff old frames to catch up.
                 self.stop.wait(max(0, next_frame-time.monotonic()))
@@ -125,15 +154,21 @@ class ActionSounds:
             with self.lock:
                 self.player = self.worker = self.pending = None
                 self.warmed = self.sounding = False
-                self.retry_at = time.monotonic()+1
+                self.retry_at = 0 if self.stop.is_set() else time.monotonic()+1
 
     def cancel(self):
+        deadline = time.monotonic()+.2
         with self.lock:
             self.enabled = self.warmed = False
             self.pending = None
             self.stop.set()
             player = self.player
+            worker = self.worker
         self._stop_player(player)
+        if worker and worker is not threading.current_thread():
+            # Also cover cancellation while Popen is starting. Share the existing
+            # stop budget; never wait indefinitely for a disconnected USB device.
+            worker.join(timeout=max(0,deadline-time.monotonic()))
 
     def close(self):
         self.closed = True
