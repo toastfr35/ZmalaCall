@@ -432,7 +432,13 @@ coalesces mixer work. The following mappings are implementation behavior, while
 | Left/right while volume is open | Decrease/increase received call volume in 5% steps |
 
 Windows equivalents are Left/Right, Enter and Escape. F11 toggles fullscreen
-outside confirmation. Button repeat cannot confirm a call; release, another
+outside confirmation. Each distinct left/right press advances one contact, even
+while the carousel is moving. Further presses retarget the animation from its
+current position; they do not wait for the previous movement to finish. Green
+confirms the selection reached by all presses, including during animation.
+Held-arrow repeats remain suppressed; navigation clicks bypass the 80 ms
+confirmation debounce.
+Button repeat cannot confirm a call; release, another
 button, focus loss, disconnect or an incoming call cancels the settings hold.
 The Presenter green sticker covers the microphone button; red covers Teams.
 Middle is Pointer. Remote motion is ignored for volume. While the overlay is open, physical buttons do not navigate contacts, dial, hang up or open Settings. Internal timeouts and permission revocations still cancel calls. `input_control.py` routes physical input (including delayed TV checks) through `physical_press`; logical `press` remains available to the call/timer controllers. Call/state changes and setup/focus changes dismiss the overlay; an existing call continues.

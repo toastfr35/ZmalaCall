@@ -1,7 +1,7 @@
 # @test T-LLT-074
 # @requirements LLR-TERM-REMOTE-015, LLR-TERM-REMOTE-016, LLR-TERM-NAV-004, LLR-TERM-NAV-005, LLR-TERM-NAV-007, LLR-TERM-TV-026, LLR-TERM-POWER-014
 # @environment portable
-# @plan Invoke real physical-input dispatch with a configured model and mocked Tk/HID/TV boundaries. Verify wake-only presses, debounce/repeat cancellation, pairing-test isolation, pointer-generation guards, fullscreen/cancel dispatch and serialized carousel movement. Verify volume consumes physical input through both immediate and delayed dispatch, while internal cancellation remains separate. Change contact presence between confirmation presses and assert the stale selection cannot start a call.
+# @plan Invoke real physical-input dispatch with a configured model and mocked Tk/HID/TV boundaries. Verify wake-only presses, confirmation debounce/repeat cancellation, pairing-test isolation, pointer-generation guards and fullscreen/cancel dispatch. Send three released arrows less than 80 ms apart in both directions during animation; verify one move per press, held-repeat suppression, wrap and confirmation of the final target. Verify volume consumes physical input through both immediate and delayed dispatch, while internal cancellation remains separate. Change contact presence between confirmation presses and assert the stale selection cannot start a call.
 # @pass All action, activity, queue, callback and model assertions pass without real remote events, TV commands or native calls.
 import queue
 import unittest
@@ -79,15 +79,35 @@ class InputDispatchTests(unittest.TestCase):
         c.volume_control.active=False;c.physical_press('green')
         c.press.assert_called_with('green')
 
-    def test_carousel_serializes_moves_and_confirming_unavailable_contact_never_dials(self):
+    def test_carousel_retargets_and_confirming_unavailable_contact_never_dials(self):
         c=self.controller(); settings=config(); settings['contacts'].append(settings['contacts'][0]|{'id':'bob','name':'Bob','sip_uri':'sip:bob@family.test'}); c.model.configure(settings)
         c._press_action('right'); self.assertEqual(c.model.selected['id'],'bob'); self.assertIsNotNone(c.carousel_motion); self.assertEqual(c.notice,'')
-        c._press_action('left'); self.assertEqual(c.model.selected['id'],'bob')
+        c._press_action('left'); self.assertEqual(c.model.selected['id'],settings['contacts'][0]['id'])
         c._press_action('green'); self.assertIsNone(c.carousel_motion); self.assertEqual(c.model.state,State.CONFIRMING)
         c.engine.registered=False; c.action.reset_mock(); c._press_action('green'); self.assertEqual(c.model.state,State.CONFIRM_CALLBACK); c.action.assert_not_called()
         c.model.ended(); c.contact_online.return_value=False; c._press_action('green'); self.assertEqual(c.model.state,State.CONFIRM_CALLBACK)
         c.model.ended(); c.contact_online.return_value=True; c.engine.registered=True; c._press_action('green')
         c.model.config['contacts']=[]; c.contact_online.return_value=False; c._press_action('green'); self.assertEqual(c.model.state,State.HOME); self.assertEqual(c.notice,'unavailable')
+
+    def test_three_fast_released_arrows_count_and_green_confirms_latest_selection(self):
+        for button, direction in (('left', -1), ('right', 1)):
+            with self.subTest(button=button):
+                c=self.controller(); settings=config()
+                settings['contacts']=[settings['contacts'][0]|{'id':str(i)} for i in range(5)]
+                c.model.configure(settings); c.volume_control.active=False
+                c.press=c._press_action
+                for n in range(3):
+                    # Each release starts a distinct click. Duplicate downs
+                    # during that same click must still be ignored.
+                    with patch.object(input_control.time,'monotonic',return_value=100+n*.04):
+                        c.keypress(button); c.keypress(button)
+                    c.keys_down.discard(button)
+                    self.assertEqual(c.model.index, ((n+1)*direction)%5)
+                expected=c.model.selected
+                c._press_action('green')
+                self.assertEqual(c.model.state,State.CONFIRMING)
+                self.assertEqual(c.model.contact['id'],expected['id'])
+                self.assertIsNone(c.carousel_motion)
 
 
 if __name__=='__main__': unittest.main()

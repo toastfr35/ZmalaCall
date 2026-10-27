@@ -112,7 +112,7 @@ class InputControl:
             self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
         return 'break'
 
-    # @llr LLR-TERM-TV-026
+    # @llr LLR-TERM-TV-026, LLR-TERM-NAV-004
     def keypress(self, button):
         self.input_activity()
         if self.remote_setup_blocked():
@@ -129,7 +129,9 @@ class InputControl:
         self.last_button = now  # Even a consumed/debounced press resets idle return.
         if self.tv_setup_button(button):
             return 'break'
-        if now - self.last_key.get(button, 0) > .08:
+        # Releases distinguish deliberate arrow clicks from held-key repeats.
+        # Keep the confirmation debounce, but never discard a navigation click.
+        if button in ('left', 'right') or now - self.last_key.get(button, 0) > .08:
             # Only physical input reveals the TV; timer-driven cancellation
             # still reaches press() directly. Workers return through Tk's queue.
             generation, state = self.generation, self.model.state
@@ -154,6 +156,7 @@ class InputControl:
         else:
             self.press(button)
 
+    # @llr LLR-TERM-NAV-004
     def _press_action(self, button):
         self.last_button = time.monotonic()
         self.callback_alert = None
@@ -167,11 +170,13 @@ class InputControl:
                 self.factory_reset()
             return
         moving = self.model.state == State.HOME and button in ('left', 'right') and len(self.model.contacts) > 1
-        if moving and self.carousel_motion:
-            return
         if moving:
-            self.carousel_motion = CarouselMotion(list(self.model.contacts), self.model.index % len(self.model.contacts),
-                                                  -1 if button == 'left' else 1, time.monotonic())
+            direction = -1 if button == 'left' else 1
+            if self.carousel_motion:
+                self.carousel_motion.retarget(direction, time.monotonic())
+            else:
+                self.carousel_motion = CarouselMotion(list(self.model.contacts), self.model.index % len(self.model.contacts),
+                                                      direction, time.monotonic())
         elif button in ('green', 'red'):
             self.carousel_motion = None
         confirming = self.model.state in (State.CONFIRMING, State.CONFIRM_CALLBACK)

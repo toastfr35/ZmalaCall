@@ -59,6 +59,7 @@ def carousel_contacts(contacts, index, slots=3):
     return result
 
 
+# @llr LLR-TERM-NAV-004
 @dataclass
 class CarouselMotion:
     contacts: list
@@ -66,9 +67,32 @@ class CarouselMotion:
     direction: int
     started: float
     duration: float = .55
+    start_offset: float = 0
+    end_offset: float | None = None
+
+    def __post_init__(self):
+        if self.end_offset is None:
+            self.end_offset = self.direction
 
     def progress(self, now):
         return max(0.0, min(1.0, (now - self.started) / self.duration))
+
+    def position(self, now):
+        progress = self.progress(now)
+        eased = progress * progress * (3 - 2 * progress)
+        return self.start_offset + (self.end_offset - self.start_offset) * eased
+
+    def retarget(self, direction, now):
+        """Count another press without jumping or waiting for earlier animation.
+
+        Keep the displayed position, but move the destination one more slot.
+        Selection updates separately and immediately, so green confirms the
+        contact reached by every press even before the animation settles.
+        """
+        self.start_offset = self.position(now)
+        self.end_offset += direction
+        self.direction = direction
+        self.started = now
 
     def next_frame_delay(self, now):
         """Keep a 60 Hz cadence without accumulating draw/timer overhead.
@@ -81,14 +105,15 @@ class CarouselMotion:
         return max(1, math.ceil((deadline - now) * 1000 - 1e-6))
 
     def frames(self, now, slots=3):
-        progress = self.progress(now)
-        # Start and finish at rest instead of jumping at full speed on keypress.
-        eased = progress * progress * (3 - 2 * progress)
+        position = self.position(now)
         if len(self.contacts) == 2:
             # Two people exchange the center/right slots without duplicate cards.
-            return [(None, -1.0), (self.contacts[self.index], eased),
-                    (self.contacts[(self.index + 1) % 2], 1 - eased)]
+            phase = position % 2
+            exchange = phase if phase <= 1 else 2 - phase
+            return [(None, -1.0), (self.contacts[self.index], exchange),
+                    (self.contacts[(self.index + 1) % 2], 1 - exchange)]
         radius = slots//2
-        offsets = range(-radius, radius+2) if self.direction > 0 else range(-radius-1, radius+1)
-        return [(self.contacts[(self.index + offset) % len(self.contacts)], offset - self.direction * eased)
+        first = math.floor(position) - radius
+        offsets = range(first, first + slots + 1)
+        return [(self.contacts[(self.index + offset) % len(self.contacts)], offset - position)
                 for offset in offsets]

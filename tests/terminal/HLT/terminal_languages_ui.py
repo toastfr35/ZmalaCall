@@ -1,7 +1,7 @@
 # @test T-HLT-013
 # @requirements HLR-TERM-UI-013
 # @environment hardware
-# @plan With a disposable configured server profile and display prepared, Render supported languages and call/settings states on the real Tk canvas; assert image retention, animated transitions and language changes. Inspect generated captures for glyph shaping and clipping.
+# @plan With a disposable configured server profile and display prepared, render supported languages and call/settings states on the real Tk canvas; assert image retention, animated transitions and language changes. Send three rapid arrows in each direction during animation and confirm the final selected person without dropping presses. Inspect generated captures for glyph shaping and clipping.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Exercise every translation, complex script rendering and carousel motion in our own UI."""
@@ -127,7 +127,11 @@ try:
     app.draw_avatar(app.model.selected)
     assert first != [app.avatar.coords(item) for item in app.avatar.find_all()], 'Animation did not move'
     app.press('right')
-    assert app.model.index == (old_index+1)%len(app.model.contacts), 'Rapid key skipped contacts'
+    app.press('right')
+    assert app.model.index == (old_index+3)%len(app.model.contacts), 'Rapid right presses were dropped'
+    for _ in range(3):
+        app.press('left')
+    assert app.model.index == old_index, 'Rapid left presses were dropped'
     selected = app.model.selected
     app.server_seen = time.monotonic()  # The quiet engine does not poll live presence.
     app.press('green')
