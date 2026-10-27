@@ -94,11 +94,12 @@ class SettingsControl:
             if short and not self.settings_open and not self.setup_stage and self.model.state == State.HOME:
                 self._press_action('red')
 
-    def queue_keyrelease(self, button):
+    # @llr LLR-TERM-NAV-004
+    def queue_keyrelease(self, button, event_time=None):
         # X11 keyboard auto-repeat emits a release/press pair. Defer release
         # until idle so its matching repeat can cancel it and preserve the hold.
         if button not in self.key_release_jobs:
-            self.key_release_jobs[button] = self.root.after_idle(lambda: self.finish_keyrelease(button))
+            self.key_release_jobs[button] = (self.root.after_idle(lambda: self.finish_keyrelease(button)), event_time)
 
     def finish_keyrelease(self, button):
         self.key_release_jobs.pop(button, None)

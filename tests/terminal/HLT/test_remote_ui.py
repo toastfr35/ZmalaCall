@@ -1,8 +1,8 @@
 # @test T-HLT-023
 # @requirements HLR-TERM-REMOTE-011, HLR-TERM-REMOTE-012, HLR-TERM-NAV-002, HLR-TERM-AUDIO-002
 # @environment display
-# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a compact horizontal volume overlay in 5-percent steps. Send three released carousel presses in each direction during animation, verify every selection and the settled center, then confirm the final target without dialing. Also render video beneath the overlay during a simulated established call, assert most video remains uncovered, block physical call actions, preserve programmatic cancellation and expired outgoing-call deadlines and preempt it on incoming ringing. Replace device discovery, Bluetooth status, button audio and the external mixer process. Check that all mixer commands address C20 playback only.
-# @pass One held press cannot confirm a call; red cancels; middle toggles the volume overlay, arrows change only volume, movement is ignored and the overlay closes on the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
+# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a compact horizontal volume overlay in 5-percent steps. Send three released carousel presses in each direction during animation, verify every selection and the settled center, then confirm the final target without dialing. Keep keyboard releases queued until after later arrows; verify distinct event timestamps count clicks and equal timestamps suppress autorepeat. Also render video beneath the overlay during a simulated established call, assert most video remains uncovered, block physical call actions, preserve programmatic cancellation and expired outgoing-call deadlines and preempt it on incoming ringing. Replace device discovery, Bluetooth status, button audio and the external mixer process. Check that all mixer commands address C20 playback only.
+# @pass Three distinct arrows move three slots despite queued releases, while held/autorepeated downs add no movement. One held press cannot confirm a call; red cancels; middle toggles the volume overlay, arrows change only volume, movement is ignored and the overlay closes on the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
 
 import os
 import sys
@@ -22,6 +22,19 @@ from zmala_terminal.linux.presenter_input import PresenterInput
 
 @unittest.skipUnless(sys.platform == 'linux' and os.environ.get('DISPLAY'), 'Linux Tk display required')
 class RemoteUITests(unittest.TestCase):
+    def test_fast_keyboard_arrows_before_idle_releases(self):
+        with terminal_fixture() as (app, _):
+            for button,direction in (('right',1),('left',-1)):
+                before=app.model.index
+                for n in range(3):
+                    app.keypress(button,1000+n*40)
+                    app.queue_keyrelease(button,1020+n*40)
+                    self.assertEqual(app.model.index,(before+(n+1)*direction)%len(app.model.contacts))
+                app.keypress(button,1100)  # Same as the last release: autorepeat.
+                self.assertEqual(app.model.index,(before+3*direction)%len(app.model.contacts))
+                app.keyrelease(button)
+            app.engine.dial.assert_not_called()
+
     def test_rapid_carousel_navigation_and_confirmation(self):
         with terminal_fixture() as (app, _):
             settings = app.model.config.copy()

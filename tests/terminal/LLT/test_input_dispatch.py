@@ -1,10 +1,11 @@
 # @test T-LLT-074
 # @requirements LLR-TERM-REMOTE-015, LLR-TERM-REMOTE-016, LLR-TERM-NAV-004, LLR-TERM-NAV-005, LLR-TERM-NAV-007, LLR-TERM-TV-026, LLR-TERM-POWER-014
 # @environment portable
-# @plan Invoke real physical-input dispatch with a configured model and mocked Tk/HID/TV boundaries. Verify wake-only presses, confirmation debounce/repeat cancellation, pairing-test isolation, pointer-generation guards and fullscreen/cancel dispatch. Send three released arrows less than 80 ms apart in both directions during animation; verify one move per press, held-repeat suppression, wrap and confirmation of the final target. Verify volume consumes physical input through both immediate and delayed dispatch, while internal cancellation remains separate. Change contact presence between confirmation presses and assert the stale selection cannot start a call.
+# @plan Invoke real physical-input dispatch with a configured model and mocked Tk/HID/TV boundaries. Verify wake-only presses, confirmation debounce/repeat cancellation, pairing-test isolation, pointer-generation guards and fullscreen/cancel dispatch. Send three released arrows less than 80 ms apart in both directions during animation; verify one move per press, held-repeat suppression, wrap and confirmation of the final target. Distinguish equal-time X11 autorepeat pairs from later-time clicks while release callbacks are waiting for idle. Verify volume consumes physical input through both immediate and delayed dispatch, while internal cancellation remains separate. Change contact presence between confirmation presses and assert the stale selection cannot start a call.
 # @pass All action, activity, queue, callback and model assertions pass without real remote events, TV commands or native calls.
 import queue
 import unittest
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 from zmala_terminal.common import input_control
 from zmala_terminal.common.model import State, TerminalModel
@@ -32,14 +33,14 @@ class InputDispatchTests(unittest.TestCase):
         c.keypress=Mock()
         for call in c.root.bind_all.call_args_list:
             key,callback=call.args
-            if key=='<Left>': callback(None); c.keypress.assert_called_once_with('left')
-            elif key=='<KeyRelease-Return>': callback(None); c.queue_keyrelease.assert_called_once_with('green')
+            if key=='<Left>': callback(SimpleNamespace(time=123)); c.keypress.assert_called_once_with('left',123)
+            elif key=='<KeyRelease-Return>': callback(SimpleNamespace(time=124)); c.queue_keyrelease.assert_called_once_with('green',124)
         next(call.args[1] for call in c.root.bind.call_args_list if call.args[0]=='<FocusOut>')(None); c.input_focus_lost.assert_called_once()
 
     def test_keypress_activity_precedes_gates_and_repeat_is_consumed(self):
         c=self.controller(); c.remote_setup_blocked.return_value=True
         self.assertEqual(c.keypress('green'),'break'); c.usb_power.require.assert_called_once_with(urgent=True); c.press.assert_not_called()
-        c.remote_setup_blocked.return_value=False; c.key_release_jobs['green']='pending'
+        c.remote_setup_blocked.return_value=False; c.key_release_jobs['green']=('pending',100)
         with patch.object(input_control.time,'monotonic',return_value=100): c.keypress('green'); c.keypress('green')
         c.root.after_cancel.assert_called_once_with('pending'); c.press.assert_called_once_with('green')
         c.keys_down.clear()
@@ -61,6 +62,18 @@ class InputDispatchTests(unittest.TestCase):
         c.tv_control.handle_button.return_value=False; c.pointer_button(True); c.volume_control.pointer.assert_called_once_with(True)
         c.volume_control.pointer.reset_mock();c.pointer_visible(*tokens);c.volume_control.pointer.assert_not_called()
         c.setup_stage='tv'; c.pointer_button(False); c.volume_control.pointer.assert_not_called()
+
+    def test_queued_release_distinguishes_fast_arrows_from_x11_autorepeat(self):
+        for button in ('left','right'):
+            c=self.controller(); c.keypress(button,100)
+            c.key_release_jobs[button]=('repeat-release',200)
+            c.keypress(button,200)  # X11 repeat release/down share a timestamp.
+            self.assertEqual(c.press.call_count,1)
+            for n in (1,2):
+                c.key_release_jobs[button]=('real-release',200+n*40)
+                c.keypress(button,210+n*40)
+            self.assertEqual(c.press.call_count,3)
+            self.assertEqual(c.key_release_jobs,{})
 
     def test_other_keys_cancel_confirmation_without_changing_fullscreen(self):
         c=self.controller(); c.model.state=State.CONFIRMING

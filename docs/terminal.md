@@ -438,6 +438,9 @@ current position; they do not wait for the previous movement to finish. Green
 confirms the selection reached by all presses, including during animation.
 Held-arrow repeats remain suppressed; navigation clicks bypass the 80 ms
 confirmation debounce.
+Keyboard release/down timestamps distinguish X11 autorepeat from distinct clicks
+even when a busy canvas delays the idle release callback. Physical HID releases
+continue to dispatch immediately.
 Button repeat cannot confirm a call; release, another
 button, focus loss, disconnect or an incoming call cancels the settings hold.
 The Presenter green sticker covers the microphone button; red covers Teams.

@@ -21,8 +21,8 @@ class InputControl:
         self.action_sounds = ActionSounds()
         self.root.bind('<Configure>', self.resize)
         for key, button in [('Left', 'left'), ('Prior', 'left'), ('Right', 'right'), ('Next', 'right'), ('Return', 'green'), ('Escape', 'red')]:
-            self.root.bind_all('<' + key + '>', lambda event, b=button: self.keypress(b))
-            self.root.bind_all('<KeyRelease-' + key + '>', lambda event, b=button: self.queue_keyrelease(b))
+            self.root.bind_all('<' + key + '>', lambda event, b=button: self.keypress(b, event.time))
+            self.root.bind_all('<KeyRelease-' + key + '>', lambda event, b=button: self.queue_keyrelease(b, event.time))
         self.root.bind('<FocusOut>', lambda e: self.input_focus_lost())
         self.root.bind_all('<KeyPress>', self.other_key)
         self.root.bind('<F11>', self.toggle_fullscreen)
@@ -113,7 +113,7 @@ class InputControl:
         return 'break'
 
     # @llr LLR-TERM-TV-026, LLR-TERM-NAV-004
-    def keypress(self, button):
+    def keypress(self, button, event_time=None):
         self.input_activity()
         if self.remote_setup_blocked():
             return 'break'  # Keyboard/X11 copies must not pass the physical test.
@@ -121,7 +121,14 @@ class InputControl:
         # Repeated key-downs cannot restart a hold or repeat an action.
         release_job = self.key_release_jobs.pop(button, None)
         if release_job is not None:
-            self.root.after_cancel(release_job)
+            job, released_at = release_job
+            self.root.after_cancel(job)
+            # A busy canvas can leave a real release waiting for idle. X11
+            # autorepeat pairs have equal event timestamps; a later arrow down
+            # is a distinct click even if Tk has not run the release callback.
+            if (button in ('left', 'right') and event_time is not None
+                    and released_at is not None and event_time != released_at):
+                self.keys_down.discard(button)
         if button in self.keys_down:
             return 'break'
         self.keys_down.add(button)
