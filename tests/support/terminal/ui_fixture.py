@@ -77,7 +77,8 @@ def pump(app, predicate=lambda: True, timeout=3):
 @contextmanager
 def terminal_fixture():
     with tempfile.TemporaryDirectory(prefix='zmala-ui-rbt-') as directory, \
-            patch.dict('os.environ', {'ZMALA_USB_POWER': '0', 'ZMALA_ARGON_ONE_FAN': '0'}):
+            patch.dict('os.environ', {'ZMALA_USB_POWER': '0', 'ZMALA_ARGON_ONE_FAN': '0'}), \
+            patch('zmala_terminal.linux.action_sounds.ActionSounds'):
         # State is redirected before controllers are built. Assets still come from source.
         app = FixtureTerminal(Path(directory))
         app.root.geometry('1280x720')
