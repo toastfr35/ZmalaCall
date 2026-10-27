@@ -12,6 +12,10 @@ references:
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/PushMessage.java
   type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/AlertStatus.java
+  type: file
+- path: tests/android/LLT/unit/AlertStatusTest.java
+  type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/PushAlerts.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/PushService.java
@@ -30,7 +34,7 @@ reviewed: null
 scope: Experimental
 text: The app shall register its Firebase token at the enrolled origin using its App bearer identity,
   renew it while used, and remove the destination when notifications are disabled and the app next opens.
-  With notification permission, an FCM callback shall show a native incoming-call alert only for a valid
+  With notification permission, an FCM ring message shall show a native incoming-call alert only for a valid
   enrollment HMAC, device ID and deadline no more than 90 seconds away. The alert shall use locally cached
   caller names, Answer and Decline actions, and automatic timeout; duplicates and ring messages received
   after cancellation shall be suppressed for two minutes. Answer shall reconnect without starting media
@@ -40,6 +44,10 @@ text: The app shall register its Firebase token at the enrolled origin using its
   Decline shall dismiss locally and send an authenticated cancellation request. Cancellation shall dismiss
   the notification. Background alert handling shall not capture microphone/camera or maintain a permanent
   SIP connection. The app shall explain notification permission and force-stop limitations.
+  The contact footer shall distinguish disabled server support, disabled app/channel notifications,
+  registration progress, unavailable alerts and enabled alerts. Disabled notifications shall offer
+  the appropriate Android notification settings; unavailable registration shall offer retry, and
+  missing server support shall explain who can help without assuming administrator access.
 verification: Verify signed and malformed payload boundaries in JVM tests, native notification actions/expiry/deduplication
   on Android and bearer POSTs. Exercise notification answer through fresh registration and a matching
   authenticated SIP call in HLT; qualify FCM/locked-screen/Doze separately.

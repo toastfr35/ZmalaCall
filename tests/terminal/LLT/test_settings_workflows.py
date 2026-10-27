@@ -111,7 +111,7 @@ class SettingsWorkflowTests(unittest.TestCase):
             v.draw_settings()
             images = [call.kwargs['image'] for call in v.settings_canvas.create_image.call_args_list
                       if 'settings-value' in call.kwargs.get('tags', ())]
-            for key in ('language', 'c20_speaker_volume', 'ringtone', 'carousel_portraits'):
+            for key in ('language', 'ringtone_volume', 'ringtone', 'carousel_portraits'):
                 expected = v.settings_value(key, SettingsDraft.value(v.model.config, key))
                 self.assertIn(expected, [image.text for image in images], (width, height, key))
 

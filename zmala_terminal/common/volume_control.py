@@ -1,8 +1,8 @@
-"""Middle-button volume page; left/right adjust C20 playback in five-percent steps."""
+"""Middle-button call-volume overlay, preserving the current screen and selection."""
 import time
 import tkinter as tk
 from zmala_terminal.linux import c20_volume
-from zmala_terminal.common.theme import BG, PANEL, FG, MUTED, GREEN, RED
+from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED
 
 
 class VolumeLevel:
@@ -29,6 +29,7 @@ class VolumeControl:
         self.canvas = None
         self.timer = None
         self.sent = None
+        self.default_revision = c20_volume.default_revision()
         self.last_write = 0
         self.closed = False
 
@@ -50,6 +51,7 @@ class VolumeControl:
             return
         self.level.percent = desired
         self.sent = desired
+        self.default_revision = c20_volume.default_revision()
         self.active = True
         self.opened_context = self.context()
         self.activity()
@@ -63,6 +65,15 @@ class VolumeControl:
 
     # @llr LLR-TERM-AUDIO-007
     def flush(self, force=False):
+        # @llr LLR-TERM-AUDIO-008
+        # A saved default supersedes unsent clicks, including when the new default
+        # equals the last written value. Comparing volume values alone misses it.
+        revision = c20_volume.default_revision()
+        if revision != self.default_revision:
+            self.default_revision = revision
+            desired, _, _ = c20_volume.status()
+            if desired is not None:
+                self.level.percent = self.sent = desired
         now = time.monotonic()
         if self.sent != self.level.percent and (force or now-self.last_write >= .1):
             c20_volume.request(self.level.percent)
@@ -95,16 +106,14 @@ class VolumeControl:
             self.canvas = tk.Canvas(self.root, bg=BG, highlightthickness=0, takefocus=False)
         c = self.canvas
         w, h = max(1, self.root.winfo_width()), max(1, self.root.winfo_height())
-        overlay = self.in_call()
-        if overlay:
-            w, h = min(900, w*.8), 112
-        c.configure(bg=PANEL if overlay else BG)
+        w, h = min(900, w*.8), min(160, h*.3)
+        c.configure(bg='#000000')
         percent = self.level.percent
         _, _, failed = c20_volume.status()
         color = RED if failed else GREEN
         c.delete('all')
-        width = w-180 if overlay else min(900, w*.65)
-        left, right, y = (w-width)/2, (w+width)/2, h/2-(22 if overlay else 0)
+        width = max(40, w-180)
+        left, right, y = (w-width)/2, (w+width)/2, h/2-22
         # A single centered horizontal control, with language-independent icons.
         c.create_polygon(left-70, y-12, left-62, y-12, left-48, y-24,
                          left-48, y+24, left-62, y+12, left-70, y+12, fill=FG)
@@ -115,13 +124,10 @@ class VolumeControl:
         if percent:
             c.create_rectangle(left+3, y-19, left+3+(width-6)*percent/100, y+19,
                                fill=color, outline='', tags='volume-fill')
-        c.create_text(w/2, y+(52 if overlay else 66), text=f'{percent}%' if not failed else '!',
-                      fill=color, font=('Segoe UI', 22 if overlay else 28, 'bold'), tags='volume-level')
-        if overlay:
-            c.place(x=0, y=0, relx=.5, rely=.68, anchor='center',
-                    width=w, height=h, relwidth=0, relheight=0)
-        else:
-            c.place(x=0, y=0, relx=0, rely=0, anchor='nw', width=0, height=0, relwidth=1, relheight=1)
+        c.create_text(w/2, y+52, text=f'{percent}%' if not failed else '!',
+                      fill=color, font=('Segoe UI', 22, 'bold'), tags='volume-level')
+        c.place(x=0, y=0, relx=.5, rely=.68, anchor='center',
+                width=w, height=h, relwidth=0, relheight=0)
 
         tk.Misc.lift(c)
 

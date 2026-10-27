@@ -17,6 +17,8 @@ text: When secure relay mode is configured, ZmalaPhone shall call and receive ca
 area: Audio and video calls
 scope: Experimental
 references:
+- path: tests/android/HLT/UiImprovementFlowTest.java
+  type: file
 - path: tests/android/HLT/secure_remote.py
   type: file
 - path: tests/android/HLT/RemoteMediaTest.java

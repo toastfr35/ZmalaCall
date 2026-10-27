@@ -4,7 +4,7 @@
 # @plan Render settings on the real Tk UI and drive selection/draft transitions; assert only the active pane shows controls and cancellation preserves configuration.
 # At both sizes, render French short values with the real Pango font and assert their final images retain the full text without ellipsis and stay inside their rows.
 # Render the exit confirmation in every supported language at both sizes; verify bounded question/buttons, red returns to the same selection and green exits without modifying configuration.
-# Open speaker volume at 50%, navigate right/left to 55%/50% and cancel; the saved value stays unchanged.
+# Open ringtone volume at 50%, navigate right/left to 55%/50% and cancel; the saved value stays unchanged.
 # Render the ringtone editor and exercise its debounced preview request through substituted playback; verify left/right wrap selects the last/first visible choice without saving, and cancel and incoming-call interruption stop it without changing the selected ringtone.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
@@ -34,7 +34,7 @@ class Preview(main.Terminal):
 app = Preview(profile='settings-ui-test')
 app.actions = []
 app.model.configure(config() | {'language': 'fr', 'auto_answer': False, 'auto_answer_seconds': 30,
-                               'device_id': 'ZM-TEST-123456', 'c20_speaker_volume': 80})
+                               'device_id': 'ZM-TEST-123456', 'ringtone_volume': 80})
 app.server_seen = time.monotonic()
 try:
     app.keys_down.add('red')
@@ -64,7 +64,10 @@ try:
         with patch.object(app.text_renderer, 'photo', side_effect=record_photo):
             app.settings_signature = None
             app.render(); app.root.update()
-            for key in ('language', 'c20_speaker_volume', 'ringtone', 'carousel_portraits'):
+            for key in ('language', 'ringtone_volume', 'ringtone', 'carousel_portraits'):
+                app.settings_draft.row = FIELDS.index(key)
+                app.settings_signature = None
+                app.render(); app.root.update()
                 item = next(i for i in app.settings_canvas.find_withtag('settings-value')
                             if key in app.settings_canvas.gettags(i))
                 image = app.settings_canvas.itemcget(item, 'image')
@@ -102,14 +105,14 @@ try:
                 assert bounds[1] >= 0 and bounds[3] <= c.winfo_height(), (language, size, tag, bounds)
             app.settings_draft.confirm_exit = False
     app.settings_draft.editing = False
-    app.model.config['c20_speaker_volume'] = 50
-    app.settings_draft.row = FIELDS.index('c20_speaker_volume')
+    app.model.config['ringtone_volume'] = 50
+    app.settings_draft.row = FIELDS.index('ringtone_volume')
     app.press('green'); app.press('right'); app.root.update()
-    assert app.settings_draft.change(app.model.config)['c20_speaker_volume'] == 55
+    assert app.settings_draft.change(app.model.config)['ringtone_volume'] == 55
     app.press('left'); app.root.update()
-    assert app.settings_draft.change(app.model.config)['c20_speaker_volume'] == 50
+    assert app.settings_draft.change(app.model.config)['ringtone_volume'] == 50
     app.press('red')
-    assert app.model.config['c20_speaker_volume'] == 50
+    assert app.model.config['ringtone_volume'] == 50
     app.settings_draft.row = FIELDS.index('ringtone')
     app.model.config['ringtones'] = [
         {'id': 'nokia', 'name': 'Nokia', 'url': '/api/ringtones/nokia.wav'},
@@ -166,7 +169,7 @@ try:
         ImageGrab.grab(bbox=(app.root.winfo_rootx(), app.root.winfo_rooty(),
                             app.root.winfo_rootx()+app.root.winfo_width(),
                             app.root.winfo_rooty()+app.root.winfo_height())).save(sys.argv[1])
-    print('Settings: 95 languages, seven editors, both focus sides at 900x620 and 1280x720; ringtone wrap/preview/cancel/call interruption, exit confirmation, red hold and reset navigation passed.')
+    print('Settings: 16 languages, eight editors, both focus sides at 900x620 and 1280x720; ringtone wrap/preview/cancel/call interruption, exit confirmation, red hold and reset navigation passed.')
 finally:
     app.tv_control.close()
     app.text_renderer.close()

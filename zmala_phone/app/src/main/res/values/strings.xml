@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @llr LLR-AND-UI-002 -->
+<resources>
+  <string name="welcome" formatted="false">Welcome</string>
+  <string name="ready" formatted="false">Ready to call</string>
+  <string name="tagline" formatted="false">Together, wherever you are</string>
+  <string name="setup_intro" formatted="false">Scan the setup QR code you received by email or on paper.</string>
+  <string name="scan_qr" formatted="false">Scan setup QR</string>
+  <string name="open_qr_image" formatted="false">Open QR image</string>
+  <string name="qr_image_hint" formatted="false">Choose a QR picture saved from your email, or scan a printed code.</string>
+  <string name="scanner_prompt" formatted="false">Scan your setup QR code</string>
+  <string name="qr_image_error" formatted="false">No readable setup QR code was found. Choose the QR picture, or scan the printed code.</string>
+  <string name="no_picker" formatted="false">No image picker is available. Scan your printed setup QR instead.</string>
+  <string name="connect_title" formatted="false">Connect to ZmalaCall</string>
+  <string name="connect" formatted="false">Connect</string>
+  <string name="cancel" formatted="false">Cancel</string>
+  <string name="retry_connection" formatted="false">Retry connection</string>
+  <string name="connecting_server" formatted="false">Connecting to your server…</string>
+  <string name="reconnecting_server" formatted="false">Reconnecting to server…</string>
+  <string name="reconnect_help" formatted="false">Reconnecting to server… Check your connection.</string>
+  <string name="cannot_connect" formatted="false">Cannot connect to the call server</string>
+  <string name="cannot_reach" formatted="false">Cannot reach your server. Check your connection, then retry.</string>
+  <string name="start_call_failed" formatted="false">Call could not start.</string>
+  <string name="call_failed" formatted="false">Call could not connect</string>
+  <string name="call_ended" formatted="false">Call ended</string>
+  <string name="in_call" formatted="false">In a video call</string>
+  <string name="connecting" formatted="false">Connecting…</string>
+  <string name="no_contacts" formatted="false">No contacts yet. Ask your administrator to add you to a calling group.</string>
+  <string name="available" formatted="false">Available</string>
+  <string name="try_calling" formatted="false">Try calling</string>
+  <string name="offline" formatted="false">Offline</string>
+  <string name="please_call_back" formatted="false">Please call back</string>
+  <string name="callback_requested" formatted="false">Callback requested</string>
+  <string name="request_callback" formatted="false">Request callback</string>
+  <string name="cancel_request" formatted="false">Cancel request</string>
+  <string name="callback_cancelled" formatted="false">Callback request cancelled</string>
+  <string name="clear_missed" formatted="false">Clear missed calls</string>
+  <string name="callback_failed" formatted="false">Could not update the callback request. Check your connection and try again.</string>
+  <string name="call_not_answered" formatted="false">Call was not answered</string>
+  <string name="not_now" formatted="false">Not now</string>
+  <string name="close" formatted="false">Close</string>
+  <string name="ok" formatted="false">OK</string>
+  <string name="contacts" formatted="false">Contacts</string>
+  <string name="call" formatted="false">Call</string>
+  <string name="please_wait" formatted="false">Please wait…</string>
+  <string name="calling_unavailable" formatted="false">Calling is currently unavailable.</string>
+  <string name="calling_unavailable_callback" formatted="false">Calling is currently unavailable. You can still request a callback.</string>
+  <string name="incoming_video" formatted="false">Incoming video call</string>
+  <string name="answer_video" formatted="false">Answer video call</string>
+  <string name="decline" formatted="false">Decline</string>
+  <string name="video_call_description" formatted="false">Video call. Tap to show call controls.</string>
+  <string name="remote_video_description" formatted="false">Remote video. Tap to show call controls.</string>
+  <string name="preview_description" formatted="false">Your camera. Tap to show call controls.</string>
+  <string name="controls_description" formatted="false">Call controls</string>
+  <string name="mic_label" formatted="false">Mic</string>
+  <string name="sound_label" formatted="false">Sound</string>
+  <string name="camera_label" formatted="false">Camera</string>
+  <string name="end_label" formatted="false">End</string>
+  <string name="mute_microphone" formatted="false">Mute microphone</string>
+  <string name="unmute_microphone" formatted="false">Unmute microphone</string>
+  <string name="microphone_muted" formatted="false">Microphone muted</string>
+  <string name="microphone_on" formatted="false">Microphone on</string>
+  <string name="loudspeaker" formatted="false">Loudspeaker</string>
+  <string name="earpiece" formatted="false">Earpiece</string>
+  <string name="sound_muted" formatted="false">Sound muted</string>
+  <string name="call_sound_muted" formatted="false">Call sound muted</string>
+  <string name="output_to_earpiece" formatted="false">Loudspeaker. Switch to earpiece</string>
+  <string name="output_to_muted" formatted="false">Earpiece. Mute call sound</string>
+  <string name="output_to_speaker" formatted="false">Call sound muted. Switch to loudspeaker</string>
+  <string name="switch_camera" formatted="false">Switch camera</string>
+  <string name="end_call" formatted="false">End call</string>
+  <string name="call_hint" formatted="false">Tap for controls · Swipe up/down for volume</string>
+  <string name="calling" formatted="false">Calling…</string>
+  <string name="ringing" formatted="false">Ringing…</string>
+  <string name="connecting_video" formatted="false">Connecting video…</string>
+  <string name="connecting_video_description" formatted="false">Connecting video</string>
+  <string name="video_delayed" formatted="false">Video hasn\'t arrived yet.\nThe call is still connected.</string>
+  <string name="incoming_enabled" formatted="false">Incoming call alerts enabled</string>
+  <string name="notifications_off" formatted="false">Notifications are off\nEnable notifications</string>
+  <string name="alerts_server_off" formatted="false">Incoming alerts unavailable\nDetails</string>
+  <string name="alerts_preparing" formatted="false">Preparing incoming alerts…</string>
+  <string name="alerts_retry" formatted="false">Incoming alerts unavailable\nTry again</string>
+  <string name="incoming_calls" formatted="false">Incoming calls</string>
+  <string name="alerts_server_help" formatted="false">Keep ZmalaPhone open to receive calls for now. Ask the person who supplied your setup QR to enable incoming alerts on the server.</string>
+  <string name="notification_settings_help" formatted="false">Open Android Settings &gt; Apps &gt; ZmalaPhone &gt; Notifications to enable incoming calls.</string>
+  <string name="notification_explanation_title" formatted="false">Receive calls when ZmalaPhone is closed</string>
+  <string name="continue_action" formatted="false">Continue</string>
+  <string name="notification_channel_help" formatted="false">Rings when someone calls your ZmalaPhone account.</string>
+  <string name="updates" formatted="false">Updates</string>
+  <string name="update_available" formatted="false">Update available</string>
+  <string name="check_updates_description" formatted="false">Check for ZmalaPhone updates</string>
+  <string name="updates_title" formatted="false">ZmalaPhone updates</string>
+  <string name="automatic_updates" formatted="false">Automatic updates on Wi-Fi</string>
+  <string name="update" formatted="false">Update</string>
+  <string name="check_now" formatted="false">Check now</string>
+  <string name="later" formatted="false">Later</string>
+  <string name="check_newer" formatted="false">Check for a newer version.</string>
+  <string name="checking_updates" formatted="false">Checking for updates…</string>
+  <string name="latest_version" formatted="false">You have the latest available version.</string>
+  <string name="ready_download" formatted="false">Ready to download.</string>
+  <string name="check_failed" formatted="false">Could not check for updates. Try again later.</string>
+  <string name="download_zero" formatted="false">Downloading update… 0%</string>
+  <string name="checking_update" formatted="false">Checking update…</string>
+  <string name="preparing_install" formatted="false">Preparing installation…</string>
+  <string name="installing_update" formatted="false">Installing update…</string>
+  <string name="installation_failed" formatted="false">Installation failed. Try again later.</string>
+  <string name="confirmation_needed" formatted="false">Android needs your confirmation. Tap Update to continue.</string>
+  <string name="update_installed" formatted="false">Update installed.</string>
+  <string name="update_not_installed" formatted="false">Update was not installed. You can try again.</string>
+  <string name="install_permission" formatted="false">Allow app installation in Android Settings, then try again.</string>
+  <string name="update_paused" formatted="false">Update paused until the app is open and calls have ended.</string>
+  <string name="download_failed" formatted="false">Update could not be downloaded or verified. Try again later.</string>
+  <string name="scan_new_qr" formatted="false">Scan a new setup QR code.</string>
+  <string name="calling_setup_failed" formatted="false">Unable to start calling. Check app permissions and setup.</string>
+  <string name="setup_invalid" formatted="false">This setup QR is not valid for ZmalaPhone. Ask the person who supplied it for a current App QR.</string>
+  <string name="access_revoked" formatted="false">Account access was revoked. Scan a current App QR code.</string>
+  <string name="media_permissions" formatted="false">Camera, microphone and local network access are needed for video calls. Enable them in Android Settings.</string>
+  <string name="notification_explanation" formatted="false">Allow notifications for incoming calls and callback requests when you\'re using another app or the phone is asleep. Internet and access to your call server are needed. If you use Android\'s Force stop, open ZmalaPhone again to receive alerts.</string>
+  <string name="update_explanation" formatted="false">Updates wait while calls ring or are connected. Automatic installation runs only while ZmalaPhone is open and idle; Android may still ask you to confirm. Your setup is kept.</string>
+  <string name="lan_warning" formatted="false">\n\nLAN mode: setup and calls are not encrypted. Use your trusted home network.</string>
+  <string name="secure_confirm" formatted="false">\n\nUse this server for your app account?</string>
+  <string name="open_contact_suffix" formatted="false">. Open contact</string>
+  <string name="photo_of">Photo of %1$s</string>
+  <string name="callback_prompt">Ask %1$s to call you back?</string>
+  <string name="audio_status">Call audio status: %1$s</string>
+  <string name="call_volume">Call volume %1$d%%</string>
+  <string name="muted_volume">Sound muted · %1$d%%</string>
+  <string name="downloading_percent">Downloading update… %1$d%%</string>
+  <string name="version_available">Version %1$s is available.\n\n%2$s</string>
+  <plurals name="missed_calls">
+    <item quantity="one">%d missed call</item>
+    <item quantity="other">%d missed calls</item>
+  </plurals>
+  <string name="ongoing_calls">Ongoing calls</string>
+  <string name="call_in_progress">Call in progress</string>
+  <string name="return_to_call">Return to call</string>
+  <string name="background_audio">Audio continues · Camera paused</string>
+  <string name="update_busy">An update is being installed. Try again shortly.</string>
+    <string name="callback_notifications">Callback requests</string>
+    <string name="checking_callbacks">Checking callback requests</string>
+    <string name="callback_notifications_help">Someone would like you to call them back.</string>
+    <string name="callback_notification_body">%1$s would like you to call back.</string>
+</resources>

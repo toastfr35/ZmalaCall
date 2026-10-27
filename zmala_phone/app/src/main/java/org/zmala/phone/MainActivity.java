@@ -11,8 +11,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.display.DisplayManager;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -45,14 +43,28 @@ public final class MainActivity extends Activity {
       RED = Color.rgb(183, 47, 63);
   private final Handler main = new Handler(Looper.getMainLooper());
   private final ExecutorService network = Executors.newSingleThreadExecutor();
-  private final CallEngine engine = new CallEngine(this::callChanged);
+  private final PortraitQueue portraits = new PortraitQueue();
+  private CallSession session;
+  private CallEngine engine;
   private Enrollment enrollment;
   private JSONObject config;
   private LinearLayout page;
   private int generation;
   private boolean visible, fetching, muted;
+  private boolean reconnecting;
+  private TextView updateLink;
+  private final Runnable videoProgress = new Runnable() {
+    public void run() {
+      if (visible && engine.call != null && callScreen != null) {
+        updateCallProgress();
+        if (!engine.remoteVideoReady()) main.postDelayed(this, 1000);
+      }
+    }
+  };
   private CallEngine.Output output = CallEngine.Output.SPEAKER;
   private Call displayedCall;
+  private String selectedContact;
+  private String callbackContact;
   private CallScreen callScreen;
   private final DisplayManager.DisplayListener displayListener =
       new DisplayManager.DisplayListener() {
@@ -65,13 +77,12 @@ public final class MainActivity extends Activity {
         }
       };
   private Ringtone ringtone;
-  private AudioFocusRequest audioFocus;
-  private String message = "Welcome";
+  private String message = "";
   private static java.lang.ref.WeakReference<MainActivity> foreground =
       new java.lang.ref.WeakReference<>(null);
   private String answerCallId;
   private long answerExpires;
-  private boolean pushReady;
+  private boolean pushReady, pushPreparing;
   private boolean restartRequested;
   // @llr LLR-AND-HISTORY-002
   private boolean callbackSending;
@@ -82,7 +93,15 @@ public final class MainActivity extends Activity {
   @Override
   public void onCreate(Bundle state) {
     super.onCreate(state);
+    session = CallSession.get(this); engine = session.engine;
+    config = session.configuration;
+    selectedContact = state == null ? null : state.getString("selected_contact");
+    callbackContact = state == null ? null : state.getString("callback_contact");
+    message = getString(R.string.welcome);
+    if (android.os.Build.VERSION.SDK_INT >= 33)
+      getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::navigateBack);
     handlePushIntent(getIntent());
+    handleCallbackIntent(getIntent());
     directory();
   }
 
@@ -95,6 +114,9 @@ public final class MainActivity extends Activity {
   public void onStart() {
     super.onStart();
     visible = true;
+    session.attach(this);
+    muted = session.muted; output = session.output; reconnecting = session.reconnecting;
+    if (session.configuration != null) config = session.configuration;
     foreground = new java.lang.ref.WeakReference<>(this);
     ((DisplayManager) getSystemService(DISPLAY_SERVICE))
         .registerDisplayListener(displayListener, main);
@@ -104,11 +126,13 @@ public final class MainActivity extends Activity {
             new Enrollment(
                 new String(Files.readAllBytes(enrollmentFile().toPath()), StandardCharsets.UTF_8));
       } catch (Exception e) {
-        message = "Scan a new setup QR code.";
+        message = getString(R.string.scan_new_qr);
       }
     }
-    if (enrollment != null && permissions()) refresh(true);
-    else directory();
+    if (enrollment != null && permissions()) {
+      if (engine.call != null) callChanged(session.status);
+      refresh(engine.call == null);
+    } else directory();
   }
 
   @Override
@@ -117,11 +141,14 @@ public final class MainActivity extends Activity {
     if (foreground.get() == this) foreground.clear();
     ((DisplayManager) getSystemService(DISPLAY_SERVICE)).unregisterDisplayListener(displayListener);
     generation++;
+    portraits.begin();
     fetching = false;
     main.removeCallbacks(poll);
-    engine.stop();
+    main.removeCallbacks(videoProgress);
+    session.detach(this, isChangingConfigurations());
     silence();
-    releaseAudio();
+    if (!session.ongoing()) releaseAudio();
+    else setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
     displayedCall = null;
     if (callScreen != null) callScreen.dispose();
     callScreen = null;
@@ -132,6 +159,7 @@ public final class MainActivity extends Activity {
   @Override
   public void onDestroy() {
     network.shutdownNow();
+    portraits.close();
     super.onDestroy();
   }
 
@@ -149,7 +177,13 @@ public final class MainActivity extends Activity {
 
   // @llr LLR-AND-UPDATE-002
   boolean updatesAllowed() {
-    return visible && enrollment != null && config != null && engine.call == null;
+    return visible && enrollment != null && config != null && selectedContact == null && engine.call == null;
+  }
+
+  @Override public void onUserInteraction() { super.onUserInteraction(); AppUpdates.get(this).interaction(); }
+
+  void updateAvailabilityChanged() {
+    if (updateLink != null) updateLink.setText(AppUpdates.get(this).hasUpdate() ? getString(R.string.update_available) : getString(R.string.updates));
   }
 
   private boolean permissions() {
@@ -186,8 +220,7 @@ public final class MainActivity extends Activity {
         else refresh(true);
       } else {
         message =
-            "Camera, microphone and local network access are needed for video calls. Enable them in"
-                + " Android Settings.";
+            getString(R.string.media_permissions);
         directory();
       }
     }
@@ -200,7 +233,7 @@ public final class MainActivity extends Activity {
     }
     new IntentIntegrator(this)
         .setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
-        .setPrompt("Scan your setup QR code")
+        .setPrompt(getString(R.string.scanner_prompt))
         .setBeepEnabled(false)
         .setOrientationLocked(false)
         .initiateScan();
@@ -209,32 +242,57 @@ public final class MainActivity extends Activity {
   @Override
   protected void onActivityResult(int request, int result, Intent data) {
     super.onActivityResult(request, result, data);
+    if (request == 9) {
+      if (result != RESULT_OK || data == null || data.getData() == null) return;
+      android.net.Uri uri = data.getData();
+      int ticket = generation;
+      network.execute(() -> {
+        try {
+          String text = QrImage.read(getContentResolver().openInputStream(uri));
+          main.post(() -> { if (visible && generation == ticket) confirmEnrollment(text); });
+        } catch (Exception error) {
+          main.post(() -> { if (visible && generation == ticket)
+            showError(getString(R.string.qr_image_error)); });
+        }
+      });
+      return;
+    }
     IntentResult scan = IntentIntegrator.parseActivityResult(request, result, data);
     if (scan == null || scan.getContents() == null) return;
+    confirmEnrollment(scan.getContents());
+  }
+
+  // @llr LLR-AND-ENROLL-002
+  private void openQrImage() {
+    Intent pick = new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("image/*")
+        .addCategory(Intent.CATEGORY_OPENABLE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    try { startActivityForResult(pick, 9); }
+    catch (android.content.ActivityNotFoundException error) { showError(getString(R.string.no_picker)); }
+  }
+
+  private void confirmEnrollment(String text) {
     try {
-      Enrollment candidate = new Enrollment(scan.getContents());
+      Enrollment candidate = new Enrollment(text);
       new AlertDialog.Builder(this)
-          .setTitle("Connect to ZmalaCall")
+          .setTitle(getString(R.string.connect_title))
           .setMessage(
               candidate.server.toString()
                   + (candidate.server.getScheme().equals("http")
-                      ? "\n\n"
-                          + "LAN mode: setup and calls are not encrypted. Use your trusted home"
-                          + " network."
-                      : "\n\nUse this server for your app account?"))
+                      ? getString(R.string.lan_warning)
+                      : getString(R.string.secure_confirm)))
           .setPositiveButton(
-              "Connect",
+              getString(R.string.connect),
               (dialog, which) -> {
                 generation++;
                 enrollment = candidate;
                 config = null;
-                engine.stop();
+                session.stop();
                 refresh(true);
               })
-          .setNegativeButton("Cancel", null)
+          .setNegativeButton(getString(R.string.cancel), null)
           .show();
     } catch (Exception e) {
-      showError(e.getMessage());
+      showError(getString(R.string.setup_invalid));
     }
   }
 
@@ -250,8 +308,10 @@ public final class MainActivity extends Activity {
     fetching = true;
     int ticket = generation;
     Enrollment target = enrollment;
+    // @llr LLR-AND-HISTORY-003
+    long callbackTicket = CallbackAlerts.beginRefresh();
     if (config == null) {
-      message = "Connecting to your server…";
+      message = getString(R.string.connecting_server);
       directory();
     }
     network.execute(
@@ -270,7 +330,13 @@ public final class MainActivity extends Activity {
                           enrollmentFile().toPath(),
                           target.serialized().getBytes(StandardCharsets.UTF_8));
                     config = next;
+                    if (callbackContact != null) { selectedContact = callbackContact; callbackContact = null; }
+                    session.configuration = next;
+                    reconnecting = false; session.reconnecting = false;
+                    if (callScreen != null) callScreen.connectionNotice(null);
                     PushAlerts.remember(this, next);
+                    // @llr LLR-AND-HISTORY-003
+                    CallbackAlerts.synchronize(this,target,next,callbackTicket);
                     boolean restart = restartRequested;
                     restartRequested = false;
                     if ((restart || credentialsChanged) && engine.call == null)
@@ -282,8 +348,8 @@ public final class MainActivity extends Activity {
                         .toString().equals(displayedNotices);
                     if ((changed || noticesChanged) && engine.call == null) directory();
                   } catch (Exception e) {
-                    engine.stop();
-                    showError("Unable to start calling. Check app permissions and setup.");
+                    session.stop();
+                    showError(getString(R.string.calling_setup_failed));
                   }
                   main.removeCallbacks(poll);
                   main.postDelayed(poll, 10000);
@@ -293,15 +359,21 @@ public final class MainActivity extends Activity {
                 () -> {
                   if (!visible || ticket != generation) return;
                   fetching = false;
-                  engine.stop();
-                  config = null;
-                  silence();
-                  releaseAudio();
+                  boolean temporary = ServerApi.temporaryFailure(e);
+                  if (e instanceof ServerApi.AccessRevoked) CallbackAlerts.revoked(this,target);
+                  reconnecting = temporary; session.reconnecting = temporary;
+                  // An HTTP polling outage must not tear down an established media call.
+                  // Revocation or malformed security/configuration data still stop it immediately.
+                  if (!temporary || engine.call == null) session.stop();
+                  if (!temporary) config = null;
+                  if (engine.call == null) { silence(); releaseAudio(); }
                   message =
-                      e instanceof IllegalArgumentException || e instanceof IllegalStateException
-                          ? e.getMessage()
-                          : "Cannot reach your server. Check your connection, then retry.";
-                  directory();
+                      temporary ? getString(R.string.reconnect_help)
+                      : e instanceof IllegalArgumentException || e instanceof IllegalStateException
+                          ? getString(R.string.access_revoked)
+                          : getString(R.string.cannot_reach);
+                  if (engine.call == null) directory();
+                  else if (callScreen != null) callScreen.connectionNotice(getString(R.string.reconnecting_server));
                   // Re-register after a failed refresh instead of leaving a silent stopped core.
                   main.removeCallbacks(poll);
                   main.postDelayed(
@@ -375,22 +447,33 @@ public final class MainActivity extends Activity {
     title.setTypeface(null, Typeface.BOLD);
     header.addView(title);
     page.addView(header);
-    if (!message.equals("Ready to call")) page.addView(label(message, 16, MUTED));
-    setContentView(page);
+    if (!message.equals(getString(R.string.ready))) page.addView(label(message, 16, MUTED));
+    if (config == null) {
+      ScrollView setup = new ScrollView(this); setup.setFillViewport(true);
+      setup.addView(page); setContentView(setup);
+    } else setContentView(page);
   }
 
   private void directory() {
+    long portraitTicket = portraits.begin();
     setRequestedOrientation(enrollment != null && config != null
         ? android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         : android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     displayedCall = null;
     callScreen = null;
+    if (selectedContact != null && config != null) {
+      JSONObject selected = findContact(selectedContact);
+      if (selected != null && selected.optBoolean("can_call")) { contactPage(selected, portraitTicket); return; }
+      selectedContact = null;
+    }
     shell();
     if (enrollment == null) {
-      page.addView(label("Together, wherever you are", 26, FG));
-      page.addView(label("Scan the setup QR code you received by email or on paper.", 18, MUTED));
-      page.addView(button("Scan setup QR", GREEN, this::scan));
-    } else if (config == null) page.addView(button("Retry connection", GREEN, () -> refresh(true)));
+      page.addView(label(getString(R.string.tagline), 26, FG));
+      page.addView(label(getString(R.string.setup_intro), 18, MUTED));
+      page.addView(button(getString(R.string.scan_qr), GREEN, this::scan));
+      page.addView(button(getString(R.string.open_qr_image), PANEL, this::openQrImage));
+      page.addView(label(getString(R.string.qr_image_hint), 16, MUTED));
+    } else if (config == null) page.addView(button(getString(R.string.retry_connection), GREEN, () -> refresh(true)));
     else {
       ScrollView scroll = new ScrollView(this);
       scroll.setFillViewport(true);
@@ -409,150 +492,102 @@ public final class MainActivity extends Activity {
           JSONObject contact = entries.optJSONObject(i);
           if (!contact.optBoolean("can_call")) continue;
           count++;
-          LinearLayout card = new LinearLayout(this);
-          card.setGravity(Gravity.CENTER_VERTICAL);
-          LinearLayout.LayoutParams margins = new LinearLayout.LayoutParams(-1, -2);
-          margins.setMargins(0, dp(4), 0, dp(4));
-          contacts.addView(card, margins);
-          ImageView photo = new ImageView(this);
-          photo.setImageResource(R.drawable.zmala_logo);
-          photo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-          photo.setContentDescription("Photo of " + contact.optString("name"));
-          photo.setBackground(rounded(PANEL));
-          photo.setClipToOutline(true);
-          FrameLayout portrait = new FrameLayout(this);
-          portrait.addView(photo, new FrameLayout.LayoutParams(-1, -1));
-          card.addView(portrait, new LinearLayout.LayoutParams(dp(72), dp(72)));
-          boolean online = contact.optBoolean("online");
-          boolean pushOnly = online && "push".equals(contact.optString("presence"));
-          String presenceLabel = !online ? "Offline" : pushOnly ? "Try calling" : "Available";
-          Button call =
-              button(
-                  contact.optString("name"),
-                  !online ? RED : pushOnly ? BLUE : GREEN,
-                  () -> {
-                    try {
-                      engine.dial(contact);
-                    } catch (Exception e) {
-                      showError("Call could not start.");
-                    }
-                  });
-          android.text.SpannableString caption = new android.text.SpannableString(
-              contact.optString("name") + "\n" + presenceLabel);
-          caption.setSpan(new android.text.style.RelativeSizeSpan(0.65f),
-              contact.optString("name").length() + 1, caption.length(), 0);
-          call.setText(caption);
-          call.setTextSize(20);
-          call.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
-          call.setPadding(dp(18), dp(10), dp(14), dp(10));
-          call.setMinHeight(dp(72));
-          call.setMinimumHeight(dp(72));
-          call.setContentDescription(
-              contact.optString("name") + ", " + presenceLabel.toLowerCase(java.util.Locale.ROOT)
-                  + (online ? ". Tap to call." : "."));
-          call.setEnabled(engine.registered && online);
-          LinearLayout.LayoutParams nameArea = new LinearLayout.LayoutParams(0, -2, 1);
-          nameArea.setMargins(dp(10), 0, 0, 0);
-          card.addView(call, nameArea);
-          // @llr LLR-AND-HISTORY-002
           int missed = notices.count(contact.optString("id"));
           int callbacks = NoticeBook.callbacks(config.optJSONArray("callbacks"),
               config.optJSONObject("sip").optString("username"), contact.optString("id"));
-          if (missed > 0) {
-            TextView badge = label("↙ " + missed, 13, FG);
-            badge.setBackground(rounded(RED));
-            badge.setContentDescription(missed + " missed call" + (missed == 1 ? "" : "s") + " from " + contact.optString("name"));
-            portrait.addView(badge, new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.RIGHT));
-          }
-          if (callbacks != 0) {
-            TextView badge = label(callbacks == 3 ? "↶ ↗" : (callbacks & 1) != 0 ? "↶" : "↗", 17, FG);
-            badge.setBackground(rounded(GREEN));
-            String incoming = "Please call " + contact.optString("name") + " back";
-            String sent = "Callback requested from " + contact.optString("name");
-            badge.setContentDescription(callbacks == 3 ? incoming + ". " + sent
-                : (callbacks & 1) != 0 ? incoming : sent);
-            portrait.addView(badge, new FrameLayout.LayoutParams(-2, -2, Gravity.BOTTOM | Gravity.RIGHT));
-          }
-          if (config.optBoolean("callbacks_enabled") || missed > 0) {
-            ImageButton actions = new ImageButton(this);
-            boolean sent = (callbacks & 2) != 0;
-            actions.setImageResource(sent ? R.drawable.ic_cancel_callback : R.drawable.ic_callback);
-            actions.setBackground(rounded(PANEL));
-            actions.setPadding(dp(17), dp(17), dp(17), dp(17));
-            actions.setContentDescription((sent ? "Cancel callback request to " : "Call notices and callback for ") + contact.optString("name"));
-            actions.setOnClickListener(v -> {
-              if (sent) cancelCallback(contact); else contactActions(contact, missed, callbacks);
-            });
-            portrait.setOnClickListener(v -> contactActions(contact, missed, callbacks));
-            LinearLayout.LayoutParams actionSize = new LinearLayout.LayoutParams(dp(60), dp(60));
-            actionSize.setMargins(dp(6), 0, 0, 0);
-            card.addView(actions, actionSize);
-          }
-          String path = contact.optString("photo");
-          int ticket = generation;
-          Enrollment target = enrollment;
-          if (!path.isEmpty())
-            network.execute(
-                () -> {
-                  try {
-                    byte[] bytes = ServerApi.photo(target, path);
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inJustDecodeBounds = true;
-                    BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-                    options.inSampleSize =
-                        Math.max(1, Math.max(options.outWidth, options.outHeight) / 256);
-                    options.inJustDecodeBounds = false;
-                    android.graphics.Bitmap bitmap =
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-                    main.post(
-                        () -> {
-                          if (visible && ticket == generation && bitmap != null)
-                            photo.setImageBitmap(bitmap);
-                        });
-                  } catch (Exception ignored) {
-                    /* Keep the common logo when a portrait is unavailable. */
-                  }
-                });
+          boolean online = contact.optBoolean("online");
+          boolean pushOnly = online && "push".equals(contact.optString("presence"));
+          ContactCard card = new ContactCard(this, contact.optString("name"), presence(contact),
+              ContactNotice.summary(this, missed, callbacks), !online ? RED : pushOnly ? BLUE : GREEN,
+              () -> { selectedContact = contact.optString("id"); directory(); });
+          LinearLayout.LayoutParams margins = new LinearLayout.LayoutParams(-1, -2);
+          margins.setMargins(0, dp(4), 0, dp(4)); contacts.addView(card, margins);
+          loadPortrait(card.portrait, contact.optString("photo"), portraitTicket);
         }
       if (count == 0)
         contacts.addView(
             label(
-                "No contacts yet. Ask your administrator to add you to a calling group.",
+                getString(R.string.no_contacts),
                 20,
                 MUTED));
     }
-    page.addView(
-        label(
-            pushReady
-                ? "Incoming call alerts enabled"
-                : "Keep this screen open to receive calls",
-            13,
-            MUTED));
-    // @llr LLR-AND-UPDATE-002
-    if (enrollment != null && config != null) {
-      LinearLayout footer = new LinearLayout(this);
-      footer.setGravity(Gravity.CENTER_VERTICAL);
-      TextView version = label("v" + AppUpdates.get(this).version(), 12, MUTED);
-      footer.addView(version, new LinearLayout.LayoutParams(0, -2, 1));
-      TextView updates = label("Updates", 13, MUTED);
-      updates.setGravity(Gravity.CENTER);
-      updates.setMinHeight(dp(60));
-      updates.setMinWidth(dp(80));
-      updates.setContentDescription("Check for ZmalaPhone updates");
-      updates.setOnClickListener(v -> AppUpdates.get(this).show());
-      footer.addView(updates);
-      page.addView(footer);
+    if (enrollment != null && config != null) footer();
+  }
+
+  // @llr LLR-AND-CALL-004, LLR-AND-UPDATE-002, LLR-AND-UI-002
+  private void footer() {
+    AlertStatus state = AlertStatus.of(config.optBoolean("push_enabled"), PushAlerts.allowed(this), pushPreparing, pushReady);
+    String text = switch (state) {
+      case READY -> getString(R.string.incoming_enabled);
+      case NOTIFICATIONS_OFF -> getString(R.string.notifications_off);
+      case SERVER_OFF -> getString(R.string.alerts_server_off);
+      case PREPARING -> getString(R.string.alerts_preparing);
+      case UNAVAILABLE -> getString(R.string.alerts_retry);
+    };
+    LinearLayout footer = new LinearLayout(this); footer.setGravity(Gravity.CENTER_VERTICAL);
+    LinearLayout status = new LinearLayout(this); status.setOrientation(LinearLayout.VERTICAL);
+    TextView alerts = label(text, 13, MUTED);
+    if (state != AlertStatus.READY && state != AlertStatus.PREPARING) {
+      alerts.setMinHeight(dp(48)); alerts.setBackground(rounded(PANEL));
+      alerts.setOnClickListener(v -> {
+        if (state == AlertStatus.NOTIFICATIONS_OFF) notificationSettings();
+        else if (state == AlertStatus.UNAVAILABLE) registerPush();
+        else new AlertDialog.Builder(this).setTitle(getString(R.string.incoming_calls))
+            .setMessage(getString(R.string.alerts_server_help))
+            .setPositiveButton(getString(R.string.ok), null).show();
+      });
+    }
+    status.addView(alerts);
+    status.addView(label("v" + AppUpdates.get(this).version(), 12, MUTED));
+    footer.addView(status, new LinearLayout.LayoutParams(0, -2, 1));
+    TextView updates = label(getString(R.string.updates), 13, MUTED); updates.setGravity(Gravity.CENTER);
+    updateLink = updates; updateAvailabilityChanged();
+    updates.setMinHeight(dp(60)); updates.setMinWidth(dp(80));
+    updates.setContentDescription(getString(R.string.check_updates_description));
+    updates.setOnClickListener(v -> AppUpdates.get(this).show()); footer.addView(updates); page.addView(footer);
+  }
+
+  private void notificationSettings() {
+    android.app.NotificationChannel channel = getSystemService(android.app.NotificationManager.class)
+        .getNotificationChannel(PushAlerts.CHANNEL);
+    Intent settings = new Intent(channel != null && channel.getImportance() < android.app.NotificationManager.IMPORTANCE_DEFAULT
+        ? android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS : android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+    settings.putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, getPackageName());
+    settings.putExtra(android.provider.Settings.EXTRA_CHANNEL_ID, PushAlerts.CHANNEL);
+    try { startActivity(settings); } catch (Exception error) {
+      showError(getString(R.string.notification_settings_help));
     }
   }
 
+  private void loadPortrait(ImageView photo, String path, long ticket) {
+    Enrollment target = enrollment;
+    if (path.isEmpty()) return;
+    portraits.execute(ticket, () -> {
+      try {
+        byte[] bytes = ServerApi.photo(target, path);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        options.inSampleSize = Math.max(1, Math.max(options.outWidth, options.outHeight) / 256);
+        options.inJustDecodeBounds = false;
+        android.graphics.Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        main.post(() -> {
+          if (visible && portraits.current(ticket) && bitmap != null) photo.setImageBitmap(bitmap);
+        });
+      } catch (Exception ignored) {
+        // Keep the common logo when a portrait is unavailable.
+      }
+    });
+  }
+
   // @llr LLR-AND-CALL-002, LLR-AND-UI-002
-  private void callChanged(String text) {
+  void callChanged(String text) {
     // @llr LLR-AND-UPDATE-002
     AppUpdates.get(this).callChanged();
     // @llr LLR-AND-HISTORY-002
     if (engine.call != null && contactDialog != null) { contactDialog.dismiss(); contactDialog = null; }
     if (!visible) return;
-    message = text;
+    message = UiText.status(this, text);
     if (engine.call == null) {
       silence();
       releaseAudio();
@@ -565,16 +600,17 @@ public final class MainActivity extends Activity {
         if (contacts != null) for (int i = 0; i < contacts.length(); i++) {
           JSONObject peer = contacts.optJSONObject(i);
           if (unanswered.equals(peer.optString("id")) && peer.optBoolean("can_call")) {
-            contactDialog = new AlertDialog.Builder(this).setTitle("Call was not answered")
-                .setMessage("Ask " + peer.optString("name") + " to call you back?")
-                .setPositiveButton("Request callback", (d, which) -> requestCallback(peer))
-                .setNegativeButton("Not now", null).show();
+            contactDialog = new AlertDialog.Builder(this).setTitle(getString(R.string.call_not_answered))
+                .setMessage(getString(R.string.callback_prompt, peer.optString("name")))
+                .setPositiveButton(getString(R.string.request_callback), (d, which) -> requestCallback(peer))
+                .setNegativeButton(getString(R.string.not_now), null).show();
             break;
           }
         }
       }
       return;
     }
+    portraits.begin();
     setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     if (displayedCall == engine.call && callScreen != null) {
       updateCallProgress();
@@ -598,36 +634,30 @@ public final class MainActivity extends Activity {
             () -> {
               displayedCall = null;
               acquireAudio();
-              engine.answer();
+              if (session.prepare()) engine.answer();
             });
         return;
       }
-      shell();
       String user = engine.call.getRemoteAddress().getUsername();
       String name = user;
+      String photo = "";
       JSONArray contacts = config.optJSONArray("contacts");
       if (contacts != null)
         for (int i = 0; i < contacts.length(); i++)
-          if (user.equals(contacts.optJSONObject(i).optString("id")))
+          if (user.equals(contacts.optJSONObject(i).optString("id"))) {
             name = contacts.optJSONObject(i).optString("name");
-      page.addView(label(name, 30, FG));
+            photo = contacts.optJSONObject(i).optString("photo");
+          }
+      IncomingCallScreen incoming = new IncomingCallScreen(this, name,
+          () -> { if (session.prepare()) { silence(); displayedCall = null; acquireAudio(); engine.answer(); } }, engine::hangup);
+      setContentView(incoming);
+      loadPortrait(incoming.portrait, photo, portraits.begin());
       if (ringtone == null) {
         ringtone =
             RingtoneManager.getRingtone(
                 this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE));
         if (ringtone != null) ringtone.play();
       }
-      page.addView(
-          button(
-              "Answer video call",
-              GREEN,
-              () -> {
-                silence();
-                displayedCall = null;
-                acquireAudio();
-                engine.answer();
-              }));
-      page.addView(button("Decline", RED, engine::hangup));
       return;
     }
     silence();
@@ -639,12 +669,12 @@ public final class MainActivity extends Activity {
             output,
             new CallScreen.Actions() {
               public void mute(boolean value) {
-                muted = value;
+                muted = value; session.muted = value;
                 engine.mute(value);
               }
 
               public CallEngine.Output output(CallEngine.Output value) {
-                output = engine.output(value);
+                output = engine.output(value); session.output = output;
                 return output;
               }
 
@@ -667,6 +697,12 @@ public final class MainActivity extends Activity {
               }
             });
     setContentView(callScreen);
+    if (reconnecting) callScreen.connectionNotice(getString(R.string.reconnecting_server));
+    main.removeCallbacks(videoProgress); main.postDelayed(videoProgress, 1000);
+    if (!getSharedPreferences("ui", 0).getBoolean("call_hint_seen", false)) {
+      callScreen.firstCallHint();
+      getSharedPreferences("ui", 0).edit().putBoolean("call_hint_seen", true).apply();
+    }
     engine.video(callScreen.remote, callScreen.preview);
     updateVideoRotation();
     updateCallProgress();
@@ -678,43 +714,63 @@ public final class MainActivity extends Activity {
     switch (engine.call.getState()) {
       case OutgoingInit:
       case OutgoingProgress:
-        callScreen.progress("Calling…");
+        callScreen.progress(CallScreen.Progress.CALLING);
         break;
       case OutgoingRinging:
-        callScreen.progress("Ringing…");
+        callScreen.progress(CallScreen.Progress.RINGING);
         break;
       case OutgoingEarlyMedia:
-        callScreen.progress("Ringing…");
+        callScreen.progress(CallScreen.Progress.RINGING);
         break;
       case Connected:
       case StreamsRunning:
       case Updating:
       case UpdatedByRemote:
-        callScreen.progress(engine.remoteVideoReady() ? null : "Connecting video…");
+        callScreen.progress(engine.remoteVideoReady() ? CallScreen.Progress.NONE
+            : engine.remoteVideoDelayed() ? CallScreen.Progress.DELAYED : CallScreen.Progress.CONNECTING);
         break;
       default:
-        callScreen.progress(null);
+        callScreen.progress(CallScreen.Progress.NONE);
         break;
     }
   }
 
-  // @llr LLR-AND-HISTORY-002
-  private void contactActions(JSONObject contact, int missed, int callbacks) {
-    if (engine.call != null) return;
-    String details = missed > 0 ? missed + " missed call" + (missed == 1 ? "" : "s") + ".\n" : "";
-    if ((callbacks & 1) != 0) details += "This person has asked you to call back.\n";
-    if ((callbacks & 2) != 0) details += "Your callback request is pending.\n";
-    if (details.isEmpty()) details = contact.optBoolean("online") ? "Ask this person to call you back." : "This person is offline. You can ask them to call you back.";
-    AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle(contact.optString("name"))
-        .setMessage(details).setNegativeButton("Close", null);
-    if (config.optBoolean("callbacks_enabled") && (callbacks & 2) == 0)
-      builder.setPositiveButton("Request callback", (d, which) -> requestCallback(contact));
-    else if (config.optBoolean("callbacks_enabled") && (callbacks & 2) != 0)
-      builder.setPositiveButton("Cancel request", (d, which) -> cancelCallback(contact));
-    if (missed > 0) builder.setNeutralButton("Clear missed calls", (d, which) -> {
-      CallNotices.clear(this, contact.optString("id")); if (engine.call == null) directory();
-    });
-    contactDialog = builder.show();
+  private JSONObject findContact(String id) {
+    JSONArray contacts = config == null ? null : config.optJSONArray("contacts");
+    if (contacts != null) for (int i = 0; i < contacts.length(); i++) {
+      JSONObject peer = contacts.optJSONObject(i);
+      if (peer != null && id.equals(peer.optString("id"))) return peer;
+    }
+    return null;
+  }
+
+  private String presence(JSONObject contact) {
+    return !contact.optBoolean("online") ? getString(R.string.offline)
+        : "push".equals(contact.optString("presence")) ? getString(R.string.try_calling) : getString(R.string.available);
+  }
+
+  // @llr LLR-AND-HISTORY-002, LLR-AND-UI-002
+  private void contactPage(JSONObject contact, long ticket) {
+    int missed = CallNotices.snapshot(this, config.optJSONArray("contacts")).count(contact.optString("id"));
+    int callbacks = NoticeBook.callbacks(config.optJSONArray("callbacks"),
+        config.optJSONObject("sip").optString("username"), contact.optString("id"));
+    ContactScreen detail = new ContactScreen(this, contact.optString("name"), presence(contact),
+        ContactNotice.summary(this, missed, callbacks), engine.registered && contact.optBoolean("online"),
+        config.optBoolean("callbacks_enabled"), (callbacks & 2) != 0, callbackSending, missed,
+        () -> { selectedContact = null; directory(); },
+        () -> { try { if (session.prepare()) engine.dial(contact); } catch (Exception error) { showError(getString(R.string.start_call_failed)); } },
+        () -> { if ((callbacks & 2) != 0) cancelCallback(contact); else requestCallback(contact); },
+        () -> { CallNotices.clear(this, contact.optString("id")); directory(); });
+    setContentView(detail); loadPortrait(detail.portrait, contact.optString("photo"), ticket);
+  }
+
+  // Android 9–12 fallback; newer phones use the predictive-back callback registered in onCreate.
+  @android.annotation.SuppressLint("GestureBackNavigation")
+  @Override public void onBackPressed() { navigateBack(); }
+
+  private void navigateBack() {
+    if (engine.call == null && selectedContact != null) { selectedContact = null; directory(); }
+    else moveTaskToBack(true);
   }
 
   // @llr LLR-AND-HISTORY-002
@@ -741,6 +797,7 @@ public final class MainActivity extends Activity {
   private void updateCallback(JSONObject contact, String cancelId) {
     if (callbackSending || enrollment == null || !contact.optBoolean("can_call")) return;
     callbackSending = true;
+    if (selectedContact != null) directory();
     Enrollment target = enrollment;
     network.execute(() -> {
       boolean success;
@@ -754,10 +811,11 @@ public final class MainActivity extends Activity {
       main.post(() -> {
         callbackSending = false;
         if (!visible || target != enrollment || engine.call != null) return;
+        if (selectedContact != null) directory();
         if (sent) {
-          Toast.makeText(this, cancelId == null ? "Callback requested" : "Callback request cancelled", Toast.LENGTH_SHORT).show();
+          Toast.makeText(this, cancelId == null ? getString(R.string.callback_requested) : getString(R.string.callback_cancelled), Toast.LENGTH_SHORT).show();
           refresh(false);
-        } else showError("Could not update the callback request. Check your connection and try again.");
+        } else showError(getString(R.string.callback_failed));
       });
     });
   }
@@ -775,35 +833,19 @@ public final class MainActivity extends Activity {
   }
 
   private void acquireAudio() {
-    if (audioFocus != null) return;
-    AudioManager audio = (AudioManager) getSystemService(AUDIO_SERVICE);
-    audioFocus =
-        new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-            .setAudioAttributes(
-                new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build())
-            .setOnAudioFocusChangeListener(
-                change -> {
-                  if (change == AudioManager.AUDIOFOCUS_LOSS) engine.hangup();
-                })
-            .build();
-    audio.requestAudioFocus(audioFocus);
-    audio.setMode(AudioManager.MODE_IN_COMMUNICATION);
+    session.acquireAudio();
     setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
   }
 
   private void releaseAudio() {
-    if (audioFocus != null) {
-      AudioManager audio = (AudioManager) getSystemService(AUDIO_SERVICE);
-      audio.abandonAudioFocusRequest(audioFocus);
-      audio.setMode(AudioManager.MODE_NORMAL);
-      audioFocus = null;
-    }
-    muted = false;
-    output = CallEngine.Output.SPEAKER;
+    session.releaseAudio(); muted = false; output = CallEngine.Output.SPEAKER;
     setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+  }
+
+  @Override protected void onSaveInstanceState(Bundle state) {
+    super.onSaveInstanceState(state);
+    state.putString("selected_contact", selectedContact);
+    state.putString("callback_contact", callbackContact);
   }
 
   private void silence() {
@@ -813,12 +855,16 @@ public final class MainActivity extends Activity {
     }
   }
 
+  void callServiceUnavailable() {
+    if (visible) { directory(); showError(getString(R.string.start_call_failed)); }
+  }
+
   private void showError(String text) {
     message = text;
     new AlertDialog.Builder(this)
         .setTitle("ZmalaPhone")
         .setMessage(text)
-        .setPositiveButton("OK", null)
+        .setPositiveButton(getString(R.string.ok), null)
         .show();
   }
 
@@ -831,26 +877,27 @@ public final class MainActivity extends Activity {
         && !getSharedPreferences("push", 0).getBoolean("permission_asked", false)) {
       getSharedPreferences("push", 0).edit().putBoolean("permission_asked", true).apply();
       new AlertDialog.Builder(this)
-          .setTitle("Receive calls when ZmalaPhone is closed")
+          .setTitle(getString(R.string.notification_explanation_title))
           .setMessage(
-              "Allow notifications so incoming calls can ring when you're using another app or the"
-                  + " phone is asleep. Internet and access to your call server are needed. If you"
-                  + " use Android's Force stop, open ZmalaPhone again to receive calls.")
+              getString(R.string.notification_explanation))
           .setPositiveButton(
-              "Continue",
+              getString(R.string.continue_action),
               (dialog, which) ->
                   requestPermissions(new String[] {Manifest.permission.POST_NOTIFICATIONS}, 8))
-          .setNegativeButton("Not now", (dialog, which) -> registerPush())
+          .setNegativeButton(getString(R.string.not_now), (dialog, which) -> registerPush())
           .show();
       return;
     }
     Enrollment target = enrollment;
+    pushPreparing = !pushReady;
     PushAlerts.register(
         this,
         target,
         ready -> {
-          if (!visible || enrollment != target || pushReady == ready) return;
-          pushReady = ready;
+          if (enrollment != target) return;
+          boolean changed = pushReady != ready || pushPreparing;
+          pushPreparing = false; pushReady = ready;
+          if (!visible || !changed) return;
           if (engine.call == null) directory();
         });
   }
@@ -861,6 +908,7 @@ public final class MainActivity extends Activity {
     super.onNewIntent(intent);
     setIntent(intent);
     handlePushIntent(intent);
+    handleCallbackIntent(intent);
     if (visible && enrollment != null && engine.call == null) refresh(true);
   }
 
@@ -879,6 +927,14 @@ public final class MainActivity extends Activity {
       answerExpires = push.expires;
     }
     PushAlerts.dismiss(this, push.callId);
+  }
+
+  // @llr LLR-AND-HISTORY-003
+  private void handleCallbackIntent(Intent intent) {
+    String peer = intent.getStringExtra(CallbackAlerts.PEER);
+    if (peer != null && peer.matches("[a-z][a-z0-9_-]{0,30}")) callbackContact = peer;
+    // Wait for refresh; directory() then checks the newly authenticated contact list.
+    intent.removeExtra(CallbackAlerts.PEER);
   }
 
   static boolean pushIncoming(java.util.Map<String, String> data) {

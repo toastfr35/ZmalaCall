@@ -29,7 +29,9 @@ class UsbPowerTests(unittest.TestCase):
         power.state, power.powered, power.ringing = 'on', True, True
         power.revision = power.refreshed = 2
         power.command = Mock()
-        samples = iter([(50, 20, False), (0, 0, False), (40, 40, False), (40, 40, True)])
+        samples = iter([(50, None, False), (0, 0, False), (40, 40, False), (40, 40, True)])
+        power.tone_levels = Mock()
+        power.tone_levels.prepare.return_value=Path('/runtime/tone.wav')
         clock = [1000]
         snapshots = []
         with tempfile.TemporaryDirectory() as folder, patch.dict('os.environ', {'ZMALA_RUNTIME_DIR': folder}), \
@@ -45,8 +47,8 @@ class UsbPowerTests(unittest.TestCase):
                     power.stopped = True
             power.changed = Mock(wait=Mock(side_effect=wait))
             power.run()
-            self.assertEqual(snapshots, [0, 0, 1, 1])
-            self.assertIn('plughw:C20,0', popen.call_args.args[0])
+            self.assertEqual(snapshots, [0, 1, 1, 1])
+            self.assertIn('default:C20', popen.call_args.args[0])
             self.assertEqual(process.terminate.call_count, 1)
             import json
             state = json.loads((Path(folder)/'usb-power.json').read_text())
@@ -269,7 +271,7 @@ class UsbPowerTests(unittest.TestCase):
             for _ in range(3):
                 engine.sync_speaker_mute()
         self.assertEqual([call.args for call in engine.core_set_playback_gain_db.call_args_list],
-                         [(123, -120), (123, 0)])
+                         [(123, -120), (123, -27.44)])
 
 
 class HelperSafetyTests(unittest.TestCase):

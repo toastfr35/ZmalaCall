@@ -8,6 +8,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/android/HLT/UiImprovementFlowTest.java
+  type: file
 - path: tests/android/HLT/EnrollmentFlowTest.java
   type: file
 reviewed: null

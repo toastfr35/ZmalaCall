@@ -1,0 +1,41 @@
+active: true
+derived: false
+normative: true
+scope: Core
+level: 76
+area: Callback request notifications
+header: App callback push state hints
+text: |
+  Eligible callback requests targeting an enrolled App account with an available
+  push destination shall trigger a signed callback state hint independently of
+  SIP registration. The hint shall contain the request ID, requester, recipient
+  device and a short authenticated deadline, without the requester display name
+  or callback contents. The app shall obtain current state through its bearer API.
+  The server shall persist the accepted state fingerprint, suppress duplicate sends,
+  retry failures no more than once per minute, and bound concurrent work to one
+  send per request within the existing 400-pending limit. It shall check persistence,
+  identity and eligibility before delivery, reconcile cancellation/completion that
+  races a send, and resume pending work after restart or push registration. Internal
+  fingerprints shall not appear in callback API views. Push acceptance shall not
+  complete a callback or replace terminal views and existing delivery paths.
+verification: |
+  Substitute the push sender and control persistence, offline SIP, duplicate
+  creation, restart, retries, cancellation races, expiration and identity changes.
+  Exercise authenticated callback endpoints and verify only the intended App
+  recipient receives a signed hint while API views omit internal delivery state.
+links:
+- HLR-SRV-CALLBACK-013: aU7IT7AvEwNAfKAJQ4zrT2oQO1PSbRzCjtDd_0BsSR0=
+references:
+- path: zmala_server/callback-push.js
+  type: file
+- path: zmala_server/callbacks.js
+  type: file
+- path: zmala_server/app-push.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: tests/server/LLT/callback-push.test.js
+  type: file
+reviewed: null

@@ -14,6 +14,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from zmala_terminal.common.configuration import validate
 from zmala_terminal.linux.c20_volume import apply
+from zmala_terminal.linux.sound_levels import playback_environment
 from tests.terminal.LLT.test_terminal import config
 
 
@@ -31,8 +32,8 @@ class C20VolumeTests(unittest.TestCase):
         with patch('zmala_terminal.linux.c20_volume.subprocess.run') as run:
             for value in [0, 50, 100]:
                 self.assertTrue(apply(value))
-                run.assert_called_with(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', f'{value}%'],
-                                       check=True, capture_output=True, timeout=5)
+                run.assert_called_with(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', '100%'],
+                                       check=True, capture_output=True, timeout=5, env=playback_environment())
 
     def test_missing_or_unresponsive_device_is_nonfatal(self):
         for error in [FileNotFoundError(), subprocess.CalledProcessError(1, 'amixer'),

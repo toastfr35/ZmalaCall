@@ -8,13 +8,19 @@ separate NAT networks, alongside LAN mode and Firebase incoming-call alerts whil
 
 the activity is closed. Remote mode needs a publicly reachable, configured secure
 
-deployment and HTTPS enrollment. Leaving an active call ends media and registration;
+deployment and HTTPS enrollment. Answered/user-started calls retain audio while the screen is hidden;
 
 missed-call and callback indicators are shown in the contact list.
 
 Normative scope and verification plans live in `requirements/android/`; this
 
 file describes the implementation and its current limitations.
+User-facing text is in English and French Android resources, following phone language
+or Android's per-app language selection. `UiText` translates stable engine status keys;
+translated words do not drive call state. Plural counts use Android quantity resources.
+Setup, contact actions, incoming calls and update explanations scroll for enlarged text.
+Call controls keep the five-second default, extend it through Android's recommended
+accessibility timeout, and stay visible while focused or touch exploration is active.
 
 ## Account setup
 
@@ -31,6 +37,10 @@ access on Android 17), scan the code and confirm the displayed server address.
 An HTTP enrollment explicitly warns that LAN setup and calls are unencrypted.
 
 For a QR received by email, display it on another screen to scan it with the phone.
+Alternatively save its picture and choose **Open QR image**. Android's document picker
+grants access only to that selected image. `QrImage` bounds bytes/source dimensions,
+samples the bitmap and decodes locally; both import and scanning use the same
+enrollment confirmation. A cancelled picker does not change the existing setup.
 
 LAN mode needs a mutually reachable trusted network. Secure relay mode supports
 
@@ -62,13 +72,13 @@ One account still supports one active SIP registration and call.
 
 The contact view uses server group permissions, account names and portraits.
 
-Compact horizontal rows place a rounded 72 dp portrait beside the name, with
-
-8 dp between rows. Available names have green backgrounds and push-only names have blue backgrounds; both start a call when
-
-tapped while registered; offline names are red and disabled. Screen readers
-
-announce availability. A smaller availability label is included in each name button; there is no separate call button.
+Each contact is one tappable card containing a rounded 64 dp portrait, name,
+availability and readable missed/callback notices. Cards have an 80 dp minimum height.
+Green Available means recently active; blue Try calling means unconfirmed push eligibility;
+red Offline means neither. All cards open a dedicated `ContactScreen`, including offline
+contacts. There are no separate row callback buttons. The page offers Call (enabled only
+when registered and the peer is callable), Request callback or Cancel request, and Clear
+missed calls when needed. Back or Contacts returns to the list. Long names and notices wrap.
 
 The contact screen omits the phone account name and routine ready-to-call status;
 
@@ -106,6 +116,9 @@ using the earpiece despite the loudspeaker icon. The routing defect is corrected
 other causes of low acoustic level still need physical listening checks.
 
 The controls start hidden and disappear after five seconds without interaction;
+short Mic, Sound, Camera and End labels appear with them. The first call briefly
+explains tapping and volume swipes. A compact status remains visible when microphone
+or received sound is muted, independently of the auto-hiding controls.
 
 using a control restarts that timer. The preview sits above the visible row and
 
@@ -119,7 +132,10 @@ A pulsing phone indicator shows Calling or Ringing until the call connects.
 
 After answer, a spinner and “Connecting video…” remain until the current call's
 
-first decoded remote frame. The progress container spans the available width with
+first decoded remote frame. After fifteen seconds without a frame, a calm delayed-video
+message replaces the spinner; a later frame clears it and the call remains connected.
+Transient HTTP configuration outages show a reconnecting notice and preserve an active
+call; revoked access or invalid configuration still release it. The progress container spans the available width with
 24 dp side margins so its label is not clipped to the spinner's width. `VideoStartup` re-arms the SDK's one-shot frame
 
 notification during initial stream restarts and ignores stale call callbacks.
@@ -134,9 +150,13 @@ after the activity has resumed, so the SDK lifecycle observer otherwise misses
 
 that transition and eventually drops to its 500 ms background iteration timer.
 
-The foreground timer runs at 20 ms; activity stop still releases the core.
+The foreground timer runs at 20 ms. A foreground call service retains that cadence while an active call is hidden; idle closure releases the core.
 
 Incoming calls retain the caller name and answer/decline actions before answering.
+`IncomingCallScreen` centres a rounded 132 dp caller portrait, name and incoming-call
+label above separate 64 dp minimum answer/decline actions. Its scroll container preserves
+access with enlarged text. Portrait loading is asynchronous and scoped to that view;
+missing images keep the common logo.
 
 Call and answer controls are green; decline and hangup are red. The dark palette
 
@@ -153,6 +173,10 @@ There is no reset action within the app. There is no manual SIP editor or public
 ## App updates and contact notices
 
 The contact screen alone displays the installed version and an Updates action.
+Its compact footer distinguishes server support, disabled notifications, registration
+progress and enabled/unavailable alerts. Disabled notifications open app or channel
+settings as appropriate; failed registration offers retry and missing server support
+explains how the person who supplied the QR can help. Setup does not show this footer.
 `AppUpdates` checks the fixed public GitHub latest-release API at most every six
 hours on opening; `UpdateJob` schedules a daily network-constrained metadata check.
 No server bearer token, account identity or GitHub token goes to GitHub. Only
@@ -160,6 +184,10 @@ stable newer releases with the exact uploaded APK asset and SHA256 digest qualif
 Downloads use bounded HTTPS redirects to GitHub asset hosts and private cache
 storage, with length, digest, package, version, debug-flag and signer checks.
 Android PackageInstaller performs final APK signature validation.
+New release discovery changes the footer action to **Update available** without opening
+a dialog. A selected update shows a percentage during transfer, then checking, preparing
+and installation stages. User interaction restarts the automatic-update idle timer;
+a selected person's action page is not considered idle for installation.
 
 Automatic updates default off and are offered on Android 12+. They require the
 user's install-apps permission, an unmetered connection and 30 seconds with the
@@ -184,18 +212,18 @@ recent observations and 128 contact counts capped at 99, and settles unacknowled
 rings at expiry. `CallNotices` saves this per-enrollment state in private app
 preferences. Answered/declined calls are not missed; connected calls clear the
 peer's count. Missed icons are red; incoming callback and sent-request arrows are
-green. The adjacent callback action opens details, requests a callback or clears
-missed calls. Unanswered outgoing calls also offer a callback. Badges are derived
+green. Contact name areas also state missed counts, Please call back for incoming
+requests and Callback requested for sent requests; simultaneous requests retain both
+labels. The contact page offers request/cancel actions and missed-call clearing. Unanswered outgoing calls also offer a callback. Badges are derived
 from the current allowed directory and the server's pending callback snapshot.
 
 The server advertises `callbacks_enabled` and returns `callbacks` in app config.
 The contact screen requests portrait orientation; the call screen restores normal
 display rotation, and hangup returns to portrait.
 
-A pending outgoing callback changes the same row button to a cancel icon. Its
-action sends `DELETE /api/app/callbacks/:id`, then refreshes the server snapshot.
-Failure keeps the pending state and reports an error. Tapping the portrait still
-opens notice details and missed-call clearing. Cancellation does not place or end a call.
+A pending outgoing callback changes Request callback to Cancel request on the
+contact page. Its action sends `DELETE /api/app/callbacks/:id`, then refreshes the server snapshot.
+Failure keeps the pending state and reports an error. The contact card always opens that person's page with notice details and missed-call clearing. Cancellation does not place or end a call.
 
 `POST /api/app/callbacks` accepts only a recipient `to`; authenticated App identity
 is the requester. Shared server callbacks deduplicate, expire and complete on
@@ -222,6 +250,10 @@ only to paths on the enrolled origin, refuses redirects, applies six-second
 
 connection/read timeouts and bounds configuration and photo response sizes.
 
+`Enrollment.validate` checks contact objects, unique valid account IDs and nonblank string
+names before the configuration reaches rendering or notice reconciliation. Calls build
+their target from the validated account ID and enrolled SIP domain, rather than a contact URL.
+
 `MainActivity` owns asynchronous configuration refresh, generation-based stale
 
 response rejection, screen state and private enrollment storage. Only the QR
@@ -229,6 +261,41 @@ response rejection, screen state and private enrollment storage. Only the QR
 payload is retained in `getNoBackupFilesDir()`; fetched SIP passwords are in memory.
 
 The app does not save them into Linphone's configuration or a call-history database.
+
+`PortraitQueue` runs best-effort portrait downloads on a separate single worker with at
+most forty queued jobs. A new contact view clears obsolete queued work; leaving the
+view invalidates its tickets, so an old in-flight image cannot update a newer screen.
+Configuration, presence and callback requests retain their own executor and cannot
+be delayed behind image downloads. Missing or discarded images keep the logo placeholder.
+
+`UpdateHttp` owns public update HTTP connections, bounded metadata reads and explicit
+redirect checks. Metadata uses only the fixed API URL and never redirects; APK redirects
+are revalidated before each connection and limited to six connections. Rejected or failed
+connections are disconnected by the helper; the downloader owns a successful APK connection.
+This channel receives no enrolled-server credentials. `AppUpdates` retains scheduling,
+call priority, dialogs and PackageInstaller lifecycle ownership.
+
+`CallSession` owns the engine, current validated configuration and audio focus on the
+main thread. It weakly observes the current activity; screens do not own the call.
+`CallService` starts from a visible Call/Answer action and declares microphone/camera
+foreground-service types. Its private ongoing notification returns to the screen or
+ends only the matching call ID. It is not sticky and does not recreate calls after
+process death. Wake ownership is bounded/renewed while the service exists and released
+with the call. Idle closure has neither a foreground service nor a SIP registration.
+
+On hiding an active call, `CallEngine.background` detaches native surfaces, disables
+that call's camera through `Call.setCameraEnabled(false)` and sets the SDK background
+iteration schedule to 20 ms. Core-wide capture defaults alone do not change a current
+call. Return reattaches fresh surfaces and resumes the same call's camera without
+another SIP offer. Background active-call configuration polling still handles revocation;
+transport failures preserve the current call and show reconnection status. Audio focus
+and listening/microphone state survive activity recreation. Only the selected contact
+ID is saved in the activity bundle; credentials remain in memory.
+
+These choices follow Android's [foreground-service declaration](https://developer.android.com/develop/background-work/services/fgs/declare)
+and [visible-start restrictions](https://developer.android.com/develop/background-work/services/fgs/restrictions-bg-start).
+Force stop, process/service termination and vendor restrictions can still end calls;
+physical device/Doze/audio qualification is separate from emulator lifecycle evidence.
 
 `CallEngine` owns the SDK on Android's main thread. It uses the supplied proxy,
 
@@ -448,15 +515,13 @@ Android can show the incoming screen over the lock screen when full-screen-call
 
 permission is available; otherwise it presents the call notification. No permanent
 
-foreground service, background microphone or camera is used. Notification/channel
+foreground service, microphone or camera is started by push alone. After a visible user starts or answers a call, CallService may retain microphone audio while the screen is hidden; camera sending is paused. Notification/channel
 
 permissions, Android Force stop, OEM battery restrictions, connectivity and Google
 
 Play services affect delivery. Qualify these on the actual target phone; emulator
 
-callback tests do not establish FCM delivery or Doze reliability. Keep the activity
-
-open during an answered video call. Sender setup is in [server.md](server.md).
+callback tests do not establish FCM delivery or Doze reliability. Return through the ongoing call notification to resume video after switching apps or locking the screen. Sender setup is in [server.md](server.md).
 
 ## Signed release builds
 
@@ -558,8 +623,10 @@ A push registration is not proof that the app is installed, online or ready to a
 The API adds `presence` (`available`, `push`, `offline`) to full, delta and preflight
 responses; `online` remains true for both callable states for older clients.
 Terminal live information expires after six seconds without a successful refresh,
-and cached configurations discard both live fields. Android clears the directory
-when a configuration refresh fails. Name buttons show a smaller status line;
+and cached configurations discard both live fields. Android retains the last validated
+directory during a temporary configuration failure, shows reconnect help and disables
+new calls until its registration returns. Revoked or invalid configuration clears access.
+Contact cards show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
 
@@ -581,3 +648,53 @@ After the bridge correction, the corner surface followed 480 by 640 portrait,
 switches retained the call. Ten targeted emulator native/display scenarios also
 passed, covering icon states, independent mute, volume gestures/bounds, preview
 size propagation, pixel scaling, timed controls and call/rotation ownership.
+
+## UI and live-call check on 26 October 2026
+
+The signed 0.3.17 candidate was installed over 0.3.16 on the OnePlus 8T running
+Android 14 without replacing its enrollment. Real contact cards, the person page,
+offline Call-disabled behavior, caller portrait and separate answer/decline actions
+were inspected. The disposable emulator separately covered request/cancel behavior,
+French app-locale switching, enlarged fonts and permission failures.
+
+Initial live calls exposed a terminal renewal-dispatch fault: its poll controller
+ignored fresh relay credentials at an unchanged configuration revision. After the
+backed-up terminal fix, phone-to-terminal and terminal-to-phone calls displayed
+video on both devices. The handset logged first decoded frames 2.611 and 2.285
+seconds after answer respectively. The reverse call began with the app behind Home
+and was opened through its Firebase notification.
+
+During an answered call, Home retained the foreground call service and paused the
+phone camera; returning through the ongoing notification restored both video views.
+Hangup removed the foreground service. These observations do not qualify audible
+speech, cellular relay connectivity, deep Doze or vendor battery restrictions.
+
+## Callback request notifications
+
+`CallbackBook` and `CallbackAlerts` reconcile ordinary callback reminders from the
+authenticated configuration. Incoming pending requests use the separate Callback
+requests channel, the current permitted contact name and a timeout matching the
+request deadline. Tapping waits for fresh contact permissions and opens the contact
+without dialing; an active call retains its screen. Seen IDs survive user dismissal
+and restart. Reconciliation clears cancelled, completed, expired or forbidden
+requests, silently updates changed names/deadlines and limits state to 512 seen IDs
+and 32 active reminders per enrollment identity. Disabled channels do not consume
+unseen requests. Call and callback channels share a push destination; either may
+remain enabled independently.
+
+FCM `callback` messages reuse the enrollment HMAC/device/deadline checks but cannot
+enter the incoming-call or media path. They schedule unique expedited WorkManager
+work (2.12.0), falling back to a regular job when quota is unavailable. The worker
+revalidates the hint, fetches current bearer-authorized configuration and applies
+only the latest refresh for the same enrollment. Temporary network failures retry
+at most twice; expired or revoked hints stop. Android 9–11 may briefly show a silent
+checking-requests foreground notification. No idle SIP connection or camera/microphone
+is started. This follows [Firebase background processing guidance](https://firebase.google.com/docs/cloud-messaging/android-message-priority).
+
+Verification on 27 October 2026: JVM state/proof tests, server lifecycle/HTTP tests
+and three emulator notification tests passed. The OnePlus was updated in place to
+signed 0.3.19. Real FCM delivery displayed the requester, tapping opened that
+contact without dialing, and cancelling the test request removed the reminder.
+Foreground and Home-screen cases passed; emulator fixtures also covered stale
+snapshots, deadline changes, enrollment isolation and ordinary call-alert regression.
+These checks do not qualify every vendor battery policy or deep Doze behavior.

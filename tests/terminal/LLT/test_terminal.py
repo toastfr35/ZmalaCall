@@ -1,7 +1,7 @@
 # @test T-LLT-034
 # @requirements LLR-TERM-COM-004, LLR-TERM-COM-005, LLR-TERM-NAV-003, LLR-TERM-NAV-004, LLR-TERM-NAV-005, LLR-TERM-NAV-006, LLR-TERM-NAV-007, LLR-TERM-UI-014, LLR-TERM-UI-023, LLR-TERM-CALL-011, LLR-TERM-CALL-012, LLR-TERM-CALL-013, LLR-TERM-CALL-014
 # @environment portable
-# @plan Drive model call states, availability changes, configuration validation, localization and carousel geometry with deterministic inputs; assert two-step calling, caller permission checks, cancellation, stable selection and three/five-contact layout. Reject malformed configuration types, including non-string photos, and verify script-specific font selection and installed-font fallback.
+# @plan Drive model call states, availability changes, configuration validation, localization and carousel geometry with deterministic inputs; assert two-step calling, caller permission checks, cancellation, stable selection and three/five-contact layout. Retarget rapid carousel movements in both directions, across wrap and through reversal; assert continuous position, bounded rendered-card count and the final selected identity, including a two-contact list. Reject malformed configuration types, including non-string photos, and verify script-specific font selection and installed-font fallback.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 import copy
@@ -229,6 +229,25 @@ class BehaviourTests(unittest.TestCase):
             now += motion.next_frame_delay(now)/1000
         self.assertAlmostEqual(now, .5, delta=.001)
         self.assertGreaterEqual(motion.next_frame_delay(1/60), 1)
+
+    def test_fast_carousel_retarget_preserves_position_and_counts_every_step(self):
+        for count in (2, 5, 7):
+            people = [{'id': str(i)} for i in range(count)]
+            for direction in (-1, 1):
+                motion = CarouselMotion(people, count-1, direction, 10)
+                for now in (10.04, 10.08):
+                    before = motion.frames(now)
+                    motion.retarget(direction, now)
+                    self.assertEqual(motion.frames(now), before)
+                center = next(person for person, slot in motion.frames(11) if slot == 0)
+                self.assertEqual(center, people[(count-1+3*direction)%count])
+                # Reversal changes the destination, never the displayed frame.
+                before = motion.frames(10.1)
+                motion.retarget(-direction, 10.1)
+                self.assertEqual(motion.frames(10.1), before)
+                center = next(person for person, slot in motion.frames(11) if slot == 0)
+                self.assertEqual(center, people[(count-1+2*direction)%count])
+                self.assertLessEqual(len(motion.frames(10.2)), 4)
 
     def test_carousel_configuration_validation(self):
         for value in (3, 5):

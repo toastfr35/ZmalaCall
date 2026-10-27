@@ -1,20 +1,13 @@
 // @test A-LLT-003
 // @requirements LLR-AND-UI-002, LLR-AND-UPDATE-002, LLR-AND-HISTORY-002
 // @environment native-display
-// @plan Open the activity without enrollment; inspect setup instructions and minimum touch height.
-// Enroll against local fixtures with available/push-only/offline contacts; inspect compact name buttons and
-// rounded portraits, then tap the online name and inspect its outgoing SIP INVITE.
-// Check that the contact screen omits the phone account name and ready status.
-// Seed missed and callback notices, inspect accessible badges, request a callback over the
-// authenticated fixture API, and inspect the contact-only version and idle update controls.
-// Request then cancel through the same row button, assert the exact DELETE and restored action.
-// Assert portrait-only contact orientation, released for calling and restored after hangup.
-// Check balanced vertical space for two contacts; add enough contacts to overflow and verify
-// top alignment and scrolling. No Reset setup action is present.
-// @pass Setup explains using a supplied QR without server administration; setup labels, action
-// geometry assertions pass on an Android display.
-// Available names are green, push-only names blue and callable, offline names red/disabled, and tapping calls the named
-// peer.
+// @plan Open setup and inspect QR instructions/actions. Enroll with available, push-only and offline
+// contacts. Assert each card is one interactive target with correct colour and rounded portrait.
+// Open contact actions, inspect simultaneous incoming/sent callback words, clear missed counts,
+// request/cancel a callback through authenticated HTTP and navigate Back/Contacts. Offline Call
+// stays disabled. Call from an available contact page and inspect its outgoing SIP INVITE.
+// @pass Offline cards open their actions without calling, callbacks change Request to Cancel only
+// after server confirmation, missed clearing is visible, and enabled Call targets the selected peer.
 package org.zmala.phone;
 
 import static org.junit.Assert.*;
@@ -74,100 +67,46 @@ public class InterfaceTest {
         PhoneFixture.waitFor(() -> PhoneFixture.enabledText(screen, "Living room"));
         CallNotices.ring(screen, "missed-fixture", "term1", System.currentTimeMillis() + 60000);
         CallNotices.finish(screen, "missed-fixture", true);
-        PhoneFixture.waitFor(() -> PhoneFixture.description(screen.getWindow().getDecorView(), "1 missed call from Living room") != null);
-        PhoneFixture.INSTRUMENTATION.runOnMainSync(
-            () -> {
-              android.widget.Button online =
-                  (android.widget.Button)
-                      PhoneFixture.text(screen.getWindow().getDecorView(), "Living room");
-              android.widget.Button offline =
-                  (android.widget.Button)
-                      PhoneFixture.text(screen.getWindow().getDecorView(), "Kitchen");
-              android.widget.Button push = (android.widget.Button) PhoneFixture.text(screen.getWindow().getDecorView(), "Sleeping phone");
-              assertTrue(push.isEnabled());
-              assertEquals(MainActivity.BLUE, ((android.graphics.drawable.GradientDrawable) push.getBackground()).getColor().getDefaultColor());
-              assertTrue(push.getText().toString().endsWith("\nTry calling"));
-              assertTrue(online.getText().toString().endsWith("\nAvailable"));
-              assertTrue(offline.getText().toString().endsWith("\nOffline"));
-              assertTrue(online.isEnabled());
-              assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, screen.getRequestedOrientation());
-              assertFalse(offline.isEnabled());
-              assertEquals(
-                  MainActivity.GREEN,
-                  ((android.graphics.drawable.GradientDrawable) online.getBackground())
-                      .getColor()
-                      .getDefaultColor());
-              assertEquals(
-                  MainActivity.RED,
-                  ((android.graphics.drawable.GradientDrawable) offline.getBackground())
-                      .getColor()
-                      .getDefaultColor());
-              assertTrue(online.getContentDescription().toString().contains("available"));
-              assertTrue(offline.getContentDescription().toString().contains("offline"));
-              android.view.ViewGroup row = (android.view.ViewGroup) online.getParent();
-              assertEquals(3, row.getChildCount());
-              android.widget.ImageView portrait = (android.widget.ImageView) ((android.view.ViewGroup) row.getChildAt(0)).getChildAt(0);
-              assertTrue(portrait.getClipToOutline());
-              assertTrue(
-                  ((android.graphics.drawable.GradientDrawable) portrait.getBackground())
-                          .getCornerRadius()
-                      > 0);
-              float density = screen.getResources().getDisplayMetrics().density;
-              assertTrue(online.getHeight() >= 60 * density);
-              assertTrue("Short names should fit a compact row", row.getHeight() <= 80 * density);
-              assertNull(PhoneFixture.text(screen.getWindow().getDecorView(), "Video call"));
-              assertNull(PhoneFixture.text(screen.getWindow().getDecorView(), "Available"));
-              assertNull(PhoneFixture.text(screen.getWindow().getDecorView(), "Ready to call"));
-              assertNull(PhoneFixture.text(screen.getWindow().getDecorView(), "Test phone"));
-              assertNull(PhoneFixture.text(screen.getWindow().getDecorView(), "Reset setup"));
-              assertNotNull(PhoneFixture.text(screen.getWindow().getDecorView(), "v" + AppUpdates.get(screen).version()));
-              assertNotNull(PhoneFixture.description(screen.getWindow().getDecorView(), "Please call Living room back. Callback requested from Living room"));
-              android.view.ViewGroup rows = (android.view.ViewGroup) row.getParent();
-              android.view.View last = rows.getChildAt(rows.getChildCount() - 1);
-              assertEquals(
-                  "Short list must be centered",
-                  row.getTop(),
-                  rows.getHeight() - last.getBottom(),
-                  2);
-            });
+        PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "1 missed call · Please call back · Callback requested"));
+        PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+          android.view.View root = screen.getWindow().getDecorView();
+          for (Object[] expected : new Object[][]{{"Living room", MainActivity.GREEN}, {"Kitchen", MainActivity.RED}, {"Sleeping phone", MainActivity.BLUE}}) {
+            ContactCard card = card(PhoneFixture.text(root, (String) expected[0]));
+            assertEquals((int) expected[1], card.color);
+            assertTrue(card.isClickable()); assertTrue(card.isEnabled());
+            assertTrue(card.portrait.getClipToOutline());
+            assertFalse(card.portrait.isClickable());
+          }
+          assertNull(PhoneFixture.text(root, "Ready to call"));
+          assertNull(PhoneFixture.text(root, "Test phone"));
+          assertNotNull(PhoneFixture.text(root, "v" + AppUpdates.get(screen).version()));
+          assertEquals(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, screen.getRequestedOrientation());
+        });
         PhoneFixture.snapshot("compact-contacts");
-        PhoneFixture.click(screen, "Updates");
-        PhoneFixture.dialog("Later");
-        PhoneFixture.click(screen, "Call notices and callback for Kitchen");
-        PhoneFixture.dialog("Request callback");
+        PhoneFixture.click(screen, "Living room");
+        assertTrue(PhoneFixture.hasText(screen, "Please call back\nCallback requested" )
+            || PhoneFixture.hasText(screen, "1 missed call\nPlease call back\nCallback requested"));
+        assertTrue(PhoneFixture.hasText(screen, "Cancel request"));
+        PhoneFixture.click(screen, "Clear missed calls");
+        assertFalse(PhoneFixture.hasText(screen, "Clear missed calls"));
+        PhoneFixture.click(screen, "Contacts");
+        PhoneFixture.click(screen, "Kitchen");
+        assertFalse(PhoneFixture.enabledText(screen, "Call"));
+        PhoneFixture.snapshot("contact-actions-offline");
+        PhoneFixture.click(screen, "Request callback");
         PhoneFixture.waitFor(() -> http.callbackRequests > 0);
         assertEquals("term2", http.callbackRecipient);
-        PhoneFixture.waitFor(() -> PhoneFixture.description(screen.getWindow().getDecorView(), "Cancel callback request to Kitchen") != null);
-        PhoneFixture.click(screen, "Cancel callback request to Kitchen");
+        PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Cancel request"));
+        PhoneFixture.snapshot("contact-actions-sent");
+        PhoneFixture.click(screen, "Cancel request");
         PhoneFixture.waitFor(() -> http.callbackCancellations == 1);
-        PhoneFixture.waitFor(() -> PhoneFixture.description(screen.getWindow().getDecorView(), "Call notices and callback for Kitchen") != null);
-        for (int i = 0; i < 20; i++)
-          config
-              .getJSONArray("contacts")
-              .put(
-                  new org.json.JSONObject()
-                      .put("id", "extra" + i)
-                      .put("name", "Extra " + i)
-                      .put("can_call", true)
-                      .put("online", false));
-        config.put("configuration_version", 3);
-        PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Extra 19"));
-        PhoneFixture.INSTRUMENTATION.waitForIdleSync();
-        PhoneFixture.INSTRUMENTATION.runOnMainSync(
-            () -> {
-              android.view.View row =
-                  (android.view.View)
-                      PhoneFixture.text(screen.getWindow().getDecorView(), "Living room")
-                          .getParent();
-              android.view.ViewGroup rows = (android.view.ViewGroup) row.getParent();
-              android.widget.ScrollView scroll = (android.widget.ScrollView) rows.getParent();
-              assertTrue("Long list must scroll", scroll.canScrollVertically(1));
-              assertTrue(
-                  "Long list must start at the top",
-                  row.getTop() <= 5 * screen.getResources().getDisplayMetrics().density);
-            });
+        PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Request callback"));
+        PhoneFixture.INSTRUMENTATION.runOnMainSync(screen::onBackPressed);
+        PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Living room"));
         sip.ringOutgoing = true;
         PhoneFixture.click(screen, "Living room");
+        PhoneFixture.waitFor(() -> PhoneFixture.enabledText(screen, "Call"));
+        PhoneFixture.click(screen, "Call");
         String invite = sip.invites.poll(10, java.util.concurrent.TimeUnit.SECONDS);
         assertNotNull("Tapping an online name must start a call", invite);
         assertTrue(invite.startsWith("INVITE sip:term1@127.0.0.1"));
@@ -182,6 +121,11 @@ public class InterfaceTest {
       activity.finishActivity();
       Files.deleteIfExists(file.toPath());
     }
+  }
+
+  private static ContactCard card(android.view.View view) {
+    while (!(view instanceof ContactCard)) view = (android.view.View) view.getParent();
+    return (ContactCard) view;
   }
 
   @Test
@@ -204,10 +148,7 @@ public class InterfaceTest {
                   "Scan the setup QR code you received by email or on paper."));
           assertTrue(
               button.getMinimumHeight() >= 60 * screen.getResources().getDisplayMetrics().density);
-          assertNotNull(
-              PhoneFixture.text(
-                  screen.getWindow().getDecorView(),
-                  "Keep this screen open to receive calls"));
+          assertNotNull(PhoneFixture.text(screen.getWindow().getDecorView(), "Open QR image"));
         });
   }
 }

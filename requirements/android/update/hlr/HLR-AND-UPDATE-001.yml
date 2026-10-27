@@ -8,6 +8,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/android/HLT/UiImprovementFlowTest.java
+  type: file
 - path: tests/android/HLT/updates.py
   type: file
 - path: tests/android/HLT/UpdaterFlowTest.java

@@ -5,7 +5,7 @@ header: |
   Volume feedback
 level: 68.0
 links:
-- HLR-TERM-AUDIO-002: hoGaDJ4c4UQMUiQOpR48fOu56WLz-Q6EyYwf-5lKJRI=
+- HLR-TERM-AUDIO-002: lW9hiMouJja9WRBJlUZBmYmMaSUkNugF77_2t71epGE=
 normative: true
 ref: ''
 references:
@@ -16,6 +16,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Outside an established call, the volume page shall cover the terminal UI with only a centered horizontal speaker-volume control, direction icons and current percentage. During an established call, the same control shall appear as a compact overlay above the video, leaving most video visible and preserving the call. It shall remain open until closed by middle or preempted by a call/state, setup or focus change. A mixer failure shall show a failure indication.
+  The middle-button call-volume control shall appear as a compact horizontal overlay above the current page, including the contact carousel and an established call. A surrounding black frame shall keep direction icons, track and current percentage readable while leaving most of the underlying page or video visible. It shall not replace the whole screen or change its selection/call. It shall remain open until closed by middle or preempted by a call/state, setup or focus change. A playback-control failure shall show a failure indication.
 verification: |
-  Open at multiple sizes; inspect horizontal control geometry, percentage and full-page coverage outside calls and bounded overlay geometry over visible video during calls. Check it stays open without a timeout and displays a mixer failure.
+  Open over the carousel and a call at multiple sizes; inspect the black frame, horizontal geometry, percentage and bounded coverage. Check that most of the underlying screen remains visible, it stays open without a timeout and failure feedback appears.

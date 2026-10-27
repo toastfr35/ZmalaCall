@@ -35,6 +35,10 @@ def validate(config, device_id):
     if 'c20_speaker_volume' in config and (type(config['c20_speaker_volume']) is not int
                                          or not 0 <= config['c20_speaker_volume'] <= 100):
         raise ValueError('C20 speaker volume must be 0–100 percent')
+    # @llr LLR-TERM-AUDIO-010
+    for key in ('ringtone_volume', 'action_sound_volume'):
+        if key in config and (type(config[key]) is not int or not 0 <= config[key] <= 100):
+            raise ValueError('Sound volume must be 0–100 percent')
     if not isinstance(config.get('display_name'), str) or len(config['display_name']) > 80:
         raise ValueError('Invalid display name')
     if not isinstance(config.get('language', 'en'), str) or config.get('language', 'en') not in LANGUAGES:

@@ -33,4 +33,11 @@ function maxForwards(value) {
   const hops = Number(value);
   return Number.isInteger(hops) && hops >= 0 && hops <= 255 ? hops : null;
 }
-module.exports = { validRequest, maxForwards };
+// @llr LLR-SRV-CALL-006, LLR-SRV-CALL-007, LLR-SRV-APP-005
+/** The authenticated transport is part of call ownership: matching an IP alone
+ * would let another client behind the same NAT cancel or control this call.
+ * @param {import('sip').Remote} a @param {import('sip').Remote} b */
+function samePeer(a, b) {
+  return a.address === b.address && a.port === b.port && a.protocol === b.protocol;
+}
+module.exports = { validRequest, maxForwards, samePeer };

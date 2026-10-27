@@ -319,31 +319,35 @@ public class EnrollmentFlowTest {
 
       PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
         android.view.View root = screen.getWindow().getDecorView();
-        for (Object[] state : new Object[][]{{"Living room", "Available", android.graphics.Color.rgb(33, 122, 80), true},
-            {"Sleeping phone", "Try calling", android.graphics.Color.rgb(33, 91, 164), true},
-            {"Kitchen", "Offline", android.graphics.Color.rgb(183, 47, 63), false}}) {
-          android.widget.Button name = (android.widget.Button) PhoneFixture.text(root, (String) state[0]);
-          assertNotNull(name);
-          assertTrue(name.getText().toString().endsWith("\n" + state[1]));
-          assertEquals((int) state[2], ((android.graphics.drawable.GradientDrawable) name.getBackground()).getColor().getDefaultColor());
-          assertEquals((boolean) state[3], name.isEnabled());
+        for (Object[] state : new Object[][]{{"Living room", "Available", MainActivity.GREEN},
+            {"Sleeping phone", "Try calling", MainActivity.BLUE}, {"Kitchen", "Offline", MainActivity.RED}}) {
+          android.view.View item = PhoneFixture.text(root, (String) state[0]);
+          while (!(item instanceof ContactCard)) item = (android.view.View) item.getParent();
+          assertEquals((int) state[2], ((ContactCard) item).color);
+          assertNotNull(PhoneFixture.text(item, (String) state[1]));
+          assertTrue(item.isClickable());
         }
       });
-
+      PhoneFixture.click(screen, "Kitchen");
+      assertFalse(PhoneFixture.enabledText(screen, "Call"));
+      PhoneFixture.click(screen, "Contacts");
       sip.ringOutgoing = true;
       PhoneFixture.click(screen, "Sleeping phone");
+      PhoneFixture.click(screen, "Call");
       String pushInvite = sip.invites.poll(10, java.util.concurrent.TimeUnit.SECONDS);
       assertNotNull(pushInvite);
       assertTrue(pushInvite.startsWith("INVITE sip:phone2@127.0.0.1"));
       sip.respond(pushInvite, 486, "");
-      PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Living room")
-          && !PhoneFixture.hasText(screen, "End call"));
+      PhoneFixture.waitFor(() -> PhoneFixture.hasText(screen, "Contacts")
+          && !PhoneFixture.hasDescription(screen, "End call"));
+      PhoneFixture.click(screen, "Contacts");
 
       PhoneFixture.snapshot("contacts");
 
       sip.ringOutgoing = true;
 
       PhoneFixture.click(screen, "Living room");
+      PhoneFixture.click(screen, "Call");
 
       String outgoing = sip.invites.poll(10, java.util.concurrent.TimeUnit.SECONDS);
 

@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/HLT/test_server_exchange_ui.py
+  type: file
 - path: tests/terminal/HLT/secure_network_lab.py
   type: file
 reviewed: null
@@ -19,3 +21,4 @@ text: When secure relay mode is configured, the terminal shall establish audio a
   connection.
 verification: Run the isolated two-home network matrix with UDP blocked at either or both homes.
   Check decoded media in both directions and TLS authentication.
+  Check same-revision credential renewal through the UI poll controller, including deferred application during a call.

@@ -29,7 +29,8 @@ public final class PushMessage {
           caller = data.get("caller"),
           expiry = data.get("expires");
       long expires = Long.parseLong(expiry);
-      if (!("ring".equals(event) || "cancel".equals(event))
+      // @llr LLR-AND-HISTORY-003
+      if (!("ring".equals(event) || "cancel".equals(event) || "callback".equals(event))
           || id == null
           || !id.matches("[A-Za-z0-9@._:+/=-]{1,256}")
           || caller == null

@@ -75,8 +75,10 @@ public class BackgroundCallingTest {
         }
       }
       assertNotNull("Notification Answer must accept the matching authenticated SIP call", answer);
-      assertEquals(0, manager.getActiveNotifications().length);
+      assertFalse(java.util.Arrays.stream(manager.getActiveNotifications())
+          .anyMatch(notification -> notification.getId() == 1 && "answered".equals(notification.getTag())));
     } finally {
+      PhoneFixture.endSession();
       if (screen != null) {
         MainActivity a = screen;
         PhoneFixture.INSTRUMENTATION.runOnMainSync(a::finish);

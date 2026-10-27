@@ -1,8 +1,9 @@
 active: true
 area: Audio
 derived: false
-header: |
-  Speaker level control
+header: 'Speaker level control
+
+  '
 level: 21.0
 links:
 - PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
@@ -12,11 +13,17 @@ ref: ''
 references:
 - path: tests/terminal/HLT/test_remote_ui.py
   type: file
+- path: tests/terminal/HLT/test_sound_feedback_ui.py
+  type: file
 reviewed: null
 scope: Core
-text: |
-  The terminal shall let the user adjust speaker volume during operation. Volume
-  changes shall preserve microphone gain and TV volume.
-verification: |
-  Adjust the level from settings and the remote volume page. Check the speaker, visible level,
+text: 'The terminal shall let the user independently adjust call, ringtone and remote-button feedback volume during
+  operation. Call-volume changes shall use a compact overlay on the current page. Changes shall preserve microphone
+  gain, TV volume and the other sound categories.
+
+  '
+verification: 'Adjust the level from settings and the remote volume page. Check the speaker, visible level,
+
   other audio controls and USB reconnection.
+
+  '

@@ -8,6 +8,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/android/HLT/CallContinuityTest.java
+  type: file
 - path: tests/android/HLT/BackgroundCallingTest.java
   type: file
 - path: tests/android/HLT/background_push.py

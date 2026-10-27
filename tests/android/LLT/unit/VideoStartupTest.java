@@ -3,6 +3,7 @@
 // @environment portable
 // @plan Feed answer, stream restarts and decoded-frame callbacks through SDK call doubles and
 // a monotonic fake clock. Re-arm a replaced decoder, reset on hangup, and deliver stale callbacks.
+// Cross the fifteen-second delayed-video boundary, then deliver a frame or start a new call.
 // @pass Answer and StreamsRunning alone never mark video ready; only the current call's decoded
 // frame does. Timing starts at answer, is reported once, and stale/early frames cannot hide progress.
 package org.zmala.phone;
@@ -16,6 +17,16 @@ import org.linphone.core.Call;
 import org.linphone.core.CallListener;
 
 public class VideoStartupTest {
+  @Test public void lateVideoIsInformativeWithoutMarkingAFrameReady() {
+    long[] now = {100}; Peer peer = new Peer();
+    VideoStartup startup = new VideoStartup(() -> now[0], elapsed -> {});
+    startup.state(peer.call, Call.State.Connected);
+    now[0] = 15099; assertFalse(startup.delayed(peer.call));
+    now[0]++; assertTrue(startup.delayed(peer.call)); assertFalse(startup.ready(peer.call));
+    startup.state(peer.call, Call.State.StreamsRunning); assertTrue(startup.delayed(peer.call));
+    peer.listener.onNextVideoFrameDecoded(peer.call); assertFalse(startup.delayed(peer.call));
+    assertTrue(startup.ready(peer.call)); startup.reset(); assertFalse(startup.delayed(peer.call));
+  }
   static final class Peer {
     CallListener listener;
     int requests, removed;

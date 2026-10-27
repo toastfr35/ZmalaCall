@@ -45,10 +45,15 @@ public final class PushAlerts {
         && (channel == null || channel.getImportance() >= NotificationManager.IMPORTANCE_DEFAULT);
   }
 
+  // @llr LLR-AND-HISTORY-003
+  static boolean anyAllowed(Context context) {
+    return allowed(context) || CallbackAlerts.allowed(context);
+  }
+
   static void channel(Context context) {
     NotificationChannel channel =
-        new NotificationChannel(CHANNEL, "Incoming calls", NotificationManager.IMPORTANCE_HIGH);
-    channel.setDescription("Rings when someone calls your ZmalaPhone account.");
+        new NotificationChannel(CHANNEL, context.getString(R.string.incoming_calls), NotificationManager.IMPORTANCE_HIGH);
+    channel.setDescription(context.getString(R.string.notification_channel_help));
     channel.enableVibration(true);
     channel.setSound(
         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
@@ -75,7 +80,8 @@ public final class PushAlerts {
 
   static void register(Context context, Enrollment enrollment, Consumer<Boolean> complete) {
     channel(context);
-    if (!allowed(context)) {
+    CallbackAlerts.channel(context);
+    if (!anyAllowed(context)) {
       upload(context, enrollment, null, complete);
       return;
     }
@@ -164,6 +170,8 @@ public final class PushAlerts {
   }
 
   static void receive(Context context, Map<String, String> data) {
+    // @llr LLR-AND-HISTORY-003
+    if ("callback".equals(data.get("event"))) { CallbackAlerts.receive(context,data); return; }
     Enrollment enrollment = enrollment(context);
     PushMessage message =
         enrollment == null
@@ -223,7 +231,7 @@ public final class PushAlerts {
     NotificationCompat.Builder builder =
         new NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(android.R.drawable.sym_call_incoming)
-            .setContentTitle("Incoming video call")
+            .setContentTitle(context.getString(R.string.incoming_video))
             .setContentText(name)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setPriority(NotificationCompat.PRIORITY_MAX)

@@ -42,7 +42,8 @@ function createApplication({
   const terminalStatuses = {};
   const adminSessions = new AdminSessions();
   const consoleJobs = new ConsoleJobs(store);
-  const callbacks = new Callbacks(store, sipServer, callbackMailer);
+  // @llr LLR-SRV-CALLBACK-025
+  const callbacks = new Callbacks(store, sipServer, callbackMailer, sipServer.appCalls?.push);
   sipServer.callbacks = callbacks;
   store.enableAsyncPersistence();
   callbacks.enableAsyncPersistence();

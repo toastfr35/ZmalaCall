@@ -81,6 +81,12 @@ class ConfigurationControl:
                 ('video_resolution' in config and self.engine.video_settings.resolution != config['video_resolution']) or
                 getattr(self.engine.video_settings, 'fps', 15) != config.get('video_fps', 15) or
                 getattr(self.engine, 'audio_profile', 'normal') != audio_profile):
+            # @llr LLR-TERM-AUDIO-010
+            # ALSA enumeration opens playback to probe it. The idle feedback
+            # stream must release the exclusive C20 PCM before a new core probes.
+            feedback = getattr(self, 'action_sounds', None)
+            if feedback:
+                feedback.cancel()
             if self.engine:
                 old, self.engine = self.engine, None
                 old.close()

@@ -7,6 +7,8 @@ import subprocess
 import sys
 import threading
 import time
+import wave
+from zmala_terminal.linux.sound_levels import ToneLevels, playback_environment
 
 IDLE_SECONDS = 300
 HELPER = '/usr/local/libexec/zmala-usb-power'
@@ -47,6 +49,8 @@ class UsbPower:
         self.next_refresh = 0
         self.ringer = None
         self.ringtone_file = self.root / 'common/assets/gentle-chime.wav'
+        self.ringtone_volume = 50
+        self.tone_levels = ToneLevels()
         self.preview_file, self.preview_state = None, ''
         self.preview_serial, self.preview_started = 0, None
         self.playback_key = None
@@ -69,6 +73,12 @@ class UsbPower:
 
     def update(self, active, battery, ringing=False):
         if not self.enabled:
+            with self.lock:
+                self.ringing = ringing
+                if ringing and self.worker is None and sys.platform == 'linux':
+                    self.worker = threading.Thread(target=self.preview_worker, name='ringtone-player', daemon=True)
+                    self.worker.start()
+            self.changed.set()
             return
         now = time.monotonic()
         with self.lock:
@@ -110,9 +120,10 @@ class UsbPower:
             self.playback_key = None
 
     # @llr LLR-TERM-AUDIO-009
-    def set_ringtone(self, file):
+    def set_ringtone(self, file, percent=50):
         with self.lock:
             self.ringtone_file = Path(file)
+            self.ringtone_volume = percent
 
     def preview_tone(self, file):
         with self.lock:
@@ -134,7 +145,7 @@ class UsbPower:
             self.changed.clear()
             self.play_tone(time.monotonic())
             with self.lock:
-                if self.preview_file is None:
+                if self.preview_file is None and not self.ringing:
                     self.worker = None
                     return
             self.changed.wait(.2)
@@ -150,6 +161,11 @@ class UsbPower:
         with self.lock:
             return self.preview_state
 
+    @property
+    def playback_active(self):
+        with self.lock:
+            return self.ringer is not None and self.ringer.poll() is None
+
     # @llr LLR-TERM-AUDIO-009
     def play_tone(self, now):
         """One worker owns playback; incoming calls supersede bounded previews."""
@@ -162,13 +178,14 @@ class UsbPower:
             if eligible:
                 from zmala_terminal.linux.c20_volume import status
                 desired, applied, failed = status()
-                eligible = desired is not None and desired == applied and not failed and desired > 0
-                if preview and desired == 0:
+                # Call mute must not mute ringing. Hardware gain is fixed at 100%.
+                eligible = applied is not None and not failed and self.ringtone_volume > 0
+                if preview and self.ringtone_volume == 0:
                     self.preview_state = 'muted'
             if not eligible:
                 self.stop_playback()
                 return
-            key = ('preview', self.preview_serial) if preview else ('ring', self.ringtone_file)
+            key = (('preview', self.preview_serial) if preview else ('ring', self.ringtone_file)) + (self.ringtone_volume,)
             if self.playback_key != key:
                 self.stop_playback()
                 self.playback_key, self.next_ring = key, 0
@@ -181,10 +198,12 @@ class UsbPower:
                 return
             if now >= self.next_ring and (not self.ringer or self.ringer.poll() is not None):
                 try:
-                    self.ringer = subprocess.Popen(['aplay', '-q', '-D', 'plughw:C20,0',
-                        str(self.preview_file if preview else self.ringtone_file)],
-                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                except OSError:
+                    file = self.tone_levels.prepare(self.preview_file if preview else self.ringtone_file,
+                                                   self.ringtone_volume)
+                    self.ringer = subprocess.Popen(['/usr/bin/aplay', '-q', '-D', 'default:C20', str(file)],
+                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                        env=playback_environment())
+                except (OSError, ValueError, EOFError, wave.Error):
                     logging.exception('Could not start ringtone playback')
                     if preview:
                         self.preview_file, self.preview_state = None, 'error'
@@ -298,3 +317,4 @@ class UsbPower:
         self.stopped = True
         self.changed.set()
         self.stop_ringing()
+        self.tone_levels.close()

@@ -14,20 +14,32 @@ class SettingsControl:
         cache = cache if isinstance(cache, RingtoneCache) else None
         power = self.usb_power
         config = self.model.config or {}
+        draft = self.settings_draft
+        percent = config.get('ringtone_volume', config.get('c20_speaker_volume', 50))
+        if self.settings_open and draft.editing and draft.key == 'ringtone_volume':
+            percent = draft.options[draft.index]
         selected = config.get('ringtone', 'nokia')
         file = cache.path(selected) if cache else DEFAULT_SOUND
-        power.set_ringtone(file or DEFAULT_SOUND)
+        power.set_ringtone(file or DEFAULT_SOUND, percent)
         if self.engine and not power.enabled and self.model.state == State.HOME:
             # Development/host policy without USB switching keeps SDK ringing.
-            applied = str(file or DEFAULT_SOUND)
+            import sys
+            applied = '' if sys.platform == 'linux' else str(file or DEFAULT_SOUND)
             key = (id(self.engine), applied)
             if key != getattr(self, 'sdk_ringtone_file', None):
-                self.engine.core_set_ring(self.engine.core, applied.encode())
+                self.engine.core_set_ring(self.engine.core, applied.encode() if applied else None)
                 self.sdk_ringtone_file = key
-        draft = self.settings_draft
-        editing = (self.settings_open and draft.editing and draft.key == 'ringtone' and
+        editing = (self.settings_open and draft.editing and draft.key in ('ringtone', 'ringtone_volume') and
                    not draft.busy and self.model.state == State.HOME and not self.setup_stage)
-        token = (self.generation, draft.options[draft.index]) if editing else None
+        feedback = getattr(self, 'action_sounds', None)
+        if feedback:
+            level = (draft.options[draft.index] if self.settings_open and draft.editing
+                     and draft.key == 'action_sound_volume' else config.get('action_sound_volume',20))
+            feedback.set_enabled(bool(level and power.ready and self.engine and not editing and not self.setup_stage
+                and self.model.state in (State.HOME, State.CONFIRMING, State.CONFIRM_CALLBACK)
+                and not (self.engine and self.engine.call)
+                and not power.ringing and not power.ringtone_preview_status and not power.playback_active))
+        token = (self.generation, draft.options[draft.index] if draft.key == 'ringtone' else selected, percent) if editing else None
         if token != getattr(self, 'ringtone_preview_token', None):
             power.stop_preview()
             self.ringtone_preview_token = token
@@ -82,11 +94,12 @@ class SettingsControl:
             if short and not self.settings_open and not self.setup_stage and self.model.state == State.HOME:
                 self._press_action('red')
 
-    def queue_keyrelease(self, button):
+    # @llr LLR-TERM-NAV-004
+    def queue_keyrelease(self, button, event_time=None):
         # X11 keyboard auto-repeat emits a release/press pair. Defer release
         # until idle so its matching repeat can cancel it and preserve the hold.
         if button not in self.key_release_jobs:
-            self.key_release_jobs[button] = self.root.after_idle(lambda: self.finish_keyrelease(button))
+            self.key_release_jobs[button] = (self.root.after_idle(lambda: self.finish_keyrelease(button)), event_time)
 
     def finish_keyrelease(self, button):
         self.key_release_jobs.pop(button, None)
@@ -103,13 +116,8 @@ class SettingsControl:
             volume.pointer(False)
             volume.dismiss()
 
-    # @llr LLR-TERM-REMOTE-016
     def press(self, button):
-        volume = getattr(self, 'volume_control', None)
-        if volume and volume.active is True:
-            self.cancel_settings_hold()
-            volume.button(button)
-            return
+        """Logical actions also serve timeouts/revocations; modal UI must not swallow them."""
         if self.setup_stage == 'tv' and self.tv_setup_button(button):
             return
         self.last_button = time.monotonic()

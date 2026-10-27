@@ -10,8 +10,8 @@ import android.provider.Settings;
 import android.widget.*;
 import java.io.*;
 import java.lang.ref.WeakReference;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.concurrent.Executors;
@@ -34,16 +34,19 @@ final class AppUpdates {
   private volatile boolean foreground, downloading;
   private boolean checking, requested, manual;
   private UpdatePolicy available;
-  private String status = "Check for a newer version.";
+  private String status;
   private AlertDialog dialog;
   private TextView statusView;
   private Button updateButton;
-  private String offered = "";
+  private ProgressBar progressView;
+  private int downloadPercent = -1;
+  private String displayLocales = "";
   private long idleSince;
   private final Runnable tick = this::tick;
 
   private AppUpdates(Context context) {
     this.context = context;
+    status = context.getString(R.string.check_newer);
     prefs = context.getSharedPreferences("updates", 0);
     installer = context.getPackageManager().getPackageInstaller();
     recoverSession();
@@ -60,6 +63,9 @@ final class AppUpdates {
 
   void attach(MainActivity activity) {
     screen = new WeakReference<>(activity);
+    String locales = activity.getResources().getConfiguration().getLocales().toLanguageTags();
+    if (!displayLocales.equals(locales) && !downloading) status = activity.getString(R.string.check_newer);
+    displayLocales = locales;
     foreground = true;
     recoverSession();
     idleSince = SystemClock.elapsedRealtime();
@@ -114,10 +120,6 @@ final class AppUpdates {
         requested = true; manual = false;
       }
       if (requested) startDownload();
-      else if (!later && !available.version.equals(offered) && dialog == null) {
-        offered = available.version;
-        show();
-      }
     }
     main.postDelayed(tick, 1000);
   }
@@ -132,9 +134,11 @@ final class AppUpdates {
     statusView = new TextView(activity);
     statusView.setTextSize(16);
     body.addView(statusView);
+    progressView = new ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal);
+    progressView.setMax(100); body.addView(progressView, new LinearLayout.LayoutParams(-1, -2));
     if (Build.VERSION.SDK_INT >= 31) {
       Switch toggle = new Switch(activity);
-      toggle.setText("Automatic updates on Wi-Fi");
+      toggle.setText(context.getString(R.string.automatic_updates));
       toggle.setMinHeight(pad * 3);
       toggle.setChecked(automatic());
       toggle.setOnCheckedChangeListener((button, enabled) -> {
@@ -145,16 +149,16 @@ final class AppUpdates {
       body.addView(toggle);
     }
     TextView explanation = new TextView(activity);
-    explanation.setText("Updates wait while calls ring or are connected. Automatic installation runs only"
-        + " while ZmalaPhone is open and idle; Android may still ask you to confirm. Your setup is kept.");
+    explanation.setText(context.getString(R.string.update_explanation));
     body.addView(explanation);
-    dialog = new AlertDialog.Builder(activity).setTitle("ZmalaPhone updates").setView(body)
-        .setPositiveButton("Update", null).setNeutralButton("Check now", null)
-        .setNegativeButton("Later", (d, which) -> {
+    ScrollView scroll = new ScrollView(activity); scroll.addView(body);
+    dialog = new AlertDialog.Builder(activity).setTitle(context.getString(R.string.updates_title)).setView(scroll)
+        .setPositiveButton(context.getString(R.string.update), null).setNeutralButton(context.getString(R.string.check_now), null)
+        .setNegativeButton(context.getString(R.string.later), (d, which) -> {
           requested = false;
           prefs.edit().putLong("later_until", System.currentTimeMillis() + 86400000L).apply();
         }).create();
-    dialog.setOnDismissListener(d -> { dialog = null; statusView = null; updateButton = null; });
+    dialog.setOnDismissListener(d -> { dialog = null; statusView = null; updateButton = null; progressView = null; });
     dialog.show();
     updateButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
     updateButton.setOnClickListener(v -> {
@@ -170,8 +174,22 @@ final class AppUpdates {
 
   private void render() {
     if (statusView != null) statusView.setText(
-        (available == null ? "" : "Version " + available.version + " is available.\n\n") + status);
-    if (updateButton != null) updateButton.setEnabled(available != null && !downloading);
+        available == null ? status : context.getString(R.string.version_available, available.version, status));
+    if (updateButton != null) updateButton.setEnabled(available != null && !downloading
+        && UpdateGate.INSTANCE.idle(System.currentTimeMillis()));
+    if (progressView != null) {
+      progressView.setVisibility(downloading || checking || UpdateGate.INSTANCE.installing()
+          ? android.view.View.VISIBLE : android.view.View.GONE);
+      progressView.setIndeterminate(downloadPercent < 0);
+      if (downloadPercent >= 0) progressView.setProgress(downloadPercent);
+    }
+  }
+
+  boolean hasUpdate() { return available != null; }
+  void interaction() { idleSince = SystemClock.elapsedRealtime(); }
+
+  private void reportProgress(String text, int percent) {
+    main.post(() -> { status = text; downloadPercent = percent; render(); });
   }
 
   private void dismiss() { if (dialog != null) dialog.dismiss(); }
@@ -180,7 +198,7 @@ final class AppUpdates {
     try {
       activity.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
           Uri.parse("package:" + context.getPackageName())));
-    } catch (Exception error) { status = "Allow app installation in Android Settings, then try again."; render(); }
+    } catch (Exception error) { status = context.getString(R.string.install_permission); render(); }
   }
 
   synchronized void check(boolean forced, Runnable finished) {
@@ -190,54 +208,25 @@ final class AppUpdates {
     }
     checking = true;
     prefs.edit().putLong("checked", now).apply();
-    status = "Checking for updates…"; render();
+    status = context.getString(R.string.checking_updates); render();
     worker.execute(() -> {
       UpdatePolicy candidate = null;
       String json = null, message;
       try {
-        HttpURLConnection connection = connect(new URI(UpdatePolicy.API), false);
-        try (InputStream in = connection.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          byte[] buffer = new byte[8192]; int count;
-          while ((count = in.read(buffer)) != -1) {
-            if (out.size() + count > 1048576) throw new IOException("Metadata limit");
-            out.write(buffer, 0, count);
-          }
-          String received = out.toString(StandardCharsets.UTF_8.name());
-          candidate = UpdatePolicy.parse(received, version());
-          json = received;
-        } finally { connection.disconnect(); }
-        message = candidate == null ? "You have the latest available version." : "Ready to download.";
-      } catch (Exception error) { message = "Could not check for updates. Try again later."; }
+        String received = UpdateHttp.metadata();
+        candidate = UpdatePolicy.parse(received, version());
+        json = received;
+        message = candidate == null ? context.getString(R.string.latest_version) : context.getString(R.string.ready_download);
+      } catch (Exception error) { message = context.getString(R.string.check_failed); }
       UpdatePolicy result = candidate; String cached = json, text = message;
       main.post(() -> {
         checking = false; status = text;
         if (cached != null) { available = result; prefs.edit().putString("release", cached).apply(); }
+        MainActivity activity = screen.get();
+        if (activity != null) activity.updateAvailabilityChanged();
         render(); finished.run();
       });
     });
-  }
-
-  static HttpURLConnection connect(URI start, boolean download) throws Exception {
-    URI uri = start;
-    for (int hop = 0; hop < 6; hop++) {
-      if (download ? !UpdatePolicy.allowedDownload(uri) : !UpdatePolicy.API.equals(uri.toString()))
-        throw new IOException("Untrusted update address");
-      HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
-      connection.setConnectTimeout(10000); connection.setReadTimeout(10000);
-      connection.setInstanceFollowRedirects(false);
-      connection.setRequestProperty("User-Agent", "ZmalaPhone-updater");
-      connection.setRequestProperty("Accept", download ? "application/octet-stream" : "application/vnd.github+json");
-      int code;
-      try { code = connection.getResponseCode(); }
-      catch (Exception error) { connection.disconnect(); throw error; }
-      if (code == 200) return connection;
-      String location = connection.getHeaderField("Location");
-      connection.disconnect();
-      if (!download || !java.util.Arrays.asList(301, 302, 303, 307, 308).contains(code) || location == null)
-        throw new IOException("Update server unavailable");
-      uri = uri.resolve(location);
-    }
-    throw new IOException("Too many redirects");
   }
 
   private boolean continueDownload() {
@@ -249,27 +238,34 @@ final class AppUpdates {
     downloading = true; requested = false;
     UpdatePolicy release = available;
     boolean userRequested = manual;
-    status = "Downloading update…"; render();
+    status = context.getString(R.string.download_zero); downloadPercent = 0; render();
     worker.execute(() -> {
       File apk = new File(context.getCacheDir(), "zmalaphone-update.apk");
       try {
         if (!continueDownload()) throw new InterruptedException();
-        HttpURLConnection connection = connect(new URI(release.url), true);
+        HttpURLConnection connection = UpdateHttp.connect(new URI(release.url), true);
         try (InputStream in = connection.getInputStream(); OutputStream out = new FileOutputStream(apk)) {
           MessageDigest hash = MessageDigest.getInstance("SHA-256");
-          byte[] buffer = new byte[65536]; long size = 0, start = SystemClock.elapsedRealtime(); int count;
+          byte[] buffer = new byte[65536]; long size = 0, start = SystemClock.elapsedRealtime(), reportedAt = start; int count;
           while ((count = in.read(buffer)) != -1) {
             if (!continueDownload()) throw new InterruptedException();
             if (size + count > release.size || SystemClock.elapsedRealtime() - start > 600000)
               throw new IOException("Download limit");
             out.write(buffer, 0, count); hash.update(buffer, 0, count); size += count;
+            long now = SystemClock.elapsedRealtime();
+            if (now - reportedAt >= 500 || size == release.size) {
+              int percent = (int) (size * 100 / release.size);
+              reportProgress(context.getString(R.string.downloading_percent, percent), percent); reportedAt = now;
+            }
           }
           if (size != release.size || !hex(hash.digest()).equals(release.digest))
             throw new IOException("Download verification failed");
         } finally { connection.disconnect(); }
+        reportProgress(context.getString(R.string.checking_update), -1);
         verify(apk, release);
         if (!continueDownload()) throw new InterruptedException();
         // Stage without committing; incoming calls still take priority while bytes are copied.
+        reportProgress(context.getString(R.string.preparing_install), -1);
         PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
         params.setAppPackageName(context.getPackageName()); params.setSize(apk.length());
         if (Build.VERSION.SDK_INT >= 31) params.setRequireUserAction(userRequested
@@ -293,8 +289,8 @@ final class AppUpdates {
         main.post(() -> {
           downloading = false;
           requested = paused && userRequested;
-          status = paused ? "Update paused until the app is open and calls have ended."
-              : "Update could not be downloaded or verified. Try again later.";
+          status = paused ? context.getString(R.string.update_paused)
+              : context.getString(R.string.download_failed);
           // Never retry a broken download in a tight automatic loop.
           if (!paused) prefs.edit().putLong("later_until", System.currentTimeMillis() + 21600000L).apply();
           render();
@@ -341,9 +337,9 @@ final class AppUpdates {
       Intent result = new Intent(context, UpdateResult.class).setAction("org.zmala.phone.UPDATE_RESULT");
       int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
       session.commit(PendingIntent.getBroadcast(context, id, result, flags).getIntentSender());
-      status = "Installing update…"; dismiss();
+      status = context.getString(R.string.installing_update); downloadPercent = -1; render();
     } catch (Exception error) {
-      installer.abandonSession(id); finish("Installation failed. Try again later.");
+      installer.abandonSession(id); finish(context.getString(R.string.installation_failed));
     }
   }
 
@@ -359,8 +355,8 @@ final class AppUpdates {
       }
       prefs.edit().putString("manual_required", prefs.getString("install_version", "")).apply();
       installer.abandonSession(id);
-      finish("Android needs your confirmation. Tap Update to continue.");
-    } else finish(result == PackageInstaller.STATUS_SUCCESS ? "Update installed." : "Update was not installed. You can try again.");
+      finish(context.getString(R.string.confirmation_needed));
+    } else finish(result == PackageInstaller.STATUS_SUCCESS ? context.getString(R.string.update_installed) : context.getString(R.string.update_not_installed));
   }
 
   private void finish(String text) {

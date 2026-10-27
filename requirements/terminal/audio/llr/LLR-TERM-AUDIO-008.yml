@@ -5,7 +5,7 @@ header: |
   Speaker level lifetime
 level: 70.0
 links:
-- HLR-TERM-AUDIO-002: hoGaDJ4c4UQMUiQOpR48fOu56WLz-Q6EyYwf-5lKJRI=
+- HLR-TERM-AUDIO-002: lW9hiMouJja9WRBJlUZBmYmMaSUkNugF77_2t71epGE=
 normative: true
 ref: ''
 references:
@@ -29,4 +29,6 @@ text: |
   the configured level. USB wake shall reapply the desired level after hardware reset.
 verification: |
   Recreate media, change the saved default and simulate USB wake. Check preserved or
-  replaced level according to the event.
+  replaced level according to the event. Change the configured default while a volume
+  click is pending, including a default equal to the last written level; verify the
+  pending click cannot overwrite it and later deliberate adjustments still work.

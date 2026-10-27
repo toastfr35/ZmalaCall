@@ -3,6 +3,7 @@
 // @environment portable
 // @plan Parse valid and malformed QR payloads and app configurations; reject terminal identity,
 // credentials in URLs, mismatched account identity, unsupported secure mode and oversized input.
+// Reject null/non-object contacts, missing or invalid identity/name and duplicate contact identities.
 // Serve redirects from a local HTTP fixture and verify no credentials reach the redirect target.
 // @pass All parser, identity, transport and redirect boundary assertions pass.
 package org.zmala.phone;
@@ -67,6 +68,28 @@ public class EnrollmentTest {
     assertThrows(
         Exception.class,
         () -> e.validate(config().put("secure_calls", new JSONObject().put("mode", "tls-relay"))));
+  }
+
+  @Test
+  public void malformedContactsAreRejectedBeforeRendering() throws Exception {
+    Enrollment enrollment = new Enrollment(qr().toString());
+    JSONObject contact = new JSONObject().put("id", "phone2").put("name", "Family member")
+        .put("sip_uri", "sip:phone2@localhost").put("can_call", true);
+    enrollment.validate(config().put("contacts", new org.json.JSONArray().put(contact)));
+    for (Object invalid : new Object[]{JSONObject.NULL, "not an object", new org.json.JSONArray(),
+        new JSONObject(), new JSONObject(contact.toString()).put("id", "bad id"),
+        new JSONObject(contact.toString()).put("name", "  "),
+        new JSONObject(contact.toString()).put("name", JSONObject.NULL),
+        new JSONObject(contact.toString()).put("name", 123),
+        new JSONObject(contact.toString()).put("id", 123)}) {
+      assertThrows(Exception.class, () -> enrollment.validate(
+          config().put("contacts", new org.json.JSONArray().put(invalid))));
+    }
+    assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts",
+        new org.json.JSONArray().put(contact).put(contact))));
+    org.json.JSONArray tooMany = new org.json.JSONArray();
+    for (int i = 0; i < 41; i++) tooMany.put(new JSONObject(contact.toString()).put("id", "phone" + i));
+    assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts", tooMany)));
   }
 
   @Test

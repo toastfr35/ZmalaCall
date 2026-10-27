@@ -161,6 +161,11 @@ class CallControl:
     def action(self, action):
         if not action or (not self.engine and action not in ('request_callback', 'cancel_callback')):
             return
+        # @llr LLR-TERM-AUDIO-010
+        # The C20 feedback stream is exclusive; release it before native call setup.
+        feedback = getattr(self, 'action_sounds', None)
+        if feedback and action in ('dial', 'answer', 'end', 'decline'):
+            feedback.cancel()
         try:
             if action in ('request_callback', 'cancel_callback'):
                 self.begin_callback(cancel=action == 'cancel_callback')

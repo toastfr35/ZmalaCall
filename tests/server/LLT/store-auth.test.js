@@ -15,6 +15,21 @@ const path = require('node:path');
 const digest = require('../../../zmala_server/node_modules/sip/digest');
 const { DigestAuth } = require('../../../zmala_server/auth');
 const { Store } = require('../../../zmala_server/store');
+const { migrate } = require('../../../zmala_server/migrations');
+const { defaultState } = require('../../../zmala_server/defaults');
+
+test('removed terminal languages migrate once to English without changing identities', () => {
+  const state = defaultState();
+  state.profiles.term1.language = 'it';
+  const accounts = structuredClone(state.users),
+    revision = state.configuration_version;
+  migrate(state);
+  assert.equal(state.profiles.term1.language, 'en');
+  assert.equal(state.configuration_version, revision + 1);
+  assert.deepEqual(state.users, accounts);
+  migrate(state);
+  assert.equal(state.configuration_version, revision + 1);
+});
 
 test('digest rejects replay, wrong password, and a changed target', () => {
   const auth = new DigestAuth('family.test'),

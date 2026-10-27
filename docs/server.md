@@ -494,6 +494,8 @@ the relay does not reduce the terminal's camera/codec workload.
 ## ZmalaPhone push sender
 
 `app-push.js` uses FCM HTTP v1 with an OAuth JWT scoped to Firebase Messaging.
+Concurrent sends share one bounded token refresh. Failed or malformed refreshes
+remain retryable; a late rejection of an older token cannot invalidate a newer one.
 Install a dedicated service-account key outside the release and server data,
 owned by root and readable only by the server service group (0640). The dedicated
 `push-sender@YOUR_PROJECT_ID.iam.gserviceaccount.com` account has the Firebase Cloud
@@ -598,12 +600,13 @@ Paths below are relative to `zmala_server/`.
 
 | Modules | Responsibility |
 | --- | --- |
+| `validation.js`, `terminal-status.js` | Separate account/configuration validation and bounded device telemetry; receipt times belong to the server |
 | `main.js`, `shutdown.js` | Composition, bootstrap publication and coordinated shutdown |
 | `http/handler.js`, `responses.js`, `admin-routes.js`, `device-routes.js` | Host/origin/authentication boundary and scoped API operations |
 | `store.js`, `accounts.js`, `terminal-settings.js`, `migrations.js` | Validated configuration, identities and migration |
 | `json-file.js`, `snapshot-file.js`, `history.js` | Startup/tool persistence, asynchronous snapshots and bounded history |
 | `backups.js`, `backup-format.js`, `backup-storage.js`, `http/backup-routes.js` | Validated export, restore transaction and recovery |
-| `sip-server.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP dialogs, validation, exact-flow presence and messaging |
+| `sip-server.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP dialogs, shared exact-transport ownership checks, validation, presence and messaging |
 | `media.js` | RTP/RTCP ports and transactional SDP updates |
 | `callbacks.js`, `callback-*.js`, `console-jobs.js` | Callback/reminder jobs and maintenance leases/results |
 | `photos.js`, `setup-pdf.js` | Python/Pillow portrait conversion and PDFKit QR documents |
@@ -874,4 +877,21 @@ when a configuration refresh fails. Name buttons show a smaller status line;
 terminal cards show the status with a check, question mark or cross. New terminal
 labels are translated in English and French, with English fallback elsewhere.
 
-Terminal C20 speaker-volume controls offer 0–100% in 5% steps. Existing between-step values display the nearest step and are changed only when Save changes is accepted. The Pi Settings editor and held-middle volume gesture use the same 5% grid.
+Terminal controls expose independent Call volume (`c20_speaker_volume`), Ringtone volume (`ringtone_volume`) and Button sounds volume (`action_sound_volume`), each 0–100% in 5% steps. New defaults are 50%, 50% and 20%. An older profile without ringtone volume inherits its call default. Existing between-step values display the nearest step and change only when Save changes is accepted. The Pi Settings editors and middle-button call-volume overlay use the same 5% grid. Button taps play only during idle navigation/settings, with no taps during calls, ringing or ringtone previews.
+
+The terminal language selector displays native labels in the shared 16-language catalog order, alphabetized by those labels. Removed legacy language choices migrate to English once without changing enrollment or user identity.
+
+## Callback push for App accounts
+
+`CallbackPush` uses the existing App FCM destination independently of SIP registration.
+It sends a signed short-lived `callback` hint containing request/requester/device IDs,
+not display text. Android fetches current authorized state before showing an ordinary
+reminder. Accepted state fingerprints persist privately in callback records and are
+omitted from API views. New requests, cancellation and completion trigger delivery;
+the existing five-second callback sweep and token registration resume pending work.
+Failures retry no more than once per minute with one in-flight send per request.
+Persistence, identity, permission and deadline are rechecked before sending, and a
+cancellation racing an accepted send schedules the changed state afterward.
+Expired reminders also use Android's timeout. Provider acceptance is not proof of
+notification display and never completes a callback. Existing terminal views, SIP
+notices and email reminders retain their separate behavior.

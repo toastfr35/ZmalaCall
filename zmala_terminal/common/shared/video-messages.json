@@ -1,97 +1,82 @@
 {
-  "en": ["No video from the other person", "You can still talk", "Video is starting…"],
-  "fr": ["Votre interlocuteur n’envoie pas de vidéo", "Vous pouvez toujours parler", "Connexion vidéo en cours…"],
-  "es": ["La otra persona no envía vídeo", "Podéis seguir hablando", "Iniciando vídeo…"],
-  "pt": ["A outra pessoa não está a enviar vídeo", "Podem continuar a falar", "A iniciar vídeo…"],
-  "de": ["Kein Video von der anderen Person", "Sie können weiter sprechen", "Video wird gestartet…"],
-  "it": ["L’altra persona non invia video", "Potete continuare a parlare", "Avvio del video…"],
-  "nl": ["Geen video van de andere persoon", "U kunt blijven praten", "Video wordt gestart…"],
-  "da": ["Ingen video fra den anden person", "I kan stadig tale sammen", "Videoen starter…"],
-  "sv": ["Ingen video från den andra personen", "Ni kan fortfarande prata", "Videon startar…"],
-  "nb": ["Ingen video fra den andre personen", "Dere kan fortsatt snakke sammen", "Videoen starter…"],
-  "nn": ["Ingen video frå den andre personen", "De kan framleis snakke saman", "Videoen startar…"],
-  "fi": ["Toiselta henkilöltä ei tule videota", "Voitte silti puhua", "Videota käynnistetään…"],
-  "is": ["Ekkert myndskeið frá hinum aðilanum", "Þið getið enn talað saman", "Verið er að ræsa myndskeið…"],
-  "fo": ["Eingin mynd frá hinum persóninum", "Tit kunnu framvegis tosa saman", "Myndin byrjar…"],
-  "et": ["Teine inimene ei saada videot", "Saate endiselt rääkida", "Video käivitub…"],
-  "lv": ["Otra persona nesūta video", "Jūs joprojām varat sarunāties", "Video tiek sākts…"],
-  "lt": ["Kitas žmogus nesiunčia vaizdo", "Vis dar galite kalbėtis", "Vaizdas paleidžiamas…"],
-  "pl": ["Druga osoba nie przesyła obrazu", "Nadal możecie rozmawiać", "Uruchamianie obrazu…"],
-  "cs": ["Druhá osoba neposílá video", "Stále spolu můžete mluvit", "Spouští se video…"],
-  "sk": ["Druhá osoba neposiela video", "Stále sa môžete rozprávať", "Spúšťa sa video…"],
-  "hu": ["A másik személy nem küld videót", "Továbbra is beszélgethetnek", "A videó indul…"],
-  "ro": ["Cealaltă persoană nu trimite video", "Puteți vorbi în continuare", "Se pornește imaginea video…"],
-  "bg": ["Другият човек не изпраща видео", "Можете да продължите да говорите", "Видеото се стартира…"],
-  "hr": ["Druga osoba ne šalje video", "I dalje možete razgovarati", "Video se pokreće…"],
-  "bs": ["Druga osoba ne šalje video", "I dalje možete razgovarati", "Video se pokreće…"],
-  "sr": ["Друга особа не шаље видео", "И даље можете разговарати", "Видео се покреће…"],
-  "sl": ["Druga oseba ne pošilja videa", "Še vedno se lahko pogovarjate", "Video se zaganja…"],
-  "mk": ["Другото лице не испраќа видео", "Сè уште можете да разговарате", "Видеото се вклучува…"],
-  "sq": ["Personi tjetër nuk po dërgon video", "Mund të vazhdoni të flisni", "Videoja po nis…"],
-  "el": ["Το άλλο άτομο δεν στέλνει βίντεο", "Μπορείτε να συνεχίσετε να μιλάτε", "Γίνεται εκκίνηση βίντεο…"],
-  "tr": ["Diğer kişi görüntü göndermiyor", "Konuşmaya devam edebilirsiniz", "Video başlatılıyor…"],
-  "mt": ["Il-persuna l-oħra mhux qed tibgħat vidjo", "Tistgħu tkomplu titkellmu", "Il-vidjo qed jibda…"],
-  "ga": ["Níl físeán á sheoladh ag an duine eile", "Is féidir libh labhairt fós", "Tá an físeán ag tosú…"],
-  "cy": ["Dim fideo gan y person arall", "Gallwch barhau i siarad", "Mae’r fideo’n dechrau…"],
-  "gd": ["Chan eil bhidio bhon neach eile", "Faodaidh sibh bruidhinn fhathast", "Tha a’ bhidio a’ tòiseachadh…"],
-  "ca": ["L’altra persona no envia vídeo", "Podeu continuar parlant", "S’està iniciant el vídeo…"],
-  "eu": ["Beste pertsonak ez du bideorik bidaltzen", "Hizketan jarrai dezakezue", "Bideoa abiarazten…"],
-  "gl": ["A outra persoa non envía vídeo", "Podedes seguir falando", "Iniciando o vídeo…"],
-  "lb": ["Kee Video vun der anerer Persoun", "Dir kënnt weider schwätzen", "De Video gëtt gestart…"],
-  "br": ["N’eus video ebet digant an den all", "Gallout a rit komz c’hoazh", "Emañ ar video o kregiñ…"],
-  "co": ["L’altra persona ùn manda micca video", "Pudete cuntinuà à parlà", "U video principia…"],
-  "oc": ["L’autra persona manda pas de vidèo", "Podètz contunhar de parlar", "Lo vidèo comença…"],
-  "sc": ["S’àtera persone no mandat vìdeu", "Podides sighire a faeddare", "Su vìdeu est cumintzende…"],
-  "rm": ["L’autra persuna na trametta nagin video", "Vus pudais discurrer vinavant", "Il video vegn avià…"],
-  "ru": ["Собеседник не передаёт видео", "Вы можете продолжать разговор", "Видео запускается…"],
-  "uk": ["Співрозмовник не передає відео", "Ви можете продовжувати розмову", "Відео запускається…"],
-  "be": ["Суразмоўца не перадае відэа", "Вы можаце працягваць размову", "Відэа запускаецца…"],
-  "hy": ["Մյուս անձը տեսանյութ չի ուղարկում", "Դուք կարող եք շարունակել խոսել", "Տեսանյութը միանում է…"],
-  "ka": ["მეორე ადამიანი ვიდეოს არ აგზავნის", "შეგიძლიათ საუბარი გააგრძელოთ", "ვიდეო ირთვება…"],
-  "az": ["Digər şəxs video göndərmir", "Danışmağa davam edə bilərsiniz", "Video başladılır…"],
-  "kk": ["Екінші адам бейне жібермейді", "Сөйлесуді жалғастыра аласыз", "Бейне қосылуда…"],
-  "ky": ["Башка адам видео жөнөтпөй жатат", "Сүйлөшүүнү уланта аласыз", "Видео башталууда…"],
-  "uz": ["Boshqa kishi video yubormayapti", "Gaplashishda davom etishingiz mumkin", "Video ishga tushmoqda…"],
-  "tk": ["Beýleki adam wideo ibermeýär", "Gepleşmäge dowam edip bilersiňiz", "Wideo başlaýar…"],
-  "tg": ["Шахси дигар видео намефиристад", "Шумо метавонед суҳбатро идома диҳед", "Видео оғоз мешавад…"],
-  "mn": ["Нөгөө хүн видео илгээхгүй байна", "Та үргэлжлүүлэн ярьж болно", "Видео эхэлж байна…"],
-  "zh-Hans": ["对方没有发送视频", "您仍然可以通话", "视频正在启动…"],
-  "zh-Hant": ["對方沒有傳送視訊", "您仍然可以通話", "視訊正在啟動…"],
-  "ja": ["相手からの映像がありません", "そのまま会話できます", "映像を接続しています…"],
-  "ko": ["상대방의 영상이 없습니다", "계속 대화할 수 있습니다", "영상을 연결하고 있습니다…"],
-  "vi": ["Người kia không gửi video", "Bạn vẫn có thể nói chuyện", "Đang bắt đầu video…"],
-  "th": ["อีกฝ่ายไม่ได้ส่งวิดีโอ", "คุณยังคงพูดคุยกันได้", "กำลังเริ่มวิดีโอ…"],
-  "lo": ["ອີກຝ່າຍບໍ່ໄດ້ສົ່ງວິດີໂອ", "ທ່ານຍັງສາມາດລົມກັນໄດ້", "ກຳລັງເລີ່ມວິດີໂອ…"],
-  "km": ["អ្នកម្ខាងទៀតមិនផ្ញើវីដេអូទេ", "អ្នកនៅតែអាចនិយាយគ្នាបាន", "កំពុងចាប់ផ្តើមវីដេអូ…"],
-  "my": ["တစ်ဖက်လူက ဗီဒီယို မပို့ပါ", "စကား ဆက်ပြောနိုင်ပါသည်", "ဗီဒီယို စတင်နေသည်…"],
-  "id": ["Orang lain tidak mengirim video", "Anda masih bisa berbicara", "Video sedang dimulai…"],
-  "ms": ["Orang lain tidak menghantar video", "Anda masih boleh bercakap", "Video sedang dimulakan…"],
-  "fil": ["Walang video mula sa kausap", "Maaari pa rin kayong mag-usap", "Nagsisimula ang video…"],
-  "jv": ["Wong liyane ora ngirim video", "Sampeyan isih bisa guneman", "Video lagi diwiwiti…"],
-  "su": ["Jalma séjén henteu ngirim vidéo", "Anjeun masih tiasa ngobrol", "Video keur dimimitian…"],
-  "hi": ["दूसरा व्यक्ति वीडियो नहीं भेज रहा है", "आप अभी भी बात कर सकते हैं", "वीडियो शुरू हो रहा है…"],
-  "bn": ["অন্য ব্যক্তি ভিডিও পাঠাচ্ছেন না", "আপনারা এখনও কথা বলতে পারেন", "ভিডিও শুরু হচ্ছে…"],
-  "pa": ["ਦੂਜਾ ਵਿਅਕਤੀ ਵੀਡੀਓ ਨਹੀਂ ਭੇਜ ਰਿਹਾ", "ਤੁਸੀਂ ਅਜੇ ਵੀ ਗੱਲ ਕਰ ਸਕਦੇ ਹੋ", "ਵੀਡੀਓ ਸ਼ੁਰੂ ਹੋ ਰਹੀ ਹੈ…"],
-  "gu": ["બીજી વ્યક્તિ વિડિયો મોકલતી નથી", "તમે હજી પણ વાત કરી શકો છો", "વિડિયો શરૂ થઈ રહ્યો છે…"],
-  "mr": ["दुसरी व्यक्ती व्हिडिओ पाठवत नाही", "तुम्ही अजूनही बोलू शकता", "व्हिडिओ सुरू होत आहे…"],
-  "ta": ["மற்றவர் காணொளி அனுப்பவில்லை", "நீங்கள் தொடர்ந்து பேசலாம்", "வீடியோ தொடங்குகிறது…"],
-  "te": ["అవతలి వ్యక్తి వీడియో పంపడం లేదు", "మీరు ఇంకా మాట్లాడవచ్చు", "వీడియో ప్రారంభమవుతోంది…"],
-  "kn": ["ಇನ್ನೊಬ್ಬ ವ್ಯಕ್ತಿ ವೀಡಿಯೊ ಕಳುಹಿಸುತ್ತಿಲ್ಲ", "ನೀವು ಇನ್ನೂ ಮಾತನಾಡಬಹುದು", "ವೀಡಿಯೊ ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ…"],
-  "ml": ["മറ്റേയാൾ വീഡിയോ അയയ്ക്കുന്നില്ല", "നിങ്ങൾക്ക് തുടർന്നും സംസാരിക്കാം", "വീഡിയോ ആരംഭിക്കുന്നു…"],
-  "or": ["ଅନ୍ୟ ବ୍ୟକ୍ତି ଭିଡିଓ ପଠାଉନାହାନ୍ତି", "ଆପଣ ଏବେ ବି କଥା ହୋଇପାରିବେ", "ଭିଡିଓ ଆରମ୍ଭ ହେଉଛି…"],
-  "as": ["আনজন ব্যক্তিয়ে ভিডিঅ’ পঠোৱা নাই", "আপুনি এতিয়াও কথা পাতিব পাৰে", "ভিডিঅ’ আৰম্ভ হৈছে…"],
-  "ne": ["अर्को व्यक्तिले भिडियो पठाइरहेको छैन", "तपाईं अझै कुरा गर्न सक्नुहुन्छ", "भिडियो सुरु हुँदैछ…"],
-  "si": ["අනෙක් පුද්ගලයා වීඩියෝ එවන්නේ නැත", "ඔබට තවමත් කතා කළ හැකිය", "වීඩියෝව ආරම්භ වෙමින් පවතී…"],
-  "bo": ["ཕ་རོལ་པས་བརྙན་མི་གཏོང་བཞིན་འདུག", "ཁྱེད་ཀྱིས་ད་དུང་ཁ་བརྡ་བྱེད་ཆོག", "བརྙན་འགོ་འཛུགས་བཞིན་ཡོད།"],
-  "dz": ["གཞན་མི་གིས་བརྙན་མི་གཏང་པས།", "ད་རུང་ཁ་སླབ་ཚུགས།", "བརྙན་འགོ་བཙུགས་དོ།"],
-  "ar": ["الطرف الآخر لا يرسل فيديو", "يمكنكما مواصلة الحديث", "جارٍ بدء الفيديو…"],
-  "he": ["אין וידאו מהאדם השני", "עדיין אפשר לדבר", "הווידאו מתחיל…"],
-  "fa": ["طرف مقابل ویدیو ارسال نمی‌کند", "هنوز می‌توانید صحبت کنید", "ویدیو در حال شروع است…"],
-  "ur": ["دوسرا شخص ویڈیو نہیں بھیج رہا", "آپ اب بھی بات کر سکتے ہیں", "ویڈیو شروع ہو رہی ہے…"],
-  "ps": ["بل کس ویډیو نه لېږي", "تاسو لا هم خبرې کولی شئ", "ویډیو پیلېږي…"],
-  "ku": ["Kesê din vîdyo naşîne", "Hûn hîn jî dikarin biaxivin", "Vîdyo dest pê dike…"],
-  "ckb": ["کەسەکەی تر ڤیدیۆ نانێرێت", "هێشتا دەتوانن قسە بکەن", "ڤیدیۆ دەست پێ دەکات…"],
-  "ug": ["قارشى تەرەپ سىن ئەۋەتمەيۋاتىدۇ", "سىز يەنىلا سۆزلەشسىڭىز بولىدۇ", "سىن باشلىنىۋاتىدۇ…"],
-  "sd": ["ٻيو شخص وڊيو نه پيو موڪلي", "توهان اڃا به ڳالهائي سگهو ٿا", "وڊيو شروع ٿي رهي آهي…"],
-  "dv": ["އަނެއް މީހާ ވީޑިއޯ ނުފޮނުވާ", "އަދިވެސް ވާހަކަ ދެއްކިދާނެ", "ވީޑިއޯ ފެށެނީ…"]
+  "de": [
+    "Kein Video von der anderen Person",
+    "Sie können weiter sprechen",
+    "Video wird gestartet…"
+  ],
+  "en": [
+    "No video from the other person",
+    "You can still talk",
+    "Video is starting…"
+  ],
+  "es": [
+    "La otra persona no envía vídeo",
+    "Podéis seguir hablando",
+    "Iniciando vídeo…"
+  ],
+  "fr": [
+    "Votre interlocuteur n’envoie pas de vidéo",
+    "Vous pouvez toujours parler",
+    "Connexion vidéo en cours…"
+  ],
+  "pl": [
+    "Druga osoba nie przesyła obrazu",
+    "Nadal możecie rozmawiać",
+    "Uruchamianie obrazu…"
+  ],
+  "pt": [
+    "A outra pessoa não está a enviar vídeo",
+    "Podem continuar a falar",
+    "A iniciar vídeo…"
+  ],
+  "el": [
+    "Το άλλο άτομο δεν στέλνει βίντεο",
+    "Μπορείτε να συνεχίσετε να μιλάτε",
+    "Γίνεται εκκίνηση βίντεο…"
+  ],
+  "ru": [
+    "Собеседник не передаёт видео",
+    "Вы можете продолжать разговор",
+    "Видео запускается…"
+  ],
+  "ur": [
+    "دوسرا شخص ویڈیو نہیں بھیج رہا",
+    "آپ اب بھی بات کر سکتے ہیں",
+    "ویڈیو شروع ہو رہی ہے…"
+  ],
+  "ar": [
+    "الطرف الآخر لا يرسل فيديو",
+    "يمكنكما مواصلة الحديث",
+    "جارٍ بدء الفيديو…"
+  ],
+  "hi": [
+    "दूसरा व्यक्ति वीडियो नहीं भेज रहा है",
+    "आप अभी भी बात कर सकते हैं",
+    "वीडियो शुरू हो रहा है…"
+  ],
+  "bn": [
+    "অন্য ব্যক্তি ভিডিও পাঠাচ্ছেন না",
+    "আপনারা এখনও কথা বলতে পারেন",
+    "ভিডিও শুরু হচ্ছে…"
+  ],
+  "th": [
+    "อีกฝ่ายไม่ได้ส่งวิดีโอ",
+    "คุณยังคงพูดคุยกันได้",
+    "กำลังเริ่มวิดีโอ…"
+  ],
+  "ko": [
+    "상대방의 영상이 없습니다",
+    "계속 대화할 수 있습니다",
+    "영상을 연결하고 있습니다…"
+  ],
+  "ja": [
+    "相手からの映像がありません",
+    "そのまま会話できます",
+    "映像を接続しています…"
+  ],
+  "zh-Hans": [
+    "对方没有发送视频",
+    "您仍然可以通话",
+    "视频正在启动…"
+  ]
 }

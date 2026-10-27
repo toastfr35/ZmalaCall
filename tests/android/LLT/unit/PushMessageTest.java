@@ -1,5 +1,5 @@
 // @test A-LLT-007
-// @requirements LLR-AND-CALL-004
+// @requirements LLR-AND-CALL-004, LLR-AND-HISTORY-003
 // @environment portable
 // @plan Sign a fixed canonical push payload independently, mutate each authenticated field, and check valid ring/cancel, missing identity/proof, expired and excessively distant deadlines. Queue notification acceptance with a fake main loop and clock; change eligibility or expire authorization before draining it.
 // @pass Only a correctly signed, current message for this enrollment is accepted. Media acceptance is deferred beyond the incoming callback and is suppressed when eligibility or authorization expires before execution.
@@ -67,5 +67,9 @@ public class PushMessageTest {
             .formatHex(
                 mac.doFinal(body.replace("ring", "cancel").getBytes(StandardCharsets.UTF_8))));
     assertEquals("cancel", PushMessage.verify(e, data, 100000).event);
+    data.put("event","callback");
+    data.put("proof",HexFormat.of().formatHex(mac.doFinal(body.replace("ring","callback").getBytes(StandardCharsets.UTF_8))));
+    assertEquals("callback",PushMessage.verify(e,data,100000).event);
+    data.put("caller","other");assertNull(PushMessage.verify(e,data,100000));
   }
 }
