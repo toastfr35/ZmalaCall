@@ -513,6 +513,9 @@ frames, without file reads, synthesis or slicing. The ALSA buffer is 5 ms with
 2.5 ms periods. Normal pauses resume immediately; only a failed player has a
 one-second retry backoff. Cancellation checks preparation before opening PCM and
 shares a 200 ms stop/join budget with player termination.
+Native core creation/replacement also stops the idle stream before ALSA device
+probing; feedback remains disabled while no core exists. Otherwise the exclusive
+idle player can hide the C20 speaker from the probe and prevent SIP registration.
 Before starting visual navigation, input yields for up to 20 ms for the worker's
 first PCM frame. A successful handoff gives playback another 20 ms head start,
 so portrait rendering does not starve sound startup. Missing audio skips that

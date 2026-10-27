@@ -35,7 +35,7 @@ class SettingsControl:
         if feedback:
             level = (draft.options[draft.index] if self.settings_open and draft.editing
                      and draft.key == 'action_sound_volume' else config.get('action_sound_volume',20))
-            feedback.set_enabled(bool(level and power.ready and not editing and not self.setup_stage
+            feedback.set_enabled(bool(level and power.ready and self.engine and not editing and not self.setup_stage
                 and self.model.state in (State.HOME, State.CONFIRMING, State.CONFIRM_CALLBACK)
                 and not (self.engine and self.engine.call)
                 and not power.ringing and not power.ringtone_preview_status and not power.playback_active))

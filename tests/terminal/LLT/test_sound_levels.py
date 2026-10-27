@@ -219,3 +219,23 @@ class SoundLevelsTests(unittest.TestCase):
         for key in ('ringtone','ringtone_volume'):
             app.settings_draft=SimpleNamespace(editing=True,key=key);InputControl.button_feedback(app)
         app.action_sounds.play.assert_not_called()
+
+    def test_feedback_releases_c20_before_core_creation_and_stays_off_while_unconfigured(self):
+        from zmala_terminal.common.configuration_control import ConfigurationControl
+        from zmala_terminal.common.settings_control import SettingsControl
+        from zmala_terminal.common.local_settings import SettingsDraft
+        from zmala_terminal.common.model import State
+        order=[];feedback=Mock();feedback.cancel.side_effect=lambda:order.append('released')
+        engine=Mock(call=None,registered=False)
+        def create(config):
+            self.assertEqual(order,['released']);order.append('core');return engine
+        app=SimpleNamespace(engine=None,action_sounds=feedback,make_engine=create,current_settings={},
+            usb_power=Mock(enabled=False,ready=True,ringing=False,ringtone_preview_status='',playback_active=False),
+            settings_open=False,settings_draft=SettingsDraft(),model=SimpleNamespace(state=State.HOME,config={}),
+            setup_stage=None,generation=1,render=Mock())
+        SettingsControl.tick_ringtone(app,1)
+        feedback.set_enabled.assert_called_with(False)
+        ConfigurationControl.configure_engine(app,{'sip':{}},None,'normal')
+        self.assertEqual(order,['released','core'])
+        SettingsControl.tick_ringtone(app,2)
+        feedback.set_enabled.assert_called_with(True) # Offline SIP alone does not prevent button feedback.

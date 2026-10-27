@@ -2,6 +2,8 @@
 from contextlib import contextmanager
 from pathlib import Path
 import tempfile
+import gc
+import tkinter as tk
 import time
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -100,3 +102,17 @@ def terminal_fixture():
             for identifier in app.root.tk.call('after', 'info'):
                 app.root.after_cancel(identifier)
             app.close()
+            # A following test may allocate on a network worker and trigger cyclic
+            # GC there. Release every fixture-owned Tk interpreter/image reference
+            # here on the UI thread, even while the caller still holds `app`.
+            app.current_text_images.clear()
+            app.icon_renderer.cache.clear()
+            owners = (app, app.text_renderer, app.volume_control, app.presenter_input,
+                      app.tv_control, app.tv_check)
+            for owner in owners:
+                if owner is None:
+                    continue
+                for name, value in list(vars(owner).items()):
+                    if isinstance(value, (tk.Misc, tk.Image)):
+                        setattr(owner, name, None)
+            gc.collect()
