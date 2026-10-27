@@ -115,7 +115,7 @@
   <string name="setup_invalid" formatted="false">Ce QR code n’est pas valide pour ZmalaPhone. Demandez un QR code App à jour à la personne qui vous l’a donné.</string>
   <string name="access_revoked" formatted="false">L’accès à ce compte a été retiré. Utilisez un QR code App à jour.</string>
   <string name="media_permissions" formatted="false">Les appels vidéo nécessitent l’accès à la caméra, au micro et au réseau local. Activez ces autorisations dans les paramètres Android.</string>
-  <string name="notification_explanation" formatted="false">Autorisez les notifications pour que les appels sonnent lorsque vous utilisez une autre application ou que le téléphone est en veille. Internet et l’accès au serveur sont nécessaires. Après un arrêt forcé Android, ouvrez à nouveau ZmalaPhone.</string>
+  <string name="notification_explanation" formatted="false">Autorisez les notifications pour recevoir les appels et les demandes de rappel lorsque vous utilisez une autre application ou que le téléphone est en veille. Internet et l’accès au serveur sont nécessaires. Après un arrêt forcé Android, ouvrez à nouveau ZmalaPhone.</string>
   <string name="update_explanation" formatted="false">Les mises à jour attendent la fin des appels et des sonneries. L’installation automatique attend que ZmalaPhone soit ouvert et inactif. Android peut demander une confirmation. Votre configuration est conservée.</string>
   <string name="lan_warning" formatted="false">\n\nMode local : la configuration et les appels ne sont pas chiffrés. Utilisez votre réseau domestique de confiance.</string>
   <string name="secure_confirm" formatted="false">\n\nUtiliser ce serveur pour votre compte ?</string>
@@ -137,4 +137,8 @@
   <string name="return_to_call">Revenir à l’appel</string>
   <string name="background_audio">Audio maintenu · Caméra en pause</string>
   <string name="update_busy">Une mise à jour est en cours. Réessayez dans un instant.</string>
+    <string name="callback_notifications">Demandes de rappel</string>
+    <string name="checking_callbacks">Vérification des demandes de rappel</string>
+    <string name="callback_notifications_help">Une personne souhaite que vous la rappeliez.</string>
+    <string name="callback_notification_body">%1$s souhaite que vous rappeliez.</string>
 </resources>

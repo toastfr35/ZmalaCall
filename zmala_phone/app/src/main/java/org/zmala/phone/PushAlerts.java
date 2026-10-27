@@ -45,6 +45,11 @@ public final class PushAlerts {
         && (channel == null || channel.getImportance() >= NotificationManager.IMPORTANCE_DEFAULT);
   }
 
+  // @llr LLR-AND-HISTORY-003
+  static boolean anyAllowed(Context context) {
+    return allowed(context) || CallbackAlerts.allowed(context);
+  }
+
   static void channel(Context context) {
     NotificationChannel channel =
         new NotificationChannel(CHANNEL, context.getString(R.string.incoming_calls), NotificationManager.IMPORTANCE_HIGH);
@@ -75,7 +80,8 @@ public final class PushAlerts {
 
   static void register(Context context, Enrollment enrollment, Consumer<Boolean> complete) {
     channel(context);
-    if (!allowed(context)) {
+    CallbackAlerts.channel(context);
+    if (!anyAllowed(context)) {
       upload(context, enrollment, null, complete);
       return;
     }
@@ -164,6 +170,8 @@ public final class PushAlerts {
   }
 
   static void receive(Context context, Map<String, String> data) {
+    // @llr LLR-AND-HISTORY-003
+    if ("callback".equals(data.get("event"))) { CallbackAlerts.receive(context,data); return; }
     Enrollment enrollment = enrollment(context);
     PushMessage message =
         enrollment == null

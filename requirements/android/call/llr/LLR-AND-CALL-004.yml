@@ -34,7 +34,7 @@ reviewed: null
 scope: Experimental
 text: The app shall register its Firebase token at the enrolled origin using its App bearer identity,
   renew it while used, and remove the destination when notifications are disabled and the app next opens.
-  With notification permission, an FCM callback shall show a native incoming-call alert only for a valid
+  With notification permission, an FCM ring message shall show a native incoming-call alert only for a valid
   enrollment HMAC, device ID and deadline no more than 90 seconds away. The alert shall use locally cached
   caller names, Answer and Decline actions, and automatic timeout; duplicates and ring messages received
   after cancellation shall be suppressed for two minutes. Answer shall reconnect without starting media

@@ -202,6 +202,17 @@ export interface CallbackRecord extends Omit<CallbackView, 'from_name' | 'to_nam
   email_sent_to: string[];
   email_error: string | null;
   email_retry_at?: string | null;
+  push_notified_key?: string;
+}
+export interface CallbackPushTransport {
+  available(id: string): boolean;
+  notify(
+    id: string,
+    request: string,
+    caller: string,
+    event: 'callback',
+    expires: number,
+  ): Promise<void>;
 }
 export type JobStatus =
   'queued' | 'running' | 'lost' | 'completed' | 'failed' | 'timed_out' | 'cancelled';

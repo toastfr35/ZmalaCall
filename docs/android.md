@@ -668,3 +668,33 @@ During an answered call, Home retained the foreground call service and paused th
 phone camera; returning through the ongoing notification restored both video views.
 Hangup removed the foreground service. These observations do not qualify audible
 speech, cellular relay connectivity, deep Doze or vendor battery restrictions.
+
+## Callback request notifications
+
+`CallbackBook` and `CallbackAlerts` reconcile ordinary callback reminders from the
+authenticated configuration. Incoming pending requests use the separate Callback
+requests channel, the current permitted contact name and a timeout matching the
+request deadline. Tapping waits for fresh contact permissions and opens the contact
+without dialing; an active call retains its screen. Seen IDs survive user dismissal
+and restart. Reconciliation clears cancelled, completed, expired or forbidden
+requests, silently updates changed names/deadlines and limits state to 512 seen IDs
+and 32 active reminders per enrollment identity. Disabled channels do not consume
+unseen requests. Call and callback channels share a push destination; either may
+remain enabled independently.
+
+FCM `callback` messages reuse the enrollment HMAC/device/deadline checks but cannot
+enter the incoming-call or media path. They schedule unique expedited WorkManager
+work (2.12.0), falling back to a regular job when quota is unavailable. The worker
+revalidates the hint, fetches current bearer-authorized configuration and applies
+only the latest refresh for the same enrollment. Temporary network failures retry
+at most twice; expired or revoked hints stop. Android 9–11 may briefly show a silent
+checking-requests foreground notification. No idle SIP connection or camera/microphone
+is started. This follows [Firebase background processing guidance](https://firebase.google.com/docs/cloud-messaging/android-message-priority).
+
+Verification on 27 October 2026: JVM state/proof tests, server lifecycle/HTTP tests
+and three emulator notification tests passed. The OnePlus was updated in place to
+signed 0.3.19. Real FCM delivery displayed the requester, tapping opened that
+contact without dialing, and cancelling the test request removed the reminder.
+Foreground and Home-screen cases passed; emulator fixtures also covered stale
+snapshots, deadline changes, enrollment isolation and ordinary call-alert regression.
+These checks do not qualify every vendor battery policy or deep Doze behavior.

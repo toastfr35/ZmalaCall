@@ -8,9 +8,10 @@ const path = require('node:path'),
 const { registrationOnline } = require('./registrations');
 const { CallbackMailer } = require('./callback-mailer');
 const { CallbackEmails } = require('./callback-emails');
+const { CallbackPush } = require('./callback-push');
 class Callbacks {
-  /** @param {import('./types/contracts').StoreInstance} store @param {Pick<import('./types/contracts').SipInstance, 'registrations' | 'notifyCallback'>} sipServer @param {import('./types/contracts').Mailer} [mailer] */
-  constructor(store, sipServer, mailer = new CallbackMailer(store)) {
+  /** @param {import('./types/contracts').StoreInstance} store @param {Pick<import('./types/contracts').SipInstance, 'registrations' | 'notifyCallback'>} sipServer @param {import('./types/contracts').Mailer} [mailer] @param {import('./types/contracts').CallbackPushTransport} [push] */
+  constructor(store, sipServer, mailer = new CallbackMailer(store), push) {
     this.store = store;
     this.paused = false;
     this.sip = sipServer;
@@ -22,6 +23,8 @@ class Callbacks {
     /** @type {Map<string, number>} */
     this.retry = new Map();
     this.email = new CallbackEmails(this, mailer);
+    // @llr LLR-SRV-CALLBACK-025
+    this.push = new CallbackPush(this, push);
     // Recover consistently if shutdown interrupted the settings/request snapshot writes.
     let migrated = false;
     for (const request of this.requests)
@@ -128,7 +131,7 @@ class Callbacks {
   }
   /** @param {import('./types/contracts').CallbackRecord} r @param {boolean} [admin] @returns {import('./types/contracts').CallbackView} */
   view(r, admin = false) {
-    const { email_sent_to, email_error, ...fields } = r;
+    const { email_sent_to, email_error, push_notified_key: _push_notified_key, ...fields } = r;
     return {
       ...fields,
       ...(admin ? { email_sent_to: email_sent_to || [], email_error: email_error || null } : {}),
@@ -164,6 +167,7 @@ class Callbacks {
       r.status = 'cancelled';
       r.finished_at = new Date().toISOString();
       this.save();
+      this.push.deliver();
     }
   }
   // @llr LLR-SRV-CALLBACK-016
@@ -180,7 +184,10 @@ class Callbacks {
         r.finished_at = new Date().toISOString();
         changed = true;
       }
-    if (changed) this.save();
+    if (changed) {
+      this.save();
+      this.push.deliver();
+    }
   }
   /** @param {string} oldId @param {string} newId */
   rename(oldId, newId) {
@@ -199,6 +206,7 @@ class Callbacks {
     if (this.paused) return;
     this.reconcile();
     this.email.deliver();
+    this.push.deliver();
     for (const r of this.requests) {
       if (
         r.status !== 'pending' ||

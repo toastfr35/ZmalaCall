@@ -142,7 +142,8 @@ class AppPush {
       token.updated > Date.now() - 30 * 86400000
     );
   }
-  /** @param {string} id @param {string} callId @param {string} caller @param {'ring'|'cancel'} event @param {number} expires */
+  // @llr LLR-SRV-CALLBACK-025
+  /** @param {string} id @param {string} callId @param {string} caller @param {'ring'|'cancel'|'callback'} event @param {number} expires */
   async notify(id, callId, caller, event, expires) {
     if (!this.available(id)) throw Error('Push destination unavailable.');
     const account = this.store.enrolledAccount(id),

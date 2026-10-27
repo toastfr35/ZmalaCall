@@ -65,7 +65,7 @@ function context(store) {
       isBusy: () => false,
       liveCalls: () => [],
     },
-    callbacks: { list: () => [] },
+    callbacks: { list: () => [], deliver() {} },
     consoleJobs: {},
     terminalStatuses: {},
     writeBootstrap() {},

@@ -15,5 +15,8 @@ scope: Experimental
 text: The app shall show missed calls and incoming or sent callback requests beside
   the relevant contact. Users shall be able to request a callback from an offline
   contact or after an unanswered outgoing call using the shared server callback system.
+  Incoming callback requests shall also generate an ordinary Android notification,
+  including when the app is closed with push enabled. Opening the notification
+  shall show the relevant contact without placing a call.
 verification: Exercise missed native and push calls, offline and unanswered requests,
   another account receiving a request, and completion after a connected call.

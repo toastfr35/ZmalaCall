@@ -115,7 +115,7 @@
   <string name="setup_invalid" formatted="false">This setup QR is not valid for ZmalaPhone. Ask the person who supplied it for a current App QR.</string>
   <string name="access_revoked" formatted="false">Account access was revoked. Scan a current App QR code.</string>
   <string name="media_permissions" formatted="false">Camera, microphone and local network access are needed for video calls. Enable them in Android Settings.</string>
-  <string name="notification_explanation" formatted="false">Allow notifications so incoming calls can ring when you\'re using another app or the phone is asleep. Internet and access to your call server are needed. If you use Android\'s Force stop, open ZmalaPhone again to receive calls.</string>
+  <string name="notification_explanation" formatted="false">Allow notifications for incoming calls and callback requests when you\'re using another app or the phone is asleep. Internet and access to your call server are needed. If you use Android\'s Force stop, open ZmalaPhone again to receive alerts.</string>
   <string name="update_explanation" formatted="false">Updates wait while calls ring or are connected. Automatic installation runs only while ZmalaPhone is open and idle; Android may still ask you to confirm. Your setup is kept.</string>
   <string name="lan_warning" formatted="false">\n\nLAN mode: setup and calls are not encrypted. Use your trusted home network.</string>
   <string name="secure_confirm" formatted="false">\n\nUse this server for your app account?</string>
@@ -136,4 +136,8 @@
   <string name="return_to_call">Return to call</string>
   <string name="background_audio">Audio continues · Camera paused</string>
   <string name="update_busy">An update is being installed. Try again shortly.</string>
+    <string name="callback_notifications">Callback requests</string>
+    <string name="checking_callbacks">Checking callback requests</string>
+    <string name="callback_notifications_help">Someone would like you to call them back.</string>
+    <string name="callback_notification_body">%1$s would like you to call back.</string>
 </resources>

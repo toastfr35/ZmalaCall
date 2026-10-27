@@ -1,0 +1,54 @@
+active: true
+derived: false
+normative: true
+scope: Experimental
+level: 3
+area: Callback request notifications
+header: Authenticated callback request alerts
+text: |
+  With Android notification permission and its callback channel enabled, the app
+  shall post one ordinary localized reminder naming the requester for each new
+  permitted incoming pending callback. Tapping shall open that contact subject
+  to current permissions, without dialing or interrupting an active call.
+  Foreground refresh and background signed FCM callback hints shall reconcile
+  the same bounded per-enrollment history. A hint shall pass the existing device,
+  HMAC and at-most-90-second deadline checks and trigger lifecycle-managed network
+  work that fetches authenticated current state before showing any reminder.
+  No callback hint shall start SIP or microphone/camera capture. Superseded refresh
+  results and a changed enrollment shall not apply. Retries shall be bounded to
+  three attempts and recheck authorization and expiry. Dismissed/duplicate requests
+  shall not alert again; cancellation, completion, expiry or removed permission
+  shall remove the corresponding reminder on reconciliation. Android shall receive
+  the request deadline for automatic notification timeout. History shall retain
+  at most 512 seen IDs and 32 active reminders. Disabled channels shall not mark
+  unseen requests delivered. Callback and incoming-call channels shall be separate;
+  push registration may remain while either channel is enabled.
+verification: |
+  Test incoming/sent/forbidden/expired records, bounded persistence, duplicate and
+  dismissed requests, cancellation and enrollment isolation. On Android inspect
+  the ordinary notification category, requester name, tap destination and timeout;
+  exercise signed hints, stale refreshes, closed-app delivery and permission denial.
+links:
+- HLR-AND-HISTORY-001: null
+references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallbackBook.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallbackAlerts.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallbackWorker.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/PushMessage.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/PushAlerts.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/PushService.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
+  type: file
+- path: tests/android/LLT/unit/CallbackBookTest.java
+  type: file
+- path: tests/android/LLT/unit/PushMessageTest.java
+  type: file
+- path: tests/android/LLT/device/CallbackAlertsTest.java
+  type: file
+reviewed: null

@@ -64,6 +64,7 @@ public final class MainActivity extends Activity {
   private CallEngine.Output output = CallEngine.Output.SPEAKER;
   private Call displayedCall;
   private String selectedContact;
+  private String callbackContact;
   private CallScreen callScreen;
   private final DisplayManager.DisplayListener displayListener =
       new DisplayManager.DisplayListener() {
@@ -95,10 +96,12 @@ public final class MainActivity extends Activity {
     session = CallSession.get(this); engine = session.engine;
     config = session.configuration;
     selectedContact = state == null ? null : state.getString("selected_contact");
+    callbackContact = state == null ? null : state.getString("callback_contact");
     message = getString(R.string.welcome);
     if (android.os.Build.VERSION.SDK_INT >= 33)
       getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::navigateBack);
     handlePushIntent(getIntent());
+    handleCallbackIntent(getIntent());
     directory();
   }
 
@@ -305,6 +308,8 @@ public final class MainActivity extends Activity {
     fetching = true;
     int ticket = generation;
     Enrollment target = enrollment;
+    // @llr LLR-AND-HISTORY-003
+    long callbackTicket = CallbackAlerts.beginRefresh();
     if (config == null) {
       message = getString(R.string.connecting_server);
       directory();
@@ -325,10 +330,13 @@ public final class MainActivity extends Activity {
                           enrollmentFile().toPath(),
                           target.serialized().getBytes(StandardCharsets.UTF_8));
                     config = next;
+                    if (callbackContact != null) { selectedContact = callbackContact; callbackContact = null; }
                     session.configuration = next;
                     reconnecting = false; session.reconnecting = false;
                     if (callScreen != null) callScreen.connectionNotice(null);
                     PushAlerts.remember(this, next);
+                    // @llr LLR-AND-HISTORY-003
+                    CallbackAlerts.synchronize(this,target,next,callbackTicket);
                     boolean restart = restartRequested;
                     restartRequested = false;
                     if ((restart || credentialsChanged) && engine.call == null)
@@ -352,6 +360,7 @@ public final class MainActivity extends Activity {
                   if (!visible || ticket != generation) return;
                   fetching = false;
                   boolean temporary = ServerApi.temporaryFailure(e);
+                  if (e instanceof ServerApi.AccessRevoked) CallbackAlerts.revoked(this,target);
                   reconnecting = temporary; session.reconnecting = temporary;
                   // An HTTP polling outage must not tear down an established media call.
                   // Revocation or malformed security/configuration data still stop it immediately.
@@ -836,6 +845,7 @@ public final class MainActivity extends Activity {
   @Override protected void onSaveInstanceState(Bundle state) {
     super.onSaveInstanceState(state);
     state.putString("selected_contact", selectedContact);
+    state.putString("callback_contact", callbackContact);
   }
 
   private void silence() {
@@ -898,6 +908,7 @@ public final class MainActivity extends Activity {
     super.onNewIntent(intent);
     setIntent(intent);
     handlePushIntent(intent);
+    handleCallbackIntent(intent);
     if (visible && enrollment != null && engine.call == null) refresh(true);
   }
 
@@ -916,6 +927,14 @@ public final class MainActivity extends Activity {
       answerExpires = push.expires;
     }
     PushAlerts.dismiss(this, push.callId);
+  }
+
+  // @llr LLR-AND-HISTORY-003
+  private void handleCallbackIntent(Intent intent) {
+    String peer = intent.getStringExtra(CallbackAlerts.PEER);
+    if (peer != null && peer.matches("[a-z][a-z0-9_-]{0,30}")) callbackContact = peer;
+    // Wait for refresh; directory() then checks the newly authenticated contact list.
+    intent.removeExtra(CallbackAlerts.PEER);
   }
 
   static boolean pushIncoming(java.util.Map<String, String> data) {

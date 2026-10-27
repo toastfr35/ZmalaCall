@@ -880,3 +880,18 @@ labels are translated in English and French, with English fallback elsewhere.
 Terminal controls expose independent Call volume (`c20_speaker_volume`), Ringtone volume (`ringtone_volume`) and Button sounds volume (`action_sound_volume`), each 0–100% in 5% steps. New defaults are 50%, 50% and 20%. An older profile without ringtone volume inherits its call default. Existing between-step values display the nearest step and change only when Save changes is accepted. The Pi Settings editors and middle-button call-volume overlay use the same 5% grid. Button taps play only during idle navigation/settings, with no taps during calls, ringing or ringtone previews.
 
 The terminal language selector displays native labels in the shared 16-language catalog order, alphabetized by those labels. Removed legacy language choices migrate to English once without changing enrollment or user identity.
+
+## Callback push for App accounts
+
+`CallbackPush` uses the existing App FCM destination independently of SIP registration.
+It sends a signed short-lived `callback` hint containing request/requester/device IDs,
+not display text. Android fetches current authorized state before showing an ordinary
+reminder. Accepted state fingerprints persist privately in callback records and are
+omitted from API views. New requests, cancellation and completion trigger delivery;
+the existing five-second callback sweep and token registration resume pending work.
+Failures retry no more than once per minute with one in-flight send per request.
+Persistence, identity, permission and deadline are rechecked before sending, and a
+cancellation racing an accepted send schedules the changed state afterward.
+Expired reminders also use Android's timeout. Provider acceptance is not proof of
+notification display and never completes a callback. Existing terminal views, SIP
+notices and email reminders retain their separate behavior.

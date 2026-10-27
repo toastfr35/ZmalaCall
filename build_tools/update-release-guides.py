@@ -481,6 +481,28 @@ def update_terminal_feedback_guides():
         doc.save(path)
 
 
+def update_callback_notification_guides():
+    """Explain incoming callback alerts alongside the existing account and call flows."""
+    for filename in ('phone_installation.docx', 'phone_guide.docx', 'terminal_config.docx', 'server_prep.docx'):
+        path = ROOT / 'docs' / filename
+        doc = Document(path)
+        for paragraph in doc.paragraphs:
+            text = paragraph.text
+            if text.startswith(('Readable notices distinguish', 'Please call back marks an incoming request')):
+                paragraph.text = ('Please call back marks an incoming request; Callback requested marks one you sent. '
+                    'Both may appear with missed-call counts. An incoming request also creates an Android '
+                    'notification naming the requester. Tap it to open their contact without calling. '
+                    'Requests do not repeatedly alert; cancellation, a completed call or expiry removes '
+                    'the alert. Manage Callback requests separately in Android notification settings.')
+            elif text.startswith('Read the incoming-call explanation'):
+                paragraph.text = text.replace('Read the incoming-call explanation', 'Read the call and callback notification explanation', 1)
+            elif text.startswith('Allow notifications for incoming calls while'):
+                paragraph.text = text.replace('Allow notifications for incoming calls while',
+                    'Allow notifications for incoming calls and callback requests while', 1) + (
+                    ' Callback alerts name the requester; tapping opens their contact without dialing.')
+        doc.save(path)
+
+
 if __name__ == '__main__':
     update_existing()
     update_c20_guide()
@@ -490,3 +512,4 @@ if __name__ == '__main__':
     build_phone()
     update_presence_guides()
     update_terminal_feedback_guides()
+    update_callback_notification_guides()

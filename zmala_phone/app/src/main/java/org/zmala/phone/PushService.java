@@ -10,10 +10,11 @@ public final class PushService extends FirebaseMessagingService {
     PushAlerts.receive(this, message.getData());
   }
 
+  // @llr LLR-AND-HISTORY-003
   @Override
   public void onNewToken(String token) {
     Enrollment enrollment = PushAlerts.enrollment(this);
     if (enrollment != null)
-      PushAlerts.upload(this, enrollment, PushAlerts.allowed(this) ? token : null, ready -> {});
+      PushAlerts.upload(this, enrollment, PushAlerts.anyAllowed(this) ? token : null, ready -> {});
   }
 }

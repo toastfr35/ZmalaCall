@@ -53,8 +53,11 @@ async function deviceRoutes(req, res, url, context) {
       throw httpError(403, 'An app account is required.');
     if (!sipServer.appCalls) throw httpError(503, 'Push calling is unavailable.');
     const update = await readJson(req, 8192);
-    if (url.pathname === '/api/app/push') sipServer.appCalls.push.register(id, update.token);
-    else sipServer.appCalls.decline(id, update.call_id);
+    if (url.pathname === '/api/app/push') {
+      sipServer.appCalls.push.register(id, update.token);
+      // @llr LLR-SRV-CALLBACK-025
+      callbacks.deliver(id);
+    } else sipServer.appCalls.decline(id, update.call_id);
     return send(res, 200, { ok: true, push_enabled: sipServer.appCalls.push.sender.enabled });
   }
   // @llr LLR-SRV-APP-003
