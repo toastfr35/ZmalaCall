@@ -53,7 +53,7 @@ class CallbackPush {
       } else if (!request.push_notified_key) continue;
       this.sending.add(request.id);
       this.retry.set(request.id, Date.now() + 60000);
-      Promise.resolve()
+      const operation = Promise.resolve()
         .then(async () => {
           await this.owner.flush();
           if (
@@ -93,6 +93,7 @@ class CallbackPush {
           if (request.push_notified_key && this.key(request) !== request.push_notified_key)
             this.deliver();
         });
+      this.owner.track(operation);
     }
   }
 }

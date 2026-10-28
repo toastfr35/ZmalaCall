@@ -2,7 +2,7 @@
 # @requirements LLR-TERM-COM-010
 # @environment portable
 # @plan Validate complete, expired and malformed secure profiles with a fixed clock, including default 443 and separate 5061/5349 endpoints and invalid port bounds. Substitute only native ABI functions and local CA discovery; verify TLS TURN, ICE, forced relay, certificate/hostname checks and mandatory SRTP. Inject allocation failure and verify owned policy release. Deliver changed relay credentials through polling at an unchanged revision and require normal configuration application. Check outgoing call encryption in the existing Engine adapter tests.
-# @pass Invalid profiles fail before native configuration; valid profiles request the stated secure policy and release references. Real handshakes and decoded media are verified by the network HLT.
+# @pass Invalid profiles fail before native configuration; credentials expiring on a running core block both dial and answer before media opens. Valid profiles request the stated secure policy and release references. Real handshakes and decoded media are verified by the network HLT.
 import copy
 import unittest
 from unittest.mock import Mock, patch
@@ -16,6 +16,23 @@ def config():
 
 
 class SecureCallTests(unittest.TestCase):
+    @patch('zmala_terminal.common.secure_calls.time.time', return_value=2000)
+    def test_running_core_rechecks_expiry_before_dial_and_answer(self, clock):
+        from zmala_terminal.common.engine import Engine
+        e = Mock(config=config(), call=42)
+        e.prepare_call_media.side_effect = lambda: Engine.prepare_call_media(e)
+        for operation, args in ((Engine.dial, ('sip:b@example.org',)), (Engine.answer, ())):
+            with self.subTest(operation=operation.__name__), self.assertRaisesRegex(ValueError, 'Expired'):
+                operation(e, *args)
+        e.refresh_usb_devices.assert_not_called()
+        e.core_create_call_params.assert_not_called()
+        e.core_invite_address_with_params.assert_not_called()
+        e.call_accept_with_params.assert_not_called()
+        e.config['secure_calls']['expires'] = 2001
+        with patch('zmala_terminal.common.engine.WINDOWS', False):
+            Engine.prepare_call_media(e)
+        e.refresh_usb_devices.assert_called_once()
+
     def test_poll_dispatches_same_revision_relay_changes_to_idle_or_deferred_apply(self):
         from zmala_terminal.common.management import ManagementLoop
         from zmala_terminal.common.model import State

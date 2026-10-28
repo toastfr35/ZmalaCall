@@ -258,9 +258,9 @@ test('callback rows distinguish delivery progress, cancellation and connection-o
   f.state.model.users.target.emails = [];
   assert.match(f.callbackEmailStatus(base), /needs an email address/);
   for (const [kind, connected, notified, ready, status, expected] of [
-    ['app', false, null, false, 'pending', 'phone to reconnect'],
-    ['app', true, null, false, 'pending', 'Waiting for the calling app'],
-    ['app', true, 'now', true, 'pending', 'calling app acknowledged'],
+    ['app', false, null, false, 'pending', 'Push can still deliver'],
+    ['app', true, null, false, 'pending', 'Waiting for the phone'],
+    ['app', true, 'now', true, 'pending', 'does not confirm it was read'],
     ['terminal', true, null, true, 'pending', 'receiving terminal'],
     ['terminal', true, null, false, 'completed', 'completed'],
   ]) {
@@ -268,6 +268,10 @@ test('callback rows distinguish delivery progress, cancellation and connection-o
     f.connected = connected;
     f.state.model.callbacks = [{ ...base, notified_at: notified, ready, status }];
     f.renderCallbacks();
+    assert.doesNotMatch(
+      f.view.map(text).join(' '),
+      /does not yet display|when both people are available/,
+    );
     assert.match(f.view.map(text).join(' '), new RegExp(expected));
     if (ready) assert.match(f.view.map(text).join(' '), /Both online/);
   }

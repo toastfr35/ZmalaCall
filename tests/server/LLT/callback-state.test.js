@@ -1,7 +1,7 @@
 // @test S-LLT-016
 // @requirements LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-017, LLR-SRV-CALLBACK-018, LLR-SRV-CALLBACK-019
 // @environment portable
-// @plan Drive callback storage with fake registration/notification responses; assert the 400-pending boundary, duplicate acceptance at capacity, deduplication, completion, expiry, permission changes, one notification after reconnect and retry with preserved renamed identity. Exercise the real SIP notifier with a fake transport and clock: preserve UTF-8 and exact recipient flow, ignore provisional responses, accept only 2xx, and fail closed on rejection, timeout or send error.
+// @plan Drive callback storage with fake registration/notification responses; assert the 400-pending boundary, duplicate acceptance at capacity, deduplication, completion, expiry, permission changes, one notification after reconnect and retry with preserved renamed identity. Retire a requester and finish pending work without another creation; assert cancellation and a persisted 200-record completed-history cap. Exercise the real SIP notifier with a fake transport and clock: preserve UTF-8 and exact recipient flow, ignore provisional responses, accept only 2xx, and fail closed on rejection, timeout or send error.
 // @pass Every named assertion must pass; failures or skips do not establish requirement verification.
 
 'use strict';
@@ -14,6 +14,31 @@ const fs = require('node:fs'),
   path = require('node:path');
 
 const flush = () => new Promise((r) => setImmediate(r));
+
+test('retired requester and completion trim history without waiting for another request', async (t) => {
+  const { storeFixture } = require('../../support/server/unit-fixture');
+  const store = storeFixture(t);
+  const service = new Callbacks(store, { registrations: new Map() });
+  const pending = service.create('term1', 'phone1');
+  const sample = service.requests[0];
+  service.requests = [
+    ...Array.from({ length: 200 }, (_, i) => ({
+      ...sample,
+      id: `completed-${i}`,
+      status: 'completed',
+    })),
+    sample,
+  ];
+  service.reconcile('term1');
+  assert.equal(service.requests.find((r) => r.id === pending.id).status, 'cancelled');
+  assert.equal(service.requests.length, 200);
+  assert.equal(new Callbacks(store, { registrations: new Map() }).requests.length, 200);
+  service.create('phone1', 'term1');
+  service.connected('term1', 'phone1');
+  assert.equal(service.requests.length, 200);
+  assert.equal(service.requests.at(-1).status, 'completed');
+  await flush();
+});
 
 test('400 pending requests allow duplicates but refuse a new pair until capacity is released', async (t) => {
   const { storeFixture } = require('../../support/server/unit-fixture');

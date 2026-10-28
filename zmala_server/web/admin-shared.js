@@ -212,13 +212,19 @@ export async function api(url, method = 'GET', value) {
 export async function run(action, errorId = 'error') {
   if (state.busy) return;
   state.busy = true;
+  const feedback = $(errorId);
   message(errorId, '');
   try {
     await action();
   } catch (e) {
-    message(errorId, e instanceof Error ? e.message : 'Request failed.');
+    // Escape can close and remove a dialog while its request is still pending.
+    // Keep errors attached to the original visible owner, never a reused ID.
+    const dialog = feedback.closest('dialog');
+    if (!feedback.isConnected || (dialog && !dialog.open)) return;
+    feedback.textContent = e instanceof Error ? e.message : 'Request failed.';
+    feedback.hidden = false;
     // A form may be scrolled to its Save button, leaving the error above view.
-    $(errorId).scrollIntoView({ block: 'nearest' });
+    feedback.scrollIntoView({ block: 'nearest' });
   } finally {
     state.busy = false;
   }

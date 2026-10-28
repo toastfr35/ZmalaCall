@@ -14,7 +14,7 @@ text: The app shall check the fixed public ZmalaCall latest-release endpoint on 
   application ID, increasing version code, matching release version, non-debuggable flag and the existing
   signing certificate before submission to Android signature validation. Automatic updates shall default
   off, be offered only on Android 12 or later, and require installation permission, an unmetered network
-  and thirty seconds of visible idle time. Update and Later shall be available; Later shall defer prompting
+  and thirty seconds of visible idle time, rechecked before installation commit after any user interaction during download or staging. Update and Later shall be available; Later shall defer prompting
   and automatic work for a day. APK transfer and staging shall stop when the app backgrounds or a call
   rings or starts, and installation commit shall be mutually exclusive with incoming and outgoing calls.
   Committed installation shall temporarily refuse new calls until it finishes. Android approval shall
@@ -25,7 +25,7 @@ text: The app shall check the fixed public ZmalaCall latest-release endpoint on 
   Discovery shall show a contact-footer Update available action without opening an unsolicited dialog.
   A selected update shall show bounded download percentage and checking/preparing/installing stages.
   Automatic-update idle time shall reset on user interaction and exclude a person's contact-action page.
-verification: Unit-test metadata, origins, archive identity and signature matching, and call/install exclusion.
+verification: Unit-test metadata, origins, archive identity and signature matching, and call/install exclusion. Check the thirty-second automatic eligibility boundary and loss of eligibility after interaction, permission/network changes or clock reset.
   Inject HTTP responses to verify fixed-origin metadata, per-hop APK redirect checks and redirect limits,
   ten-second connection/read timeouts, a one-MiB metadata limit and connection/stream cleanup on failures.
   Exercise the actual update UI and an Android PackageInstaller self-update with a same-key higher-version
@@ -33,6 +33,10 @@ verification: Unit-test metadata, origins, archive identity and signature matchi
 links:
 - HLR-AND-UPDATE-001: null
 references:
+- path: tests/android/LLT/device/CallbackAlertsTest.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/TurnTransport.java
+  type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/UpdatePolicy.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/UpdateGate.java

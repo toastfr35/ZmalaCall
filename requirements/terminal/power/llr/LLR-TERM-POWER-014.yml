@@ -24,10 +24,10 @@ references:
 reviewed: null
 scope: Experimental
 text: |
-  Every button press, volume motion and accepted incoming call shall immediately
+  Every button press, including volume-overlay clicks, and accepted incoming call shall immediately
   request USB power restoration and restart idle timing. This includes consumed and
   debounced presses. The request shall not wait for TV routing or answer timers.
   Device enumeration may complete later.
 verification: |
-  Feed normal, consumed and debounced inputs, motion and incoming calls. Check request
+  Feed normal, consumed and debounced button inputs, volume-overlay clicks and incoming calls. Check request
   order before TV or answer work.

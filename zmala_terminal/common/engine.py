@@ -5,6 +5,7 @@ never cross the configuration worker thread.
 """
 import ctypes as C
 import logging
+import math
 import hashlib
 import hmac
 import time
@@ -313,9 +314,13 @@ class Engine(LinphoneAPI):
         if result:
             raise RuntimeError('The call could not be answered')
 
-    # @llr LLR-TERM-AUDIO-005
+    # @llr LLR-TERM-AUDIO-005, LLR-TERM-COM-010
     def prepare_call_media(self):
         """A Pi call waits for the complete C20, including an explicit call route."""
+        from zmala_terminal.common.secure_calls import validate
+        # A running core can outlive its credentials during a polling outage.
+        # Reject only a new dial/answer; established media keeps its own lifetime.
+        validate(self.config)
         if not WINDOWS:
             self.refresh_usb_devices()
 
@@ -405,11 +410,13 @@ class Engine(LinphoneAPI):
                      'audio_profile': self.applied_audio_profile,
                      'requested_audio_profile': self.audio_profile,
                      'auto_framing_status': self.auto_framing.status if getattr(self, 'auto_framing', None)
-                     else 'unsupported'}
+                     else 'unsupported', 'media': self.media_stats()}
 
     def media_stats(self):
         result = {}
         if self.call:
+            if not WINDOWS:
+                result['codecs'] = media_backend().codec_stats(self)
             for kind, getter in [('audio', self.call_get_audio_stats), ('video', self.call_get_video_stats)]:
                 stats = getter(self.call)
                 if stats:
@@ -420,11 +427,19 @@ class Engine(LinphoneAPI):
                                     'receiver_loss_percent': self.call_stats_get_receiver_loss_rate(stats),
                                     'sender_loss_percent': self.call_stats_get_sender_loss_rate(stats)}
                     self.call_stats_unref(stats)
+            for kind in ('audio', 'video'):
+                if kind in result:
+                    # SDK sentinel values mean unavailable, not negative latency/loss.
+                    result[kind] = {key: value for key, value in result[kind].items()
+                                    if math.isfinite(value) and 0 <= value <= 9007199254740991}
             if 'video' in result:
                 params = self.call_get_current_params(self.call)
                 if params:
                     result['video']['received_fps'] = self.call_params_get_received_framerate(params)
                     result['video']['sent_fps'] = self.call_params_get_sent_framerate(params)
+                    for key in ('received_fps', 'sent_fps'):
+                        if not math.isfinite(result['video'][key]) or result['video'][key] < 0:
+                            del result['video'][key]
                     for direction in ('sent', 'received'):
                         size = getattr(self, 'call_params_get_'+direction+'_video_size')(params)
                         if size.width > 0 and size.height > 0:

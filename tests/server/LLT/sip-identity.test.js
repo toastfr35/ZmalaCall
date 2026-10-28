@@ -56,10 +56,12 @@ test('registration clamps lifetime, binds actual flow and rejects identity/expir
   s.register(req, peer);
   assert.equal(s.registrations.get('term1'), saved);
   assert.equal(sent.at(-1).headers.contact[0].params.expires, 600);
-  req.headers.contact = [{ uri: 'sip:term1@new-address', params: { expires: 'NaN' } }];
-  s.register(req, peer);
-  assert.equal(sent.at(-1).status, 400);
-  assert.equal(s.registrations.get('term1'), saved);
+  for (const expires of ['NaN', 'Infinity', '-Infinity', '1e999']) {
+    req.headers.contact = [{ uri: 'sip:term1@new-address', params: { expires } }];
+    s.register(req, peer);
+    assert.equal(sent.at(-1).status, 400, `Reject nonfinite expiry ${expires}`);
+    assert.equal(s.registrations.get('term1'), saved);
+  }
   req.headers.to.uri = 'sip:other@family.test';
   s.register(req, peer);
   assert.equal(sent.at(-1).status, 403);

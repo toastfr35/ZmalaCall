@@ -9,12 +9,13 @@ export interface CallbackApi {
   create(from: string, to: unknown): CallbackView;
   cancel(id: string, account?: string): void;
   rename(oldId: string, newId: string): void;
-  reconcile(): void;
+  reconcile(retiredRequester?: string): void;
   updateSettings(update: JsonObject): void;
   deliver(account?: string): void;
   email: { mailer: { verify(): Promise<unknown> } };
 }
 export interface ConsoleApi {
+  expire(): void;
   flush(): Promise<void>;
   list(id: string): unknown[];
   create(id: string, update: JsonObject): { id: string };

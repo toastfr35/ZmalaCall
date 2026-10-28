@@ -283,13 +283,19 @@ async function api(url, method = 'GET', value) {
 async function run(action, errorId = 'error') {
   if (state.busy) return;
   state.busy = true;
+  const feedback = $(errorId);
   message(errorId, '');
   try {
     await action();
   } catch (e) {
-    message(errorId, e instanceof Error ? e.message : 'Request failed.');
+    // Escape can close and remove a dialog while its request is still pending.
+    // Keep errors attached to the original visible owner, never a reused ID.
+    const dialog = feedback.closest('dialog');
+    if (!feedback.isConnected || (dialog && !dialog.open)) return;
+    feedback.textContent = e instanceof Error ? e.message : 'Request failed.';
+    feedback.hidden = false;
     // A form may be scrolled to its Save button, leaving the error above view.
-    $(errorId).scrollIntoView({ block: 'nearest' });
+    feedback.scrollIntoView({ block: 'nearest' });
   } finally {
     state.busy = false;
   }
@@ -1902,6 +1908,8 @@ function buildDevicesForm(card, id) {
 }
 /** @param {HTMLElement} card @param {string} id */
 function buildAssociationForm(card, id) {
+  // @llr LLR-SRV-UI-016
+  const configurationVersion = state.model.configuration_version;
   const form = terminalForm(card, 'Account association', 'association');
   const serial = terminalUser(id).device_id;
   const row = el('div', null, 'terminal-association-row');
@@ -1932,7 +1940,7 @@ function buildAssociationForm(card, id) {
         await api('/api/terminal-association', 'PUT', {
           serial_number: serial,
           account_id: next,
-          configuration_version: state.model.configuration_version,
+          configuration_version: configurationVersion,
         });
         state.terminalCards.clear();
         state.terminalId = next;
@@ -2250,7 +2258,7 @@ function renderCallbacks() {
   policy.append(policyBody);
   const p = panel(
       'Callback requests',
-      'Calls always start manually. The ZmalaPhone preview does not yet display callback notifications.',
+      'Calls always start manually. ZmalaPhone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
     ),
     list = el('div', null, 'registration-list');
   for (const request of state.model.callbacks || []) {
@@ -2269,12 +2277,12 @@ function renderCallbacks() {
         el(
           'small',
           state.model.users[request.to]?.type === 'terminal'
-            ? 'Shown on the receiving terminal when both people are available.'
+            ? 'Shown on the receiving terminal, including while the requester is offline.'
             : request.notified_at
-              ? 'The calling app acknowledged the notification.'
+              ? 'The phone accepted the SIP notice. This does not confirm it was read.'
               : registered(request.to)
-                ? 'Waiting for the calling app to acknowledge the notification.'
-                : 'Waiting for the phone to reconnect.',
+                ? 'Waiting for the phone to accept the SIP notice. Push reminders are handled separately.'
+                : 'The phone has no live SIP connection. Push can still deliver a reminder when configured.',
         ),
         el('small', callbackEmailStatus(request)),
       );
@@ -2301,7 +2309,7 @@ function renderCallbacks() {
     list.append(
       el(
         'p',
-        'No callback requests yet. On a terminal, choose an offline person and press green twice to request a callback.',
+        'No callback requests yet. Request a callback from a contact in ZmalaPhone, or choose an offline person on a terminal and press green twice.',
         'muted',
       ),
     );

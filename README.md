@@ -93,11 +93,13 @@ local network.
 ## Call from an Android phone
 
 Install **ZmalaPhone** and scan the setup QR code supplied by your administrator,
-on paper or displayed on another screen. You do not need access to the server's
+on paper or displayed on another screen. Use **Open QR image** for a saved QR
+picture on the same phone. You do not need access to the server's
 administration page.
 
-Contacts appear as compact rows with a portrait and name. Tap a green name to
-start a video call; gray names are unavailable. During a call, tap the video to
+Tap a contact card to open that person’s page, then choose **Call**. Green
+**Available** means recently active; blue **Try calling** means an alert may reach
+them. Red **Offline** offers a callback request instead of a call. During a call, tap the video to
 show the microphone, audio output, camera-switch and hangup controls. Calls
 support portrait and landscape views, with your camera preview in the corner;
 the contact screen stays in portrait.
@@ -110,7 +112,8 @@ can be downloaded in the app; optional automatic updates on supported phones
 wait until the app is idle. Android may ask you to confirm installation.
 
 Allow notifications to receive incoming-call alerts while the app is closed or
-the phone is asleep. This requires internet access and Firebase push configured
+the phone is asleep. Callback requests can also generate a notification; tapping it
+opens the contact without calling. This requires internet access and Firebase push configured
 on the server. After using Android's **Force stop**, reopen ZmalaPhone to receive
 calls again.
 

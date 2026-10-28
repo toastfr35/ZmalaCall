@@ -107,6 +107,12 @@ final class AppUpdates {
     return Build.VERSION.SDK_INT >= 31 && prefs.getBoolean("automatic", false);
   }
 
+  private boolean automaticReady() {
+    return UpdatePolicy.automaticReady(automatic(), installerAllowed(),
+        context.getSystemService(ConnectivityManager.class).isActiveNetworkMetered(),
+        SystemClock.elapsedRealtime(), idleSince);
+  }
+
   private void tick() {
     if (!foreground) return;
     if (!idle()) idleSince = SystemClock.elapsedRealtime();
@@ -114,9 +120,7 @@ final class AppUpdates {
       long now = System.currentTimeMillis();
       boolean later = prefs.getLong("later_until", 0) > now;
       boolean fallback = available.version.equals(prefs.getString("manual_required", ""));
-      if (automatic() && !fallback && !later && installerAllowed()
-          && !context.getSystemService(ConnectivityManager.class).isActiveNetworkMetered()
-          && SystemClock.elapsedRealtime() - idleSince >= 30000) {
+      if (!fallback && !later && automaticReady()) {
         requested = true; manual = false;
       }
       if (requested) startDownload();
@@ -326,8 +330,7 @@ final class AppUpdates {
 
   private void commit(int id, UpdatePolicy release, boolean userRequested) {
     downloading = false;
-    if (!idle() || !installerAllowed() || (!userRequested && (!automatic()
-        || context.getSystemService(ConnectivityManager.class).isActiveNetworkMetered()))
+    if (!idle() || !installerAllowed() || (!userRequested && !automaticReady())
         || !UpdateGate.INSTANCE.beginInstall(System.currentTimeMillis())) {
       installer.abandonSession(id); requested = userRequested; return;
     }

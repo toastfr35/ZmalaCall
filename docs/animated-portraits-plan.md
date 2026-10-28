@@ -8,7 +8,7 @@
 - [x] Keep Android portraits static using a decoded GIF first frame.
 - [x] Update Doorstop requirements, traces, direct LLT/HLT plans and assertions.
 - [x] Update technical and user-guide sources and regenerate affected derived guides.
-- [ ] Raise Android version, run checks, review and create PR; await Verify before merge.
+- [x] Raise Android version and pass Verify; PRs #28 and #30 merged, released in v0.3.22.
 - [ ] Replace private launch hooks with the supported runtime and verify both terminals.
 
 Upload design: all new PNG/JPEG/GIF portraits are square, 480–720 pixels per
@@ -25,4 +25,6 @@ unit cases pass (11 platform skips), 12 server Python unit cases pass. Both real
 Linux HTTP conversion scenarios and the isolated Tk GIF display scenario pass.
 Android unit tests and lint pass with the existing Android Studio JDK. All pages
 of updated Word sources and regenerated release guides were rendered and inspected.
-Hardware qualification/deployment and GitHub Verify remain pending at this stage.
+GitHub Verify and publication subsequently completed. The supported player was deployed
+to term1 and term2; the user confirmed term1 animation. Comprehensive physical
+playback qualification on both terminals remains separate from these fixture passes.

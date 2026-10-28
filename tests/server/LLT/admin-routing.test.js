@@ -1,7 +1,7 @@
 // @test S-LLT-034
 // @requirements LLR-SRV-DIR-025, LLR-SRV-DIR-026, LLR-SRV-DIR-027, LLR-SRV-DIR-029, LLR-SRV-CONFIG-023, LLR-SRV-ENROLL-004, LLR-SRV-ENROLL-005, LLR-SRV-MAINT-013, LLR-SRV-MAINT-017, LLR-SRV-MAINT-020, LLR-SRV-HOST-004
 // @environment portable
-// @plan Dispatch real admin routes with bounded in-memory HTTP streams and recording store/SIP/persistence boundaries. Verify revision conflicts precede mutations, including account creation with a stale opening revision, active-call guards, rename/reassociation cleanup and durable flush-before-response. Check console cancellation/admission, selected bootstrap/QR ownership, live views and SSH toggle delegation. Central authentication, PDF layout and store validation have separate tests. Inject SSH helper outcomes to verify supported-target checks, single-change admission, bounded subprocess calls, post-change state validation and unlock after failures.
+// @plan Dispatch real admin routes with bounded in-memory HTTP streams and recording store/SIP/persistence boundaries. Verify revision conflicts precede mutations, including account creation with a stale opening revision, active-call guards, rename/reassociation cleanup and durable flush-before-response. Check requester retirement only on type conversion and command reconciliation before acknowledgement. Check console cancellation/admission, selected bootstrap/QR ownership, live views and SSH toggle delegation. Central authentication, PDF layout and store validation have separate tests. Inject SSH helper outcomes to verify supported-target checks, single-change admission, bounded subprocess calls, post-change state validation and unlock after failures.
 // @pass Routing arguments and ordering assertions pass; rejected updates cannot mutate state or acknowledge success and disk failures cannot emit HTTP 200.
 'use strict';
 const { test } = require('node:test');
@@ -115,7 +115,7 @@ function fixture() {
   ])
     callbacks[name] = fn('callback.' + name, name === 'list' ? ['pending'] : undefined);
   callbacks.email = { mailer: { verify: fn('verifySMTP') } };
-  for (const name of ['flush', 'list', 'create', 'cancel', 'rename', 'swapTerminals'])
+  for (const name of ['flush', 'list', 'create', 'cancel', 'rename', 'swapTerminals', 'expire'])
     consoleJobs[name] = fn('console.' + name, name === 'create' ? { id: 'job' } : []);
   const sipServer = {
     dialogs: new Map(),
@@ -285,8 +285,15 @@ test('active-call account changes are blocked; rename preserves dependent owners
     configuration_version: 7,
   });
   assert.deepEqual(
-    f.calls.slice(0, 5).map((c) => c[0]),
-    ['updateAccount', 'console.rename', 'callback.rename', 'callback.reconcile', 'cancelProbe'],
+    f.calls.slice(0, 6).map((c) => c[0]),
+    [
+      'updateAccount',
+      'console.rename',
+      'callback.rename',
+      'callback.reconcile',
+      'console.expire',
+      'cancelProbe',
+    ],
   );
   assert.equal(f.context.sipServer.registrations.has('alice'), false);
   assert.equal(f.context.terminalStatuses.alice, undefined);
@@ -298,6 +305,17 @@ test('active-call account changes are blocked; rename preserves dependent owners
   unchanged.context.sipServer.dialogs.set('call', { peers: [{ user: 'alice' }] });
   await unchanged.request('PUT', '/api/users/alice', { type: 'phone', name: 'New name' });
   assert.equal(unchanged.context.sipServer.registrations.has('alice'), true);
+  assert.equal(unchanged.calls.find((c) => c[0] === 'callback.reconcile')[1], undefined);
+  const converted = fixture();
+  await converted.request('PUT', '/api/users/alice', { type: 'terminal', id: 'renamed' });
+  assert.deepEqual(
+    converted.calls.find((c) => c[0] === 'callback.reconcile'),
+    ['callback.reconcile', 'renamed'],
+  );
+  assert.ok(
+    converted.calls.findIndex((c) => c[0] === 'console.expire') <
+      converted.calls.findIndex((c) => c[0] === 'console.flush'),
+  );
   const deleted = fixture();
   await deleted.request('DELETE', '/api/users/alice');
   assert.equal(deleted.calls[0][0], 'deleteAccount');

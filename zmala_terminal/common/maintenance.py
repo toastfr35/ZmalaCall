@@ -99,6 +99,11 @@ class MaintenanceAgent:
         try:
             self.configuration.request(route, result)
         except HTTPError as error:
+            if error.code in (401, 403):
+                # This enrollment no longer owns the result. Retrying it forever
+                # strands the queue, and a diagnostic cannot restore authorization.
+                logging.warning('Command result authorization rejected; result retired without replay')
+                return
             if error.code not in (400, 404, 409, 413):
                 raise
             diagnostic = dict(result, stdout='', stderr='Command ran, but its result was rejected by the server.',
@@ -106,7 +111,7 @@ class MaintenanceAgent:
             try:
                 self.configuration.request(route, diagnostic)
             except HTTPError as retry:
-                if retry.code not in (400, 404, 409, 413):
+                if retry.code not in (400, 401, 403, 404, 409, 413):
                     raise
                 logging.warning('Command result permanently rejected; command will not be rerun')
 

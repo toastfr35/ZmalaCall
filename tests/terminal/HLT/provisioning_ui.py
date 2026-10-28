@@ -53,6 +53,10 @@ with http_server_fixture() as server:
         def core_refresh_registers(self, *args):
             pass
 
+        def core_set_ring(self, *args):
+            # This display fixture owns no SDK audio; let normal UI ticks finish.
+            pass
+
         def iterate(self):
             pass
 

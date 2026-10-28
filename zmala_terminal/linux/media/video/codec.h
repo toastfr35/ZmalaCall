@@ -16,7 +16,7 @@ typedef struct {
     int started, stopping, encoder, failed, force_keyframe;
     int input_count, output_count, dropped, reconfigure;
     int peak_input, peak_output, display_dropped;
-    uint64_t input_times[16], max_queue_ms;
+    uint64_t input_times[16], max_queue_ms, produced;
     unsigned input_head, input_tail;
     MSVideoConfiguration config;
     AVCodecContext *context;
@@ -42,5 +42,9 @@ void zmala_codec_submit(Codec *codec, mblk_t *message);
 mblk_t *zmala_codec_take(Codec *codec);
 int zmala_codec_failed(Codec *codec);
 void zmala_codec_keyframe(Codec *codec);
+/* Read-only snapshot of the current decoder (0) or encoder (1). Eight uint64s:
+ * input/output queued, dropped, display dropped, input/output peaks, max queue ms,
+ * produced frames/access units. Returns 0 when that codec is unavailable. */
+int zmala_video_get_stats(int encoder, uint64_t *values, unsigned count);
 void zmala_packetize_access_unit(Codec *codec, mblk_t *unit, MSQueue *output);
 #endif

@@ -2,7 +2,7 @@
 # @requirements LLR-TERM-START-005, LLR-TERM-START-006, LLR-TERM-CALL-011, LLR-TERM-AUDIO-004, LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-006, LLR-TERM-VIDEO-012, LLR-TERM-MAINT-018
 # @environment portable
 # @plan Substitute only Liblinphone ABI calls, OS media hooks and storage roots; run the real Engine constructor, registration, callback dispatch, dialing/answering and shutdown. Inspect bound retain/release signatures to prevent truncation of native call handles. Verify resource ownership, native configuration/transport requests, signed caller proof, device enumeration and diagnostic units. Inject native startup, address, invite and accept failures and verify errors/cleanup without loading the SDK or contacting SIP. Exercise the real Linux plugin adapter with fake ABI libraries: registration order, rate/registration failure, framing configuration, native resource lookup and deferred USB/mixer refresh.
-# @pass Recorded native arguments and reference releases match the requested policy; rejected/forged calls cannot notify the UI. These adapter checks do not establish real codec quality, network interoperability or hardware timing.
+# @pass Recorded native arguments and reference releases match the requested policy; rejected/forged calls cannot notify the UI. Diagnostics include available native media counters without opening devices; unavailable values remain omitted. These adapter checks do not establish real codec quality, network interoperability or hardware timing.
 import ctypes as C
 import hashlib
 import hmac
@@ -32,6 +32,22 @@ def bind_native(e):
 
 
 class LinuxMediaAdapterTests(unittest.TestCase):
+    def test_codec_snapshot_is_read_only_and_unavailable_plugins_remain_unknown(self):
+        from zmala_terminal.linux.media import codec_stats
+        self.assertEqual(codec_stats(SimpleNamespace()), {})
+        def snapshot(direction, values, count):
+            self.assertEqual(count, 8)
+            if direction == 0:
+                values[:] = (0, 1, 2, 3, 4, 5, 6, 7)
+                return 1
+            return 0
+        api = Mock(side_effect=snapshot)
+        e = SimpleNamespace(video_plugin=SimpleNamespace(zmala_video_get_stats=api))
+        self.assertEqual(codec_stats(e), {'decoder': {'input_queued': 0, 'output_queued': 1,
+            'dropped': 2, 'display_dropped': 3, 'peak_input': 4, 'peak_output': 5,
+            'max_queue_ms': 6, 'produced': 7}})
+        self.assertEqual(api.call_count, 2)
+
     def test_call_handle_bindings_use_pointer_width_and_fail_on_missing_symbol(self):
         from zmala_terminal.common import linphone_api
         api = linphone_api.LinphoneAPI()
@@ -273,6 +289,15 @@ class EngineAdapterTests(unittest.TestCase):
         report = e.media_stats()['video']
         self.assertEqual(report['sent_resolution'], [1920,1080]); self.assertEqual(report['sent_fps'],19.5)
         self.assertNotIn('received_resolution', report); e.call_stats_unref.assert_called_once_with(20)
+        self.assertEqual(e.diagnostics()['media']['video']['sent_resolution'], [1920,1080])
+        with patch.object(engine, 'WINDOWS', False):
+            self.media.codec_stats.return_value = {'decoder': {'produced': 12}}
+            self.assertEqual(e.diagnostics()['media']['codecs'], {'decoder': {'produced': 12}})
+        e.call_stats_get_round_trip_delay.return_value = -1
+        e.call_params_get_received_framerate.return_value = float('nan')
+        unavailable = e.media_stats()['video']
+        self.assertNotIn('round_trip_seconds', unavailable)
+        self.assertNotIn('received_fps', unavailable)
         with patch.object(engine.time, 'monotonic', return_value=55): e.iterate()
         e.core_iterate.assert_called_once_with(2); self.media.poll_video.assert_called_once_with(e,55)
         self.media.sync_speaker_mute.assert_called_once_with(e)

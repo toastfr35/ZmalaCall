@@ -45,6 +45,7 @@ text: In secure relay mode, the terminal shall use SIP TLS and TURN TLS on the c
   A write that cannot complete within three seconds shall fail and shut down the connection so a
   partial frame is not followed by another frame on the same stream.
 verification: Unit-test configuration rejection, native policy calls, encryption and resource cleanup.
+  Advance the clock to credential expiry on an already running core; reject new dial and answer before opening media.
   Deliver renewed credentials at the same revision; require polling to schedule idle engine replacement.
   Accept separate valid SIP and TURN ports for a shared public IP; reject out-of-range or malformed ports.
   Feed fragmented and coalesced TURN frames at every byte boundary; compare exact payload bytes and

@@ -29,7 +29,7 @@ class CallbackEmails {
   }
   // @llr LLR-SRV-CALLBACK-022
   deliver() {
-    if (!this.mailer.enabled()) return;
+    if (this.callbacks.paused || !this.mailer.enabled()) return;
     for (const request of this.callbacks.requests) {
       if (this.sending.size >= 3) break;
       if (
@@ -43,13 +43,14 @@ class CallbackEmails {
         continue;
       this.sending.add(request.id);
       this.retry.set(request.id, Date.now() + 60000);
-      this.send(request)
+      const operation = this.send(request)
         .catch(() => console.error('Could not persist callback email delivery state.'))
         .finally(() => {
           // Long SMTP attempts must not cause an immediate retry at completion.
           if (this.current(request)) this.retry.set(request.id, Date.now() + 60000);
           this.sending.delete(request.id);
         });
+      this.callbacks.track(operation);
     }
   }
   // @llr LLR-SRV-CALLBACK-021
@@ -62,6 +63,7 @@ class CallbackEmails {
     for (const address of this.remaining(request)) {
       // Completion, expiry, permission and address edits can occur while awaiting SMTP.
       if (
+        this.callbacks.paused ||
         !this.current(request) ||
         !this.mailer.enabled() ||
         Date.parse(request.email_due_at) > Date.now()

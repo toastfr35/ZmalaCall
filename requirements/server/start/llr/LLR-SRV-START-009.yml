@@ -17,11 +17,13 @@ references:
   type: file
 - path: zmala_server/main.js
   type: file
+- path: zmala_server/callbacks.js
+  type: file
 - path: zmala_server/shutdown.js
   type: file
 reviewed: null
 scope: Core
 text: |
-  Signals and listener failures shall use one shutdown promise. Shutdown shall close HTTP and HTTPS listeners, stop SIP, drain accepted requests and then flush required state.
+  Signals and listener failures shall use one shutdown promise. Shutdown shall close HTTP and HTTPS listeners, stop SIP, stop starting callback deliveries, drain accepted HTTP requests and in-flight callback delivery results, and then flush required state.
 verification: |
-  Hold an accepted request and a write. Trigger concurrent close paths and check order and one SIP close. No finite drain deadline is assumed.
+  Hold an accepted request, callback delivery and a write. Trigger concurrent close paths and check order, no new callback send, persisted delivery results and one SIP close. No finite drain deadline is assumed.

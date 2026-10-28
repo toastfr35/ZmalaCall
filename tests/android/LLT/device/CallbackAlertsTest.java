@@ -1,12 +1,16 @@
 // @test A-LLT-027
-// @requirements LLR-AND-HISTORY-003
+// @requirements LLR-AND-HISTORY-003, LLR-AND-UPDATE-002
 // @environment native-sdk
 // @plan On a disposable Android emulator, deliver a signed callback hint with a local authenticated
 // configuration server. Inspect ordinary notification text/category/timeout, duplicate/dismissed
 // delivery, cancellation, stale snapshots, deadline changes and enrollment isolation. Tap the alert to the permitted
 // contact page without dialing. No Google transport or personal enrollment is used.
+// Inspect the actual initialized WorkManager configuration for a job range excluding update job 9037.
+// Signed background delivery needs a validated network (the production WorkManager constraint);
+// report that case skipped if the emulator has no validated network, rather than weakening it.
 // @pass Only a valid current incoming request produces a single named reminder, stale or forbidden
 // state cannot create one, cancellation removes it and tapping opens the contact without a call.
+// WorkManager uses the configured disjoint range, so callback refresh cannot replace the update job.
 package org.zmala.phone;
 
 import static org.junit.Assert.*;
@@ -18,6 +22,12 @@ import org.json.*;
 import org.junit.*;
 
 public class CallbackAlertsTest {
+  @Test public void callbackJobsCannotReplaceUpdateChecks() {
+    Context c = PhoneFixture.INSTRUMENTATION.getTargetContext();
+    androidx.work.Configuration config = androidx.work.WorkManager.getInstance(c).getConfiguration();
+    assertTrue(config.getMinJobSchedulerId() > 9037);
+    assertTrue(config.getMaxJobSchedulerId() >= config.getMinJobSchedulerId() + 1000);
+  }
   @Rule public GrantPermissionRule permission=GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS);
   static final String ID="12345678-0000-0000-0000-000000000000";
   static android.service.notification.StatusBarNotification[] alerts(Context c) {
@@ -26,6 +36,10 @@ public class CallbackAlertsTest {
   }
   @Test public void signedWakeupReconcilesAndOpensTheContactWithoutCalling() throws Exception {
     Context c=PhoneFixture.INSTRUMENTATION.getTargetContext();PhoneFixture.endSession();
+    android.net.ConnectivityManager connectivity = c.getSystemService(android.net.ConnectivityManager.class);
+    android.net.NetworkCapabilities capabilities = connectivity.getNetworkCapabilities(connectivity.getActiveNetwork());
+    Assume.assumeTrue("Background callback delivery needs an Android-validated network",
+        capabilities != null && capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED));
     NotificationManager manager=c.getSystemService(NotificationManager.class);
     manager.cancelAll();c.getSharedPreferences("callback-notices",0).edit().clear().commit();
     manager.deleteNotificationChannel(CallbackAlerts.CHANNEL);

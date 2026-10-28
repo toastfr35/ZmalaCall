@@ -27,7 +27,7 @@ reviewed: null
 scope: Core
 text: |
   Contact permissions shall be Boolean values. Automatic answer shall require receive
-  permission. Portrait paths shall use the permitted hash-named PNG or JPEG format.
+  permission. Portrait paths shall use the permitted hash-named PNG, JPEG or GIF format.
   Callback state shall contain no more than 80 valid pending account pairs.
 verification: |
   Supply invalid permissions, image paths and callback pairs. Check bounds and

@@ -15,6 +15,7 @@ from zmala_terminal.common.media_errors import MediaNotReady
 class MissingMicrophoneTests(unittest.TestCase):
     def test_missing_c20_blocks_native_answer_and_invite_before_allocation(self):
         e = Engine.__new__(Engine)
+        e.config = {}  # Valid LAN profile; this case isolates missing C20 readiness.
         e.call = 42
         e.refresh_usb_devices = Mock(side_effect=MediaNotReady('microphone waking'))
         e.address_new = Mock()

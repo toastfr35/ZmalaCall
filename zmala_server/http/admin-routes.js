@@ -189,6 +189,7 @@ async function adminRoutes(req, res, url, context) {
   if (accountPath && ['PUT', 'DELETE'].includes(req.method || '')) {
     const id = accountPath[1];
     let credentialsChanged = true,
+      typeChanged = false,
       next = id;
     if (req.method === 'DELETE') {
       version(await readJson(req, 10000, true));
@@ -198,6 +199,7 @@ async function adminRoutes(req, res, url, context) {
       const update = await readJson(req, 10000),
         old = v.users[id];
       version(update);
+      typeChanged = !!old && old.type !== update.type;
       credentialsChanged =
         !!old &&
         ((update.id !== undefined && update.id !== id) ||
@@ -210,7 +212,8 @@ async function adminRoutes(req, res, url, context) {
       consoleJobs.rename(id, next);
       callbacks.rename(id, next);
     }
-    callbacks.reconcile();
+    callbacks.reconcile(typeChanged ? next : undefined);
+    consoleJobs.expire();
     if (credentialsChanged) forgetAccount(id);
     await writeBootstrap();
     return send(res, 200, { ok: true, id: next });

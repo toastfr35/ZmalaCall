@@ -20,7 +20,7 @@ GREEN = colors.HexColor('#16734B')
 INK = colors.HexColor('#1F2937')
 SOURCES = {
     'ZmalaTerminal-Installation': [('terminal_prep.docx', None)],
-    'ZmalaTerminal-Guide': [('terminal_config.docx', 'terminal'), ('terminal_use.docx', None)],
+    'ZmalaTerminal-Guide': [('terminal_use.docx', None), ('terminal_config.docx', 'terminal')],
     'ZmalaServer-Installation': [('server_prep.docx', 'server-install')],
     'ZmalaServer-Guide': [('server_prep.docx', 'server-use')],
     'ZmalaPhone-Installation': [('phone_installation.docx', None)],
@@ -53,7 +53,7 @@ def paragraph_markup(paragraph):
             relation = paragraph.part.rels.get(child.get(qn('r:id')))
             target = str(relation.target_ref) if relation else ''
             if target.startswith(('https://', 'http://')):
-                value = '<link href="' + escape(target, {'"': '&quot;'}) + '">' + value + '</link>'
+                value = '<link color="#146B8B" href="' + escape(target, {'"': '&quot;'}) + '"><u>' + value + '</u></link>'
         parts.append(value)
     return ''.join(parts)
 
@@ -73,12 +73,19 @@ def source_blocks(filename, mode, styles):
                 continue
             if filename.startswith('phone_') and p.paragraph_format.page_break_before:
                 yield PageBreak()
+            if filename == 'terminal_use.docx' and p.text == 'If something is not working':
+                # Keep the quick troubleshooting checklist together in print.
+                yield PageBreak()
             markup = paragraph_markup(p)
             if markup:
                 key = 'h1' if style == 'Heading 1' else 'h2' if style == 'Heading 2' else 'body'
                 if style.startswith('List'):
                     markup = '&#8226; ' + markup
-                yield Paragraph(markup, styles[key])
+                following = item.getnext()
+                keep = (p.paragraph_format.keep_with_next or '<link ' in markup or
+                        (following is not None and next(following.iter(qn('a:blip')), None) is not None))
+                paragraph_style = ParagraphStyle('kept', parent=styles[key], keepWithNext=True) if keep else styles[key]
+                yield Paragraph(markup, paragraph_style)
             for blip in item.iter(qn('a:blip')):
                 part = doc.part.related_parts.get(blip.get(qn('r:embed')))
                 if part is None:
@@ -87,8 +94,11 @@ def source_blocks(filename, mode, styles):
                 factor = min(165 * mm / graphic.imageWidth, 110 * mm / graphic.imageHeight)
                 graphic.drawWidth = graphic.imageWidth * factor
                 graphic.drawHeight = graphic.imageHeight * factor
+                graphic.keepWithNext = True
                 yield graphic
-                yield Spacer(1, 5 * mm)
+                spacer = Spacer(1, 5 * mm)
+                spacer.keepWithNext = True
+                yield spacer
         elif item.tag == qn('w:tbl') and selected(section, mode):
             table = WordTable(item, doc)
             count = len(table.columns)
@@ -108,20 +118,32 @@ def source_blocks(filename, mode, styles):
 
 def build(name, destination):
     styles = {
-        'body': ParagraphStyle('body', fontName='Helvetica', fontSize=10.5, leading=15,
+        'body': ParagraphStyle('body', fontName='Helvetica', fontSize=11.5, leading=16,
                                textColor=INK, spaceAfter=8, alignment=TA_LEFT,
                                allowWidows=0, allowOrphans=0),
         'h1': ParagraphStyle('h1', fontName='Helvetica-Bold', fontSize=15, leading=19,
-                             textColor=GREEN, spaceBefore=13, spaceAfter=8, keepWithNext=True),
+                             textColor=colors.black, spaceBefore=13, spaceAfter=8, keepWithNext=True),
         'h2': ParagraphStyle('h2', fontName='Helvetica-Bold', fontSize=11, leading=15,
                              textColor=INK, spaceBefore=8, spaceAfter=6, keepWithNext=True),
         'cell': ParagraphStyle('cell', fontName='Helvetica', fontSize=9.5, leading=13, textColor=INK),
         'title': ParagraphStyle('title', fontName='Helvetica-Bold', fontSize=27, leading=33,
                                 textColor=INK, spaceAfter=16),
     }
-    title = name.replace('-', ' / ')
+    title = name.replace('-', ' ')
+    if name.startswith('ZmalaPhone-') or name == 'ZmalaTerminal-Guide':
+        styles['body'].leading = 15
+        styles['body'].spaceAfter = 6
     story = [Paragraph(title, styles['title'])]
+    if name == 'ZmalaServer-Guide':
+        story.append(Paragraph('For the person managing family accounts and devices after installation. '
+            'Connect to the server’s local network and open its administration address. '
+            'Start by creating accounts and a shared group, then give each person their private setup code.', styles['body']))
     for filename, mode in SOURCES[name]:
+        if name == 'ZmalaTerminal-Guide':
+            if filename == 'terminal_config.docx':
+                story.append(PageBreak())
+            story.append(Paragraph('Everyday calls' if filename == 'terminal_use.docx'
+                                   else 'Setup for your helper', styles['h1']))
         story.extend(source_blocks(filename, mode, styles))
 
     def frame(canvas, document):

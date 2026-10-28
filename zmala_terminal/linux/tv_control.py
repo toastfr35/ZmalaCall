@@ -273,6 +273,11 @@ class TVControl:
                     return
                 if self.power_enabled:
                     self._run('--to', '0', '--image-view-on')
+                # @llr LLR-TERM-TV-021
+                # Power qualification does not authorize input switching. In
+                # power-only mode leave source selection to the TV/user.
+                if not self.source_enabled:
+                    return
                 if self.source_enabled and previous['off'] is False and previous['source'] == '0.0.0.0':
                     # Some Samsung tuners ignore CEC source selection while on.
                     # Use only the paired TV's explicitly verified source key,

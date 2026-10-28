@@ -1,6 +1,6 @@
 # Remaining review work
 
-Reviewed against `5213c3e` on 18 October 2026. This file contains only outstanding
+Reassessed against `5450c4a` and the component-alignment review on 28 October 2026. This file contains only outstanding
 improvements and acceptance gaps. Completed fixes and superseded test records
 are available in Git history. Code-review risks are distinguished from reproduced
 hardware failures below.
@@ -32,7 +32,10 @@ call with decoded audio and at least 18.7 received fps at 1080p.
 enumeration, which is insufficient to prove capture readiness. Investigate the
 device/driver recovery sequence and qualify repeated idle/wake/call cycles;
 bound recovery attempts and avoid reporting capture health from enumeration
-alone. The single successful recovery does not establish a durable fix.
+alone. The subsequent 16 kHz capture policy and 750 ms microphone-before-camera
+startup gate passed 50 startup cycles and eight alternating phone calls on 25 October,
+including USB wake. See [terminal evidence](docs/terminal.md#video-and-audio).
+These bounded checks do not establish indefinite device reliability.
 
 ### Bound native media memory and recovery time
 
@@ -57,13 +60,13 @@ connected dialogs expire after four hours of signalling inactivity. Define and
 test abandoned-call recovery without terminating valid quiet calls; cover peer
 loss, network interruption, media-resource release and subsequent calls.
 
-### Define message deduplication across engine replacement
+### Consider persistent message deduplication
 
 [`Engine._seen_messages`](zmala_terminal/common/engine.py) is a per-engine set
-with arbitrary eviction at 256 entries. Define sender scope and a deduplication
-window, then test delayed duplicates across configuration-driven core replacement
-and restart. Retain bounded identity metadata outside the core if the chosen
-contract requires it.
+with arbitrary eviction at 256 entries, as explicitly scoped by LLR-TERM-HISTORY-020.
+Cross-restart deduplication is a possible future enhancement, not missing current
+behavior. Any expanded contract needs sender scope, a retention window and tests
+for delayed duplicates across configuration-driven core replacement and restart.
 
 ### Add reference-aware photo and log retention
 

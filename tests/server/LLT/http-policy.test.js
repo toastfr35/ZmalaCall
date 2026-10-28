@@ -1,6 +1,8 @@
 // @test S-LLT-021
 // @requirements LLR-SRV-START-006, LLR-SRV-START-010, LLR-SRV-AUTH-019, LLR-SRV-AUTH-020, LLR-SRV-AUTH-021, LLR-SRV-AUTH-022, LLR-SRV-AUTH-023, LLR-SRV-AUTH-024, LLR-SRV-DIR-026, LLR-SRV-DIR-027, LLR-SRV-CONFIG-021, LLR-SRV-CONFIG-022, LLR-SRV-ENROLL-005, LLR-SRV-PRESENCE-005, LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-020, LLR-SRV-MAINT-013, LLR-SRV-MAINT-016, LLR-SRV-MAINT-018, LLR-SRV-MAINT-019, LLR-SRV-MAINT-020
 // @environment portable
+// Media status assertions cover detached supported snapshots, unknown fields, finite measurements,
+// resolution bounds and integer counters; rejected reports preserve the previous snapshot.
 // @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, authenticated callback creation/cancellation and enrollment identity persistence, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection.
 // Supply explicit interface subnets and TCP peer addresses to check LAN-only administration,
 // including mapped IPv4, IPv6, spoofed forwarding headers and valid remote admin credentials.
@@ -345,6 +347,12 @@ test('accepted status is device scoped and server timestamped; rejected updates 
     camera_status: 'connected',
     camera_powered: true,
     camera_connected: true,
+    media: {
+      video: { received_fps: 20, received_resolution: [480, 480] },
+      codecs: {
+        decoder: { input_queued: 0, output_queued: 1, dropped: 2, produced: 30 },
+      },
+    },
   };
   assert.equal(
     (await call('/api/status', { method: 'POST', headers: device, value: accepted })).status,
@@ -355,6 +363,23 @@ test('accepted status is device scoped and server timestamped; rejected updates 
   assert.equal(saved.remote_battery, 75);
   assert.equal(saved.remote_charger_connected, true);
   assert.equal(saved.camera_powered, true);
+  assert.deepEqual(saved.media, accepted.media);
+  const copied = terminalStatus(accepted);
+  assert.notEqual(copied.media, accepted.media);
+  assert.deepEqual(terminalStatus({ media: {} }).media, {});
+  assert.deepEqual(terminalStatus({ media: { unknown: 3 } }).media, {});
+  for (const media of [
+    null,
+    [],
+    { video: [] },
+    { audio: { upload_kbps: Infinity } },
+    { video: { received_fps: -1 } },
+    { video: { received_resolution: [0, 480] } },
+    { codecs: [] },
+    { codecs: { encoder: null } },
+    { codecs: { decoder: { dropped: 1.5 } } },
+  ])
+    assert.throws(() => terminalStatus({ media }));
   const unknown = terminalStatus({
     remote_status: 'unknown',
     remote_battery: null,
@@ -381,6 +406,7 @@ test('accepted status is device scoped and server timestamped; rejected updates 
     { camera_connected: 'yes' },
     { configuration_version: -1 },
     { devices: [] },
+    { media: { video: { received_fps: '20' } } },
     { devices: { camera: [1] } },
     { devices: { camera: Array(101).fill('C20') } },
   ]) {

@@ -21,7 +21,8 @@ They are not embedded in the executable or installed on the Pi:
 - `phone_installation.docx` and `phone_guide.docx`: Android installation and everyday use.
 
 `build_tools/update-release-guides.py` maintains the download instructions and
-phone authoring content. `build_tools/release/guides.py` renders all six PDFs:
+phone authoring content in `build_tools/release/guide_copy.py`. The same source
+contains idempotent clarity edits for the retained server and terminal Word guides. `build_tools/release/guides.py` renders all six PDFs:
 terminal configuration and use form one Guide; server preparation is split into
 Installation and Guide. The Word files remain editable sources, not release assets.
 
@@ -34,14 +35,14 @@ Contents: [system](#system-and-supported-hosts), [network](#network-and-identity
 ZmalaCall provides a television video-call interface with portrait contacts and
 a Microsoft Presenter+ remote. A separate server manages accounts, groups,
 settings, SIP signalling and an RTP/RTCP relay. It neither transcodes nor records
-calls. Compatible SIP phone clients can participate on the same LAN.
+calls. Family members use ZmalaPhone on Android or another Pi terminal.
 
 | Component | Current deployment |
 | --- | --- |
 | Server | Raspberry Pi OS Lite 64-bit, Debian 13 Trixie; installer accepts Pi 3 Model B/B+ and Pi 4 Model B |
 | TV terminal | Raspberry Pi 4 Model B, the same OS, Nuroum C20, Presenter+, HDMI TV; Argon ONE Pi 4 V2 fan integration |
 | Android app | ZmalaPhone LAN or encrypted relay video with Firebase incoming alerts, Android 9+, Linphone SDK 5.5.32 |
-| Desktop terminal | 64-bit Windows with Tk/Liblinphone and server-selected camera/audio devices |
+| Development compatibility terminal | 64-bit Windows with Tk/Liblinphone and server-selected camera/audio devices |
 | Installers | Windows executables deploying over Ethernet SSH; graphical and headless modes |
 
 Windows server hosting, the serial-keypad project and CAD models are retired.
@@ -79,6 +80,8 @@ dependencies; ordinary calls do not download code or models.
 
 | Path | Purpose |
 | --- | --- |
+| `zmala_phone/` | Android application, resources and native SDK adapter |
+| `tests/android/{LLT,HLT}/` | Android JVM/device verification plans and assertions |
 | `zmala_server/` | Node server, administration source and SIP transport |
 | `zmala_terminal/common/` | Shared Python controllers, UI, assets and translations |
 | `tests/server/{LLT,HLT}/` | Server unit and system/integration test plans and implementations |
@@ -238,7 +241,7 @@ docstrings and executable code (a shebang may precede them). Example:
 # @test T-LLT-041
 # @requirements LLR-TERM-REMOTE-016, LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007, LLR-TERM-AUDIO-008
 # @environment portable
-# @plan Feed signed motion around deadband and limits while holding/releasing middle; assert relative volume increments, throttled mixer writes, overlay lifetime, default changes and retry after failed writes.
+# @plan Open the volume overlay with middle; use distinct left/right clicks to check five-percent steps and bounds. Verify duplicate suppression, mixer retries, closure and call-state preemption; motion must not change volume.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 ```
 
