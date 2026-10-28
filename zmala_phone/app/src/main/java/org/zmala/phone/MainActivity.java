@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -43,7 +42,7 @@ public final class MainActivity extends Activity {
       RED = Color.rgb(183, 47, 63);
   private final Handler main = new Handler(Looper.getMainLooper());
   private final ExecutorService network = Executors.newSingleThreadExecutor();
-  private final PortraitQueue portraits = new PortraitQueue();
+  private final PortraitLoader portraits = new PortraitLoader();
   private CallSession session;
   private CallEngine engine;
   private Enrollment enrollment;
@@ -560,24 +559,7 @@ public final class MainActivity extends Activity {
   }
 
   private void loadPortrait(ImageView photo, String path, long ticket) {
-    Enrollment target = enrollment;
-    if (path.isEmpty()) return;
-    portraits.execute(ticket, () -> {
-      try {
-        byte[] bytes = ServerApi.photo(target, path);
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        options.inSampleSize = Math.max(1, Math.max(options.outWidth, options.outHeight) / 256);
-        options.inJustDecodeBounds = false;
-        android.graphics.Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
-        main.post(() -> {
-          if (visible && portraits.current(ticket) && bitmap != null) photo.setImageBitmap(bitmap);
-        });
-      } catch (Exception ignored) {
-        // Keep the common logo when a portrait is unavailable.
-      }
-    });
+    portraits.load(photo, enrollment, path, ticket);
   }
 
   // @llr LLR-AND-CALL-002, LLR-AND-UI-002

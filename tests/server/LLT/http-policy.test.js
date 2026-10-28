@@ -1,9 +1,9 @@
 // @test S-LLT-021
-// @requirements LLR-SRV-START-006, LLR-SRV-START-010, LLR-SRV-AUTH-019, LLR-SRV-AUTH-020, LLR-SRV-AUTH-021, LLR-SRV-AUTH-022, LLR-SRV-AUTH-023, LLR-SRV-AUTH-024, LLR-SRV-DIR-026, LLR-SRV-DIR-027, LLR-SRV-CONFIG-021, LLR-SRV-CONFIG-022, LLR-SRV-ENROLL-005, LLR-SRV-PRESENCE-005, LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-020, LLR-SRV-MAINT-013, LLR-SRV-MAINT-016, LLR-SRV-MAINT-018, LLR-SRV-MAINT-019, LLR-SRV-MAINT-020
+// @requirements LLR-SRV-START-006, LLR-SRV-START-010, LLR-SRV-AUTH-019, LLR-SRV-AUTH-020, LLR-SRV-AUTH-021, LLR-SRV-AUTH-022, LLR-SRV-AUTH-023, LLR-SRV-AUTH-024, LLR-SRV-DIR-025, LLR-SRV-DIR-026, LLR-SRV-DIR-027, LLR-SRV-CONFIG-021, LLR-SRV-CONFIG-022, LLR-SRV-ENROLL-005, LLR-SRV-PRESENCE-005, LLR-SRV-CALLBACK-015, LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-020, LLR-SRV-MAINT-013, LLR-SRV-MAINT-016, LLR-SRV-MAINT-018, LLR-SRV-MAINT-019, LLR-SRV-MAINT-020
 // @environment portable
 // Media status assertions cover detached supported snapshots, unknown fields, finite measurements,
 // resolution bounds and integer counters; rejected reports preserve the previous snapshot.
-// @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, authenticated callback creation/cancellation and enrollment identity persistence, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection.
+// @plan Invoke HTTP controllers with in-memory request streams and response doubles; check Host/Origin/TLS and identity isolation, exact body bounds, persistence barriers, authenticated callback creation/cancellation and enrollment identity persistence, live delta callbacks, validated status receipt time, protected diagnostics and active-call reassociation rejection, including push-wake identity edits and deletion before a SIP dialog exists.
 // Supply explicit interface subnets and TCP peer addresses to check LAN-only administration,
 // including mapped IPv4, IPv6, spoofed forwarding headers and valid remote admin credentials.
 // Exercise live, push-only and unavailable contacts through full configuration, delta and preflight routes at the same revision.
@@ -487,4 +487,43 @@ test('contact presence distinguishes live activity, push eligibility and offline
     }
     assert.equal(store.value.configuration_version, version);
   }
+});
+
+test('push-wake calls protect both accounts from identity edits, deletion and reassociation', async (t) => {
+  const { store, ctx, call, admin } = fixture(t);
+  store.createAccount({
+    id: 'second',
+    name: 'Second',
+    type: 'terminal',
+    emails: ['a@example.test'],
+  });
+  ctx.sipServer.appCalls = { busy: (id) => ['term1', 'phone1'].includes(id) };
+  const before = JSON.stringify(store.value);
+  for (const id of ['term1', 'phone1']) {
+    assert.equal(
+      (await call(`/api/users/${id}`, { method: 'DELETE', headers: admin })).status,
+      409,
+    );
+    assert.equal(
+      (
+        await call(`/api/users/${id}`, {
+          method: 'PUT',
+          headers: admin,
+          value: { id: 'renamed', name: 'Renamed', type: store.value.users[id].type },
+        })
+      ).status,
+      409,
+    );
+  }
+  assert.equal(
+    (
+      await call('/api/terminal-association', {
+        method: 'PUT',
+        headers: admin,
+        value: { serial_number: 'windows-terminal', account_id: 'second' },
+      })
+    ).status,
+    409,
+  );
+  assert.equal(JSON.stringify(store.value), before);
 });

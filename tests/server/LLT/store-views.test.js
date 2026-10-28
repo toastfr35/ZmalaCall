@@ -1,7 +1,7 @@
 // @test S-LLT-019
-// @requirements LLR-SRV-START-007, LLR-SRV-DIR-024, LLR-SRV-DIR-027, LLR-SRV-DIR-028, LLR-SRV-DIR-032, LLR-SRV-CONFIG-021, LLR-SRV-CONFIG-022, LLR-SRV-ENROLL-005
+// @requirements LLR-SRV-START-007, LLR-SRV-DIR-024, LLR-SRV-DIR-027, LLR-SRV-DIR-028, LLR-SRV-DIR-032, LLR-SRV-APP-003, LLR-SRV-CONFIG-021, LLR-SRV-CONFIG-022, LLR-SRV-ENROLL-005
 // @environment portable
-// @plan Create isolated accounts, mutate revisions and reassign serials; assert random independent credentials, private cached directory views, compare-and-set settings, device-owned profiles and bootstrap identity. Feed network-interface fixtures to check LAN address preference and fallback.
+// @plan Create isolated accounts, mutate revisions and reassign serials; assert random independent credentials, private cached terminal and phone directory views, compare-and-set settings, device-owned profiles and bootstrap identity. Feed network-interface fixtures to check LAN address preference and fallback.
 // @pass Every identity, privacy, invalidation and rejected-write assertion must pass; HTTP active-call exclusion is checked separately.
 
 'use strict';
@@ -49,7 +49,7 @@ test('first run and new accounts use independent credentials, never directory se
 
 test('derived views reuse stable computation and invalidate after edits without live-field leakage', (t) => {
   const s = storeFixture(t);
-  const build = t.mock.method(s, 'buildContacts');
+  const build = t.mock.method(s.directory, 'buildContacts');
   const first = s.contacts('term1');
   first[0].online = true;
   first[0].name = 'Not persisted';
@@ -123,4 +123,23 @@ test('LAN selection prefers physical private IPv4 then external IPv4 then loopba
   assert.equal(lanAddress(), '203.0.113.7');
   network.mock.mockImplementation(() => ({}));
   assert.equal(lanAddress(), '127.0.0.1');
+});
+
+test('phone views share the revision cache without exposing secrets or retaining stale permissions', (t) => {
+  const s = storeFixture(t);
+  const build = t.mock.method(s.directory, 'buildContacts');
+  const first = s.appConfig('phone1');
+  first.contacts[0].name = 'Not persisted';
+  first.contacts[0].online = true;
+  const next = s.appConfig('phone1');
+  assert.equal(next.contacts[0].name, 'term1');
+  assert.equal(next.contacts[0].online, undefined);
+  assert.equal(build.mock.callCount(), 1);
+  assert.ok(!('password' in next.contacts[0] || 'device_token' in next.contacts[0]));
+  s.updateAccount('term1', { name: 'Renamed', type: 'terminal' });
+  assert.equal(s.appConfig('phone1').contacts[0].name, 'Renamed');
+  assert.equal(build.mock.callCount(), 2);
+  s.deleteGroup('family');
+  assert.deepEqual(s.appConfig('phone1').contacts, []);
+  assert.equal(build.mock.callCount(), 3);
 });

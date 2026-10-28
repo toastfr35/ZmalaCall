@@ -434,7 +434,7 @@ Terminal recipients use polling and show incoming requests even if the requester
 is offline. Neither SIP nor Firebase acceptance proves a person read the reminder.
 
 Callbacks opens on Pending, with separate counts for Pending and History. The selection
-survives live refreshes; completed, cancelled and expired records remain in History.
+survives live refreshes; completed and cancelled records remain in History.
 Filtering does not change or remove records. The request list precedes reminder settings.
 
 Callbacks defaults to email after one hour and removal after four hours, both
@@ -624,10 +624,10 @@ Paths below are relative to `zmala_server/`.
 | `validation.js`, `terminal-status.js` | Separate account/configuration validation and bounded device telemetry; receipt times belong to the server |
 | `main.js`, `shutdown.js` | Composition, bootstrap publication and coordinated shutdown |
 | `http/handler.js`, `responses.js`, `admin-routes.js`, `device-routes.js` | Host/origin/authentication boundary and scoped API operations |
-| `store.js`, `accounts.js`, `terminal-settings.js`, `migrations.js` | Validated configuration, identities and migration |
+| `store.js`, `contact-directory.js`, `accounts.js`, `terminal-settings.js`, `migrations.js` | Validated configuration, revision-cached phone/terminal directories, identities and migration |
 | `json-file.js`, `snapshot-file.js`, `history.js` | Startup/tool persistence, asynchronous snapshots and bounded history |
 | `backups.js`, `backup-format.js`, `backup-storage.js`, `http/backup-routes.js` | Validated export, restore transaction and recovery |
-| `sip-server.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP dialogs, shared exact-transport ownership checks, validation, presence and messaging |
+| `sip-server.js`, `sip-dialogs.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP admission/lifecycle, ordered dialog/media transactions, shared exact-transport ownership checks, validation, presence and messaging |
 | `media.js` | RTP/RTCP ports and transactional SDP updates |
 | `callbacks.js`, `callback-*.js`, `console-jobs.js` | Callback/reminder jobs and maintenance leases/results |
 | `photos.js`, `portrait-gif.js`, `setup-pdf.js` | Bounded static/GIF inspection, Python/Pillow conversion and PDFKit QR documents |
@@ -939,3 +939,9 @@ Device status accepts optional bounded media snapshots: finite nonnegative trans
 measurements, validated resolution pairs and safe integer codec counters. Unknown
 fields are omitted; missing measurements remain unavailable. Reports are copied
 before publication, and rejected reports preserve the last accepted snapshot.
+
+The contact directory caches stable permissions and contact rows for both phone and
+terminal readers within one configuration revision. Returned rows are detached;
+presence and callbacks are enriched at the HTTP boundary. Configuration mutations
+invalidate all derivations together. Identity-changing administration also rejects
+accounts participating in push-wake calls, before those calls own SIP dialogs.

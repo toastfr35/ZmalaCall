@@ -2,7 +2,6 @@
 // SIP signalling and call lifecycle; encoded audio/video packets are handled by MediaRelay.
 const sip = require('sip');
 const proxy = require('sip/proxy');
-const crypto = require('node:crypto');
 const { MediaRelay } = require('./media');
 const { IceMedia } = require('./secure-calls');
 /** @param {string} uri */
@@ -11,6 +10,7 @@ const { RegistrationMonitor, registrationOnline } = require('./registrations');
 const { SipMessages } = require('./sip-messages');
 const { validRequest, maxForwards, samePeer } = require('./sip-guards');
 const { startProxy } = require('./sip-transport');
+const { forwardDialog } = require('./sip-dialogs');
 const { AppCalls } = require('./app-calls');
 /** SIP transport and dialog ownership. Presence and messaging have separate controllers. */
 class SipServer extends SipMessages {
@@ -300,162 +300,8 @@ class SipServer extends SipMessages {
     return this.forwardDialog(rq, remote, dialog, side);
   }
   /** @param {import('sip').ValidRequest} rq @param {import('sip').Remote} remote @param {import('./types/contracts').Dialog} dialog @param {number} side */
-  async forwardDialog(rq, remote, dialog, side) {
-    const v = this.store.value,
-      id = rq.headers['call-id'];
-    dialog.touched = Date.now();
-    const initial = rq.method === 'INVITE' && !rq.headers.to.params?.tag;
-    // @llr LLR-SRV-CALL-008
-    const negotiates = dialog.connected && ['INVITE', 'UPDATE'].includes(rq.method);
-    // Delayed offers require staging an answer from ACK, which this relay does
-    // not implement. Reject them without changing the established media graph.
-    if (
-      negotiates &&
-      rq.method === 'INVITE' &&
-      rq.headers['content-type']?.toLowerCase() !== 'application/sdp'
-    ) {
-      this.reply(rq, 488, 'SDP Offer Required');
-      return;
-    }
-    if (negotiates && dialog.mediaUpdate) {
-      this.reply(rq, 491, 'Request Pending');
-      return;
-    }
-    const mediaUpdate = negotiates ? this.media.begin(id) : undefined;
-    if (mediaUpdate) dialog.mediaUpdate = mediaUpdate;
-    const finishMedia = (accepted = false) => {
-      if (!mediaUpdate) return;
-      if (accepted) this.media.commit(mediaUpdate);
-      else this.media.discard(mediaUpdate);
-      if (dialog.mediaUpdate === mediaUpdate) delete dialog.mediaUpdate;
-    };
-    const inviteKey = `${side}:${rq.headers.cseq.seq}`;
-    const pending =
-      rq.method === 'INVITE'
-        ? {
-            branch: rq.headers.via?.[0]?.params?.branch,
-            cancelled: false,
-          }
-        : null;
-    if (pending) dialog.invites.set(inviteKey, pending);
-    const target = dialog.peers[1 - side];
-    const forward = sip.copyMessage(rq, true);
-    // Keep every subsequent request on the exact authenticated registration flow.
-    forward.uri = target.contact.uri;
-    forward.headers.route = [{ uri: sip.encodeFlowUri(target.remote) }];
-    delete forward.headers['proxy-authorization'];
-    delete forward.headers.authorization;
-    // @llr LLR-SRV-CALL-005
-    delete forward.headers['x-family-auth'];
-    const terminal = this.store.enrolledAccount(target.user);
-    if (terminal)
-      forward.headers['x-family-auth'] = crypto
-        .createHmac('sha256', terminal.device_token)
-        .update(`${id}:${dialog.peers[side].user}`)
-        .digest('hex');
-    const hops = maxForwards(forward.headers['max-forwards']);
-    if (hops === null || hops === 0) {
-      finishMedia();
-      this.reply(
-        rq,
-        hops === null ? 400 : 483,
-        hops === null ? 'Invalid Max-Forwards' : 'Too Many Hops',
-      );
-      return;
-    }
-    forward.headers['max-forwards'] = hops - 1;
-    if (initial)
-      forward.headers['record-route'] = [
-        {
-          uri: this.store.secureCalls
-            ? `${this.store.secureCalls.proxy()};lr`
-            : `sip:${v.host}:${v.sip_port};lr`,
-        },
-      ];
-    if (forward.headers['content-type']?.toLowerCase() === 'application/sdp') {
-      try {
-        if (typeof forward.content !== 'string') throw Error('Missing SDP body.');
-        forward.content = await this.media.rewrite(
-          id,
-          forward.content,
-          side,
-          remote.address,
-          mediaUpdate,
-        );
-      } catch (e) {
-        finishMedia();
-        dialog.invites.delete(inviteKey);
-        if (this.dialogs.get(id) !== dialog) return;
-        this.log(e instanceof Error ? e.message : 'SDP rewrite failed.');
-        this.reply(rq, 488, 'Not Acceptable Here');
-        if (initial) {
-          this.closeDialog(id);
-        }
-        return;
-      }
-    }
-    // Binding media yields: a BYE, timeout or shutdown may have released this
-    // dialog in the meantime. Never forward an offer for a dead/replaced call.
-    if (this.dialogs.get(id) !== dialog) return;
-    if (pending?.cancelled) {
-      finishMedia();
-      // The proxy has already acknowledged CANCEL, but media bind was still
-      // pending. Finish the original INVITE without ringing the recipient.
-      this.reply(rq, 487, 'Request Terminated');
-      dialog.invites.delete(inviteKey);
-      if (initial) this.closeDialog(id);
-      return;
-    }
-    /** @type {import('sip').Response | undefined} */
-    let finalResponse;
-    proxy.send(forward, (rs) => {
-      dialog.queue = dialog.queue
-        .then(async () => {
-          if (this.dialogs.get(id) !== dialog) return;
-          if (finalResponse && rs.status >= 200) {
-            proxy.send(sip.copyMessage(finalResponse, true));
-            return;
-          }
-          if (pending && rs.status >= 200) dialog.invites.delete(inviteKey);
-          const response = sip.copyMessage(rs, true);
-          response.headers.via?.shift();
-          if (rs.headers.to?.params?.tag) target.tag = rs.headers.to.params.tag;
-          if (rs.headers.contact?.[0]) target.contact = rs.headers.contact[0];
-          if (
-            rs.status < 300 &&
-            response.headers['content-type']?.toLowerCase() === 'application/sdp'
-          ) {
-            if (typeof response.content !== 'string') throw Error('Missing SDP body.');
-            response.content = await this.media.rewrite(
-              id,
-              response.content,
-              1 - side,
-              target.remote.address,
-              mediaUpdate,
-            );
-          }
-          if (this.dialogs.get(id) !== dialog) return;
-          if (rs.status >= 200 && mediaUpdate?.active) finishMedia(rs.status < 300);
-          if (rs.status >= 200 && rs.status < 300 && rq.method === 'INVITE') {
-            dialog.connected = true;
-            this.log('Call connected');
-            this.callbacks?.connected(dialog.peers[0].user, dialog.peers[1].user);
-          }
-          if (rs.status >= 200) finalResponse = response;
-          proxy.send(response);
-          if ((initial && rs.status >= 300) || (rq.method === 'BYE' && rs.status >= 200)) {
-            this.log(`Call ended (${rs.status})`);
-            this.closeDialog(id);
-          }
-        })
-        .catch((e) => {
-          finishMedia();
-          if (this.dialogs.get(id) !== dialog) return;
-          this.log(`Relay failed: ${e.message}`);
-          this.reply(rq, 488, 'Not Acceptable Here');
-          if (initial) this.closeDialog(id);
-        });
-    });
+  forwardDialog(rq, remote, dialog, side) {
+    return forwardDialog(this, rq, remote, dialog, side);
   }
   // @llr LLR-SRV-CALL-009
   /** @param {string} id */

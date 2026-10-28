@@ -1,76 +1,16 @@
 """One bounded portrait worker; configuration and presence never wait for images."""
 from collections import deque
-import hashlib
-import io
 import os
 from pathlib import Path
 import queue
-import struct
 import threading
 import time
 import uuid
-import zlib
-from zmala_terminal.common.image_bounds import MAX_BYTES, MAX_GIF_BYTES, image_size
+from zmala_terminal.common.image_bounds import MAX_BYTES, MAX_GIF_BYTES
 
 
-# @llr LLR-TERM-UI-020
-def valid_photo(data, name):
-    try:
-        image_size(data)
-    except ValueError:
-        return False
-    digest = Path(name).stem
-    if len(digest) == 64 and hashlib.sha256(data).hexdigest() != digest:
-        return False
-    if name.endswith('.gif'):
-        if not data.endswith(b';'):
-            return False
-        try:
-            from PIL import Image
-            with Image.open(io.BytesIO(data)) as gif:
-                if gif.format != 'GIF' or gif.size != (480, 480):
-                    return False
-                count, duration = 0, 0
-                while True:
-                    try:
-                        gif.seek(count)
-                    except EOFError:
-                        return 2 <= count <= 72
-                    if gif.size != (480, 480):
-                        return False
-                    delay = gif.info.get('duration', 100) or 100
-                    duration += delay
-                    if count >= 72 or not 20 <= delay <= 2000 or duration > 5000:
-                        return False
-                    gif.load()
-                    count += 1
-        except (OSError, ValueError):
-            return False
-    if name.endswith('.jpg'):
-        return data.startswith(b'\xff\xd8\xff') and data.endswith(b'\xff\xd9')
-    if not data.startswith(b'\x89PNG\r\n\x1a\n'):
-        return False
-    offset, header, pixels = 8, False, False
-    while offset + 12 <= len(data):
-        length = struct.unpack_from('>I', data, offset)[0]
-        end = offset + 12 + length
-        if end > len(data):
-            return False
-        kind = data[offset+4:offset+8]
-        payload = data[offset+8:end-4]
-        if zlib.crc32(kind + payload) != struct.unpack_from('>I', data, end-4)[0]:
-            return False
-        if kind == b'IHDR':
-            if offset != 8 or length != 13:
-                return False
-            width, height = struct.unpack_from('>II', payload)
-            header = 0 < width <= 4096 and 0 < height <= 4096
-        if kind == b'IDAT':
-            pixels |= bool(length)
-        if kind == b'IEND':
-            return header and pixels and length == 0 and end == len(data)
-        offset = end
-    return False
+# Preserve the photo_cache import used by existing callers.
+from zmala_terminal.common.portrait_validation import valid_photo as valid_photo
 
 
 class PhotoCache:
@@ -78,7 +18,7 @@ class PhotoCache:
         self.directory, self.request = Path(directory), request
         self.condition = threading.Condition()
         self.pending = deque()
-        self.queued, self.valid = set(), set()
+        self.queued, self.valid, self.wanted = set(), set(), set()
         self.retry = {}
         self.completed = queue.Queue()
         self.cancelled = False
@@ -86,10 +26,16 @@ class PhotoCache:
 
     # @llr LLR-TERM-UI-020
     def schedule(self, contacts):
-        paths = {c['photo'] for c in contacts if c.get('photo')}
+        paths = dict.fromkeys(c['photo'] for c in contacts if c.get('photo'))
         with self.condition:
             if self.cancelled:
                 return
+            self.wanted = set(paths)
+            # Keep one in-flight request, but discard obsolete waiting work immediately.
+            # New contacts must not wait behind up to forty retired download timeouts.
+            discarded = set(self.pending) - self.wanted
+            self.pending = deque(path for path in self.pending if path in self.wanted)
+            self.queued.difference_update(discarded)
             self.valid.intersection_update(paths)
             self.retry = {path: deadline for path, deadline in self.retry.items() if path in paths}
             now = time.monotonic()
@@ -108,6 +54,7 @@ class PhotoCache:
         with self.condition:
             self.cancelled = True
             self.pending.clear()
+            self.wanted.clear()
             self.condition.notify()
 
     def changed(self):
@@ -143,15 +90,17 @@ class PhotoCache:
                     filename.parent.mkdir(parents=True, exist_ok=True)
                     temporary.write_bytes(data)
                     with self.condition:
-                        if self.cancelled:
-                            return
+                        if self.cancelled or path not in self.wanted:
+                            continue
                         os.replace(temporary, filename)
                 with self.condition:
-                    self.valid.add(path)
-                    self.completed.put(path)
+                    if not self.cancelled and path in self.wanted:
+                        self.valid.add(path)
+                        self.completed.put(path)
             except (OSError, ValueError):
                 with self.condition:
-                    self.retry[path] = time.monotonic() + 60
+                    if not self.cancelled and path in self.wanted:
+                        self.retry[path] = time.monotonic() + 60
             finally:
                 try:
                     temporary.unlink(missing_ok=True)

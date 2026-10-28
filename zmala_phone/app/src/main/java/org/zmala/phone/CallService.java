@@ -43,12 +43,26 @@ public final class CallService extends Service {
       if (Build.VERSION.SDK_INT >= 30) startForeground(NOTIFICATION, notification,
           ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE | ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
       else startForeground(NOTIFICATION, notification);
-      wake = getSystemService(PowerManager.class).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZmalaPhone:active-call");
-      wake.setReferenceCounted(false); renew.run();
+      keepAwake(getSystemService(PowerManager.class));
       // Failed call setup cannot strand a service or wake lock.
       main.postDelayed(() -> { if (!session.ongoing()) { session.serviceRequested = false; stopSelf(); } }, 10000);
     } catch (RuntimeException denied) { session.serviceFailed(); stopSelf(); }
     return START_NOT_STICKY;
+  }
+
+  /** Repeated Android start commands renew one lock and one timer, never orphan an old lock. */
+  void keepAwake(PowerManager power) {
+    if (wake == null) {
+      wake = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZmalaPhone:active-call");
+      wake.setReferenceCounted(false);
+    }
+    main.removeCallbacks(renew);
+    renew.run();
+  }
+
+  void releaseWake() {
+    main.removeCallbacks(renew);
+    if (wake != null) { if (wake.isHeld()) wake.release(); wake = null; }
   }
 
   private Notification notification() {
@@ -77,7 +91,7 @@ public final class CallService extends Service {
   @Override public IBinder onBind(Intent intent) { return null; }
   @Override public void onDestroy() {
     main.removeCallbacksAndMessages(null);
-    if (wake != null) { if (wake.isHeld()) wake.release(); wake = null; }
+    releaseWake();
     if (running.get() == this) running.clear();
     stopForeground(STOP_FOREGROUND_REMOVE); session.serviceDestroyed(); super.onDestroy();
   }

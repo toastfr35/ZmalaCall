@@ -21,7 +21,8 @@ reviewed: null
 scope: Core
 text: |
   A failed portrait download shall wait sixty seconds before retry. A cancelled or
-  obsolete worker shall not publish into replaced profile state. Invalid existing
+  obsolete worker shall not publish into replaced profile state. Contact changes shall
+  discard queued portraits that are no longer referenced and reject their late results. Invalid existing
   cache files shall be replaceable.
 verification: |
   Fail a download, advance the clock and reset during a pending response. Check

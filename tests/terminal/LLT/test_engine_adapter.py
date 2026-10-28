@@ -1,7 +1,7 @@
 # @test T-LLT-057
 # @requirements LLR-TERM-START-005, LLR-TERM-START-006, LLR-TERM-CALL-011, LLR-TERM-AUDIO-004, LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-006, LLR-TERM-VIDEO-012, LLR-TERM-MAINT-018
 # @environment portable
-# @plan Substitute only Liblinphone ABI calls, OS media hooks and storage roots; run the real Engine constructor, registration, callback dispatch, dialing/answering and shutdown. Inspect bound retain/release signatures to prevent truncation of native call handles. Verify resource ownership, native configuration/transport requests, signed caller proof, device enumeration and diagnostic units. Inject native startup, address, invite and accept failures and verify errors/cleanup without loading the SDK or contacting SIP. Exercise the real Linux plugin adapter with fake ABI libraries: registration order, rate/registration failure, framing configuration, native resource lookup and deferred USB/mixer refresh.
+# @plan Substitute only Liblinphone ABI calls, OS media hooks and storage roots; run the real Engine constructor, registration, callback dispatch, dialing/answering and shutdown. Inspect bound retain/release signatures to prevent truncation of native call handles. Verify resource ownership, native configuration/transport requests, signed caller proof, device enumeration, diagnostic units and snapshot release after getter failure. Inject native startup, address, invite and accept failures and verify errors/cleanup without loading the SDK or contacting SIP. Exercise the real Linux plugin adapter with fake ABI libraries: registration order, rate/registration failure, framing configuration, native resource lookup and deferred USB/mixer refresh.
 # @pass Recorded native arguments and reference releases match the requested policy; rejected/forged calls cannot notify the UI. Diagnostics include available native media counters without opening devices; unavailable values remain omitted. These adapter checks do not establish real codec quality, network interoperability or hardware timing.
 import ctypes as C
 import hashlib
@@ -302,3 +302,12 @@ class EngineAdapterTests(unittest.TestCase):
         e.core_iterate.assert_called_once_with(2); self.media.poll_video.assert_called_once_with(e,55)
         self.media.sync_speaker_mute.assert_called_once_with(e)
         e.refresh_usb_devices(); self.media.refresh_usb_devices.assert_called_once_with(e)
+
+    def test_failed_statistics_read_releases_native_snapshot(self):
+        e = self.build(); self.addCleanup(e.close)
+        e.call = 42; e._video_callbacks = 10
+        e.call_get_audio_stats.return_value = 20
+        e.call_stats_get_download_bandwidth.side_effect = RuntimeError('Unavailable getter')
+        with self.assertRaisesRegex(RuntimeError, 'Unavailable getter'):
+            e.media_stats()
+        e.call_stats_unref.assert_called_once_with(20)

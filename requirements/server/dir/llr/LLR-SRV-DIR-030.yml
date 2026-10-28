@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_server/contact-directory.js
+  type: file
 - path: tests/server/LLT/store-auth.test.js
   type: file
 - path: zmala_server/http/admin-routes.js

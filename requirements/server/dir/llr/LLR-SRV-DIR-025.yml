@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/LLT/http-policy.test.js
+  type: file
 - path: tests/server/LLT/admin-routing.test.js
   type: file
 - path: tests/server/LLT/store-auth.test.js

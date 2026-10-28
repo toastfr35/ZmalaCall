@@ -710,3 +710,10 @@ Animated server portraits use the authenticated GIF photo route with a separate
 16 MiB encoded response cap; PNG/JPEG retain the 2 MiB cap. Android's existing
 BitmapFactory path displays a sampled static first frame, so animations do not loop
 in contact or incoming-call screens. Transport remains same-origin and rejects redirects.
+
+`PortraitLoader` owns the Activity's bounded portrait queue and an 8 MiB LRU cache
+of decoded static bitmaps, sampled to at most 256 pixels per side. Immutable photo paths are reused across live directory
+refreshes; changing enrollment clears the cache. View tickets reject obsolete
+results before they reach either the cache or a view. Disposal clears memory and
+stops queued work; no portrait disk cache is introduced. `CallService` similarly
+owns exactly one renewable wake lock, even if Android delivers repeated starts.

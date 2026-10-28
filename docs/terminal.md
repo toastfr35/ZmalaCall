@@ -1175,3 +1175,10 @@ An LRU limits animation pixel payload to 64 MiB, in addition to the ordinary ren
 budgets; transient compressed data/native allocation overhead is not included.
 Missing downloads remain retryable; invalid bytes keep static/initials fallback.
 The private D-drive prototypes must be disabled when testing the supported player.
+
+Portrait bytes are validated by `portrait_validation.py`; `photo_cache.py` owns
+scheduling and atomic publication. Contact changes prune obsolete queued downloads,
+and the worker checks current contact ownership before publishing a late result.
+Only one request runs at once; retry backoff applies only to current portraits.
+`media_diagnostics.py` reads native media snapshots independently of engine setup
+and always releases each acquired statistics reference, including on getter errors.

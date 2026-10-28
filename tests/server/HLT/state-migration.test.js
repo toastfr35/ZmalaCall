@@ -13,6 +13,7 @@ const path = require('node:path');
 const { defaultState } = require('../../../zmala_server/defaults');
 const { Store } = require('../../../zmala_server/store');
 const { createApplication } = require('../../../zmala_server/main');
+const { listenHttp } = require('../../support/server/listen-http');
 
 test('older state migrates before HTTP configuration is served and stays stable after restart', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'zmala-migration-system-'));
@@ -36,7 +37,7 @@ test('older state migrates before HTTP configuration is served and stays stable 
     fs.writeFileSync(path.join(directory, 'server.json'), JSON.stringify(legacy));
     const store = new Store(directory);
     application = createApplication({ store });
-    await new Promise((resolve) => application.server.listen(0, '127.0.0.1', resolve));
+    await listenHttp(application.server);
     const base = `http://127.0.0.1:${application.server.address().port}`;
     const response = await fetch(base + '/api/config', {
       headers: { Authorization: 'Bearer fixture-device-token' },

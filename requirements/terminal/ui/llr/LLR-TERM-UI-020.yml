@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/portrait_validation.py
+  type: file
 - path: tests/terminal/LLT/test_image_bounds.py
   type: file
 - path: tests/terminal/LLT/test_reliability.py
