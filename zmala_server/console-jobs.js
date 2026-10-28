@@ -16,7 +16,9 @@ class ConsoleJobs {
     this.jobs = readJson(this.file, []);
     this.expire();
   }
+  // @llr LLR-SRV-MAINT-017
   save() {
+    this.jobs = retainHistory(this.jobs, (j) => ['queued', 'running'].includes(j.status));
     if (this.persistence) return this.persistence.write(JSON.stringify(this.jobs, null, 2));
     writeJson(this.file, this.jobs);
   }
@@ -118,7 +120,6 @@ class ConsoleJobs {
       truncated: false,
     };
     this.jobs.push(job);
-    this.jobs = retainHistory(this.jobs, (j) => ['queued', 'running'].includes(j.status));
     this.save();
     return job;
   }

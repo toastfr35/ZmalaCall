@@ -18,6 +18,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Restore shall require administrator access, explicit replacement confirmation and the checked current revision. It shall reject active calls, running commands, pending callback delivery or overlapping HTTP work. Only one backup operation shall run at a time.
+  Restore shall require administrator access, explicit replacement confirmation and the checked current revision. It shall reject active calls, running commands, pending SIP, email or push callback delivery, or overlapping HTTP work. Only one backup operation shall run at a time.
 verification: |
-  Omit confirmation, use stale revisions and hold each busy condition. Check rejection before replacement.
+  Omit confirmation, use stale revisions and hold each busy condition, including each callback delivery channel independently. Check rejection before replacement.

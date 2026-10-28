@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 const { body, send, httpError } = require('./responses');
-const { MAX_BACKUP, decodeBackup } = require('../backup-format');
+const { MAX_BACKUP, PHOTO, decodeBackup } = require('../backup-format');
 // @llr LLR-SRV-BACKUP-012
 /** Reached only after the common administrator/session/origin checks.
  * @param {import('node:http').IncomingMessage} req @param {import('node:http').ServerResponse} res
@@ -36,7 +36,7 @@ async function backupRoutes(req, res, url, context) {
         accounts: Object.keys(backup.state.users).length,
         terminals: Object.keys(backup.state.profiles).length,
         groups: Object.keys(backup.state.groups).length,
-        pictures: backup.files.size - 4,
+        pictures: [...backup.files.keys()].filter((name) => PHOTO.test(name)).length,
         configuration_version: context.store.value.configuration_version,
       });
     // @llr LLR-SRV-BACKUP-006

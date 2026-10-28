@@ -1,8 +1,9 @@
 # @test T-LLT-036
-# @requirements LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032
+# @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032
 # @environment portable
 # @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
+# With power-only qualification, wake is sent but no active-source or Samsung input command is sent.
 
 """Check CEC routing, cancellation and failures without changing a real TV."""
 from pathlib import Path
@@ -424,6 +425,19 @@ class TVControlTests(unittest.TestCase):
         selected = [call for call in tv._run.call_args_list if call.args[0] == '--active-source']
         self.assertEqual(len(selected), 6)
         self.assertTrue(all(call.args == ('--active-source', 'phys-addr=3.0.0.0') for call in selected))
+
+    def test_power_only_wake_never_selects_an_unqualified_source(self):
+        for off in (True, None):
+            with self.subTest(off=off):
+                tv = self.controller()
+                tv.source_enabled = False
+                tv._previous_power = Mock(return_value=off)
+                tv._previous_source = Mock(return_value='1.0.0.0')
+                tv._cancel.wait = Mock(return_value=False)
+                tv._worker(tv._cancel)
+                tv._run.assert_any_call('--to', '0', '--image-view-on')
+                self.assertFalse(any(call.args[0] == '--active-source' for call in tv._run.call_args_list))
+                tv._samsung.select_terminal.assert_not_called()
 
     def test_broadcast_selection_uses_paired_fallback_only_for_awake_tuner(self):
         for off, source, expected in ((False, '0.0.0.0', True), (True, '0.0.0.0', False),

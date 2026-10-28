@@ -15,7 +15,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The terminal shall interpret the supported remote buttons and motion. Device
+  The terminal shall interpret the supported remote buttons. Motion shall not change volume. Device
   disconnection and repeated reports shall not produce unintended actions.
 verification: |
   Feed real or recorded remote reports, holds and disconnects. Check one intended

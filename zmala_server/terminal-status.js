@@ -98,6 +98,86 @@ function terminalStatus(update) {
       status.devices[key] = names;
     }
   }
+  if (update.media !== undefined) {
+    // Copy only known scalar counters/measurements; never retain the submitted object.
+    const object = (/** @type {unknown} */ value) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value))
+        throw Error('Invalid media status.');
+      return /** @type {import('./types/contracts').JsonObject} */ (value);
+    };
+    const media = object(update.media);
+    /** @type {import('./types/contracts').JsonObject} */
+    const result = {};
+    for (const kind of ['audio', 'video']) {
+      if (media[kind] === undefined) continue;
+      const source = object(media[kind]);
+      /** @type {import('./types/contracts').JsonObject} */
+      const stream = {};
+      for (const key of [
+        'download_kbps',
+        'upload_kbps',
+        'jitter_buffer_ms',
+        'round_trip_seconds',
+        'receiver_loss_percent',
+        'sender_loss_percent',
+        'received_fps',
+        'sent_fps',
+      ]) {
+        if (source[key] === undefined) continue;
+        const value = source[key];
+        if (
+          typeof value !== 'number' ||
+          !Number.isFinite(value) ||
+          value < 0 ||
+          value > Number.MAX_SAFE_INTEGER
+        )
+          throw Error('Invalid media measurement.');
+        stream[key] = value;
+      }
+      for (const key of ['sent_resolution', 'received_resolution']) {
+        if (source[key] === undefined) continue;
+        const value = source[key];
+        if (
+          !Array.isArray(value) ||
+          value.length !== 2 ||
+          value.some((n) => typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > 16384)
+        )
+          throw Error('Invalid media resolution.');
+        stream[key] = [...value];
+      }
+      result[kind] = stream;
+    }
+    if (media.codecs !== undefined) {
+      const codecs = object(media.codecs);
+      /** @type {import('./types/contracts').JsonObject} */
+      const counters = {};
+      for (const kind of ['encoder', 'decoder']) {
+        if (codecs[kind] === undefined) continue;
+        const source = object(codecs[kind]);
+        /** @type {import('./types/contracts').JsonObject} */
+        const snapshot = {};
+        for (const key of [
+          'input_queued',
+          'output_queued',
+          'dropped',
+          'display_dropped',
+          'peak_input',
+          'peak_output',
+          'max_queue_ms',
+          'produced',
+        ]) {
+          if (source[key] === undefined) continue;
+          const value = source[key];
+          if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0)
+            throw Error('Invalid media counter.');
+          snapshot[key] = value;
+        }
+        counters[kind] = snapshot;
+      }
+      result.codecs = counters;
+    }
+    status.media = result;
+  }
   return status;
 }
 

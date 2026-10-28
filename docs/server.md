@@ -21,7 +21,7 @@ Contents: [purpose and functions](#server-purpose-and-functions),
 
 ## Server purpose and functions
 
-The ZmalaCall server connects a family's call terminals and compatible SIP phones.
+The ZmalaCall server connects a family's Pi terminals and ZmalaPhone Android apps.
 It runs independently on a Raspberry Pi. It holds the shared directory, controls
 communication permissions and supplies settings to each terminal. Terminals own
 their cameras, microphones, speakers, displays and remote controls.
@@ -134,11 +134,13 @@ identify the event without retaining the message body.
 
 ### 10. Callback requests and reminders
 
-A terminal can request a callback from a permitted contact. Repeated requests
+An enrolled terminal or app can request a callback from a permitted contact. Repeated requests
 share one pending record. The requester or administrator can cancel it. A connected
 call completes requests between the two accounts.
 
-Terminals obtain requests through polling. Reachable phones receive SIP notices.
+Terminals obtain requests through polling. ZmalaPhone uses signed Firebase hints
+and authenticated state refresh to show callback reminders; reachable SIP clients
+can also receive SIP notices.
 Optional email reminders use the configured deadline and recipient addresses.
 Delivery attempts stop when the request is no longer eligible. Acceptance by a
 phone or mail server does not prove that a person read the notice.
@@ -265,10 +267,11 @@ python -m pip install -r build_tools/windows_installer/requirements.txt
 python build_tools/server_installer/build.py
 ```
 
-GitHub's **Build server installer** workflow builds the same executable without
-private deployment data. The download places Word guides beside the executable
-and technical Markdown in a `docs/` subdirectory. The Word guides are excluded
-from the embedded Pi package. Generate the Linux source archive separately with
+GitHub's **Publish release** workflow builds the same executable without private deployment
+data. Each release provides the server Installation and Guide PDFs alongside the
+installer, together with the terminal and Android assets. Word sources stay in
+the repository and are excluded from the embedded Pi package. Generate a local
+Linux source archive separately with
 `python build_tools/linux/package-server.py`; it includes an `install.sh` wrapper.
 
 ## Service, SSH and storage
@@ -373,7 +376,10 @@ also block credential/type changes and account deletion.
 
 Terminal cards group Calls, Video & audio and General settings. **Setup** downloads
 Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
-are runtime provisioning documents, separate from project documentation. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it. App setup sheets include a clickable latest-release APK link, on-phone installation instructions and the private enrollment QR. They explain displaying the QR on another screen or printing it.
+are runtime provisioning documents, separate from project documentation. App setup
+sheets include a clickable latest-release APK link, installation instructions and
+the private enrollment QR. Display the QR on another screen, print it, or use the
+app's QR-image import.
 Settings include auto-answer, fixed C20 hardware information, resolution, FPS, framing,
 volume, ringtone, language, portrait count and TV return. See the
 [terminal settings implementation](terminal.md#settings-and-controls) for input and save semantics.
@@ -415,17 +421,20 @@ a call connects in either direction. Cancellation, permission revocation, accoun
 deletion or conversion that invalidates enrollment removes eligibility. Terminal polls
 include only that terminal's requests, independently of configuration revision.
 
-Reachable phones receive server-generated SIP MESSAGE notifications over their
-registration flow. SIP success means accepted, not read; there is no offline push
-service. Failed deliveries retry at most once/minute, with pending work checked
-every five seconds and on registration/recovery. Terminal recipients use polling.
-The administration page distinguishes acknowledgement from reading and notes that
-the ZmalaPhone preview does not yet display callback notifications.
+Reachable SIP clients receive server-generated MESSAGE notices over their
+registration flow. Independently, eligible App accounts receive signed Firebase
+state hints, even without a live SIP connection; Android fetches current authorized
+callback state before showing a notification. Failed deliveries retry at most
+once/minute, with pending work checked every five seconds and on registration.
+Terminal recipients use polling and show incoming requests even if the requester
+is offline. Neither SIP nor Firebase acceptance proves a person read the reminder.
 
 Callbacks defaults to email after one hour and removal after four hours, both
 from creation; fractional hours are supported and removal follows email.
 Policy edits apply to pending requests. Expired records are deleted; completed
-and cancelled history is bounded. Accounts accept one-to-ten unique email
+and cancelled history is capped at 200 on every saved transition, including the
+last cancellation or completion. Requester type conversion cancels its pending
+requests; ordinary rename preserves them. Accounts accept one-to-ten unique email
 addresses; migrated empty lists show a prompt for real addresses.
 
 The Email server dialog configures SMTP transport, sender and credentials.
@@ -459,7 +468,9 @@ groups handle cancellation; installed services additionally use cgroup cleanup.
 Transient result failures retry the same lease/result, never rerun the command.
 Permanent rejection attempts a small diagnostic and permits later jobs. Lost jobs
 have an unknown execution outcome and are not replayed automatically. History
-survives restart. Standalone detached-child cleanup remains an acceptance gap.
+survives restart. Account deletion/conversion retires its queued/running work
+before acknowledgement; every saved transition caps completed history at 200.
+Standalone detached-child cleanup remains an acceptance gap.
 
 ## SIP and media internals
 
@@ -481,7 +492,8 @@ the vendored dependency. Late allocations/responses recheck dialog ownership.
 SDP updates are staged until negotiation succeeds; rejection preserves active
 targets and accepted port-zero streams release sockets. In-dialog INVITE needs
 an SDP offer (488 otherwise); overlapping negotiations return 491. BUNDLE/ICE
-is unsupported. Closed dialogs cannot be revived by pending asynchronous work.
+is unsupported in LAN relay mode; secure relay mode retains ICE. Closed dialogs
+cannot be revived by pending asynchronous work.
 
 For ZmalaPhone, download the App account server QR and scan it in the app.
 `GET /api/app/config` authenticates with that app bearer token, returns only its
@@ -560,7 +572,7 @@ confirmed `POST /api/server/backup/restore` requires
 `X-Zmala-Confirm-Restore: replace` and the checked revision in
 `X-Zmala-Configuration-Version`. These routes, download and status share the
 administrator/session/Host/Origin boundary. One backup operation runs at a time.
-Calls, running console jobs, callback deliveries or overlapping HTTP work cause
+Calls, running console jobs, SIP/email/Firebase callback deliveries or overlapping HTTP work cause
 a retryable conflict. Maintenance gates HTTP/SIP and callback delivery; state is
 flushed before staging the replacement and previous snapshot.
 
@@ -591,7 +603,8 @@ password file while the service is stopped. Check `/health`, `/ready`, sign-in,
 terminal configuration/registration and a call after recovery.
 
 HTTP/HTTPS listener failures and process signals share one shutdown operation:
-drain requests, stop SIP and flush state/bootstrap writes. This is graceful
+stop new callback deliveries, close listeners and SIP, drain admitted HTTP work
+and in-flight callback results, then flush state/bootstrap writes. This is graceful
 shutdown, not a bounded kill timer; service supervision handles stuck operations.
 
 ## Source map and verification
@@ -609,7 +622,7 @@ Paths below are relative to `zmala_server/`.
 | `sip-server.js`, `sip-guards.js`, `sip-transport.js`, `registrations.js`, `sip-messages.js` | SIP dialogs, shared exact-transport ownership checks, validation, presence and messaging |
 | `media.js` | RTP/RTCP ports and transactional SDP updates |
 | `callbacks.js`, `callback-*.js`, `console-jobs.js` | Callback/reminder jobs and maintenance leases/results |
-| `photos.js`, `setup-pdf.js` | Python/Pillow portrait conversion and PDFKit QR documents |
+| `photos.js`, `portrait-gif.js`, `setup-pdf.js` | Bounded static/GIF inspection, Python/Pillow conversion and PDFKit QR documents |
 | `web/admin-*.js`, `web/styles/`, `types/` | Browser controllers/styles and strict shared API/DOM contracts |
 
 Device identity is resolved from the authenticated token, never a supplied ID.
@@ -913,3 +926,8 @@ Hash-named authenticated GIF routes use image/gif, private immutable caching and
 participate in backup/restore alongside static images (the total backup cap still applies).
 Terminal selection controls single playback, regardless of source loop settings.
 Android decodes a still first frame. No family media is part of the public source.
+
+Device status accepts optional bounded media snapshots: finite nonnegative transport
+measurements, validated resolution pairs and safe integer codec counters. Unknown
+fields are omitted; missing measurements remain unavailable. Reports are copied
+before publication, and rejected reports preserve the last accepted snapshot.

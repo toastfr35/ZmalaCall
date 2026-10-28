@@ -120,7 +120,7 @@ short Mic, Sound, Camera and End labels appear with them. The first call briefly
 explains tapping and volume swipes. A compact status remains visible when microphone
 or received sound is muted, independently of the auto-hiding controls.
 
-using a control restarts that timer. The preview sits above the visible row and
+Using a control restarts that timer. The preview sits above the visible row and
 
 returns to the corner when it hides. The call view adapts to portrait and landscape
 
@@ -191,7 +191,8 @@ a selected person's action page is not considered idle for installation.
 
 Automatic updates default off and are offered on Android 12+. They require the
 user's install-apps permission, an unmetered connection and 30 seconds with the
-app visible and idle. Android 9-11 uses the Update button and system confirmation.
+app visible and idle. These conditions are checked again before installation commit,
+so activity during download/staging starts a fresh idle period. Android 9-11 uses the Update button and system confirmation.
 Android 12+ may also require confirmation; an automatic attempt then falls back
 to manual Update without repeatedly launching approval. Later defers reminders
 and automatic work for 24 hours. Background jobs check metadata only; APK transfer
@@ -211,8 +212,7 @@ appear over a call.
 recent observations and 128 contact counts capped at 99, and settles unacknowledged
 rings at expiry. `CallNotices` saves this per-enrollment state in private app
 preferences. Answered/declined calls are not missed; connected calls clear the
-peer's count. Missed icons are red; incoming callback and sent-request arrows are
-green. Contact name areas also state missed counts, Please call back for incoming
+peer's count. Contact cards state missed counts, Please call back for incoming
 requests and Callback requested for sent requests; simultaneous requests retain both
 labels. The contact page offers request/cancel actions and missed-call clearing. Unanswered outgoing calls also offer a callback. Badges are derived
 from the current allowed directory and the server's pending callback snapshot.
@@ -373,7 +373,9 @@ the view itself is not scaled or faded, avoiding clipping by composited view bou
 
 Rotation is handled in the existing activity through
 
-configuration and display callbacks. On stop it terminates calls and unregisters.
+configuration and display callbacks. On activity stop, an ongoing user-started or
+answered call stays with `CallSession` and its foreground service; idle closure
+unregisters and releases the core.
 
 Secure configuration requires an HTTPS setup QR and complete, unexpired TURN
 
@@ -485,7 +487,7 @@ media do not pass through Firebase.
 
 App bearer and renews it at most hourly while open. Disabling notifications removes
 
-the destination on the next app open. New tokens replace old ones; reinstalling or
+the destination on the next app open when both call and callback channels are disabled. New tokens replace old ones; reinstalling or
 
 clearing storage requires enrollment again. Server tokens expire after 30 days
 
@@ -684,7 +686,11 @@ remain enabled independently.
 
 FCM `callback` messages reuse the enrollment HMAC/device/deadline checks but cannot
 enter the incoming-call or media path. They schedule unique expedited WorkManager
-work (2.12.0), falling back to a regular job when quota is unavailable. The worker
+work (2.12.0), falling back to a regular job when quota is unavailable.
+The application supplies job IDs 10000–19999, separate from update job 9037.
+The default WorkManager initializer is removed so this configuration takes effect;
+other AndroidX startup components remain enabled. This follows Android's
+[custom initialization guidance](https://developer.android.com/develop/background-work/background-tasks/persistent/configuration/custom-configuration). The worker
 revalidates the hint, fetches current bearer-authorized configuration and applies
 only the latest refresh for the same enrollment. Temporary network failures retry
 at most twice; expired or revoked hints stop. Android 9–11 may briefly show a silent

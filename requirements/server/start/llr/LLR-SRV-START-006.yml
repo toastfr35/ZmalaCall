@@ -26,6 +26,6 @@ references:
 reviewed: null
 scope: Optional
 text: |
-  HTTPS administration shall require both a certificate and key and a valid port different from HTTP. Its default port shall be 8443. Remote plaintext administration shall be rejected when HTTPS is configured; authenticated terminal HTTP traffic shall remain available.
+  HTTPS administration shall require both a certificate and key and a valid port different from HTTP. Its default port shall be 8443. Non-loopback plaintext administration shall be rejected when HTTPS is configured; authenticated terminal HTTP traffic shall remain available in LAN mode. Secure relay mode shall require HTTPS for device traffic as specified by LLR-SRV-MEDIA-015.
 verification: |
   Test missing TLS inputs, invalid or conflicting ports, all-interface binding and remote HTTP administrator/device requests.

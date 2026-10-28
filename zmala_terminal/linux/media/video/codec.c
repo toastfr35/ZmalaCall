@@ -9,6 +9,29 @@
 #include <libavutil/opt.h>
 #include <bctoolbox/port.h>
 
+/* The appliance owns one call/core. Track the latest codec in each direction;
+ * the registry lock protects its lifetime, then its own lock protects counters.
+ * Never hold the registry lock while joining a worker or calling the SDK. */
+static pthread_mutex_t stats_mutex = PTHREAD_MUTEX_INITIALIZER;
+static Codec *stats_codecs[2];
+
+// @llr LLR-TERM-MAINT-018
+int zmala_video_get_stats(int encoder, uint64_t *values, unsigned count) {
+    if (encoder < 0 || encoder > 1 || !values || count != 8) return 0;
+    pthread_mutex_lock(&stats_mutex);
+    Codec *s = stats_codecs[encoder];
+    if (s) {
+        pthread_mutex_lock(&s->mutex);
+        uint64_t snapshot[] = {(uint64_t)s->input_count, (uint64_t)s->output_count,
+            (uint64_t)s->dropped, (uint64_t)s->display_dropped,
+            (uint64_t)s->peak_input, (uint64_t)s->peak_output, s->max_queue_ms, s->produced};
+        memcpy(values, snapshot, sizeof(snapshot));
+        pthread_mutex_unlock(&s->mutex);
+    }
+    pthread_mutex_unlock(&stats_mutex);
+    return s != NULL;
+}
+
 static void close_context(Codec *s) {
     if (s->scaler) ms_scaler_context_free(s->scaler);
     s->scaler = NULL;
@@ -51,6 +74,7 @@ static int open_context(Codec *s, MSVideoConfiguration config) {
 
 static void publish(Codec *s, mblk_t *message) {
     pthread_mutex_lock(&s->mutex);
+    ++s->produced;
     /* Decoder output is display data: the newest frames matter most. Encoded
      * frames cannot be discarded arbitrarily without losing references. */
     if (s->output_count >= 8) {
@@ -221,6 +245,9 @@ void zmala_codec_init(MSFilter *filter, int encoder) {
     rfc3984_enable_stap_a(s->rtp, FALSE);
     s->allocator = ms_yuv_buf_allocator_new();
     ms_average_fps_init(&s->fps, "Zmala H264 decoded fps=%f");
+    pthread_mutex_lock(&stats_mutex);
+    stats_codecs[encoder] = s;
+    pthread_mutex_unlock(&stats_mutex);
 }
 
 void zmala_codec_start(MSFilter *filter) {
@@ -248,6 +275,9 @@ void zmala_codec_stop(MSFilter *filter) {
 
 void zmala_codec_free(MSFilter *filter) {
     Codec *s = filter->data;
+    pthread_mutex_lock(&stats_mutex);
+    if (stats_codecs[s->encoder] == s) stats_codecs[s->encoder] = NULL;
+    pthread_mutex_unlock(&stats_mutex);
     zmala_codec_stop(filter);
     ms_queue_flush(&s->input);
     ms_queue_flush(&s->output);

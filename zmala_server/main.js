@@ -88,6 +88,7 @@ function createApplication({
     consoleJobs,
     flush,
     adminSessions,
+    stopBackground: () => callbacks.stop(),
   };
 }
 
@@ -109,7 +110,7 @@ async function start() {
   const v = store.value;
   if (store.secureCalls && (!process.env.ZMALA_TLS_CERT || !process.env.ZMALA_TLS_KEY))
     throw Error('Secure calls require the HTTPS certificate and key.');
-  const { server, handler, sipServer, flush } = createApplication({
+  const { server, handler, sipServer, flush, stopBackground } = createApplication({
     store,
     restart: () => {
       void shutdown().then(
@@ -137,7 +138,12 @@ async function start() {
     );
     tlsPort = port;
   }
-  const shutdown = createShutdown([server, ...(tlsServer ? [tlsServer] : [])], sipServer, flush);
+  const shutdown = createShutdown(
+    [server, ...(tlsServer ? [tlsServer] : [])],
+    sipServer,
+    flush,
+    stopBackground,
+  );
   // @llr LLR-SRV-START-008
   /** A failed listener must not leave its sibling serving a half-started app.
    * @param {unknown} error */

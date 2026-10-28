@@ -151,7 +151,8 @@ The terminal uses the C20 microphone and speaker for calls. It plays an incoming
 ringtone and an outgoing waiting tone on the C20 speaker. Call, ringtone and
 button-sound levels are independent, including their 0% silent setting, without
 changing microphone gain or television volume. Idle remote navigation plays a
-short low tap; calls, ringing and ringtone previews suppress button feedback.
+short low tap for left/right and middle, a rising tone for green and a low double
+tap for red. Calls, ringing and ringtone previews suppress button feedback.
 
 Audio processing provides the configured echo-control behavior. The Pi waits for
 all C20 media instead of starting a receive-only call or selecting TV audio.
@@ -391,7 +392,7 @@ Each asynchronous completion is checked against the current setup generation.
 | Button verification | Distinct physical left/right/green/red/middle press and release sequence, saved against pairing identity |
 | Wi-Fi QR | Actual join succeeds, followed by an unskippable ten-second confirmation; existing-link is a development mode |
 | Server QR | URL, device ID and token decode; authenticated, validated configuration succeeds before committing enrollment |
-| TV checks | Independent power/input outcomes and TV binding persist before normal use |
+| TV checks | Independent power/input outcomes and TV binding persist before normal use; power-only success does not authorize active-source announcements |
 
 Before enrollment, prompts use English. Enrollment applies the selected language;
 detailed diagnostic catalogs use English fallback where a translation is absent.
@@ -889,6 +890,16 @@ sudo journalctl -u zmalacall-terminal -f
 python3 /opt/zmalacall/current/build_tools/linux/check-low-wear.py
 ```
 
+Maintenance result authorization failures (HTTP 401/403) retire the pending result
+without resubmitting a diagnostic or replaying its command. Transient failures
+retain the existing lease for retry.
+
+Periodic status includes available audio/video transport measurements, frame rates
+and negotiated sizes. The Pi plugin supplies read-only encoder/decoder queue, drop,
+peak, maximum queue-age and produced-frame counters for the current codec lifetime.
+Sampling does not open media or consume frames. Older plugins and SDK sentinel
+values remain unavailable; counters do not establish picture or speech quality.
+
 Diagnostics expires after the selected minutes (maximum 60) or restart; use `0`
 to stop early. The filesystem remains writable; this is not a read-only overlay.
 
@@ -1061,7 +1072,8 @@ Configuration validation rejects incomplete or expired TURN credentials and secu
 configuration received through an HTTP enrollment. Re-enroll using the server's
 new HTTPS QR code when changing deployment mode. Hourly credential changes pass
 through normal configuration application even when the server revision is unchanged;
-they rebuild the core only while idle, preserving active calls. An offline cache with expired
+they rebuild the core only while idle, preserving active calls. Dial and answer
+recheck expiry on the running core before opening media, even after a polling outage. An offline cache with expired
 credentials cannot start a secure call; reconnect to the configuration server.
 The normal user call and answer controls do not change.
 

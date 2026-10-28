@@ -1,7 +1,7 @@
 # @test T-LLT-041
 # @requirements LLR-TERM-CONFIG-024, LLR-TERM-REMOTE-016, LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007, LLR-TERM-AUDIO-008
 # @environment portable
-# @plan Toggle the dedicated volume page with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal full-page/compact in-call feedback, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately; change a saved default while an unsent volume click is pending and verify it cannot overwrite that default.
+# @plan Toggle the compact volume overlay with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal overlay feedback on idle and in-call pages, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately; change a saved default while an unsent volume click is pending and verify it cannot overwrite that default.
 # @pass Named assertions pass; skips and visual/hardware checks are recorded separately.
 
 """Dedicated volume page and bounded C20 playback writes."""

@@ -3,7 +3,7 @@
 // @environment portable
 // @plan Use isolated backup maps with fake live services; corrupt versions, schemas, hashes and sizes before decoding, then inject apply/rollback failures into journal recovery. Check unsafe photo types and exact byte/count limits before reading, preserve destinations on failed durable writes, and reject corrupt recovery journals. Check snapshot isolation, restore exclusion gates and revision/network preservation. Dispatch backup routes using bounded byte streams; verify busy gates, archive metadata, explicit restore confirmation, revision forwarding, durable stage before delayed restart and lock release on failure.
 // @pass Rejections must leave live files unchanged; accepted snapshots and recovered transactions must match expected state without replaying commands.
-// Push-specific assertion scope: exported snapshots omit app-push.json and restore rejects a pending app wake.
+// Push-specific assertion scope: exported snapshots omit app-push.json and restore rejects a pending app wake or callback push delivery.
 
 'use strict';
 const { test } = require('node:test');
@@ -32,8 +32,10 @@ const { Readable } = require('node:stream');
 const { backupRoutes } = require('../../../zmala_server/http/backup-routes');
 
 test('backup HTTP routes serialize work, validate confirmation and restart after durable staging', async (t) => {
-  const app = await fixture(t),
-    archive = await app.backups.download();
+  const app = await fixture(t);
+  const { DEFAULT_SOUND } = require('../../../zmala_server/ringtones');
+  await app.store.uploadRingtone('Fixture sound', fs.readFileSync(DEFAULT_SOUND));
+  const archive = await app.backups.download();
   const service = {
     busy: false,
     status: () => ({ state: 'ready' }),
@@ -96,7 +98,7 @@ test('backup HTTP routes serialize work, validate confirmation and restart after
   const restored = await run('POST', '/api/server/backup/restore', archive, headers);
   assert.equal(restored.res.code, 202);
   assert.equal(service.stage.mock.calls[0].arguments[1], 77);
-  assert.equal(service.stage.mock.calls[0].arguments[0].files.size, 5);
+  assert.equal(service.stage.mock.calls[0].arguments[0].files.size, 6);
   assert.equal(service.restart.mock.calls.length, 0);
   restart();
   assert.equal(service.restart.mock.calls.length, 1);
@@ -162,6 +164,7 @@ test('restore gates reject unsafe activity; failed flush reopens service without
     ],
     [() => app.callbacks.sending.add('request'), () => app.callbacks.sending.clear()],
     [() => app.callbacks.email.sending.add('email'), () => app.callbacks.email.sending.clear()],
+    [() => app.callbacks.push.sending.add('push'), () => app.callbacks.push.sending.clear()],
     [
       () => app.consoleJobs.jobs.push({ status: 'running' }),
       () => {
@@ -196,7 +199,12 @@ async function fixture(t) {
   fs.mkdirSync(path.join(store.dir, 'photos'));
   fs.writeFileSync(path.join(store.dir, 'photos', name), PNG);
   store.value.users.term1.photo = '/photos/' + name;
-  const callbacks = { requests: [], sending: new Set(), email: { sending: new Set() } };
+  const callbacks = {
+    requests: [],
+    sending: new Set(),
+    email: { sending: new Set() },
+    push: { sending: new Set() },
+  };
   const consoleJobs = { jobs: [] };
   const sipServer = { dialogs: new Map() };
   const backups = new ServerBackups(

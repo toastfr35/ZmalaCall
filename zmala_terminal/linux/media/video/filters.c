@@ -196,7 +196,12 @@ static void decoder_process(MSFilter *f) {
      * to discard; H.264 inputs must retain their reference dependency chain. */
     mblk_t *latest = NULL;
     while ((message = zmala_codec_take(s))) {
-        if (latest) { freemsg(latest); ++s->display_dropped; }
+        if (latest) {
+            freemsg(latest);
+            pthread_mutex_lock(&s->mutex);
+            ++s->display_dropped;
+            pthread_mutex_unlock(&s->mutex);
+        }
         latest = message;
     }
     if ((message = latest)) {

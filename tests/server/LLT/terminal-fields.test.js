@@ -140,6 +140,20 @@ test('terminal drafts retain their original revision and setup downloads propaga
     actions.find(({ text }) => text === 'Download server QR PDF').action(),
     /Download failed/,
   );
+  model.users.second = { name: 'Second', type: 'terminal' };
+  model.profiles.second = { ...model.profiles.term1 };
+  let confirmAction;
+  context.confirm = (_title, _description, action) => {
+    confirmAction = action;
+  };
+  const associationVersion = model.configuration_version;
+  const association = context.buildAssociationForm(card, 'term1');
+  association.fields.accountId.value = 'second';
+  model.configuration_version += 10;
+  association.onsubmit({ preventDefault() {} });
+  context.state.terminalCards = new Map();
+  await confirmAction();
+  assert.equal(requests.at(-1).configuration_version, associationVersion);
 });
 
 test('terminal hardware badges distinguish fresh values, unknowns and stale reports', () => {

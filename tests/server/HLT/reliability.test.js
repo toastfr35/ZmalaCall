@@ -1,7 +1,7 @@
 // @test S-HLT-015
 // @requirements HLR-SRV-MAINT-011, HLR-SRV-DATA-012
 // @environment portable
-// @plan Reassign accounts during maintenance jobs and inject storage errors through the assembled HTTP application; assert execution ownership never follows a recycled name and result retries remain durable without blocking reads.
+// @plan Reassign accounts during maintenance jobs and inject storage errors through the assembled HTTP application; assert retired work is saved as cancelled before delete/conversion acknowledgement, execution ownership never follows a recycled name and result retries remain durable without blocking reads.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -26,6 +26,11 @@ test('command ownership cannot follow a recycled username or account type', asyn
       await f.consoleJobs.flush();
       if (retirement === 'delete') {
         assert.equal((await request('DELETE', '/api/users/term1')).status, 200);
+        assert.equal(job.status, 'cancelled');
+        assert.equal(
+          JSON.parse(await fs.readFile(f.consoleJobs.file)).find((j) => j.id === job.id).status,
+          'cancelled',
+        );
         assert.equal(
           (
             await request('POST', '/api/users', {
@@ -41,6 +46,11 @@ test('command ownership cannot follow a recycled username or account type', asyn
         assert.equal(
           (await request('PUT', '/api/users/term1', { name: 'Phone', type: 'app' })).status,
           200,
+        );
+        assert.equal(job.status, 'cancelled');
+        assert.equal(
+          JSON.parse(await fs.readFile(f.consoleJobs.file)).find((j) => j.id === job.id).status,
+          'cancelled',
         );
         assert.equal(
           (await request('PUT', '/api/users/term1', { name: 'Replacement', type: 'terminal' }))

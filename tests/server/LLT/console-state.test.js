@@ -1,7 +1,7 @@
 // @test S-LLT-020
 // @requirements LLR-SRV-MAINT-013, LLR-SRV-MAINT-014, LLR-SRV-MAINT-015, LLR-SRV-MAINT-016, LLR-SRV-MAINT-017
 // @environment portable
-// @plan Exercise the command queue with fixed device identities and injected time; check admission bounds, captured shell, exclusive leases, wrong-owner rejection, UTF-8 output limits, lost executions, cancellation and bounded redacted history.
+// @plan Exercise the command queue with fixed device identities and injected time; check admission bounds, captured shell, exclusive leases, wrong-owner rejection, UTF-8 output limits, lost executions, cancellation and bounded redacted history, including after the final pending job retires without another creation.
 // @pass All queue transitions and boundary assertions must pass without executing any command or contacting a terminal.
 
 'use strict';
@@ -90,4 +90,6 @@ test('unknown, retired and timed-out executions cannot be claimed again; history
   s.value.users.term1.device_id = 'replacement';
   q.expire();
   assert.equal(q.jobs.at(-1).status, 'cancelled');
+  assert.equal(q.jobs.length, 200, 'Retirement must also enforce the completed history limit');
+  assert.equal(new ConsoleJobs(s).jobs.length, 200);
 });

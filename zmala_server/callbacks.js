@@ -14,6 +14,8 @@ class Callbacks {
   constructor(store, sipServer, mailer = new CallbackMailer(store), push) {
     this.store = store;
     this.paused = false;
+    /** @type {Set<Promise<unknown>>} */
+    this.operations = new Set();
     this.sip = sipServer;
     this.file = path.join(store.dir, 'callbacks.json');
     /** @type {import('./types/contracts').CallbackRecord[]} */
@@ -41,7 +43,10 @@ class Callbacks {
     if (migrated) this.save();
     this.reconcile();
   }
+  // @llr LLR-SRV-CALLBACK-018
   save() {
+    // Completion/cancellation can retire a full queue without another create.
+    this.requests = retainHistory(this.requests, (r) => r.status === 'pending');
     if (this.persistence) return this.persistence.write(JSON.stringify(this.requests, null, 2));
     writeJson(this.file, this.requests);
   }
@@ -50,6 +55,19 @@ class Callbacks {
   }
   async flush() {
     await this.persistence?.flush();
+  }
+  // @llr LLR-SRV-START-009
+  /** Track accepted delivery until its result has been persisted.
+   * @param {Promise<unknown>} operation */
+  track(operation) {
+    this.operations.add(operation);
+    const done = () => this.operations.delete(operation);
+    void operation.then(done, done);
+  }
+  // @llr LLR-SRV-START-009
+  async stop() {
+    this.paused = true;
+    await Promise.allSettled([...this.operations]);
   }
   // @llr LLR-SRV-CALLBACK-017
   /** @param {number} created */
@@ -60,7 +78,10 @@ class Callbacks {
       expires_at: new Date(created + settings.remove_after_hours * 3600000).toISOString(),
     };
   }
-  reconcile() {
+  // @llr LLR-SRV-CALLBACK-016
+  /** Account-type conversion revokes the requester's former enrollment.
+   * @param {string} [retiredRequester] */
+  reconcile(retiredRequester) {
     let changed = false;
     this.requests = this.requests.filter((request) => {
       if (
@@ -76,7 +97,11 @@ class Callbacks {
     });
     for (const r of this.requests)
       if (r.status === 'pending') {
-        if (!this.store.enrolledAccount(r.from) || !this.store.permitted(r.from, r.to)) {
+        if (
+          r.from === retiredRequester ||
+          !this.store.enrolledAccount(r.from) ||
+          !this.store.permitted(r.from, r.to)
+        ) {
           r.status = 'cancelled';
           changed = true;
         }
@@ -123,7 +148,6 @@ class Callbacks {
         email_error: null,
       };
       this.requests.push(request);
-      this.requests = retainHistory(this.requests, (r) => r.status === 'pending');
       this.save();
     }
     setImmediate(() => this.deliver(to));
@@ -221,10 +245,11 @@ class Callbacks {
       this.sending.add(r.id);
       this.retry.set(r.id, Date.now() + 60000);
       const text = `ZmalaCall: ${this.store.value.users[r.from].name} would like you to call back.\nCall sip:${r.from}@${this.store.value.host}\nRequest expires at ${r.expires_at}.`;
-      Promise.resolve()
+      const operation = Promise.resolve()
         .then(async () => {
           await this.flush();
           if (
+            this.paused ||
             !this.requests.includes(r) ||
             r.status !== 'pending' ||
             Date.parse(r.expires_at) <= Date.now() ||
@@ -247,6 +272,7 @@ class Callbacks {
         })
         .catch((e) => console.error('Callback notification failed:', e.message))
         .finally(() => this.sending.delete(r.id));
+      this.track(operation);
     }
   }
   /** @param {import('./types/contracts').JsonObject} update */

@@ -4,8 +4,11 @@
 // @plan Parse stable, draft, old, malformed, duplicate and oversized release assets. Reject foreign
 // download origins, credentials and cleartext redirects. Compare signed-package identity, version,
 // debug flags and signer bytes. Interleave ringing, call start/end and installation reservations.
+// Recheck automatic eligibility after interaction during staging, permission/network changes
+// and clock reset, including the exact 30-second idle boundary.
 // @pass Only a newer stable exact APK with bounded size and SHA256 is selected; invalid packages
 // are rejected. A ring or active call prevents commit, and committed installation prevents a new call.
+// Automatic eligibility is lost on interaction and returns only after thirty new idle seconds.
 package org.zmala.phone;
 
 import static org.junit.Assert.*;
@@ -14,6 +17,15 @@ import org.json.*;
 import org.junit.Test;
 
 public class UpdatePolicyTest {
+  @Test public void automaticCommitRequiresFreshIdleWindow() {
+    assertFalse(UpdatePolicy.automaticReady(true, true, false, 39999, 10000));
+    assertTrue(UpdatePolicy.automaticReady(true, true, false, 40000, 10000));
+    assertFalse(UpdatePolicy.automaticReady(true, true, false, 40000, 39999));
+    assertFalse(UpdatePolicy.automaticReady(false, true, false, 40000, 10000));
+    assertFalse(UpdatePolicy.automaticReady(true, false, false, 40000, 10000));
+    assertFalse(UpdatePolicy.automaticReady(true, true, true, 40000, 10000));
+    assertFalse(UpdatePolicy.automaticReady(true, true, false, 1000, 10000));
+  }
   JSONObject release() throws Exception {
     return new JSONObject().put("tag_name", "v0.3.8").put("draft", false).put("prerelease", false)
         .put("assets", new JSONArray().put(new JSONObject().put("name", "ZmalaPhone.apk")

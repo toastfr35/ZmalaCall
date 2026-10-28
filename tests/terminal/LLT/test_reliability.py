@@ -3,6 +3,7 @@
 # @environment portable
 # @plan Check one-second C20 setup retry versus five-second general failures. Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled-photo fencing and coalesced mixer writes. Bound the portrait queue and retry delay; exercise the real worker with cached, invalid and cancelled data. Gate reconfiguration during setup/calls and verify bounded authenticated HTTP requests and deactivation.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
+# Authorization rejection (401/403) drops the result without retrying or rerunning the command.
 
 """Regression coverage for unattended recovery, with no native devices or live server."""
 import hashlib
@@ -197,6 +198,15 @@ class ReliabilityTests(unittest.TestCase):
                     self.assertEqual(submitted[0], submitted[1])
                 else:
                     self.assertEqual(submitted[1]['status'], 'failed')
+
+    def test_revoked_result_authorization_does_not_retry_a_diagnostic(self):
+        for code in (401, 403):
+            with self.subTest(code=code):
+                agent = MaintenanceAgent.__new__(MaintenanceAgent)
+                agent.configuration = Mock()
+                agent.configuration.request.side_effect = HTTPError('/result', code, 'revoked', {}, None)
+                agent.submit('one', {'lease': 'old-lease', 'status': 'completed'})
+                self.assertEqual(agent.configuration.request.call_count, 1)
 
     def test_revoked_contact_counts_stay_pruned_after_restart_and_regrant(self):
         with tempfile.TemporaryDirectory() as directory:

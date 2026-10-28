@@ -140,3 +140,21 @@ def received_frame(engine, params):
 
 def poll_video(engine, now):
     pass
+
+
+# @llr LLR-TERM-MAINT-018
+def codec_stats(engine):
+    """Read counters only; older plugins explicitly have no available snapshot."""
+    snapshot = getattr(getattr(engine, 'video_plugin', None), 'zmala_video_get_stats', None)
+    if snapshot is None:
+        return {}
+    snapshot.argtypes = [C.c_int, C.POINTER(C.c_uint64), C.c_uint]
+    snapshot.restype = C.c_int
+    fields = ('input_queued', 'output_queued', 'dropped', 'display_dropped',
+              'peak_input', 'peak_output', 'max_queue_ms', 'produced')
+    result = {}
+    for direction, name in enumerate(('decoder', 'encoder')):
+        values = (C.c_uint64 * len(fields))()
+        if snapshot(direction, values, len(fields)):
+            result[name] = dict(zip(fields, values))
+    return result

@@ -250,7 +250,7 @@ export function renderCallbacks() {
   policy.append(policyBody);
   const p = panel(
       'Callback requests',
-      'Calls always start manually. The ZmalaPhone preview does not yet display callback notifications.',
+      'Calls always start manually. ZmalaPhone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
     ),
     list = el('div', null, 'registration-list');
   for (const request of state.model.callbacks || []) {
@@ -269,12 +269,12 @@ export function renderCallbacks() {
         el(
           'small',
           state.model.users[request.to]?.type === 'terminal'
-            ? 'Shown on the receiving terminal when both people are available.'
+            ? 'Shown on the receiving terminal, including while the requester is offline.'
             : request.notified_at
-              ? 'The calling app acknowledged the notification.'
+              ? 'The phone accepted the SIP notice. This does not confirm it was read.'
               : registered(request.to)
-                ? 'Waiting for the calling app to acknowledge the notification.'
-                : 'Waiting for the phone to reconnect.',
+                ? 'Waiting for the phone to accept the SIP notice. Push reminders are handled separately.'
+                : 'The phone has no live SIP connection. Push can still deliver a reminder when configured.',
         ),
         el('small', callbackEmailStatus(request)),
       );
@@ -301,7 +301,7 @@ export function renderCallbacks() {
     list.append(
       el(
         'p',
-        'No callback requests yet. On a terminal, choose an offline person and press green twice to request a callback.',
+        'No callback requests yet. Request a callback from a contact in ZmalaPhone, or choose an offline person on a terminal and press green twice.',
         'muted',
       ),
     );

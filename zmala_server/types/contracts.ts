@@ -278,6 +278,7 @@ export interface SipStatus {
 }
 
 export interface TerminalStatus {
+  media?: JsonObject;
   remote_status?:
     | 'connected'
     | 'disconnected'

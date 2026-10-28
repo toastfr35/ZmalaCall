@@ -22,15 +22,21 @@ text: |
   the request deadline for automatic notification timeout. History shall retain
   at most 512 seen IDs and 32 active reminders. Disabled channels shall not mark
   unseen requests delivered. Callback and incoming-call channels shall be separate;
-  push registration may remain while either channel is enabled.
+  push registration may remain while either channel is enabled. Callback refresh
+  jobs shall use a scheduler ID range separate from the periodic update job.
 verification: |
   Test incoming/sent/forbidden/expired records, bounded persistence, duplicate and
   dismissed requests, cancellation and enrollment isolation. On Android inspect
   the ordinary notification category, requester name, tap destination and timeout;
   exercise signed hints, stale refreshes, closed-app delivery and permission denial.
+  Inspect the initialized scheduler range and verify that it excludes the update job.
 links:
 - HLR-AND-HISTORY-001: null
 references:
+- path: zmala_phone/app/src/main/AndroidManifest.xml
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/TurnTransport.java
+  type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/CallbackBook.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/CallbackAlerts.java

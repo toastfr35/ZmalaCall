@@ -1,8 +1,8 @@
 // @test T-LLT-070
-// @requirements LLR-TERM-VIDEO-006, LLR-TERM-VIDEO-008, LLR-TERM-VIDEO-009
+// @requirements LLR-TERM-VIDEO-006, LLR-TERM-VIDEO-008, LLR-TERM-VIDEO-009, LLR-TERM-MAINT-018
 // @environment native-sdk
 // @plan Stub only FFmpeg codec discovery/open/submission and frame delivery while retaining real AV buffers, MediaStreamer queues, mutexes and the codec worker. Check H264 configuration, decoded pixel/timestamp ownership, encoded packet delivery, bounded input/output queues, error reporting and worker shutdown. No V4L2 encoder or physical camera is opened. Inject scaler failure and assert a rejected encode preserves the source frame.
-// @pass All allocation, queue, pixel, configuration and lifecycle assertions pass under the supported SDK; these do not establish hardware encoder quality or timing.
+// @pass All allocation, queue, pixel, configuration and lifecycle assertions pass under the supported SDK. Read-only diagnostic snapshots report actual queue/drop/production counts, reject invalid requests and become unavailable after free; these do not establish hardware encoder quality or timing.
 #include "../../../zmala_terminal/linux/media/video/codec.h"
 #include <mediastreamer2/msfactory.h>
 #include <assert.h>
@@ -84,10 +84,19 @@ static void test_queue_policy(MSFactory *factory, int encoder) {
     for (int i = 0; i < 10; ++i) publish(s, packet(i));
     assert(s->output_count == 8 && s->peak_output == 8 && s->dropped == 4);
     assert(s->reconfigure == encoder);
+    uint64_t stats[8];
+    assert(!zmala_video_get_stats(-1, stats, 8));
+    assert(!zmala_video_get_stats(encoder, NULL, 8));
+    assert(!zmala_video_get_stats(encoder, stats, 7));
+    assert(zmala_video_get_stats(encoder, stats, 8));
+    assert(stats[0] == (uint64_t)limit && stats[1] == 8 && stats[2] == 4 && stats[3] == 0);
+    assert(stats[4] == (uint64_t)limit && stats[5] == 8 && stats[6] == 0 && stats[7] == 10);
+    assert(s->input_count == limit && s->output_count == 8); /* sampling consumes nothing */
     mblk_t *first = zmala_codec_take(s); assert(first->b_rptr[0] == (encoder ? 0 : 2)); freemsg(first);
     for (int i = 0; i < 7; ++i) freemsg(zmala_codec_take(s));
     first = zmala_codec_take(s); assert(first == NULL && s->output_count == 0);
     zmala_codec_free(&filter);
+    assert(!zmala_video_get_stats(encoder, stats, 8));
 }
 
 static void test_context_and_frames(MSFactory *factory) {

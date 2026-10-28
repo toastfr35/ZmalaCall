@@ -18,6 +18,11 @@ final class UpdatePolicy {
     this.version = version; this.url = url; this.digest = digest; this.size = size;
   }
 
+  /** Recheck at commit as well as download: interaction can resume while bytes are staged. */
+  static boolean automaticReady(boolean enabled, boolean allowed, boolean metered, long now, long idleSince) {
+    return enabled && allowed && !metered && now >= idleSince && now - idleSince >= 30000;
+  }
+
   static int compare(String left, String right) {
     if (!left.matches("[0-9]{1,6}\\.[0-9]{1,6}\\.[0-9]{1,6}")
         || !right.matches("[0-9]{1,6}\\.[0-9]{1,6}\\.[0-9]{1,6}"))

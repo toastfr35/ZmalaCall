@@ -48,6 +48,9 @@ class Element {
     this.events.close?.();
   }
   setAttribute() {}
+  closest() {
+    return null;
+  }
   reset() {}
   focus() {
     this.focused = true;
@@ -222,6 +225,29 @@ test('shared confirmation retains errors, refreshes only after success and resto
   assert.equal(f.$('error').scrolled, true);
   c.notice('Ready');
   assert.equal(f.$('notice').textContent, 'Ready');
+});
+
+test('a late action error cannot target a removed or closed dialog', async () => {
+  for (const detached of [true, false]) {
+    const f = sharedFixture(),
+      c = f.context,
+      feedback = f.$('dialog-error');
+    let reject;
+    const pending = c.run(
+      () =>
+        new Promise((_, fail) => {
+          reject = fail;
+        }),
+      'dialog-error',
+    );
+    if (detached) feedback.isConnected = false;
+    else feedback.closest = () => ({ open: false });
+    reject(Error('late failure'));
+    await pending;
+    assert.equal(feedback.textContent, '');
+    assert.equal(feedback.scrolled, undefined);
+    assert.equal(c.state.busy, false);
+  }
 });
 
 test('backup dialog handles download/check failures, changed files and a delayed restart', async () => {

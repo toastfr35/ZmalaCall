@@ -261,6 +261,8 @@ function buildDevicesForm(card, id) {
 }
 /** @param {HTMLElement} card @param {string} id */
 function buildAssociationForm(card, id) {
+  // @llr LLR-SRV-UI-016
+  const configurationVersion = state.model.configuration_version;
   const form = terminalForm(card, 'Account association', 'association');
   const serial = terminalUser(id).device_id;
   const row = el('div', null, 'terminal-association-row');
@@ -291,7 +293,7 @@ function buildAssociationForm(card, id) {
         await api('/api/terminal-association', 'PUT', {
           serial_number: serial,
           account_id: next,
-          configuration_version: state.model.configuration_version,
+          configuration_version: configurationVersion,
         });
         state.terminalCards.clear();
         state.terminalId = next;

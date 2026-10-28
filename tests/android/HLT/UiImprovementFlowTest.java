@@ -7,6 +7,7 @@
 // With notification permission unavailable, open the footer action and intercept the Android settings intent.
 // Inject a newer verified-metadata candidate without a network download; inspect the quiet footer,
 // explicit update dialog and simulated transfer/stage rendering. Do not claim package installation.
+// Clear the earlier push fixtures' ring deadline before the idle-update scenario.
 // Select French through Android's per-app locale API; inspect the actual contact/action screens.
 // @pass QR import uses explicit confirmation without saving before acceptance. A 503 preserves the
 // same native call with a reconnecting notice; access revocation stops it. Physical media is not qualified.
@@ -93,9 +94,15 @@ public class UiImprovementFlowTest {
   }
   @Test public void updateDiscoveryIsQuietAndChosenProgressIsVisible() throws Exception {
     android.content.Context context = PhoneFixture.INSTRUMENTATION.getTargetContext();
+    PhoneFixture.endSession();
+    // Other scenarios intentionally create unexpired signed rings. This scenario starts idle,
+    // rather than depending on execution order or waiting ninety seconds for unrelated alerts.
+    var ringUntil = UpdateGate.class.getDeclaredField("ringUntil"); ringUntil.setAccessible(true);
+    long previousRing = ringUntil.getLong(UpdateGate.INSTANCE);
     context.getSharedPreferences("updates", 0).edit().putLong("checked", System.currentTimeMillis())
         .putBoolean("automatic", false).commit();
     AppUpdates updater = AppUpdates.get(context);
+    ringUntil.setLong(UpdateGate.INSTANCE, 0);
     var available = AppUpdates.class.getDeclaredField("available"); available.setAccessible(true);
     var dialog = AppUpdates.class.getDeclaredField("dialog"); dialog.setAccessible(true);
     var downloading = AppUpdates.class.getDeclaredField("downloading"); downloading.setAccessible(true);
@@ -131,6 +138,7 @@ public class UiImprovementFlowTest {
       });
       PhoneFixture.dialog("Later");
     } finally {
+      ringUntil.setLong(UpdateGate.INSTANCE, previousRing);
       PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
         try { available.set(updater, before); downloading.setBoolean(updater, false); }
         catch (Exception error) { throw new AssertionError(error); }

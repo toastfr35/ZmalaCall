@@ -1,7 +1,7 @@
 // @test S-LLT-007
 // @requirements LLR-SRV-START-008, LLR-SRV-START-009
 // @environment portable
-// @plan Use controlled listener and persistence promises; assert shutdown drains both listeners once, tolerates partial startup and propagates persistence failure.
+// @plan Use controlled listener, callback-delivery and persistence promises; assert shutdown drains both listeners and accepted callback results once, suppresses queued deliveries, tolerates partial startup and propagates persistence failure.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -10,6 +10,49 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const { once } = require('node:events');
 const { createShutdown } = require('../../../zmala_server/shutdown');
+
+test('shutdown drains callback results before final flush and suppresses queued sends', async (t) => {
+  const { storeFixture } = require('../../support/server/unit-fixture');
+  const { Callbacks } = require('../../../zmala_server/callbacks');
+  for (const started of [false, true]) {
+    const store = storeFixture(t);
+    let finish,
+      sends = 0,
+      flushed = false;
+    const callbacks = new Callbacks(store, { registrations: new Map() }, undefined, {
+      available: () => true,
+      notify: async () => {
+        sends++;
+        await new Promise((resolve) => {
+          finish = resolve;
+        });
+      },
+    });
+    callbacks.create('term1', 'phone1');
+    callbacks.deliver();
+    if (started) await new Promise(setImmediate);
+    const stop = createShutdown(
+      [],
+      { close() {} },
+      async () => {
+        assert.equal(callbacks.operations.size, 0);
+        if (started) assert.ok(callbacks.requests[0].push_notified_key);
+        await callbacks.flush();
+        flushed = true;
+      },
+      () => callbacks.stop(),
+    );
+    const pending = stop();
+    assert.equal(callbacks.paused, true);
+    assert.equal(flushed, false);
+    callbacks.deliver();
+    finish?.();
+    await pending;
+    assert.equal(sends, started ? 1 : 0);
+    assert.equal(flushed, true);
+    await new Promise(setImmediate);
+  }
+});
 
 test('shutdown drains both listeners before persistence and runs only once', async (t) => {
   let finishRequest;

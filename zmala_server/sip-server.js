@@ -147,14 +147,13 @@ class SipServer extends SipMessages {
       return;
     }
     const contact = rq.headers.contact?.[0];
-    const expires = Math.max(
-      0,
-      Math.min(600, Number(contact?.params?.expires ?? rq.headers.expires ?? 600)),
-    );
-    if (!Number.isFinite(expires)) {
+    const requestedExpiry = Number(contact?.params?.expires ?? rq.headers.expires ?? 600);
+    // Validate before clamping: Infinity must not become a valid 600-second lease.
+    if (!Number.isFinite(requestedExpiry)) {
       this.reply(rq, 400, 'Invalid Expires');
       return;
     }
+    const expires = Math.max(0, Math.min(600, requestedExpiry));
     const rs = sip.makeResponse(rq, 200, 'OK');
     if (!contact) {
       const r = this.registrations.get(user);

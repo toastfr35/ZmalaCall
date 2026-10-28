@@ -62,6 +62,7 @@ class ServerBackups {
       this.sip.appCalls?.waiting.size ||
       this.callbacks.sending.size ||
       this.callbacks.email.sending.size ||
+      this.callbacks.push.sending.size ||
       this.consoleJobs.jobs.some((j) => j.status === 'running')
     )
       throw httpError(
