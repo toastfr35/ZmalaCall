@@ -1535,7 +1535,7 @@ function buildMediaFields(devices, media, id) {
   const hardware = el(
     'p',
     'Nuroum C20 supplies the camera, microphone and speaker automatically. If it is waking up, the terminal waits and retries.',
-    'help',
+    'help terminal-media-intro',
   );
   const resolution = terminalSelect(
     devices,
@@ -1691,10 +1691,12 @@ function terminalForm(card, title, kind) {
   form.addEventListener('input', () => {
     form.dataset.dirty = 'true';
     card.dataset.dirty = 'true';
+    updateTerminalSaveState(card);
   });
   form.addEventListener('change', () => {
     form.dataset.dirty = 'true';
     card.dataset.dirty = 'true';
+    updateTerminalSaveState(card);
   });
   return form;
 }
@@ -1702,6 +1704,16 @@ function terminalForm(card, title, kind) {
 function savedTerminalForm(form, card) {
   form.dataset.dirty = 'false';
   card.dataset.dirty = String(!!card.querySelector('form[data-dirty="true"]'));
+  updateTerminalSaveState(card);
+}
+// @llr LLR-SRV-UI-017
+/** @param {HTMLElement} card */
+function updateTerminalSaveState(card) {
+  const status = card.querySelector('.terminal-save-state');
+  if (status)
+    status.textContent = card.querySelector('form[data-kind=devices][data-dirty=true]')
+      ? 'Unsaved settings'
+      : 'Settings saved';
 }
 // @llr LLR-SRV-UI-017
 /** @param {HTMLElement} summary @param {import('../types/contracts').TerminalStatus | undefined} status @param {boolean} fresh */
@@ -1772,7 +1784,14 @@ function terminalCardState(card, id) {
   query(card, 'h2').textContent = u.name;
   query(card, '.terminal-address').textContent = `sip:${id}@${state.model.host}`;
   const summary = query(card, '.terminal-summary');
-  summary.replaceChildren(
+  const connection = el('div', null, 'terminal-status-group');
+  const hardware = el('div', null, 'terminal-status-group');
+  const features = el('div', null, 'terminal-status-group');
+  connection.append(el('h3', 'Connection'));
+  hardware.append(el('h3', 'Remote & camera'));
+  features.append(el('h3', 'Call features'));
+  summary.replaceChildren(connection, hardware, features);
+  connection.append(
     badge(online(id) ? 'Terminal online' : 'Terminal offline', online(id) ? 'success' : 'neutral'),
     badge(
       registered(id) ? 'SIP registered' : 'SIP offline',
@@ -1780,9 +1799,9 @@ function terminalCardState(card, id) {
     ),
   );
   if (id === state.model.local_terminal_id)
-    summary.append(badge('Server-local terminal', 'accent'));
+    connection.append(badge('Server-local terminal', 'accent'));
   const audioStatus = state.model.terminal_statuses[id];
-  appendTerminalHardware(summary, audioStatus, online(id));
+  appendTerminalHardware(hardware, audioStatus, online(id));
   if (state.model.profiles[id].auto_framing === true) {
     const framingStatus = audioStatus?.auto_framing_status;
     /** @type {Record<string, string>} */
@@ -1792,7 +1811,7 @@ function terminalCardState(card, id) {
       unavailable: 'Automatic framing unavailable · full view',
       unsupported: 'Automatic framing requires a Pi C20 terminal',
     };
-    summary.append(
+    features.append(
       badge(
         labels[framingStatus || ''] || 'Automatic framing pending',
         framingStatus === 'active' ? 'accent' : 'neutral',
@@ -1803,7 +1822,7 @@ function terminalCardState(card, id) {
     (state.model.profiles[id].audio_profile || 'normal') === 'speech' &&
     audioStatus?.requested_audio_profile === 'speech'
   )
-    summary.append(
+    features.append(
       badge(
         audioStatus.audio_profile === 'speech'
           ? 'Speech audio active'
@@ -1811,6 +1830,7 @@ function terminalCardState(card, id) {
         audioStatus.audio_profile === 'speech' ? 'accent' : 'neutral',
       ),
     );
+  features.hidden = features.children.length === 1;
   card
     .querySelectorAll('form')
     .forEach((form) =>
@@ -1827,6 +1847,15 @@ function buildDevicesForm(card, id) {
   const devices = terminalForm(card, 'Terminal settings', 'devices');
   devices.configurationVersion = configurationVersion;
   query(devices, 'h3').remove();
+  // @llr LLR-SRV-UI-017
+  // Keep saving beside the draft status while the long form scrolls.
+  const saveBar = el('div', null, 'terminal-save-bar');
+  const saveState = el('span', 'Settings saved', 'terminal-save-state');
+  saveState.setAttribute('role', 'status');
+  const save = el('button', 'Save changes', 'primary');
+  save.type = 'submit';
+  saveBar.append(saveState, save);
+  devices.append(saveBar);
   // Separate visual groups share one form and one save action.
   /** @param {string} title @param {string} [className] */
   const group = (title, className = '') => {
@@ -1863,9 +1892,7 @@ function buildDevicesForm(card, id) {
     setup,
     actionButton('Console', () => openConsole(terminalId(card)), 'secondary', 'terminal'),
   );
-  const save = el('button', 'Save changes', 'primary');
-  save.type = 'submit';
-  footer.append(tools, save);
+  footer.append(tools);
   devices.append(footer);
   devices.onsubmit = (e) => {
     e.preventDefault();
@@ -1959,7 +1986,7 @@ function buildTerminalCard(id) {
   card.classList.add('terminal-card');
   card.dataset.terminalId = id;
   query(card, '.panel-heading p').classList.add('terminal-address');
-  query(card, '.panel-heading > div').append(el('div', null, 'terminal-summary'));
+  card.append(el('div', null, 'terminal-summary'));
   const forms = el('div', null, 'terminal-fields');
   forms.append(buildAssociationForm(card, id), buildDevicesForm(card, id));
   card.append(forms);
@@ -1991,7 +2018,7 @@ function renderTerminals() {
     select = el('select');
   select.setAttribute('aria-label', 'Select terminal');
   for (const id of ids) {
-    const option = el('option', `${terminalUser(id).device_id} · ${state.model.users[id].name}`);
+    const option = el('option', `${state.model.users[id].name} (${id})`);
     option.value = id;
     select.append(option);
   }
@@ -2222,6 +2249,8 @@ function callbackEmailStatus(request) {
   return `Email reminder ${new Date(request.email_due_at).toLocaleString()}.`;
 }
 // @llr LLR-SRV-CALLBACK-016
+let callbackView = 'pending';
+// @llr LLR-SRV-CALLBACK-016
 function renderCallbacks() {
   $('page-actions').replaceChildren();
   const settings = state.model.callback_settings,
@@ -2261,7 +2290,30 @@ function renderCallbacks() {
       'Calls always start manually. ZmalaPhone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
     ),
     list = el('div', null, 'registration-list');
-  for (const request of state.model.callbacks || []) {
+  const requests = state.model.callbacks || [];
+  const filter = el('label', 'Show callbacks', 'callback-filter');
+  const select = el('select');
+  for (const [value, label] of [
+    ['pending', 'Pending'],
+    ['history', 'History'],
+  ]) {
+    const count = requests.filter(
+      (item) => (item.status === 'pending') === (value === 'pending'),
+    ).length;
+    const option = el('option', `${label} (${count})`);
+    option.value = value;
+    select.append(option);
+  }
+  select.value = callbackView;
+  select.onchange = () => {
+    callbackView = select.value;
+    renderCallbacks().focus();
+  };
+  filter.append(select);
+  p.append(filter);
+  for (const request of requests.filter(
+    (item) => (item.status === 'pending') === (callbackView === 'pending'),
+  )) {
     const row = el('div', null, 'list-row'),
       description = el('div'),
       source = state.model.users[request.from] || { name: request.from_name, type: 'terminal' };
@@ -2269,7 +2321,7 @@ function renderCallbacks() {
       el('strong', `${request.from_name} → ${request.to_name}`),
       el(
         'small',
-        `Requested ${new Date(request.created_at).toLocaleString()} · Remove ${new Date(request.expires_at).toLocaleString()}`,
+        `Requested ${new Date(request.created_at).toLocaleString()}${request.status === 'pending' ? ` · Expires ${new Date(request.expires_at).toLocaleString()}` : ''}`,
       ),
     );
     if (request.status === 'pending')
@@ -2309,12 +2361,15 @@ function renderCallbacks() {
     list.append(
       el(
         'p',
-        'No callback requests yet. Request a callback from a contact in ZmalaPhone, or choose an offline person on a terminal and press green twice.',
+        callbackView === 'pending'
+          ? 'No pending callback requests. Previous requests are in History.'
+          : 'No callback history yet. Completed, cancelled and expired requests appear here.',
         'muted',
       ),
     );
   p.append(list);
-  setView(policy, p);
+  setView(p, policy);
+  return select;
 }
 /** @param {number} hours */
 function callbackHours(hours) {

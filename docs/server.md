@@ -374,7 +374,11 @@ and groups stay with accounts. Both accounts are checked for active calls.
 Renaming preserves linked records while changing the SIP address. Active calls
 also block credential/type changes and account deletion.
 
-Terminal cards group Calls, Video & audio and General settings. **Setup** downloads
+Terminal selectors show the account name first and retain the full hardware serial in
+Account association. Cards separate Connection, Remote & camera and enabled Call features
+status from the settings. Terminal cards group Calls, Video & audio and General settings.
+A sticky Save changes bar shows Unsaved settings for a modified settings form;
+association changes remain a separate submission. **Setup** downloads
 Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
 are runtime provisioning documents, separate from project documentation. App setup
 sheets include a clickable latest-release APK link, installation instructions and
@@ -428,6 +432,10 @@ callback state before showing a notification. Failed deliveries retry at most
 once/minute, with pending work checked every five seconds and on registration.
 Terminal recipients use polling and show incoming requests even if the requester
 is offline. Neither SIP nor Firebase acceptance proves a person read the reminder.
+
+Callbacks opens on Pending, with separate counts for Pending and History. The selection
+survives live refreshes; completed, cancelled and expired records remain in History.
+Filtering does not change or remove records. The request list precedes reminder settings.
 
 Callbacks defaults to email after one hour and removal after four hours, both
 from creation; fractional hours are supported and removal follows email.

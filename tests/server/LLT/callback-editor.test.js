@@ -1,7 +1,7 @@
 // @test S-LLT-030
 // @requirements LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-017, LLR-SRV-CALLBACK-021, LLR-SRV-CALLBACK-023, LLR-SRV-CALLBACK-024, LLR-SRV-UI-016
 // @environment portable
-// @plan Execute the callback controller with recording DOM/API boundaries. Verify deadline and SMTP payloads retain opening revisions, blank/explicit-clear secret intent, rejected saves retain drafts, close buttons remove dialogs, cancellation targets the selected request and delivery summaries distinguish missing, failed and partially accepted addresses.
+// @plan Execute the callback controller with recording DOM/API boundaries. Verify deadline and SMTP payloads retain opening revisions, blank/explicit-clear secret intent, rejected saves retain drafts, close buttons remove dialogs, cancellation targets the selected request pending/history filters retain their selection across refresh, and delivery summaries distinguish missing, failed and partially accepted addresses.
 // @pass Controller assertions must pass without network access; these checks verify UI requests and feedback, not actual SMTP delivery, server persistence or physical rendering.
 
 'use strict';
@@ -37,6 +37,7 @@ class Element {
   addEventListener(key, value) {
     this.events[key] = value;
   }
+  focus() {}
   showModal() {
     this.open = true;
   }
@@ -268,6 +269,8 @@ test('callback rows distinguish delivery progress, cancellation and connection-o
     f.connected = connected;
     f.state.model.callbacks = [{ ...base, notified_at: notified, ready, status }];
     f.renderCallbacks();
+    f.find('select').value = status === 'pending' ? 'pending' : 'history';
+    f.find('select').onchange();
     assert.doesNotMatch(
       f.view.map(text).join(' '),
       /does not yet display|when both people are available/,
@@ -277,6 +280,8 @@ test('callback rows distinguish delivery progress, cancellation and connection-o
   }
   f.state.model.callbacks = [base];
   f.renderCallbacks();
+  f.find('select').value = 'pending';
+  f.find('select').onchange();
   await f.button('Cancel').action();
   assert.equal(f.requests.at(-1).url, '/api/callbacks/request-1');
   assert.equal(f.requests.at(-1).method, 'DELETE');
@@ -293,5 +298,47 @@ test('callback rows distinguish delivery progress, cancellation and connection-o
   f.state.model.smtp.enabled = false;
   delete f.state.model.callbacks;
   f.renderCallbacks();
-  assert.match(f.view.map(text).join(' '), /0.5 hours.*disabled.*No callback requests/s);
+  assert.match(f.view.map(text).join(' '), /No pending callback requests.*0.5 hours.*disabled/s);
+});
+
+test('callback filters show pending work first and preserve history selection on refresh', () => {
+  const f = fixture();
+  f.state.model.callbacks = [
+    {
+      id: 'one',
+      from_name: 'Pending source',
+      to_name: 'Target',
+      status: 'pending',
+      created_at: 1,
+      expires_at: 2,
+    },
+    {
+      id: 'two',
+      from_name: 'Completed source',
+      to_name: 'Target',
+      status: 'completed',
+      created_at: 1,
+      expires_at: 2,
+    },
+    {
+      id: 'three',
+      from_name: 'Cancelled source',
+      to_name: 'Target',
+      status: 'cancelled',
+      created_at: 1,
+      expires_at: 2,
+    },
+  ];
+  f.renderCallbacks();
+  assert.equal(f.find('select').value, 'pending');
+  assert.match(text(f.view[0]), /Pending source/);
+  assert.doesNotMatch(text(f.view[0]), /Completed source/);
+  assert.deepEqual(f.find('select').children.map(text), ['Pending (1)', 'History (2)']);
+  f.find('select').value = 'history';
+  f.find('select').onchange();
+  f.renderCallbacks();
+  assert.equal(f.find('select').value, 'history');
+  assert.match(text(f.view[0]), /Completed source.*Cancelled source/);
+  assert.doesNotMatch(text(f.view[0]), /Pending source|Expires/);
+  assert.equal(f.requests.length, 0);
 });

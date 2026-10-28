@@ -31,5 +31,8 @@ reviewed: null
 scope: Core
 text: |
   The requester or administrator shall be able to cancel a pending request. A connected call in either direction shall complete requests for the pair. Permission removal, account deletion or requester conversion shall cancel invalid requests; rename shall preserve valid requests.
+  Administration shall initially show pending requests separately from completed,
+  cancelled and expired history. Counts shall identify both views, and refreshing
+  live status shall preserve the chosen view without modifying stored requests.
 verification: |
   Exercise both cancellation authorities, either call direction and account/group changes. Check pending and completed views.

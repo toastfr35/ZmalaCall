@@ -15,7 +15,7 @@
   margin: 15px 0 10px;
 }
 .welcome-panel p {
-  font-size: 12px;
+  font-size: 14px;
   color: #abb6cd;
   max-width: 420px;
 }
@@ -51,7 +51,7 @@
   display: flex;
   justify-content: space-between;
   color: #9baac1;
-  font-size: 11px;
+  font-size: 12px;
   gap: 8px;
 }
 .stat-heading .icon {
@@ -67,8 +67,8 @@
   margin: 10px 0;
 }
 .stat-card small {
-  font-size: 10px;
-  color: #7989a4;
+  font-size: 12px;
+  color: var(--muted);
 }
 .overview-grid {
   display: grid;
@@ -85,7 +85,7 @@
   gap: 15px;
   padding: 12px 0;
   border-bottom: 1px solid #222c3c;
-  font-size: 12px;
+  font-size: 14px;
 }
 .server-details > div:last-child {
   border-bottom: 0;
@@ -97,7 +97,7 @@
 .server-details dd {
   margin: 0;
   font-family: Consolas, monospace;
-  font-size: 11px;
+  font-size: 12px;
   text-align: right;
   overflow-wrap: anywhere;
   color: #bfcae0;
@@ -126,12 +126,12 @@
 }
 .list-row strong {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 550;
 }
 .list-row small {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 2px;
 }
 .avatar {
@@ -163,7 +163,7 @@
   gap: 12px;
   padding: 14px 0;
   border-bottom: 1px solid #222c3c;
-  font-size: 12px;
+  font-size: 14px;
   color: #b5c1d7;
 }
 .event-row:last-child {
@@ -174,7 +174,7 @@
   overflow-wrap: anywhere;
 }
 .event-row time {
-  font-size: 10px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: #7d8da7;
   white-space: nowrap;
@@ -195,7 +195,7 @@
 }
 .table-toolbar > span {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .search-field {
@@ -216,7 +216,7 @@
 }
 .table-toolbar select {
   width: 170px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .table-scroll {
   overflow: auto;
@@ -228,8 +228,8 @@ table {
   text-align: left;
 }
 th {
-  font-size: 10px;
-  color: #7c8ca7;
+  font-size: 12px;
+  color: var(--muted);
   letter-spacing: 0.3px;
   font-weight: 550;
   white-space: nowrap;
@@ -241,7 +241,7 @@ th {
 td {
   padding: 20px 25px;
   border-bottom: 1px solid #232c3b;
-  font-size: 12px;
+  font-size: 14px;
 }
 tbody tr:last-child td {
   border-bottom: 0;
@@ -258,12 +258,12 @@ tbody tr:last-child td {
 .person-cell strong {
   display: block;
   font-weight: 550;
-  font-size: 13px;
+  font-size: 14px;
 }
 .person-cell code {
   display: block;
   color: #7e90ae;
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 2px;
 }
 .accounts-table td.row-actions {
@@ -280,4 +280,10 @@ tbody tr:last-child td {
   gap: 8px;
   padding: 0 25px 23px;
   border-bottom: 1px solid var(--line);
+}
+
+/* @llr LLR-SRV-UI-013 */
+.callback-filter {
+  margin: 0 25px 20px;
+  max-width: 300px;
 }

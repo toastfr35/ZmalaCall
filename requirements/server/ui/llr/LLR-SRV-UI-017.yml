@@ -9,6 +9,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_server/web/styles/terminals.css
+  type: file
+- path: tests/server/LLT/admin-view.test.js
+  type: file
 - path: tests/server/LLT/terminal-fields.test.js
   type: file
 - path: zmala_server/web/admin-main.js
@@ -29,6 +33,9 @@ reviewed: null
 scope: Core
 text: |
   The Terminals page shall select one device card and separate association from settings changes. Settings shall appear under Calls, Video and audio, and General. Registered controls shall remain attached to the visible form.
+  The device selector shall show the account name before its identifier. Connection,
+  peripheral and call-feature status shall be visually grouped. A sticky save bar
+  shall show whether the terminal settings have unsaved changes.
   C20 speaker volume shall offer 0 through 100 percent in 5-percent steps.
   Existing values between steps shall show the nearest step without changing the
   saved configuration until Save changes is accepted.
@@ -41,4 +48,5 @@ verification: |
   Select different devices, inspect section controls and save association separately from profile settings. Enumerate volume choices,
   open a between-step value and verify it is not saved until submission. Render
   fresh/unknown/stale peripheral reports and poll while a draft is dirty; verify
-  visible badges, stale suppression and unchanged draft values.
+  visible badges, stale suppression and unchanged draft values. Inspect account-first
+  choices and draft status; scroll a long form and verify Save changes remains visible.

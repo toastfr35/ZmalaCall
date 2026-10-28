@@ -44,10 +44,12 @@ export function terminalForm(card, title, kind) {
   form.addEventListener('input', () => {
     form.dataset.dirty = 'true';
     card.dataset.dirty = 'true';
+    updateTerminalSaveState(card);
   });
   form.addEventListener('change', () => {
     form.dataset.dirty = 'true';
     card.dataset.dirty = 'true';
+    updateTerminalSaveState(card);
   });
   return form;
 }
@@ -55,6 +57,16 @@ export function terminalForm(card, title, kind) {
 export function savedTerminalForm(form, card) {
   form.dataset.dirty = 'false';
   card.dataset.dirty = String(!!card.querySelector('form[data-dirty="true"]'));
+  updateTerminalSaveState(card);
+}
+// @llr LLR-SRV-UI-017
+/** @param {HTMLElement} card */
+function updateTerminalSaveState(card) {
+  const status = card.querySelector('.terminal-save-state');
+  if (status)
+    status.textContent = card.querySelector('form[data-kind=devices][data-dirty=true]')
+      ? 'Unsaved settings'
+      : 'Settings saved';
 }
 // @llr LLR-SRV-UI-017
 /** @param {HTMLElement} summary @param {import('../types/contracts').TerminalStatus | undefined} status @param {boolean} fresh */
@@ -125,7 +137,14 @@ export function terminalCardState(card, id) {
   query(card, 'h2').textContent = u.name;
   query(card, '.terminal-address').textContent = `sip:${id}@${state.model.host}`;
   const summary = query(card, '.terminal-summary');
-  summary.replaceChildren(
+  const connection = el('div', null, 'terminal-status-group');
+  const hardware = el('div', null, 'terminal-status-group');
+  const features = el('div', null, 'terminal-status-group');
+  connection.append(el('h3', 'Connection'));
+  hardware.append(el('h3', 'Remote & camera'));
+  features.append(el('h3', 'Call features'));
+  summary.replaceChildren(connection, hardware, features);
+  connection.append(
     badge(online(id) ? 'Terminal online' : 'Terminal offline', online(id) ? 'success' : 'neutral'),
     badge(
       registered(id) ? 'SIP registered' : 'SIP offline',
@@ -133,9 +152,9 @@ export function terminalCardState(card, id) {
     ),
   );
   if (id === state.model.local_terminal_id)
-    summary.append(badge('Server-local terminal', 'accent'));
+    connection.append(badge('Server-local terminal', 'accent'));
   const audioStatus = state.model.terminal_statuses[id];
-  appendTerminalHardware(summary, audioStatus, online(id));
+  appendTerminalHardware(hardware, audioStatus, online(id));
   if (state.model.profiles[id].auto_framing === true) {
     const framingStatus = audioStatus?.auto_framing_status;
     /** @type {Record<string, string>} */
@@ -145,7 +164,7 @@ export function terminalCardState(card, id) {
       unavailable: 'Automatic framing unavailable · full view',
       unsupported: 'Automatic framing requires a Pi C20 terminal',
     };
-    summary.append(
+    features.append(
       badge(
         labels[framingStatus || ''] || 'Automatic framing pending',
         framingStatus === 'active' ? 'accent' : 'neutral',
@@ -156,7 +175,7 @@ export function terminalCardState(card, id) {
     (state.model.profiles[id].audio_profile || 'normal') === 'speech' &&
     audioStatus?.requested_audio_profile === 'speech'
   )
-    summary.append(
+    features.append(
       badge(
         audioStatus.audio_profile === 'speech'
           ? 'Speech audio active'
@@ -164,6 +183,7 @@ export function terminalCardState(card, id) {
         audioStatus.audio_profile === 'speech' ? 'accent' : 'neutral',
       ),
     );
+  features.hidden = features.children.length === 1;
   card
     .querySelectorAll('form')
     .forEach((form) =>
@@ -180,6 +200,15 @@ function buildDevicesForm(card, id) {
   const devices = terminalForm(card, 'Terminal settings', 'devices');
   devices.configurationVersion = configurationVersion;
   query(devices, 'h3').remove();
+  // @llr LLR-SRV-UI-017
+  // Keep saving beside the draft status while the long form scrolls.
+  const saveBar = el('div', null, 'terminal-save-bar');
+  const saveState = el('span', 'Settings saved', 'terminal-save-state');
+  saveState.setAttribute('role', 'status');
+  const save = el('button', 'Save changes', 'primary');
+  save.type = 'submit';
+  saveBar.append(saveState, save);
+  devices.append(saveBar);
   // Separate visual groups share one form and one save action.
   /** @param {string} title @param {string} [className] */
   const group = (title, className = '') => {
@@ -216,9 +245,7 @@ function buildDevicesForm(card, id) {
     setup,
     actionButton('Console', () => openConsole(terminalId(card)), 'secondary', 'terminal'),
   );
-  const save = el('button', 'Save changes', 'primary');
-  save.type = 'submit';
-  footer.append(tools, save);
+  footer.append(tools);
   devices.append(footer);
   devices.onsubmit = (e) => {
     e.preventDefault();
@@ -312,7 +339,7 @@ export function buildTerminalCard(id) {
   card.classList.add('terminal-card');
   card.dataset.terminalId = id;
   query(card, '.panel-heading p').classList.add('terminal-address');
-  query(card, '.panel-heading > div').append(el('div', null, 'terminal-summary'));
+  card.append(el('div', null, 'terminal-summary'));
   const forms = el('div', null, 'terminal-fields');
   forms.append(buildAssociationForm(card, id), buildDevicesForm(card, id));
   card.append(forms);
@@ -344,7 +371,7 @@ export function renderTerminals() {
     select = el('select');
   select.setAttribute('aria-label', 'Select terminal');
   for (const id of ids) {
-    const option = el('option', `${terminalUser(id).device_id} · ${state.model.users[id].name}`);
+    const option = el('option', `${state.model.users[id].name} (${id})`);
     option.value = id;
     select.append(option);
   }

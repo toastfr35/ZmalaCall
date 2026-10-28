@@ -1,7 +1,7 @@
 // @test S-LLT-027
-// @requirements LLR-SRV-DIR-033, LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015, LLR-SRV-CONFIG-018
+// @requirements LLR-SRV-DIR-033, LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015, LLR-SRV-UI-017, LLR-SRV-CONFIG-018
 // @environment display
-// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Verify fixed C20 media information without camera, microphone or speaker selectors. Check GIF guidance and first-frame dimensions against accepted and rejected synthetic files. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation.
+// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Verify fixed C20 media information without camera, microphone or speaker selectors. Check GIF guidance and first-frame dimensions against accepted and rejected synthetic files. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation. Check readable supporting text and desktop action targets, name-first terminal choices, unsaved-state feedback and a save bar that stays within the viewport while scrolled.
 // @pass All computed layout and interaction assertions must pass against the mocked API; no live service or account is changed.
 
 'use strict';
@@ -16,6 +16,7 @@ test('admin component fits phones and desktop and preserves modal drafts', async
   const s = storeFixture(t),
     browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
+  page.setDefaultTimeout(5000);
   const navigate = page.goto.bind(page);
   page.goto = async (...args) => {
     await coverage.collectPage(page);
@@ -104,6 +105,17 @@ test('admin component fits phones and desktop and preserves modal drafts', async
         .locator('body')
         .evaluate((el) => getComputedStyle(el).backgroundColor);
       assert.notEqual(color, 'rgb(255, 255, 255)');
+      if (process.env.ZMALA_UI_SCREENSHOTS) {
+        const fs = require('node:fs');
+        fs.mkdirSync(process.env.ZMALA_UI_SCREENSHOTS, { recursive: true });
+        await page.screenshot({
+          path: path.join(
+            process.env.ZMALA_UI_SCREENSHOTS,
+            `${route.slice(1) || 'overview'}-${width}.png`,
+          ),
+          fullPage: true,
+        });
+      }
       if (route === '/activity')
         assert.match(await page.locator('#view').innerText(), /Fixture event/);
       if (route === '/accounts' && width <= 700) {
@@ -120,12 +132,34 @@ test('admin component fits phones and desktop and preserves modal drafts', async
         );
       }
       if (route === '/terminals') {
+        assert.match(await page.getByLabel('Select terminal').innerText(), /\(term1\)/);
+        assert.doesNotMatch(await page.getByLabel('Select terminal').innerText(), /ZM-/);
+        assert.ok(
+          await page.getByRole('heading', { name: 'Remote & camera', exact: true }).isVisible(),
+        );
+        await page.getByLabel('Call volume (%)', { exact: false }).selectOption('65');
+        assert.equal(await page.locator('.terminal-save-state').innerText(), 'Unsaved settings');
+        await page.getByRole('combobox', { name: /^Language/ }).scrollIntoViewIfNeeded();
+        const saveBox = await page
+          .getByRole('button', { name: 'Save changes', exact: true })
+          .boundingBox();
+        assert.ok(
+          saveBox.y >= 0 && saveBox.y + saveBox.height <= 800,
+          `${width}: save bar offscreen`,
+        );
+        assert.ok(
+          await page
+            .locator('form[data-kind=devices] label small')
+            .first()
+            .evaluate((el) => parseFloat(getComputedStyle(el).fontSize) >= 12),
+        );
+
         await page.getByText('Nuroum C20 supplies', { exact: false }).waitFor();
         for (const label of ['Camera', 'Microphone', 'Speaker']) {
           assert.equal(await page.getByLabel(label, { exact: true }).count(), 0);
         }
       }
-      if (width <= 700) {
+      {
         const sizes = await page
           .locator('nav a, #page-actions button, .icon-button:visible')
           .evaluateAll((nodes) => nodes.map((el) => el.getBoundingClientRect().height));

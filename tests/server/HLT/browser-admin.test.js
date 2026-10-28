@@ -1,7 +1,7 @@
 // @test S-HLT-023
 // @requirements HLR-SRV-UI-010, HLR-SRV-UI-011
 // @environment display
-// @plan Run the assembled HTTP application against isolated persistent state and open its actual assets in Chromium, without API mocks. Set a password through the page, navigate six pages at 320 and 1920 pixels, create an account, provoke an opening-revision conflict from a second client, and cancel the retained draft. Reload to check the accepted account and sign out to check the session boundary.
+// @plan Run the assembled HTTP application against isolated persistent state and open its actual assets in Chromium, without API mocks. Set a password through the page, navigate six pages at 320 and 1920 pixels, save terminal call volume and confirm its persisted value, create an account, provoke an opening-revision conflict from a second client, and cancel the retained draft. Reload to check the accepted account and sign out to check the session boundary.
 // @pass The real service must persist accepted input, reject the stale edit, retain its visible draft, and fit both viewports without page-wide horizontal scrolling. This is browser integration evidence, not a physical touch-device test.
 
 'use strict';
@@ -59,6 +59,14 @@ test(
       }
     }
     await page.setViewportSize({ width: 320, height: 740 });
+    await page.goto(fixture.base + '/terminals');
+    await page.getByRole('combobox', { name: /^Call volume/ }).selectOption('65');
+    assert.equal(await page.locator('.terminal-save-state').innerText(), 'Unsaved settings');
+    await page.getByRole('combobox', { name: /^Language/ }).scrollIntoViewIfNeeded();
+    await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+    await page.getByText('Saved terminal settings for term1.', { exact: true }).waitFor();
+    assert.equal(new Store(fixture.directory).value.profiles.term1.c20_speaker_volume, 65);
+    assert.equal(await page.locator('.terminal-save-state').innerText(), 'Settings saved');
     await page.goto(fixture.base + '/accounts');
     await page.getByRole('button', { name: 'New account', exact: true }).click();
     await page.locator('#edit-name').fill('Browser fixture');

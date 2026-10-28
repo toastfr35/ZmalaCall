@@ -67,12 +67,12 @@ h3 {
   font-weight: 600;
 }
 small {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 code {
   font-family: Consolas, monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: #aab8cf;
   overflow-wrap: anywhere;
 }
@@ -90,7 +90,7 @@ code {
   stroke-linejoin: round;
 }
 .eyebrow {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 1.8px;
   color: var(--accent);
@@ -182,12 +182,12 @@ nav a.active:after {
   align-items: center;
   padding: 16px 7px 0;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 14px;
   color: #c6d0df;
 }
 .sidebar-footer small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   margin-top: 3px;
 }
 .admin-auth-controls {
@@ -228,7 +228,7 @@ main {
 }
 .page-heading > div > p:last-child {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   margin-top: 10px;
 }
 .page-heading .eyebrow {
@@ -251,10 +251,10 @@ main {
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 10px 15px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
-  min-height: 39px;
+  min-height: 44px;
 }
 .primary {
   background: #b3a2ff;
@@ -289,8 +289,8 @@ main {
 }
 .icon-button {
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -321,7 +321,7 @@ main {
   border-color: #65303d;
 }
 .text-link {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: #b3a2ff;
 }
@@ -341,7 +341,7 @@ main {
 .badge {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 550;
   line-height: 1.5;
   border: 1px solid #2c3648;
@@ -371,7 +371,7 @@ main {
   border-radius: 8px;
   margin-bottom: 20px;
   border: 1px solid;
-  font-size: 12px;
+  font-size: 14px;
 }
 .banner.error {
   color: #ffacb5;
@@ -399,7 +399,7 @@ main {
   gap: 16px;
 }
 .panel-heading p {
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 5px;
 }
 .panel-note {
@@ -409,7 +409,7 @@ main {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .panel-note .icon {
@@ -422,7 +422,7 @@ main {
   padding: 50px 25px;
   text-align: center;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 .empty-state > .icon {
   width: 32px;
@@ -459,7 +459,7 @@ main {
 }
 .signin-card > p {
   margin: 12px 0 24px;
-  font-size: 13px;
+  font-size: 14px;
 }
 .signin-card > button {
   width: 100%;
