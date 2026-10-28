@@ -1,7 +1,7 @@
 // @test S-LLT-030
 // @requirements LLR-SRV-CALLBACK-016, LLR-SRV-CALLBACK-017, LLR-SRV-CALLBACK-021, LLR-SRV-CALLBACK-023, LLR-SRV-CALLBACK-024, LLR-SRV-UI-016
 // @environment portable
-// @plan Execute the callback controller with recording DOM/API boundaries. Verify deadline and SMTP payloads retain opening revisions, blank/explicit-clear secret intent, rejected saves retain drafts, close buttons remove dialogs, cancellation targets the selected request pending/history filters retain their selection across refresh, and delivery summaries distinguish missing, failed and partially accepted addresses.
+// @plan Execute the callback controller with recording DOM/API boundaries. Verify deadline and SMTP payloads retain opening revisions, blank/explicit-clear secret intent, rejected saves retain drafts, close buttons remove dialogs, cancellation targets the selected request pending/history filters retain their selection across refresh, empty history promises only retained completed/cancelled requests, and delivery summaries distinguish missing, failed and partially accepted addresses.
 // @pass Controller assertions must pass without network access; these checks verify UI requests and feedback, not actual SMTP delivery, server persistence or physical rendering.
 
 'use strict';
@@ -340,5 +340,9 @@ test('callback filters show pending work first and preserve history selection on
   assert.equal(f.find('select').value, 'history');
   assert.match(text(f.view[0]), /Completed source.*Cancelled source/);
   assert.doesNotMatch(text(f.view[0]), /Pending source|Expires/);
+  f.state.model.callbacks = [];
+  f.renderCallbacks();
+  assert.match(text(f.view[0]), /Completed and cancelled requests appear here/);
+  assert.doesNotMatch(text(f.view[0]), /expired/i);
   assert.equal(f.requests.length, 0);
 });

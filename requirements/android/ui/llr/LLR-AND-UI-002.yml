@@ -8,6 +8,12 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallGlyph.java
+  type: file
+- path: zmala_phone/app/src/main/java/org/zmala/phone/PortraitLoader.java
+  type: file
+- path: tests/android/LLT/device/PortraitLoaderTest.java
+  type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/MainActivity.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/CallScreen.java
@@ -60,7 +66,8 @@ text: |
   without requiring the phone user to access server administration.
   Contacts shall use compact horizontal rows with a rounded portrait beside the name.
   Portrait downloads shall use a bounded background queue separate from configuration and callback
-  requests. Replacing or leaving the contact view shall discard obsolete queued work and results.
+  requests. Decoded static portraits shall be reused within a bounded memory cache, isolated by
+  enrollment and cleared when the screen owner is destroyed. Replacing or leaving the contact view shall discard obsolete queued work and results.
   Name buttons shall include a smaller status label: Available on green for recently confirmed
   activity, Try calling on blue for unconfirmed push eligibility, and Offline on red
   otherwise. Each row shall be one tappable card opening a dedicated contact page, including

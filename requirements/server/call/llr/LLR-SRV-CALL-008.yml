@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_server/sip-dialogs.js
+  type: file
 - path: tests/server/LLT/sip-guards.test.js
   type: file
 - path: zmala_server/auth.js

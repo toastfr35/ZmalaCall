@@ -8,6 +8,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/server/LLT/store-views.test.js
+  type: file
 - path: zmala_server/store.js
   type: file
 - path: zmala_server/http/device-routes.js

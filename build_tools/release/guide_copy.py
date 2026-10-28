@@ -258,7 +258,7 @@ REVISIONS = {
             'Open Setup to download its Wi-Fi and server QR documents. Give both privately to the '
             'person setting up that TV terminal, together with ZmalaTerminal-Guide.pdf.',
             'Open Callbacks to see Pending requests first. Choose History under Show callbacks '
-            'to see completed, cancelled and expired requests. The counts show how many are in '
+            'to see completed and cancelled requests. The counts show how many are in '
             'each view. Cancel removes a pending request; looking at History changes nothing.',
         ],
         'To add ringtone choices,': [
@@ -280,6 +280,9 @@ REVISIONS = {
 # Also match retained guides already rewritten by an earlier generation.
 REVISIONS['server_prep.docx']['Open Terminals, choose the device'] = (
     REVISIONS['server_prep.docx']['In Terminals, choose native-language labels'])
+
+REVISIONS['server_prep.docx']['Open Callbacks to see Pending requests first.'] = [
+    REVISIONS['server_prep.docx']['Open Terminals, choose the device'][2]]
 
 def improve_readability(root):
     from docx import Document

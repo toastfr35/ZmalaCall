@@ -38,7 +38,11 @@ async function adminRoutes(req, res, url, context) {
   // @llr LLR-SRV-DIR-025, LLR-SRV-DIR-026
   /** @param {string} id */
   function idleAccount(id) {
-    if ([...sipServer.dialogs.values()].some((d) => d.peers.some((p) => p.user === id))) {
+    // A push-wake INVITE owns both accounts before it becomes a SIP dialog.
+    if (
+      sipServer.appCalls?.busy(id) ||
+      [...sipServer.dialogs.values()].some((d) => d.peers.some((p) => p.user === id))
+    ) {
       throw httpError(409, "End this account's active call before changing or deleting it.");
     }
   }

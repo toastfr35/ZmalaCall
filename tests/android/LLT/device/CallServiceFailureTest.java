@@ -3,6 +3,7 @@
 // @environment native-sdk
 // @plan Use an application-context double that rejects foreground service startup. Attempt preparation
 // from hidden and visible states with an idle call session, and inspect ownership after denial.
+// Repeatedly acquire service wake ownership, then release it; check the same Android lock is reused.
 // @pass Hidden preparation never starts a service; denied visible startup fails without retained
 // foreground ownership, call, registration or configuration. No actual Android service is started.
 package org.zmala.phone;
@@ -26,6 +27,24 @@ public class CallServiceFailureTest {
         assertFalse(session.serviceRequested); assertNull(session.engine.call);
         assertFalse(session.engine.registered); assertNull(session.configuration);
       } catch (ReflectiveOperationException error) { throw new AssertionError(error); }
+    });
+  }
+  @Test public void repeatedStartsReleaseTheOnlyWakeLock() {
+    PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+      CallService service = new CallService();
+      try {
+        android.os.PowerManager power = PhoneFixture.INSTRUMENTATION.getTargetContext().getSystemService(android.os.PowerManager.class);
+        var field = CallService.class.getDeclaredField("wake"); field.setAccessible(true);
+        service.keepAwake(power);
+        android.os.PowerManager.WakeLock first = (android.os.PowerManager.WakeLock) field.get(service);
+        assertTrue(first.isHeld());
+        service.keepAwake(power); service.keepAwake(power);
+        assertSame(first, field.get(service));
+        service.releaseWake();
+        assertFalse(first.isHeld()); assertNull(field.get(service));
+        service.releaseWake();
+      } catch (ReflectiveOperationException error) { throw new AssertionError(error); }
+      finally { service.releaseWake(); }
     });
   }
 }

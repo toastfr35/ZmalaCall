@@ -328,7 +328,7 @@ export function renderCallbacks() {
         'p',
         callbackView === 'pending'
           ? 'No pending callback requests. Previous requests are in History.'
-          : 'No callback history yet. Completed, cancelled and expired requests appear here.',
+          : 'No callback history yet. Completed and cancelled requests appear here.',
         'muted',
       ),
     );

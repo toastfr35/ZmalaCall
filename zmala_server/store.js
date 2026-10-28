@@ -7,6 +7,7 @@ const { defaultState, lanAddress } = require('./defaults');
 const { own, accountId, validateGroup, autoAnswerFields } = require('./validation');
 const { terminalProfileFields } = require('./terminal-settings');
 const { AccountStore } = require('./accounts');
+const { ContactDirectory } = require('./contact-directory');
 const { migrate } = require('./migrations');
 const { readJson, writeJson } = require('./json-file');
 const { SnapshotFile } = require('./snapshot-file');
@@ -26,12 +27,7 @@ class Store extends AccountStore {
     this.secureCalls = loadSecureCalls();
     /** @type {InstanceType<typeof import('./snapshot-file').SnapshotFile> | undefined} */
     this.persistence = undefined;
-    // Stable derived views never contain reachability or callback state.
-    this.viewVersion = -1;
-    /** @type {Map<string, Set<string>>} */
-    this.permissions = new Map();
-    /** @type {Map<string, ReturnType<Store['buildContacts']>>} */
-    this.contactViews = new Map();
+    this.directory = new ContactDirectory(() => this.value);
     this.dir = dataDir;
     this.file = file;
     this.ringtoneUpload = false;
@@ -98,7 +94,8 @@ class Store extends AccountStore {
         proxy: this.secureCalls?.proxy() || `sip:${v.host}:${v.sip_port};transport=udp`,
       },
       ...(this.secureCalls ? { secure_calls: this.secureCalls.configuration(id) } : {}),
-      contacts: this.buildContacts(id)
+      contacts: this.directory
+        .contacts(id)
         .filter((c) => c.can_call || c.can_receive)
         .map((c) => ({ ...c, sip_uri: `sip:${c.id}@${v.host}` })),
     };
@@ -110,33 +107,9 @@ class Store extends AccountStore {
       ? Object.keys(this.value.users).find((id) => this.enrolledAccount(id)?.device_token === token)
       : undefined;
   }
-  // @llr LLR-SRV-DIR-030
   /** @param {unknown} from @param {unknown} to */
   permitted(from, to) {
-    const v = this.value;
-    return (
-      typeof from === 'string' &&
-      typeof to === 'string' &&
-      from !== to &&
-      own(v.users, from) &&
-      own(v.users, to) &&
-      this.derivedPermissions().get(from)?.has(to) === true
-    );
-  }
-  // @llr LLR-SRV-DIR-032
-  derivedPermissions() {
-    if (this.viewVersion !== this.value.configuration_version) {
-      this.permissions.clear();
-      this.contactViews.clear();
-      for (const group of Object.values(this.value.groups))
-        for (const from of group.members) {
-          const peers = this.permissions.get(from) || new Set();
-          for (const to of group.members) if (from !== to) peers.add(to);
-          this.permissions.set(from, peers);
-        }
-      this.viewVersion = this.value.configuration_version;
-    }
-    return this.permissions;
+    return this.directory.permitted(from, to);
   }
   /** @param {string} id */
   accountGroups(id) {
@@ -180,33 +153,7 @@ class Store extends AccountStore {
   /** @param {string} id */
   contacts(id) {
     this.requireTerminal(id);
-    this.derivedPermissions();
-    const contacts = this.contactViews.get(id) || this.buildContacts(id);
-    this.contactViews.set(id, contacts);
-    // Callers add live fields; never let them modify the shared stable view.
-    return contacts.map((contact) => ({ ...contact }));
-  }
-  // @llr LLR-SRV-DIR-031
-  /** @param {string} id */
-  buildContacts(id) {
-    const v = this.value,
-      collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
-    return Object.keys(v.users)
-      .filter((key) => key !== id)
-      .sort((a, b) => collator.compare(v.users[a].name, v.users[b].name) || a.localeCompare(b))
-      .map((key) => {
-        const u = v.users[key],
-          incoming = this.permitted(key, id);
-        // Retain the derived field for terminals already running the previous client.
-        return {
-          id: key,
-          name: u.name,
-          photo: u.photo || '',
-          can_call: this.permitted(id, key),
-          can_receive: incoming,
-          auto_answer: incoming && this.terminalAccount(id)?.auto_answer === true,
-        };
-      });
+    return this.directory.contacts(id);
   }
   // @llr LLR-SRV-CONFIG-022
   /** @param {string | null} [id] @returns {import('./types/contracts').TerminalConfiguration} */

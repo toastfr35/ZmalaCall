@@ -5,7 +5,6 @@ never cross the configuration worker thread.
 """
 import ctypes as C
 import logging
-import math
 import hashlib
 import hmac
 import time
@@ -413,38 +412,8 @@ class Engine(LinphoneAPI):
                      else 'unsupported', 'media': self.media_stats()}
 
     def media_stats(self):
-        result = {}
-        if self.call:
-            if not WINDOWS:
-                result['codecs'] = media_backend().codec_stats(self)
-            for kind, getter in [('audio', self.call_get_audio_stats), ('video', self.call_get_video_stats)]:
-                stats = getter(self.call)
-                if stats:
-                    result[kind] = {'download_kbps': self.call_stats_get_download_bandwidth(stats),
-                                    'upload_kbps': self.call_stats_get_upload_bandwidth(stats),
-                                    'jitter_buffer_ms': self.call_stats_get_jitter_buffer_size_ms(stats),
-                                    'round_trip_seconds': self.call_stats_get_round_trip_delay(stats),
-                                    'receiver_loss_percent': self.call_stats_get_receiver_loss_rate(stats),
-                                    'sender_loss_percent': self.call_stats_get_sender_loss_rate(stats)}
-                    self.call_stats_unref(stats)
-            for kind in ('audio', 'video'):
-                if kind in result:
-                    # SDK sentinel values mean unavailable, not negative latency/loss.
-                    result[kind] = {key: value for key, value in result[kind].items()
-                                    if math.isfinite(value) and 0 <= value <= 9007199254740991}
-            if 'video' in result:
-                params = self.call_get_current_params(self.call)
-                if params:
-                    result['video']['received_fps'] = self.call_params_get_received_framerate(params)
-                    result['video']['sent_fps'] = self.call_params_get_sent_framerate(params)
-                    for key in ('received_fps', 'sent_fps'):
-                        if not math.isfinite(result['video'][key]) or result['video'][key] < 0:
-                            del result['video'][key]
-                    for direction in ('sent', 'received'):
-                        size = getattr(self, 'call_params_get_'+direction+'_video_size')(params)
-                        if size.width > 0 and size.height > 0:
-                            result['video'][direction+'_resolution'] = [size.width, size.height]
-        return result
+        from zmala_terminal.common.media_diagnostics import media_stats
+        return media_stats(self, media_backend(), WINDOWS)
 
     def iterate(self):
         self.sync_speaker_mute()

@@ -1,7 +1,7 @@
 # @test T-LLT-044
 # @requirements LLR-TERM-COM-003, LLR-TERM-COM-006, LLR-TERM-COM-008, LLR-TERM-CONFIG-023, LLR-TERM-CONFIG-024, LLR-TERM-UI-020, LLR-TERM-UI-021, LLR-TERM-AUDIO-007, LLR-TERM-HISTORY-018, LLR-TERM-MAINT-016, LLR-TERM-MAINT-017
 # @environment portable
-# @plan Check one-second C20 setup retry versus five-second general failures. Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled-photo fencing and coalesced mixer writes. Bound the portrait queue and retry delay; exercise the real worker with cached, invalid and cancelled data. Gate reconfiguration during setup/calls and verify bounded authenticated HTTP requests and deactivation.
+# @plan Check one-second C20 setup retry versus five-second general failures. Inject failed/stale results into maintenance, configuration, photo and volume controllers with temporary storage and controlled worker threads; assert no command replay, revision/history isolation, resumable cleanup, cancelled/obsolete-photo fencing and removal of queued retired portraits and coalesced mixer writes. Bound the portrait queue and retry delay; exercise the real worker with cached, invalid and cancelled data. Gate reconfiguration during setup/calls and verify bounded authenticated HTTP requests and deactivation.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 # Authorization rejection (401/403) drops the result without retrying or rerunning the command.
 
@@ -140,7 +140,7 @@ class ReliabilityTests(unittest.TestCase):
                 cache = PhotoCache(directory, Mock(return_value=b'invalid'))
                 file = Path(directory)/name.lstrip('/'); file.parent.mkdir()
                 file.write_bytes(data if valid else b'stale')
-                cache.pending.append(name); cache.queued.add(name)
+                cache.pending.append(name); cache.queued.add(name); cache.wanted.add(name)
                 def wait():
                     cache.cancelled = True
                 with patch.object(cache.condition, 'wait', side_effect=wait), patch.object(photos.time, 'monotonic', return_value=100):
@@ -155,6 +155,30 @@ class ReliabilityTests(unittest.TestCase):
                     self.assertEqual(cache.retry[name], 160)
                     self.assertNotIn(name, cache.valid)
                 self.assertFalse(list(file.parent.glob('*.tmp')))
+
+    def test_replaced_contacts_drop_waiting_photos_and_late_publication(self):
+        with tempfile.TemporaryDirectory() as directory:
+            started, release = threading.Event(), threading.Event()
+            requested = []
+            def request(path):
+                requested.append(path)
+                if path == '/photos/old.png':
+                    started.set()
+                    self.assertTrue(release.wait(2))
+                return png()
+            cache = PhotoCache(directory, request)
+            try:
+                cache.schedule([{'photo': '/photos/old.png'}, {'photo': '/photos/queued.png'}])
+                self.assertTrue(started.wait(2))
+                cache.schedule([{'photo': '/photos/current.png'}])
+                release.set()
+                self.assertEqual(cache.completed.get(timeout=2), '/photos/current.png')
+                self.assertEqual(requested, ['/photos/old.png', '/photos/current.png'])
+                self.assertFalse((Path(directory) / 'photos/old.png').exists())
+                self.assertEqual(cache.valid, {'/photos/current.png'})
+            finally:
+                release.set(); cache.close(); cache.worker.join(2)
+            self.assertFalse(list(Path(directory).rglob('*.tmp')))
 
     def test_output_contract_counts_replacement_characters_and_json_expansion(self):
         for stdout, stderr in [(b'\0' * 65536, b''), (b'\xff' * 65536, b'error'),
