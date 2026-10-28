@@ -39,5 +39,7 @@ reviewed: null
 scope: Core
 text: |
   Administration and sign-in shall fit widths from 320 to 1920 CSS pixels without page-wide horizontal scrolling. Narrow account rows shall stack with labels. Dialogs shall permit vertical scrolling.
+  Supporting field instructions shall use at least 12 CSS pixels; action buttons
+  shall provide targets at least 44 CSS pixels high on desktop and narrow layouts.
 verification: |
   Measure actual browser layout at narrow, breakpoint and desktop widths and short heights with long content.

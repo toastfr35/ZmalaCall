@@ -250,11 +250,16 @@ REVISIONS = {
             'it once when the person is selected; a phone shows a still picture.',
         ],
         'In Terminals, choose native-language labels': [
-            'Open Terminals, choose the device and save its language and preferences. Call volume, '
-            'Ringtone volume and Button sounds volume are separate and use 5% steps. Device status '
-            'shows the remote’s battery and charger, and the C20’s connection and power when known.',
+            'Open Terminals, choose the device by its account name and change its preferences. '
+            'Call volume, Ringtone volume and Button sounds volume are separate and use 5% steps. '
+            'Remote & camera shows the remote’s battery and charger, and the C20’s connection and '
+            'power when known. The Save changes bar stays visible as you scroll. Unsaved settings '
+            'means your changes have not been applied; select Save changes to apply them.',
             'Open Setup to download its Wi-Fi and server QR documents. Give both privately to the '
             'person setting up that TV terminal, together with ZmalaTerminal-Guide.pdf.',
+            'Open Callbacks to see Pending requests first. Choose History under Show callbacks '
+            'to see completed, cancelled and expired requests. The counts show how many are in '
+            'each view. Cancel removes a pending request; looking at History changes nothing.',
         ],
         'To add ringtone choices,': [
             'In Terminals, open Ringtone. Preview plays on your computer. Add ringtones accepts audio '
@@ -271,6 +276,10 @@ REVISIONS = {
     },
 }
 
+
+# Also match retained guides already rewritten by an earlier generation.
+REVISIONS['server_prep.docx']['Open Terminals, choose the device'] = (
+    REVISIONS['server_prep.docx']['In Terminals, choose native-language labels'])
 
 def improve_readability(root):
     from docx import Document

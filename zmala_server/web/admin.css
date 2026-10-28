@@ -292,12 +292,12 @@ h3 {
   font-weight: 600;
 }
 small {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 code {
   font-family: Consolas, monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: #aab8cf;
   overflow-wrap: anywhere;
 }
@@ -315,7 +315,7 @@ code {
   stroke-linejoin: round;
 }
 .eyebrow {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 1.8px;
   color: var(--accent);
@@ -407,12 +407,12 @@ nav a.active:after {
   align-items: center;
   padding: 16px 7px 0;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 14px;
   color: #c6d0df;
 }
 .sidebar-footer small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   margin-top: 3px;
 }
 .admin-auth-controls {
@@ -453,7 +453,7 @@ main {
 }
 .page-heading > div > p:last-child {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   margin-top: 10px;
 }
 .page-heading .eyebrow {
@@ -476,10 +476,10 @@ main {
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 10px 15px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
-  min-height: 39px;
+  min-height: 44px;
 }
 .primary {
   background: #b3a2ff;
@@ -514,8 +514,8 @@ main {
 }
 .icon-button {
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -546,7 +546,7 @@ main {
   border-color: #65303d;
 }
 .text-link {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: #b3a2ff;
 }
@@ -566,7 +566,7 @@ main {
 .badge {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 550;
   line-height: 1.5;
   border: 1px solid #2c3648;
@@ -596,7 +596,7 @@ main {
   border-radius: 8px;
   margin-bottom: 20px;
   border: 1px solid;
-  font-size: 12px;
+  font-size: 14px;
 }
 .banner.error {
   color: #ffacb5;
@@ -624,7 +624,7 @@ main {
   gap: 16px;
 }
 .panel-heading p {
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 5px;
 }
 .panel-note {
@@ -634,7 +634,7 @@ main {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .panel-note .icon {
@@ -647,7 +647,7 @@ main {
   padding: 50px 25px;
   text-align: center;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 .empty-state > .icon {
   width: 32px;
@@ -684,7 +684,7 @@ main {
 }
 .signin-card > p {
   margin: 12px 0 24px;
-  font-size: 13px;
+  font-size: 14px;
 }
 .signin-card > button {
   width: 100%;
@@ -709,7 +709,7 @@ main {
   margin: 15px 0 10px;
 }
 .welcome-panel p {
-  font-size: 12px;
+  font-size: 14px;
   color: #abb6cd;
   max-width: 420px;
 }
@@ -745,7 +745,7 @@ main {
   display: flex;
   justify-content: space-between;
   color: #9baac1;
-  font-size: 11px;
+  font-size: 12px;
   gap: 8px;
 }
 .stat-heading .icon {
@@ -761,8 +761,8 @@ main {
   margin: 10px 0;
 }
 .stat-card small {
-  font-size: 10px;
-  color: #7989a4;
+  font-size: 12px;
+  color: var(--muted);
 }
 .overview-grid {
   display: grid;
@@ -779,7 +779,7 @@ main {
   gap: 15px;
   padding: 12px 0;
   border-bottom: 1px solid #222c3c;
-  font-size: 12px;
+  font-size: 14px;
 }
 .server-details > div:last-child {
   border-bottom: 0;
@@ -791,7 +791,7 @@ main {
 .server-details dd {
   margin: 0;
   font-family: Consolas, monospace;
-  font-size: 11px;
+  font-size: 12px;
   text-align: right;
   overflow-wrap: anywhere;
   color: #bfcae0;
@@ -820,12 +820,12 @@ main {
 }
 .list-row strong {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 550;
 }
 .list-row small {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 2px;
 }
 .avatar {
@@ -857,7 +857,7 @@ main {
   gap: 12px;
   padding: 14px 0;
   border-bottom: 1px solid #222c3c;
-  font-size: 12px;
+  font-size: 14px;
   color: #b5c1d7;
 }
 .event-row:last-child {
@@ -868,7 +868,7 @@ main {
   overflow-wrap: anywhere;
 }
 .event-row time {
-  font-size: 10px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: #7d8da7;
   white-space: nowrap;
@@ -889,7 +889,7 @@ main {
 }
 .table-toolbar > span {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .search-field {
@@ -910,7 +910,7 @@ main {
 }
 .table-toolbar select {
   width: 170px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .table-scroll {
   overflow: auto;
@@ -922,8 +922,8 @@ table {
   text-align: left;
 }
 th {
-  font-size: 10px;
-  color: #7c8ca7;
+  font-size: 12px;
+  color: var(--muted);
   letter-spacing: 0.3px;
   font-weight: 550;
   white-space: nowrap;
@@ -935,7 +935,7 @@ th {
 td {
   padding: 20px 25px;
   border-bottom: 1px solid #232c3b;
-  font-size: 12px;
+  font-size: 14px;
 }
 tbody tr:last-child td {
   border-bottom: 0;
@@ -952,12 +952,12 @@ tbody tr:last-child td {
 .person-cell strong {
   display: block;
   font-weight: 550;
-  font-size: 13px;
+  font-size: 14px;
 }
 .person-cell code {
   display: block;
   color: #7e90ae;
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 2px;
 }
 .accounts-table td.row-actions {
@@ -974,6 +974,12 @@ tbody tr:last-child td {
   gap: 8px;
   padding: 0 25px 23px;
   border-bottom: 1px solid var(--line);
+}
+
+/* @llr LLR-SRV-UI-013 */
+.callback-filter {
+  margin: 0 25px 20px;
+  max-width: 300px;
 }
 
 /* styles/forms.css */
@@ -1027,14 +1033,14 @@ dialog.compact {
 }
 label {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   color: #b8c6dc;
   font-weight: 500;
   margin-bottom: 19px;
 }
 label small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
   margin-top: 6px;
   color: #7f90ad;
@@ -1051,7 +1057,7 @@ select {
   color: #e1e9f8;
   margin-top: 7px;
   min-height: 41px;
-  font-size: 13px;
+  font-size: 14px;
 }
 input::placeholder {
   color: #647793;
@@ -1066,7 +1072,7 @@ select:focus {
   outline: 1px solid #a899dc;
 }
 input[type='file'] {
-  font-size: 11px;
+  font-size: 12px;
   padding: 10px;
 }
 input[type='file']::file-selector-button {
@@ -1089,7 +1095,7 @@ input[type='file']::file-selector-button {
   background: #1a2232;
   border-radius: 8px;
   color: #9baecb;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.65;
   margin: 18px 0;
 }
@@ -1107,7 +1113,7 @@ input[type='file']::file-selector-button {
   margin-bottom: 12px;
 }
 .compact > p.muted {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.8;
 }
 .credential-list {
@@ -1126,11 +1132,11 @@ input[type='file']::file-selector-button {
 }
 .credential-row small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   margin-bottom: 5px;
 }
 .credential-row code {
-  font-size: 12px;
+  font-size: 14px;
   color: #cedaf0;
 }
 .credential-feedback {
@@ -1141,7 +1147,7 @@ input[type='file']::file-selector-button {
   display: flex;
   gap: 10px;
   align-items: center;
-  font-size: 11px;
+  font-size: 12px;
 }
 .checkbox-row input {
   width: 15px;
@@ -1207,10 +1213,11 @@ input[type='file']::file-selector-button {
   min-width: 0;
 }
 .terminal-card .terminal-summary {
-  padding: 0;
-  border: 0;
-  margin-top: 12px;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  gap: 20px;
 }
 .terminal-dropdown {
   width: min(440px, 48%);
@@ -1253,11 +1260,11 @@ input[type='file']::file-selector-button {
 .terminal-serial span {
   display: block;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 8px;
 }
 .terminal-serial code {
-  font-size: 13px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 .terminal-setting-section {
@@ -1331,7 +1338,7 @@ input[type='file']::file-selector-button {
   transform: translateX(14px);
 }
 .terminal-help {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: normal;
   margin-top: 6px;
   color: var(--muted);
@@ -1356,10 +1363,10 @@ input[type='file']::file-selector-button {
   padding: 11px 16px;
   border-radius: 7px;
   list-style: none;
-  font-size: 12px;
+  font-size: 14px;
 }
 .terminal-setup summary::after {
-  content: ' ▾';
+  content: ' \25be';
 }
 .terminal-setup-menu {
   display: flex;
@@ -1408,6 +1415,51 @@ input[type='file']::file-selector-button {
   .terminal-tools {
     flex-wrap: wrap;
   }
+}
+
+/* @llr LLR-SRV-UI-017 */
+/* Overflow must remain visible so sticky saving follows the viewport. */
+.terminal-card {
+  overflow: visible;
+}
+.terminal-status-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 6px;
+}
+.terminal-status-group h3 {
+  flex-basis: 100%;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.terminal-media-intro {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.terminal-save-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 22px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 4px 12px #0002;
+}
+.terminal-save-state {
+  font-size: 12px;
+  color: var(--muted);
+}
+.terminal-settings-form[data-kind='devices'][data-dirty='true'] .terminal-save-state {
+  color: var(--accent);
+}
+.terminal-setting-section :is(input, select, button, summary) {
+  scroll-margin-top: 100px;
 }
 
 /* styles/responsive.css */
@@ -1679,7 +1731,7 @@ input[type='file']::file-selector-button {
     font-size: 21px;
   }
   .event-row time {
-    font-size: 9px;
+    font-size: 12px;
   }
 }
 
@@ -1702,7 +1754,8 @@ input[type='file']::file-selector-button {
 .terminal-settings-form .checkbox-help {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
-  gap: 0 10px;
+  gap: 8px 10px;
+  align-content: start;
 }
 .checkbox-help small {
   grid-column: 2;
@@ -1738,7 +1791,7 @@ input[type='file']::file-selector-button {
   .accounts-table td[data-label]:not(:first-child)::before {
     content: attr(data-label);
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
     margin-bottom: 6px;
   }

@@ -80,7 +80,7 @@ export function buildMediaFields(devices, media, id) {
   const hardware = el(
     'p',
     'Nuroum C20 supplies the camera, microphone and speaker automatically. If it is waking up, the terminal waits and retries.',
-    'help',
+    'help terminal-media-intro',
   );
   const resolution = terminalSelect(
     devices,

@@ -28,10 +28,11 @@
   min-width: 0;
 }
 .terminal-card .terminal-summary {
-  padding: 0;
-  border: 0;
-  margin-top: 12px;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  gap: 20px;
 }
 .terminal-dropdown {
   width: min(440px, 48%);
@@ -74,11 +75,11 @@
 .terminal-serial span {
   display: block;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 8px;
 }
 .terminal-serial code {
-  font-size: 13px;
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
 .terminal-setting-section {
@@ -152,7 +153,7 @@
   transform: translateX(14px);
 }
 .terminal-help {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: normal;
   margin-top: 6px;
   color: var(--muted);
@@ -177,10 +178,10 @@
   padding: 11px 16px;
   border-radius: 7px;
   list-style: none;
-  font-size: 12px;
+  font-size: 14px;
 }
 .terminal-setup summary::after {
-  content: ' ▾';
+  content: ' \25be';
 }
 .terminal-setup-menu {
   display: flex;
@@ -229,4 +230,49 @@
   .terminal-tools {
     flex-wrap: wrap;
   }
+}
+
+/* @llr LLR-SRV-UI-017 */
+/* Overflow must remain visible so sticky saving follows the viewport. */
+.terminal-card {
+  overflow: visible;
+}
+.terminal-status-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 6px;
+}
+.terminal-status-group h3 {
+  flex-basis: 100%;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.terminal-media-intro {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.terminal-save-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 22px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 4px 12px #0002;
+}
+.terminal-save-state {
+  font-size: 12px;
+  color: var(--muted);
+}
+.terminal-settings-form[data-kind='devices'][data-dirty='true'] .terminal-save-state {
+  color: var(--accent);
+}
+.terminal-setting-section :is(input, select, button, summary) {
+  scroll-margin-top: 100px;
 }

@@ -214,6 +214,8 @@ function callbackEmailStatus(request) {
   return `Email reminder ${new Date(request.email_due_at).toLocaleString()}.`;
 }
 // @llr LLR-SRV-CALLBACK-016
+let callbackView = 'pending';
+// @llr LLR-SRV-CALLBACK-016
 export function renderCallbacks() {
   $('page-actions').replaceChildren();
   const settings = state.model.callback_settings,
@@ -253,7 +255,30 @@ export function renderCallbacks() {
       'Calls always start manually. ZmalaPhone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
     ),
     list = el('div', null, 'registration-list');
-  for (const request of state.model.callbacks || []) {
+  const requests = state.model.callbacks || [];
+  const filter = el('label', 'Show callbacks', 'callback-filter');
+  const select = el('select');
+  for (const [value, label] of [
+    ['pending', 'Pending'],
+    ['history', 'History'],
+  ]) {
+    const count = requests.filter(
+      (item) => (item.status === 'pending') === (value === 'pending'),
+    ).length;
+    const option = el('option', `${label} (${count})`);
+    option.value = value;
+    select.append(option);
+  }
+  select.value = callbackView;
+  select.onchange = () => {
+    callbackView = select.value;
+    renderCallbacks().focus();
+  };
+  filter.append(select);
+  p.append(filter);
+  for (const request of requests.filter(
+    (item) => (item.status === 'pending') === (callbackView === 'pending'),
+  )) {
     const row = el('div', null, 'list-row'),
       description = el('div'),
       source = state.model.users[request.from] || { name: request.from_name, type: 'terminal' };
@@ -261,7 +286,7 @@ export function renderCallbacks() {
       el('strong', `${request.from_name} → ${request.to_name}`),
       el(
         'small',
-        `Requested ${new Date(request.created_at).toLocaleString()} · Remove ${new Date(request.expires_at).toLocaleString()}`,
+        `Requested ${new Date(request.created_at).toLocaleString()}${request.status === 'pending' ? ` · Expires ${new Date(request.expires_at).toLocaleString()}` : ''}`,
       ),
     );
     if (request.status === 'pending')
@@ -301,12 +326,15 @@ export function renderCallbacks() {
     list.append(
       el(
         'p',
-        'No callback requests yet. Request a callback from a contact in ZmalaPhone, or choose an offline person on a terminal and press green twice.',
+        callbackView === 'pending'
+          ? 'No pending callback requests. Previous requests are in History.'
+          : 'No callback history yet. Completed, cancelled and expired requests appear here.',
         'muted',
       ),
     );
   p.append(list);
-  setView(policy, p);
+  setView(p, policy);
+  return select;
 }
 /** @param {number} hours */
 function callbackHours(hours) {
