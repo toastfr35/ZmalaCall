@@ -529,6 +529,12 @@ main {
   width: 17px;
   height: 17px;
 }
+/* @llr LLR-SRV-UI-013 */
+.icon-button[aria-label^='Edit'] .icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
 .icon-button:hover {
   background: #242e40;
   border-color: #354159;
