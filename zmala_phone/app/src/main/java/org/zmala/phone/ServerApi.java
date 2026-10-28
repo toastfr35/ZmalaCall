@@ -20,10 +20,11 @@ public final class ServerApi {
             new String(get(enrollment, "/api/app/config", 262144), StandardCharsets.UTF_8)));
   }
 
+  // @llr LLR-AND-ENROLL-002
   public static byte[] photo(Enrollment enrollment, String path) throws Exception {
-    if (!path.matches("/photos/[a-f0-9]+\\.(png|jpg)"))
+    if (!path.matches("/photos/[a-f0-9]+\\.(png|jpg|gif)"))
       throw new IllegalArgumentException("Invalid photo.");
-    return get(enrollment, path, 2097152);
+    return get(enrollment, path, path.endsWith(".gif") ? 16777216 : 2097152);
   }
 
   private static byte[] get(Enrollment enrollment, String path, int limit) throws Exception {

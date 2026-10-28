@@ -6,7 +6,7 @@ import urllib.request
 from pathlib import Path
 from zmala_terminal.common.config_validation import validate
 from zmala_terminal.common.json_storage import write_json
-from zmala_terminal.common.photo_cache import PhotoCache, MAX_BYTES
+from zmala_terminal.common.photo_cache import PhotoCache, MAX_BYTES, MAX_GIF_BYTES
 from zmala_terminal.common.ringtones import RingtoneCache
 
 from zmala_terminal.common.paths import ROOT as ROOT
@@ -73,8 +73,9 @@ class Configuration:
             headers['Content-Type'] = 'application/json'
         request = urllib.request.Request(self.bootstrap['server_url'] + route, headers=headers, data=data)
         with self.opener.open(request, timeout=4) as response:
-            data = response.read(MAX_BYTES + 1)
-            if len(data) > MAX_BYTES:
+            limit = MAX_GIF_BYTES if route.startswith('/photos/') and route.endswith('.gif') else MAX_BYTES
+            data = response.read(limit + 1)
+            if len(data) > limit:
                 raise ValueError('Response is too large')
             return data
 

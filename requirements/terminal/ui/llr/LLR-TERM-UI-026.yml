@@ -1,0 +1,24 @@
+active: true
+area: User interface and language
+derived: false
+header: Single-play animated account portraits
+level: 61.0
+links:
+- HLR-TERM-UI-012: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/portrait_animation.py
+  type: file
+- path: zmala_terminal/common/ui/carousel.py
+  type: file
+- path: tests/terminal/LLT/test_portrait_animation.py
+  type: file
+reviewed: null
+scope: Core
+text: 'A downloaded GIF portrait shall play once when its contact becomes the settled selected carousel card, then hold its final frame until selection changes. Reselection shall replay it. Navigation, settings, setup and call transitions shall stop playback; calls and closing shall clear animation images. One background worker shall decode and composite bounded GIFs; Tk image creation shall occur on the UI thread in batches of at most four. Retained animation pixel payload shall not exceed 64 MiB. Only the selected portrait canvas image shall change during playback. Missing/invalid images shall retain the normal static or initials fallback; downloading a missing file shall allow subsequent playback.
+
+  '
+verification: 'Use synthetic multi-frame GIFs to assert one completion, final frame hold, replay after reselection, navigation/call cancellation, bounded cache eviction and missing-file retry. Render a real selected card in an isolated Tk display and inspect final pixels across a redraw and state transitions.
+
+  '

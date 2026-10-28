@@ -35,7 +35,9 @@ function validateGroup(update, users) {
 }
 /** @param {unknown} photo @returns {photo is string} */
 function validPhoto(photo) {
-  return typeof photo === 'string' && (!photo || /^\/photos\/[a-f0-9]+\.(png|jpg)$/.test(photo));
+  return (
+    typeof photo === 'string' && (!photo || /^\/photos\/[a-f0-9]+\.(png|jpg|gif)$/.test(photo))
+  );
 }
 /** @param {import('./types/contracts').JsonObject} update
  * @returns {import('./types/contracts').AccountFields} */

@@ -85,7 +85,7 @@ def validate_contacts(contacts, sip):
         if c['auto_answer'] and not c['can_receive']:
             raise ValueError('Invalid auto-answer permission')
         if c.get('photo') and (not isinstance(c['photo'], str) or
-                              not re.fullmatch(r'/photos/[a-f0-9]+\.(png|jpg)', c['photo'])):
+                              not re.fullmatch(r'/photos/[a-f0-9]+\.(png|jpg|gif)', c['photo'])):
             raise ValueError('Invalid photo path')
 
 

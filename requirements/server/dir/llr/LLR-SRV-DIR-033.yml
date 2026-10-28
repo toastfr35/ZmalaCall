@@ -1,8 +1,9 @@
 active: true
 area: Accounts, groups and portraits
 derived: false
-header: |
-  Picture input bounds
+header: 'Picture input bounds
+
+  '
 level: 31.0
 links:
 - HLR-SRV-DIR-020: Wi28sATQzGIkhny_fldDAIC2B6bdZPh4gIebLGufpqY=
@@ -17,9 +18,19 @@ references:
   type: file
 - path: zmala_server/photos.js
   type: file
+- path: zmala_server/portrait-gif.js
+  type: file
+- path: zmala_server/web/admin-shared.js
+  type: file
+- path: tests/server/LLT/portrait-gif.test.js
+  type: file
+- path: tests/server/LLT/admin-view.test.js
+  type: file
 reviewed: null
 scope: Core
-text: |
-  Authenticated portrait uploads shall accept JPEG or PNG of at most 2 MiB. Input dimensions shall not exceed 8192 pixels per side or 16 million pixels. Header checks shall precede conversion.
-verification: |
-  Submit valid images and malformed headers, excessive bytes and excessive dimensions. Check rejected images start no converter.
+text: 'Authenticated portrait uploads shall accept PNG/JPEG of at most 2 MiB. They shall also accept square GIFs of 480–720 pixels per side, at most 16 MiB, 2–72 frames, frame delays of 20–2000 ms and total duration at most 5 seconds (absent/zero delays normalize to 100 ms). The admin account editor shall show these limits, require all new PNG/JPEG/GIF portraits to be square, 480–720 pixels per side and check file format, bytes and dimensions before upload. The server shall independently inspect headers and GIF block structure before conversion and reject malformed or excessive input.
+
+  '
+verification: 'Submit valid PNG/JPEG/GIF, malformed headers/blocks, excessive bytes, frames, delays, duration and dimensions. Check invalid data starts no converter. In Chromium, inspect guidance and verify wrong GIF dimensions produce an editor-local error while valid dimensions show a preview.
+
+  '

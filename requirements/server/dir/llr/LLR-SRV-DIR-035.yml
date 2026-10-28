@@ -1,8 +1,9 @@
 active: true
 area: Accounts, groups and portraits
 derived: false
-header: |
-  Complete portrait publication
+header: 'Complete portrait publication
+
+  '
 level: 33.0
 links:
 - HLR-SRV-DIR-020: Wi28sATQzGIkhny_fldDAIC2B6bdZPh4gIebLGufpqY=
@@ -17,9 +18,13 @@ references:
   type: file
 - path: zmala_server/photos.js
   type: file
+- path: tests/server/LLT/portrait-gif.test.js
+  type: file
 reviewed: null
 scope: Core
-text: |
-  Linux conversion shall use Python and Pillow to produce PNG output of at most 480 pixels per side. It shall preserve aspect ratio and apply EXIF orientation. Publication shall use an immutable content-derived filename and atomic replacement. Failure shall not expose partial output.
-verification: |
-  Convert representative aspect ratios and inspect pixels. Inject converter and rename failure and check output and temporary-file cleanup.
+text: 'Linux conversion shall use Python and Pillow to produce PNG for static input or GIF for animated input, at most 480 pixels per side. Static conversion shall preserve aspect ratio and apply EXIF orientation. GIF conversion shall composite partial/disposal frames, normalize playback to two seconds at 20 fps (40 timeline frames), preserving the first and last source frames, and omit repeat metadata. Identical consecutive frames may share an encoded GIF frame with their combined 50 ms slot durations; output shall remain within the accepted frame, byte and duration bounds. Publication shall use an immutable content-derived filename and atomic replacement. Failure shall not expose partial output.
+
+  '
+verification: 'Convert representative aspect ratios and inspect pixels. Inject converter and rename failure and check output and temporary-file cleanup.
+
+  '

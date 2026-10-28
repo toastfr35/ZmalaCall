@@ -3,6 +3,7 @@ import struct
 import zlib
 
 MAX_BYTES = 2 * 1024 * 1024
+MAX_GIF_BYTES = 16 * 1024 * 1024
 MAX_SIDE = 4096
 MAX_PIXELS = 4 * 1024 * 1024
 PNG = b'\x89PNG\r\n\x1a\n'
@@ -15,8 +16,16 @@ def checked_size(width, height):
     return width, height
 
 
+# @llr LLR-TERM-UI-020
 def image_size(data):
     """Header validation is a size guard, not proof that compressed pixels decode."""
+    if data[:6] in (b'GIF87a', b'GIF89a'):
+        if len(data) < 14 or len(data) > MAX_GIF_BYTES:
+            raise ValueError('GIF file exceeds the decoding limit')
+        width, height = struct.unpack_from('<HH', data, 6)
+        if width != 480 or height != 480:
+            raise ValueError('Published GIF must be 480 × 480 pixels')
+        return width, height
     if not data or len(data) > MAX_BYTES:
         raise ValueError('Portrait file exceeds the decoding limit')
     if data.startswith(PNG):
@@ -60,7 +69,17 @@ def check_file(path):
     """Bound reads as well as pixels, including files from an older local cache."""
     with open(path, 'rb') as source:
         try:
-            return image_size(source.read(MAX_BYTES + 1))
+            data = source.read(MAX_GIF_BYTES + 1)
+            size = image_size(data)
+            if data[:3] == b'GIF':
+                # Read only the first frame header here; full animation validation
+                # belongs to the background photo worker, never the UI thread.
+                import io
+                from PIL import Image
+                with Image.open(io.BytesIO(data)) as gif:
+                    if gif.size != (480, 480):
+                        raise ValueError('Invalid animated portrait')
+            return size
         except ValueError as error:
             # Existing image callers handle optional missing/invalid files as OSError.
             raise OSError(str(error)) from error

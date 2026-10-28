@@ -199,8 +199,14 @@
               >Account picture (optional)<input
                 id="edit-photo"
                 type="file"
-                accept="image/png,image/jpeg"
-              /><small>PNG or JPEG, up to 2 MB. Shown in terminal contact selectors.</small></label
+                accept="image/png,image/jpeg,image/gif"
+                aria-describedby="portrait-help"
+              /><small id="portrait-help"
+                >Square pictures only: 480 × 480 to 720 × 720 pixels. PNG/JPG: up to 2 MiB. Animated
+                GIF: up to 16 MiB, 2–72 source frames and 5 seconds (20–2000 ms per source frame).
+                Animations are prepared as 2 seconds at 20 fps (40 playback frames). Terminals play
+                once when selected; phones show a still picture.</small
+              ></label
             ><label class="checkbox-row"
               ><input id="edit-remove-photo" type="checkbox" />Remove current picture</label
             >

@@ -1,5 +1,5 @@
 // Account list, editing and connection details. Device configuration belongs on the Terminals page.
-import { accountPicture, emailAddresses } from './admin-shared.js';
+import { accountPicture, validatePicture, emailAddresses } from './admin-shared.js';
 import { $, state } from './admin-state.js';
 import {
   el,
@@ -182,9 +182,19 @@ export function openAccount(id = '') {
 $('edit-id').oninput = () => {
   $('rename-help').hidden = !state.editingId || $('edit-id').value === state.editingId;
 };
-$('edit-photo').onchange = () => {
+$('edit-photo').onchange = async () => {
   const file = $('edit-photo').files?.[0];
   if (!file) return;
+  const generation = accountGeneration;
+  try {
+    await validatePicture(file);
+  } catch (error) {
+    if (generation === accountGeneration && $('edit-photo').files?.[0] === file)
+      message('account-error', error instanceof Error ? error.message : String(error));
+    return;
+  }
+  if (generation !== accountGeneration || $('edit-photo').files?.[0] !== file) return;
+  message('account-error', '');
   if (state.accountPreviewUrl) URL.revokeObjectURL(state.accountPreviewUrl);
   state.accountPreviewUrl = URL.createObjectURL(file);
   const image = el('img');
