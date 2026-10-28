@@ -11,12 +11,12 @@
 - [ ] Raise Android version, run checks, review and create PR; await Verify before merge.
 - [ ] Replace private launch hooks with the supported runtime and verify both terminals.
 
-Upload design: PNG/JPEG retain their existing 2 MiB and 16-megapixel/8192-side
-bounds, with square 480 × 480 recommended. GIF input is square 480–1024 pixels,
-up to 16 MiB, 2–72 frames and 5 seconds, with frame delays 20–2000 ms. Conversion
-normalizes GIF frames to 480 × 480 and strips repeat metadata. The terminal plays
-once independently of GIF repeat settings. Existing static portrait backups remain
-valid. No personal portraits or generated family media enter the public repository.
+Upload design: all new PNG/JPEG/GIF portraits are square, 480–720 pixels per
+side. PNG/JPEG are at most 2 MiB; GIF sources at most 16 MiB, 2–72 frames and
+5 seconds (20–2000 ms delays). The server prepares 480 × 480 GIFs with a two-second,
+20 fps timeline (40 playback slots), preserving first/last poses; identical adjacent
+frames may be combined by GIF encoding. Phone portraits remain static. Historical
+static portrait backups remain valid. No personal media is published in the repository.
 
 
 Local verification: lint and requirements report pass; 173 JavaScript LLT pass

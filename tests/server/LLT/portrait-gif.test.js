@@ -56,3 +56,26 @@ test('GIF publication preserves format and shares duplicate conversion', async (
     await fs.rm(dir, { recursive: true, force: true });
   }
 });
+
+test('all new portraits require a square 480–720 canvas while legacy header inspection remains compatible', async () => {
+  const { checkDimensions } = require('../../../zmala_server/photos');
+  const header = Buffer.alloc(33);
+  Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]).copy(header);
+  header.write('IHDR', 12);
+  for (const [w, h] of [
+    [479, 479],
+    [480, 481],
+    [721, 721],
+    [1024, 1024],
+  ]) {
+    header.writeUInt32BE(w, 16);
+    header.writeUInt32BE(h, 20);
+    checkDimensions(header, 'png');
+    assert.throws(() => checkDimensions(header, 'png', true), /square/);
+  }
+  for (const side of [480, 600, 720]) {
+    header.writeUInt32BE(side, 16);
+    header.writeUInt32BE(side, 20);
+    checkDimensions(header, 'png', true);
+  }
+});

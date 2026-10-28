@@ -28,7 +28,7 @@ references:
   type: file
 reviewed: null
 scope: Core
-text: 'Authenticated portrait uploads shall accept PNG/JPEG of at most 2 MiB, 8192 pixels per side and 16 million pixels. They shall also accept square GIFs of 480–1024 pixels per side, at most 16 MiB, 2–72 frames, frame delays of 20–2000 ms and total duration at most 5 seconds (absent/zero delays normalize to 100 ms). The admin account editor shall show these limits, recommend square 480 × 480 portraits and check file format, bytes and dimensions before upload. The server shall independently inspect headers and GIF block structure before conversion and reject malformed or excessive input.
+text: 'Authenticated portrait uploads shall accept PNG/JPEG of at most 2 MiB. They shall also accept square GIFs of 480–720 pixels per side, at most 16 MiB, 2–72 frames, frame delays of 20–2000 ms and total duration at most 5 seconds (absent/zero delays normalize to 100 ms). The admin account editor shall show these limits, require all new PNG/JPEG/GIF portraits to be square, 480–720 pixels per side and check file format, bytes and dimensions before upload. The server shall independently inspect headers and GIF block structure before conversion and reject malformed or excessive input.
 
   '
 verification: 'Submit valid PNG/JPEG/GIF, malformed headers/blocks, excessive bytes, frames, delays, duration and dimensions. Check invalid data starts no converter. In Chromium, inspect guidance and verify wrong GIF dimensions produce an editor-local error while valid dimensions show a preview.

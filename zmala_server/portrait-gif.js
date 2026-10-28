@@ -2,7 +2,7 @@
 'use strict';
 const MAX_GIF_BYTES = 16 * 1024 * 1024;
 const GIF_RULES =
-  'GIF must be square, 480–1024 pixels per side, 2–72 frames and at most 5 seconds (up to 16 MiB).';
+  'GIF must be square, 480–720 pixels per side, 2–72 frames and at most 5 seconds (up to 16 MiB).';
 // @llr LLR-SRV-DIR-033
 /** @param {Buffer} data */
 function checkGif(data) {
@@ -17,7 +17,7 @@ function checkGif(data) {
     invalid();
   const width = data.readUInt16LE(6),
     height = data.readUInt16LE(8);
-  if (width !== height || width < 480 || width > 1024) invalid();
+  if (width !== height || width < 480 || width > 720) invalid();
   let offset = 13 + (data[10] & 128 ? 3 * 2 ** ((data[10] & 7) + 1) : 0);
   let frames = 0,
     duration = 0,

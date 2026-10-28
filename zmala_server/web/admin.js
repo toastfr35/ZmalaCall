@@ -353,10 +353,8 @@ async function validatePicture(file) {
     });
     const w = image.naturalWidth,
       h = image.naturalHeight;
-    if (gif && (w !== h || w < 480 || w > 1024))
-      throw Error(`GIF is ${w} × ${h}. Choose a square GIF, 480–1024 pixels per side.`);
-    if (!gif && (!w || !h || w > 8192 || h > 8192 || w * h > 16000000))
-      throw Error('PNG/JPG must be at most 8192 pixels per side and 16 megapixels.');
+    if (w !== h || w < 480 || w > 720)
+      throw Error(`Picture is ${w} × ${h}. Choose a square image, 480–720 pixels per side.`);
   } finally {
     URL.revokeObjectURL(url);
   }

@@ -24,7 +24,7 @@ test(
     };
     const bytes = execFileSync('python3', [
       '-c',
-      "from PIL import Image; import sys; Image.new('RGB',(960,480),(23,119,201)).save(sys.stdout.buffer,format='PNG')",
+      "from PIL import Image; import sys; Image.new('RGB',(720,720),(23,119,201)).save(sys.stdout.buffer,format='PNG')",
     ]);
     const upload = (body) => fetch(fixture.base + '/api/photos', { method: 'POST', headers, body });
     const responses = await Promise.all(Array.from({ length: 6 }, () => upload(bytes)));
@@ -48,7 +48,7 @@ test(
       ).toString(),
     );
     assert.deepEqual(decoded, [
-      [480, 240],
+      [480, 480],
       [23, 119, 201],
     ]);
     assert.equal((await upload(Buffer.from('not an image'))).status, 400);
@@ -94,12 +94,12 @@ test(
         'python3',
         [
           '-c',
-          "from PIL import Image; import sys,io,json; im=Image.open(io.BytesIO(sys.stdin.buffer.read())); print(json.dumps([im.size,im.n_frames,'loop' in im.info]))",
+          "from PIL import Image; import sys,io,json; im=Image.open(io.BytesIO(sys.stdin.buffer.read())); times=[]; [(im.seek(i),times.append(im.info.get('duration',0))) for i in range(im.n_frames)]; print(json.dumps([im.size,im.n_frames,'loop' in im.info,sum(times)]))",
         ],
         { input: bytes },
       ),
     );
-    assert.deepEqual(decoded, [[480, 480], 2, false]);
+    assert.deepEqual(decoded, [[480, 480], 2, false, 2000]);
     const created = await fetch(fixture.base + '/api/users', {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },

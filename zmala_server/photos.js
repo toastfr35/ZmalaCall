@@ -13,8 +13,8 @@ const PNG_HEADER = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
 // @llr LLR-SRV-DIR-033
 /** Inspect dimensions before asking the native converter to decode pixels.
- * @param {Buffer} bytes @param {string} extension */
-function checkDimensions(bytes, extension) {
+ * @param {Buffer} bytes @param {string} extension @param {boolean} [upload] */
+function checkDimensions(bytes, extension, upload = false) {
   if (extension === 'gif') return checkGif(bytes);
   let width = 0,
     height = 0;
@@ -41,6 +41,8 @@ function checkDimensions(bytes, extension) {
   }
   if (!width || !height || width > 8192 || height > 8192 || width * height > 16000000)
     throw Error('Choose a photo up to 16 megapixels and 8192 pixels per side.');
+  if (upload && (width !== height || width < 480 || width > 720))
+    throw Error('Portrait must be square, 480–720 pixels per side.');
 }
 
 class PhotoStore {
@@ -77,7 +79,7 @@ class PhotoStore {
         throw Object.assign(Error('Static pictures must be at most 2 MiB.'), { status: 413 });
       if (!extension)
         throw Error('Choose a PNG or JPEG photo (up to 2 MiB), or an animated GIF (up to 16 MiB).');
-      checkDimensions(bytes, extension);
+      checkDimensions(bytes, extension, true);
       const key = digest(bytes);
       let operation = this.converting.get(key);
       if (!operation) {

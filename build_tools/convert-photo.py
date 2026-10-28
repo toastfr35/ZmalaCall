@@ -21,8 +21,8 @@ def convert(source, destination):
 # @llr LLR-SRV-DIR-033, LLR-SRV-DIR-035
 def convert_gif(image, destination):
     """Composite disposal/partial frames before resizing; omit repeat metadata."""
-    if image.width != image.height or not 480 <= image.width <= 1024:
-        raise ValueError('GIF must be square, 480–1024 pixels per side')
+    if image.width != image.height or not 480 <= image.width <= 720:
+        raise ValueError('GIF must be square, 480–720 pixels per side')
     frames, durations = [], []
     for index in range(73):
         try:
@@ -40,12 +40,23 @@ def convert_gif(image, destination):
         durations.append(delay)
     if len(frames) < 2:
         raise ValueError('Choose an animated GIF with at least two frames')
-    frames[0].save(destination, format='GIF', save_all=True, append_images=frames[1:],
-                   duration=durations, disposal=2, optimize=False)
+    # Standardize every accepted source to 40 timeline frames over two seconds.
+    # GIF may combine identical adjacent frames; their 50 ms slots remain intact.
+    total = sum(durations)
+    timeline, source_index, boundary = [], 0, durations[0]
+    for index in range(40):
+        position = min(total - 1, index * total / 40)
+        while position >= boundary and source_index < len(frames) - 1:
+            source_index += 1
+            boundary += durations[source_index]
+        timeline.append(frames[source_index])
+    timeline[-1] = frames[-1]  # Always finish on the supplied resting pose.
+    timeline[0].save(destination, format='GIF', save_all=True, append_images=timeline[1:],
+                     duration=50, disposal=2, optimize=False)
     if Path(destination).stat().st_size > 16 * 1024 * 1024:
         raise ValueError('Converted GIF exceeds 16 MiB')
     with Image.open(destination) as output:
-        if not 2 <= output.n_frames <= 72:
+        if not 2 <= output.n_frames <= 40:
             raise ValueError('GIF must contain at least two distinct frames')
         for index in range(output.n_frames):
             output.seek(index)

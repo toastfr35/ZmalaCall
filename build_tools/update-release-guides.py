@@ -507,15 +507,16 @@ def update_animated_portrait_guides():
     """Explain generic portrait uploads and selected-card playback in retained guides."""
     additions = {
         'server_prep.docx': ('In Accounts, create a Terminal account',
-            'For an account portrait, choose PNG/JPG (up to 2 MiB, 8192 pixels per side and '
-            '16 megapixels; square 480 × 480 recommended), or an animated GIF. GIFs must '
-            'be square, 480 × 480 to 1024 × 1024 pixels, up to 16 MiB, 2–72 frames and '
-            '5 seconds, with frame delays of 20–2000 ms. The account editor checks dimensions '
-            'and shows an error if the picture does not fit. The server checks it again. '
-            'GIFs play once when selected on a terminal, then stay still; phones show a still picture.'),
+            'For an account portrait, choose PNG/JPG (up to 2 MiB) or an animated GIF '
+            '(up to 16 MiB). All new pictures must be square, 480 × 480 to 720 × 720 pixels. '
+            'GIF sources may have 2–72 frames and last up to 5 seconds, with frame delays '
+            'of 20–2000 ms. The server prepares a two-second animation at 20 fps '
+            '(40 playback frames). The account editor checks dimensions and shows an '
+            'error if the picture does not fit. The server checks it again. Terminals '
+            'play it once when selected, then stay still; phones show a still picture.'),
         'terminal_use.docx': ('Press left or right until their portrait',
             'If your helper supplied an animated portrait, it plays once when you select '
-            'that person, then stays still. Move away and back to see it again. '
+            'that person for two seconds, then stays still. Move away and back to see it again. '
             'Animation stops when you navigate or start a call.')}
     for filename, (anchor_text, text) in additions.items():
         path = ROOT / 'docs' / filename

@@ -1,7 +1,7 @@
 # @test S-LLT-011
 # @requirements LLR-SRV-DIR-033, LLR-SRV-DIR-035
 # @environment portable
-# @plan Convert synthetic portraits using the real function and command entrypoint. Inspect bounded PNG dimensions, preserved aspect ratio, EXIF orientation and RGBA output. Assert excessive decoded dimensions are rejected before output. Convert a looping GIF and assert composited 480px frames, timings and removal of repeat metadata; reject invalid duration, counts and canvas dimensions.
+# @plan Convert synthetic portraits using the real function and command entrypoint. Inspect bounded PNG dimensions, preserved aspect ratio, EXIF orientation and RGBA output. Assert excessive decoded dimensions are rejected before output. Convert a looping GIF and assert composited 480px frames, two-second 20 fps timeline and removal of repeat metadata; reject invalid duration, counts and canvas dimensions.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Exercise the Linux converter with fixture images; no live account assets."""
@@ -69,7 +69,7 @@ class PhotoConversionTests(unittest.TestCase):
                 for index, color in enumerate(((255, 0, 0), (0, 0, 255), (0, 128, 0))):
                     result.seek(index)
                     self.assertEqual(result.convert('RGB').getpixel((240, 240)), color)
-                    self.assertEqual(result.info['duration'], (index+1)*100)
+                    self.assertEqual(result.info['duration'], (350,650,1000)[index])
             for size, count, delay in [((479,479),2,100),((480,481),2,100),((480,480),1,100),((480,480),3,2000)]:
                 images=[Image.new('RGB', size, (i*20,0,0)) for i in range(count)]
                 images[0].save(source,save_all=True,append_images=images[1:],duration=delay)
