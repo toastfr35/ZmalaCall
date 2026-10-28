@@ -1,7 +1,7 @@
 // @test S-LLT-027
-// @requirements LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015, LLR-SRV-CONFIG-018
+// @requirements LLR-SRV-DIR-033, LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015, LLR-SRV-CONFIG-018
 // @environment display
-// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Verify fixed C20 media information without camera, microphone or speaker selectors. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation.
+// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Verify fixed C20 media information without camera, microphone or speaker selectors. Check GIF guidance and first-frame dimensions against accepted and rejected synthetic files. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation.
 // @pass All computed layout and interaction assertions must pass against the mocked API; no live service or account is changed.
 
 'use strict';
@@ -150,6 +150,21 @@ test('admin component fits phones and desktop and preserves modal drafts', async
   const dialog = page.locator('#account-dialog');
   assert.equal(await dialog.evaluate((el) => getComputedStyle(el).overflowY), 'auto');
   assert.ok((await dialog.boundingBox()).height <= 640);
+  assert.match(await page.locator('#portrait-help').innerText(), /480 × 480/);
+  assert.match(await page.locator('#edit-photo').getAttribute('accept'), /image\/gif/);
+  const { gif } = require('../../support/server/portrait-fixture');
+  const invalid = gif();
+  invalid.writeUInt16LE(479, 6);
+  await page
+    .locator('#edit-photo')
+    .setInputFiles({ name: 'wrong.gif', mimeType: 'image/gif', buffer: invalid });
+  await page.locator('#account-error').filter({ hasText: '479 × 480' }).waitFor();
+  await page
+    .locator('#edit-photo')
+    .setInputFiles({ name: 'portrait.gif', mimeType: 'image/gif', buffer: gif() });
+  await page.locator('#account-picture-preview img').waitFor();
+  assert.equal(await page.locator('#account-error').innerText(), '');
+  await page.locator('#edit-photo').setInputFiles([]);
   await page.locator('#account-save').click();
   await page.getByText('Fixture conflict: reopen editor', { exact: true }).waitFor();
   assert.equal(await page.locator('#edit-name').inputValue(), 'Unsaved fixture');

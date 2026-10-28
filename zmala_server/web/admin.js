@@ -332,10 +332,39 @@ function setView(...elements) {
   }
 }
 
+// @llr LLR-SRV-DIR-033
+/** Check the selected file before uploading; the server revalidates its bytes.
+ * @param {File} file */
+async function validatePicture(file) {
+  const header = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  const gif = /^GIF8[79]a/.test(String.fromCharCode(...header));
+  const png = header.slice(0, 8).join(',') === '137,80,78,71,13,10,26,10';
+  const jpeg = header[0] === 255 && header[1] === 216;
+  if (!gif && !png && !jpeg) throw Error('Choose a PNG, JPG or animated GIF picture.');
+  if (file.size > (gif ? 16 : 2) * 1024 * 1024)
+    throw Error(gif ? 'GIF must be at most 16 MiB.' : 'PNG/JPG must be at most 2 MiB.');
+  const url = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = () => reject(Error('The picture could not be read.'));
+      image.src = url;
+    });
+    const w = image.naturalWidth,
+      h = image.naturalHeight;
+    if (gif && (w !== h || w < 480 || w > 1024))
+      throw Error(`GIF is ${w} × ${h}. Choose a square GIF, 480–1024 pixels per side.`);
+    if (!gif && (!w || !h || w > 8192 || h > 8192 || w * h > 16000000))
+      throw Error('PNG/JPG must be at most 8192 pixels per side and 16 megapixels.');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 /** @param {File | undefined} file @param {string} current @param {boolean} remove */
 async function accountPicture(file, current, remove) {
   if (!file) return remove ? '' : current || '';
-  if (file.size > 2 * 1024 * 1024) throw Error('Choose a picture up to 2 MB.');
+  await validatePicture(file);
   return (await api('/api/photos', 'POST', file)).photo;
 }
 /** @param {string} value */
@@ -769,9 +798,19 @@ function openAccount(id = '') {
 $('edit-id').oninput = () => {
   $('rename-help').hidden = !state.editingId || $('edit-id').value === state.editingId;
 };
-$('edit-photo').onchange = () => {
+$('edit-photo').onchange = async () => {
   const file = $('edit-photo').files?.[0];
   if (!file) return;
+  const generation = accountGeneration;
+  try {
+    await validatePicture(file);
+  } catch (error) {
+    if (generation === accountGeneration && $('edit-photo').files?.[0] === file)
+      message('account-error', error instanceof Error ? error.message : String(error));
+    return;
+  }
+  if (generation !== accountGeneration || $('edit-photo').files?.[0] !== file) return;
+  message('account-error', '');
   if (state.accountPreviewUrl) URL.revokeObjectURL(state.accountPreviewUrl);
   state.accountPreviewUrl = URL.createObjectURL(file);
   const image = el('img');

@@ -1147,3 +1147,19 @@ about 1 microsecond. The C20 accepted 120-frame periods and a 240-frame buffer
 in 2.3-4.6 ms; 773 PCM status samples remained RUNNING with one start timestamp.
 The pipe held 2.5 ms of PCM instead of 5 ms. These are software/driver measurements,
 not an acoustic button-to-speaker latency measurement.
+
+
+### Uploaded portrait animation
+
+`portrait_animation.py` automatically handles downloaded GIF portraits, without a
+name/hash catalog or private launcher. GIFs are validated by the photo worker before
+atomic publication: 480 × 480, at most 16 MiB, 2–72 frames and 5 seconds. A selected,
+settled carousel card plays once, holds its final frame and replays after reselection.
+Moving cards, confirmations and calls use the ordinary static first-frame rendering.
+Settings/setup/navigation interrupt playback; calls and closing clear retained frames.
+One background decoder prepares PNG frame bytes. The Tk thread creates at most
+four images per tick and changes only the tagged selected portrait canvas item.
+An LRU limits animation pixel payload to 64 MiB, in addition to the ordinary renderer
+budgets; transient compressed data/native allocation overhead is not included.
+Missing downloads remain retryable; invalid bytes keep static/initials fallback.
+The private D-drive prototypes must be disabled when testing the supported player.

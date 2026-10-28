@@ -1,6 +1,7 @@
 """One bounded portrait worker; configuration and presence never wait for images."""
 from collections import deque
 import hashlib
+import io
 import os
 from pathlib import Path
 import queue
@@ -9,9 +10,10 @@ import threading
 import time
 import uuid
 import zlib
-from zmala_terminal.common.image_bounds import MAX_BYTES, image_size
+from zmala_terminal.common.image_bounds import MAX_BYTES, MAX_GIF_BYTES, image_size
 
 
+# @llr LLR-TERM-UI-020
 def valid_photo(data, name):
     try:
         image_size(data)
@@ -20,6 +22,30 @@ def valid_photo(data, name):
     digest = Path(name).stem
     if len(digest) == 64 and hashlib.sha256(data).hexdigest() != digest:
         return False
+    if name.endswith('.gif'):
+        if not data.endswith(b';'):
+            return False
+        try:
+            from PIL import Image
+            with Image.open(io.BytesIO(data)) as gif:
+                if gif.format != 'GIF' or gif.size != (480, 480):
+                    return False
+                count, duration = 0, 0
+                while True:
+                    try:
+                        gif.seek(count)
+                    except EOFError:
+                        return 2 <= count <= 72
+                    if gif.size != (480, 480):
+                        return False
+                    delay = gif.info.get('duration', 100) or 100
+                    duration += delay
+                    if count >= 72 or not 20 <= delay <= 2000 or duration > 5000:
+                        return False
+                    gif.load()
+                    count += 1
+        except (OSError, ValueError):
+            return False
     if name.endswith('.jpg'):
         return data.startswith(b'\xff\xd8\xff') and data.endswith(b'\xff\xd9')
     if not data.startswith(b'\x89PNG\r\n\x1a\n'):
@@ -108,7 +134,7 @@ class PhotoCache:
                 cached = b''
                 if filename.exists():
                     with filename.open('rb') as source:
-                        cached = source.read(MAX_BYTES + 1)
+                        cached = source.read((MAX_GIF_BYTES if path.endswith('.gif') else MAX_BYTES) + 1)
                 if not valid_photo(cached, path):
                     filename.unlink(missing_ok=True)
                     data = self.request(path)

@@ -5,7 +5,7 @@ header: |
   Bounded portrait loading
 level: 55.0
 links:
-- HLR-TERM-UI-012: 8a2nkqu6JfSDSoVz4s2q965fKQwlmvc6DvgjMSasK6M=
+- HLR-TERM-UI-012: EbCK9UgSBr5RGyt1-jfn5OKxjFFSV-VOyRi7H4r2zQs=
 normative: true
 ref: ''
 references:
@@ -21,12 +21,15 @@ references:
   type: file
 - path: zmala_terminal/common/render_cache.py
   type: file
+- path: tests/terminal/LLT/test_portrait_animation.py
+  type: file
 reviewed: null
 scope: Core
 text: |
   Portrait loading shall use one worker with at most 40 queued jobs. Before decoding,
-  it shall reject images above 2 MiB, 4096 pixels per side or 4,194,304 pixels. Only
+  PNG/JPEG input shall be rejected above 2 MiB, 4096 pixels per side or 4,194,304 pixels. Only
   validated results shall replace cached files.
+  Published GIF portraits shall be 480 × 480 pixels and at most 16 MiB, 2–72 frames, 20–2000 ms per frame and 5 seconds total. Validate their frames in the portrait worker before atomic cache publication.
 verification: |
   Queue more than 40 jobs and supply images at and above each size limit. Check
   rejection before decode and atomic publication.

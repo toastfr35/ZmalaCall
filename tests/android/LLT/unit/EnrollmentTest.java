@@ -5,6 +5,7 @@
 // credentials in URLs, mismatched account identity, unsupported secure mode and oversized input.
 // Reject null/non-object contacts, missing or invalid identity/name and duplicate contact identities.
 // Serve redirects from a local HTTP fixture and verify no credentials reach the redirect target.
+// Download a GIF larger than the static cap, reject the same oversized JPEG and invalid photo paths.
 // @pass All parser, identity, transport and redirect boundary assertions pass.
 package org.zmala.phone;
 
@@ -132,4 +133,30 @@ public class EnrollmentTest {
       assertFalse(leaked.get());
     }
   }
+  @Test
+  public void gifPortraitsUseTheirOwnBoundWithoutChangingStaticLimits() throws Exception {
+    for (String extension : new String[]{"gif", "jpg"}) {
+      try (ServerSocket server = new ServerSocket(0, 10, java.net.InetAddress.getByName("127.0.0.1"))) {
+        server.setSoTimeout(5000);
+        Thread responder = new Thread(() -> {
+          try (Socket socket = server.accept()) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            while (!reader.readLine().isEmpty()) {}
+            int size = 2097153;
+            OutputStream out = socket.getOutputStream();
+            out.write(("HTTP/1.1 200 OK\r\nContent-Length: " + size + "\r\nConnection: close\r\n\r\n").getBytes());
+            out.write(new byte[size]);
+          } catch (Exception ignored) { /* Static-limit rejection may close the socket early. */ }
+        });
+        responder.start();
+        Enrollment e = new Enrollment(qr().put("server_url", "http://127.0.0.1:" + server.getLocalPort()).toString());
+        String path = "/photos/" + "a".repeat(64) + "." + extension;
+        if (extension.equals("gif")) assertEquals(2097153, ServerApi.photo(e, path).length);
+        else assertThrows(Exception.class, () -> ServerApi.photo(e, path));
+        responder.join(6000); assertFalse(responder.isAlive());
+        assertThrows(IllegalArgumentException.class, () -> ServerApi.photo(e, "/photos/../secret.gif"));
+      }
+    }
+  }
+
 }

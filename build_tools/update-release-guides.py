@@ -503,6 +503,33 @@ def update_callback_notification_guides():
         doc.save(path)
 
 
+def update_animated_portrait_guides():
+    """Explain generic portrait uploads and selected-card playback in retained guides."""
+    additions = {
+        'server_prep.docx': ('In Accounts, create a Terminal account',
+            'For an account portrait, choose PNG/JPG (up to 2 MiB, 8192 pixels per side and '
+            '16 megapixels; square 480 × 480 recommended), or an animated GIF. GIFs must '
+            'be square, 480 × 480 to 1024 × 1024 pixels, up to 16 MiB, 2–72 frames and '
+            '5 seconds, with frame delays of 20–2000 ms. The account editor checks dimensions '
+            'and shows an error if the picture does not fit. The server checks it again. '
+            'GIFs play once when selected on a terminal, then stay still; phones show a still picture.'),
+        'terminal_use.docx': ('Press left or right until their portrait',
+            'If your helper supplied an animated portrait, it plays once when you select '
+            'that person, then stays still. Move away and back to see it again. '
+            'Animation stops when you navigate or start a call.')}
+    for filename, (anchor_text, text) in additions.items():
+        path = ROOT / 'docs' / filename
+        doc = Document(path)
+        existing = next((p for p in doc.paragraphs if p.text.startswith(text[:45])), None)
+        if existing is None:
+            anchor = next(p for p in doc.paragraphs if p.text.startswith(anchor_text))
+            existing = doc.add_paragraph()
+            anchor._p.addnext(existing._p)
+        existing.text = text
+        existing.paragraph_format.space_after = Pt(6)
+        doc.save(path)
+
+
 if __name__ == '__main__':
     update_existing()
     update_c20_guide()
@@ -513,3 +540,5 @@ if __name__ == '__main__':
     update_presence_guides()
     update_terminal_feedback_guides()
     update_callback_notification_guides()
+
+    update_animated_portrait_guides()

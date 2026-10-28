@@ -1,7 +1,7 @@
 // @test S-HLT-006
 // @requirements HLR-SRV-BACKUP-001, HLR-SRV-BACKUP-002
 // @environment portable
-// @plan Populate the assembled service with accounts, credentials, histories and pictures, export and restore it, then reopen storage; compare all records and photo bytes, verify restored credentials and command cancellation, and reject unsafe or unauthorized HTTP restores without mutation.
+// @plan Populate the assembled service with accounts, credentials, histories and pictures, export and restore it, then reopen storage; compare all records and PNG/GIF photo bytes, verify restored credentials and command cancellation, and reject unsafe or unauthorized HTTP restores without mutation.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 'use strict';
@@ -15,6 +15,7 @@ const { decodeBackup, encodeBackup, digest } = require('../../../zmala_server/ba
 const { recoverRestore, stageRestore } = require('../../../zmala_server/backup-storage');
 const { Store } = require('../../../zmala_server/store');
 
+const { gif } = require('../../support/server/portrait-fixture');
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a/A8AAAAASUVORK5CYII=',
   'base64',
@@ -28,6 +29,9 @@ async function fixture(t) {
   fs.mkdirSync(path.join(app.directory, 'photos'));
   fs.writeFileSync(path.join(app.directory, 'photos', name), PNG);
   app.store.value.users.term1.photo = '/photos/' + name;
+  const gifName = digest(gif()) + '.gif';
+  fs.writeFileSync(path.join(app.directory, 'photos', gifName), gif());
+  app.store.value.users.phone1.photo = '/photos/' + gifName;
   app.store.value.smtp.password = 'private smtp password';
   app.store.changed();
   await app.flush();
@@ -69,6 +73,10 @@ test('backup round trip restores complete config, histories and pictures; creden
     fs.readFileSync(path.join(app.directory, original.users.term1.photo.slice(1))),
     PNG,
   );
+  assert.deepEqual(
+    fs.readFileSync(path.join(app.directory, original.users.phone1.photo.slice(1))),
+    gif(),
+  );
   const jobs = JSON.parse(fs.readFileSync(path.join(app.directory, 'console-jobs.json')));
   assert.equal(jobs[0].status, 'cancelled');
   assert.equal(jobs[0].lease, undefined);
@@ -104,7 +112,7 @@ test('admin HTTP backup requires authentication, confirmation, current version a
     body: bytes,
   });
   assert.equal(preview.status, 200);
-  assert.equal((await preview.json()).pictures, 1);
+  assert.equal((await preview.json()).pictures, 2);
   const options = {
     method: 'POST',
     body: bytes,

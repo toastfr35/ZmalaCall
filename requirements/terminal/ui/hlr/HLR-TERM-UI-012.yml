@@ -1,8 +1,9 @@
 active: true
 area: User interface and language
 derived: false
-header: |
-  Clear visual feedback
+header: 'Clear visual feedback
+
+  '
 level: 16.0
 links:
 - PROD003: xwBJv1ZYyzfxiO9wTyMGMiXM-X2QOaPTItgyHSXI6qQ=
@@ -20,12 +21,19 @@ references:
   type: file
 - path: tests/terminal/HLT/setup_feedback_ui.py
   type: file
+- path: tests/terminal/HLT/animated_portrait_ui.py
+  type: file
 reviewed: null
 scope: Core
-text: |
-  The terminal shall present readable contacts, actions and status on the TV. It shall
+text: 'The terminal shall present readable contacts, actions and status on the TV. It shall
+
   provide visible feedback when information or a required device is unavailable.
+
   Rendering shall remain responsive with bounded retained images.
-verification: |
-  Inspect the supported display sizes and fallback states. Check portrait, text,
+
+  '
+verification: 'Inspect the supported display sizes and fallback states. Check portrait, text,
+
   control and status visibility.
+
+  '

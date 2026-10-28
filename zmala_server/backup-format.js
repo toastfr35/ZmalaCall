@@ -18,7 +18,7 @@ const { checkDimensions } = require('./photos');
 const { SOUND, MAX_LIBRARY, validateSound, ringtoneId } = require('./ringtones');
 const MAX_BACKUP = 64 * 1024 * 1024;
 const FILES = ['server.json', 'admin-password.json', 'callbacks.json', 'console-jobs.json'];
-const PHOTO = /^photos\/[a-f0-9]{64}\.(png|jpg)$/;
+const PHOTO = /^photos\/[a-f0-9]{64}\.(png|jpg|gif)$/;
 /** @param {Buffer} bytes */
 const digest = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
 /** @param {unknown} value @param {string} message @returns {asserts value} */
@@ -234,7 +234,7 @@ async function decodeBackup(bytes) {
         name.split('/')[1].split('.')[0] === digest(data),
         'Picture filename checksum failed.',
       );
-      checkDimensions(data, name.endsWith('.png') ? 'png' : 'jpg');
+      checkDimensions(data, name.split('.').pop() || '');
     }
     files.set(name, data);
   }

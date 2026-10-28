@@ -895,3 +895,20 @@ cancellation racing an accepted send schedules the changed state afterward.
 Expired reminders also use Android's timeout. Provider acceptance is not proof of
 notification display and never completes a callback. Existing terminal views, SIP
 notices and email reminders retain their separate behavior.
+
+
+### Static and animated account portraits
+
+The account creation/edit dialog accepts PNG/JPEG or GIF and displays its limits.
+Static uploads keep the existing 2 MiB, 8192-side and 16-megapixel limits; square
+480 × 480 is recommended. GIF uploads are square 480–1024 per side, at most 16 MiB,
+2–72 frames and 5 seconds. Delays are 20–2000 ms; absent/zero delays become 100 ms.
+Browser checks include magic bytes, encoded size and decoded first-frame dimensions;
+the server independently scans complete GIF blocks before bounded Pillow conversion.
+Pillow composites disposal/partial frames and normalizes to 480 × 480 GIF without
+repeat metadata. Identical quantized frames may combine; conversion rejects an
+output that falls outside frame/byte/timing limits rather than publishing it.
+Hash-named authenticated GIF routes use image/gif, private immutable caching and
+participate in backup/restore alongside static images (the total backup cap still applies).
+Terminal selection controls single playback, regardless of source loop settings.
+Android decodes a still first frame. No family media is part of the public source.

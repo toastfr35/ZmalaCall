@@ -105,7 +105,7 @@ function createHandler(context) {
         }
         return send(res, 200, bytes, 'audio/wav', 'private, max-age=31536000, immutable');
       }
-      if (/^\/photos\/[a-f0-9]+\.(png|jpg)$/.test(url.pathname) && req.method === 'GET') {
+      if (/^\/photos\/[a-f0-9]+\.(png|jpg|gif)$/.test(url.pathname) && req.method === 'GET') {
         if (!device && !admin) return send(res, 401, { error: 'Authentication required.' });
         const file = path.join(store.dir, url.pathname.slice(1));
         let contents;
@@ -123,7 +123,7 @@ function createHandler(context) {
           res,
           200,
           contents,
-          file.endsWith('.png') ? 'image/png' : 'image/jpeg',
+          file.endsWith('.gif') ? 'image/gif' : file.endsWith('.png') ? 'image/png' : 'image/jpeg',
           'private, max-age=31536000, immutable',
         );
       }

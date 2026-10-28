@@ -6,6 +6,7 @@ const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const { body } = require('./http/responses');
 const convert = promisify(execFile);
+const { checkGif, MAX_GIF_BYTES } = require('./portrait-gif');
 /** @param {Buffer} bytes */
 const digest = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
 const PNG_HEADER = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -14,6 +15,7 @@ const PNG_HEADER = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 /** Inspect dimensions before asking the native converter to decode pixels.
  * @param {Buffer} bytes @param {string} extension */
 function checkDimensions(bytes, extension) {
+  if (extension === 'gif') return checkGif(bytes);
   let width = 0,
     height = 0;
   if (extension === 'png' && bytes.length >= 33 && bytes.toString('ascii', 12, 16) === 'IHDR') {
@@ -62,13 +64,19 @@ class PhotoStore {
       throw Object.assign(Error('Photo queue is full. Try again shortly.'), { status: 429 });
     this.uploads++;
     try {
-      const bytes = await body(req);
+      const bytes = await body(req, MAX_GIF_BYTES);
       const extension = bytes.subarray(0, 8).equals(PNG_HEADER)
         ? 'png'
         : bytes[0] === 255 && bytes[1] === 216
           ? 'jpg'
-          : null;
-      if (!extension) throw Error('Choose a PNG or JPEG photo (up to 2 MB).');
+          : /^GIF8[79]a$/.test(bytes.toString('ascii', 0, 6))
+            ? 'gif'
+            : null;
+
+      if (extension !== 'gif' && bytes.length > 2 * 1024 * 1024)
+        throw Object.assign(Error('Static pictures must be at most 2 MiB.'), { status: 413 });
+      if (!extension)
+        throw Error('Choose a PNG or JPEG photo (up to 2 MiB), or an animated GIF (up to 16 MiB).');
       checkDimensions(bytes, extension);
       const key = digest(bytes);
       let operation = this.converting.get(key);
@@ -96,7 +104,7 @@ class PhotoStore {
       // Unique intermediate files isolate simultaneous uploads of the same picture.
       const temporary = path.join(this.directory, crypto.randomUUID());
       const source = temporary + '.' + extension;
-      const output = temporary + '.display.png';
+      const output = temporary + (extension === 'gif' ? '.display.gif' : '.display.png');
       try {
         await fs.writeFile(source, bytes);
         // Decode in a separate process so photo uploads never block SIP timers.
@@ -111,7 +119,7 @@ class PhotoStore {
           ],
           { timeout: 10000 },
         );
-        const name = digest(await fs.readFile(output)) + '.png';
+        const name = digest(await fs.readFile(output)) + (extension === 'gif' ? '.gif' : '.png');
         await this.publish(output, name);
         return '/photos/' + name;
       } finally {

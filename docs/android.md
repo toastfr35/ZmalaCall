@@ -698,3 +698,9 @@ contact without dialing, and cancelling the test request removed the reminder.
 Foreground and Home-screen cases passed; emulator fixtures also covered stale
 snapshots, deadline changes, enrollment isolation and ordinary call-alert regression.
 These checks do not qualify every vendor battery policy or deep Doze behavior.
+
+
+Animated server portraits use the authenticated GIF photo route with a separate
+16 MiB encoded response cap; PNG/JPEG retain the 2 MiB cap. Android's existing
+BitmapFactory path displays a sampled static first frame, so animations do not loop
+in contact or incoming-call screens. Transport remains same-origin and rejects redirects.

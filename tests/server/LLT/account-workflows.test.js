@@ -127,6 +127,7 @@ function accounts() {
         .split(',')
         .map((v) => v.trim())
         .filter(Boolean);
+    c.validatePicture = async () => {};
     c.accountPicture = async (file, existing, remove) => (remove ? '' : existing);
     c.writeClipboard = async (value, button) => {
       c.copies.push({ value, button });
@@ -214,11 +215,11 @@ test('account drafts freeze opening revision, retain failures and report renamed
 test('photo replacement revokes earlier previews and stale upload cannot save a closed editor', async () => {
   const f = accounts();
   f.openAccount('alice');
-  f.$('edit-photo').onchange();
+  await f.$('edit-photo').onchange();
   assert.equal(f.revoked.length, 0);
   f.$('edit-photo').files = [{}];
-  f.$('edit-photo').onchange();
-  f.$('edit-photo').onchange();
+  await f.$('edit-photo').onchange();
+  await f.$('edit-photo').onchange();
   assert.deepEqual(f.revoked, ['blob:private']);
   assert.equal(f.$('account-picture-preview').children[0].alt, 'New account picture preview');
   let finish;

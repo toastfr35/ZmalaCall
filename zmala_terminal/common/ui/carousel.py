@@ -101,7 +101,12 @@ class CarouselView:
         image = self.contact_image(person, int(size), '#211e32' if selected else PANEL)
         if image:
             self.current_photos.append(image)
-            self.avatar.create_image(x, y, image=image)
+            # @llr LLR-TERM-UI-026
+            target = idle and selected and not self.carousel_motion
+            tags = ('portrait-preview-target',) if target else ()
+            self.avatar.create_image(x, y, image=image, tags=tags)
+            if target:
+                self.portrait_animation_target = (person['id'], int(size))
         else:
             self.avatar.create_oval(x-size*.4, y-size*.4, x+size*.4, y+size*.4,
                                     fill='#302943' if selected else '#253044', outline='')

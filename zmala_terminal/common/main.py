@@ -20,6 +20,7 @@ from zmala_terminal.common.idle_return import IdleReturn, IdleCountdown
 from zmala_terminal.common.settings_control import SettingsControl
 from zmala_terminal.common.text_renderer import TextRenderer
 from zmala_terminal.common.icons import IconRenderer
+from zmala_terminal.common.portrait_animation import PortraitAnimation
 from zmala_terminal.common.missed_calls import MissedCallsStore
 from zmala_terminal.linux.tv_control import TVControl
 from zmala_terminal.linux.argon_fan import ArgonFan
@@ -118,6 +119,8 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
         self.callback_serial = 0
         self.callback_notice_until = 0
         self.last_key = {}
+        self.portrait_animation_target = None
+        self.portrait_animation = PortraitAnimation(self, ROOT / 'data')
     def restore_enrollment(self, bootstrap, unconfigured):
         if unconfigured:
             # The test launcher always starts fresh, within its own profile.
@@ -170,6 +173,7 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
         if self.closed:
             return
         self.closed = True
+        self.portrait_animation.close()
         if getattr(self, 'action_sounds', None):
             self.action_sounds.close()
         self.case_fan.close()
