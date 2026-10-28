@@ -21,6 +21,9 @@ def exercise():
         config['contacts']=[person|{'photo':photo},config['contacts'][1]]
         app.model.configure(config);app.render()
         player=app.portrait_animation
+        # The display runner adds an outer disposable ROOT; this fixture owns
+        # the synthetic portrait path and explicitly supplies that data directory.
+        player.directory=data
         pump(app,lambda:player.completed==1,timeout=10)
         last=app.avatar.find_withtag('portrait-preview-target')[-1]
         image=app.avatar.itemcget(last,'image')
