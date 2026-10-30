@@ -92,3 +92,23 @@ Step 15 accepted wake but still reported standby. Subsequent source transitions
 were therefore inconclusive because the TV remained off. Restoration showed
 live TV again and the terminal service restarted. This candidate is not fully
 qualified; retain the failure evidence and investigate before release.
+
+## Timed observations at 5, 10 and 15 seconds
+
+A further 23-step run on 30 October 2026 captured 67 photos: the initial state,
+then three observations after each command, without another setter between them.
+All photos were visually reviewed. Standby, wake from each input, repeated
+commands, both directed input transitions and restoration showed the expected
+picture in every first sample; all reported power/input samples agreed.
+The HDMI test-card clock and live programme advanced across later samples.
+
+Observation routines started at their scheduled offsets; photos completed about
+3.46–3.69 seconds later because the camera was opened and warmed for each capture.
+These are not measurements of exact visible-completion time. No transition in
+this run first became correct at the second or third observation. The increased
+spacing between successive commands is another changed variable, so the result
+is consistent with settling time helping but does not establish causality or
+remove the earlier intermittent failures. Repeat qualification remains necessary.
+The original runtime plugin was restored, the terminal service was confirmed
+active and developer access was disabled after testing. Private photos and the
+reviewed HTML/ZIP are retained locally, outside version control.
