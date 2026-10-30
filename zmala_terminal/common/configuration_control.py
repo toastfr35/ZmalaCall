@@ -39,7 +39,8 @@ class ConfigurationControl:
         if time.monotonic() < getattr(self, 'engine_retry_at', 0):
             self.pending_config = config
             return
-        if not self.usb_media_ready():
+        # @llr LLR-TERM-POWER-016
+        if not self.usb_media_ready(reason='configuration refresh'):
             self.pending_config = config
             return
         old_sip = self.model.config.get('sip') if self.model.config else None
