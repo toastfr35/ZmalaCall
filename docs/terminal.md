@@ -701,6 +701,10 @@ require the persisted user-verified binding. Power toggle fallback checks a fres
 settled on-state again after authentication and rechecks cancellation before send.
 Driver I/O runs on existing workers with timeouts; failures cannot stop calls.
 Restoration, qualification, retries and idle policy remain in the controller.
+The normal incoming-call worker currently sends CEC Image View On directly;
+it does not yet invoke the driver's guarded `set_power_on`. Standalone driver
+wake tests therefore do not qualify that normal-call path. The real-call test
+plan and measured limitations are in `docs/tv-in-situ-test-plan.md`.
 
 ### Installation TV checks
 
@@ -718,6 +722,11 @@ skips, completion, EDID hash and HDMI address. Save failures block completion.
 Interrupted tests resume at a prompt, not another automatic power command.
 A changed TV/route invalidates previous results on startup; reset clears them.
 Failed/skipped features are disabled independently; keep the TV remote available.
+The saved `network_paired` flag separately enables the paired network fallback.
+A credential file installed by a development experiment does not enable it in
+normal calls. Standalone tests bypass these setup gates: always inspect both
+power/source results and pairing state before comparing them with a real call.
+Do not mark an unobserved setup check as passed to hide a routing failure.
 
 Samsung recovery covers Anynet+/Network Control, local discovery and permission
 approval. The user selects among discovered TVs. The fallback stores private
