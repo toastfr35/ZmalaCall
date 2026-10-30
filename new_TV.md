@@ -188,11 +188,16 @@ and retain failures; this is a smoke test, not proof of long-term reliability.
 During an idle maintenance window, run the generic developer self-test on the Pi:
 
 ```sh
-sudo python3 /opt/zmalacall/current/build_tools/linux/tv-plugin-self-test.py \
+sudo zmala-tv-test \
   --driver samsung --input 2.0.0.0 --input 0.0.0.0 \
   --delay 5 --operate-tv --pause-terminal \
   --output /var/tmp/tv-self-test.zip
 ```
+
+The Pi terminal installer includes the internal `zmala-tv-test` command and all
+its helpers. `sudo zmala-tv-test --help` lists the options without operating the TV.
+The command follows `/opt/zmalacall/current`, including after upgrades or rollback.
+It is not a startup service or a normal user settings action.
 
 Replace the driver and input identifiers for the TV being investigated; those
 values are plugin identifiers, not assumptions made by the runner. The example

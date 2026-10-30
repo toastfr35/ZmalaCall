@@ -45,7 +45,10 @@ def installer_source(name: str) -> bool:
 
 
 EXCLUSIONS = {
+    'build_tools/linux/tv-plugin-self-test.sh': 'Installed wrapper for the internal opt-in TV qualification tool; installer regressions cover packaging.',
     'build_tools/linux/tv-plugin-self-test.py': 'Opt-in developer experiment/evidence CLI; not a terminal runtime behavior. Regression tests live in tests/adhoc/test_tv_plugin_self_test.py.',
+    'build_tools/linux/tv_plugin_self_test.py': 'Internal opt-in TV experiment/report tool; development-tool regressions are outside the runtime baseline.',
+    'build_tools/linux/tv_test_card.py': 'Internal HDMI test pattern for opt-in TV qualification; not normal terminal UI.',
     'zmala_phone/app/src/main/assets/licenses/SDK-SOURCES.json': 'Packaged dependency source provenance, not runtime configuration.',
     'zmala_server/web/admin.js': 'Generated bundle; authored admin modules are mapped.',
     'zmala_server/web/admin.css': 'Generated bundle; authored stylesheets are mapped.',

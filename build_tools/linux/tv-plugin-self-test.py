@@ -10,7 +10,7 @@ import tempfile
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from build_tools.tv_plugin_self_test import package_report, run_sequence  # noqa: E402
+from build_tools.linux.tv_plugin_self_test import package_report, run_sequence  # noqa: E402
 from zmala_terminal.linux.tv_plugins import DRIVERS, load_driver  # noqa: E402
 
 METHODS = {'get_model', 'get_capabilities', 'get_power_status', 'set_power_on',
@@ -162,7 +162,7 @@ def main():
                 environment = dict(os.environ, DISPLAY=os.environ.get('DISPLAY', ':0'),
                                    XAUTHORITY=os.environ.get('XAUTHORITY', '/run/zmalacall-display/Xauthority'))
                 ready = folder / 'card-ready'
-                card = subprocess.Popen([sys.executable, str(Path(__file__).resolve().parents[1] / 'tv_test_card.py'),
+                card = subprocess.Popen([sys.executable, str(Path(__file__).resolve().parent / 'tv_test_card.py'),
                                          '--ready', str(ready)], env=environment,
                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 deadline = time.monotonic() + 10

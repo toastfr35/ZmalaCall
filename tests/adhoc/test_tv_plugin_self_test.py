@@ -6,7 +6,7 @@ import tempfile
 import unittest
 import zipfile
 
-from build_tools.tv_plugin_self_test import package_report, render_html, run_sequence
+from build_tools.linux.tv_plugin_self_test import package_report, render_html, run_sequence
 
 
 class TVSelfTestTests(unittest.TestCase):
