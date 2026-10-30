@@ -1,7 +1,7 @@
 # @test T-LLT-008
 # @requirements LLR-TERM-AUDIO-007
 # @environment portable
-# @plan Mock mixer execution at zero, full and invalid levels and on device failures; assert playback-only writes, validation before execution and nonfatal failure.
+# @plan Assert +12 dB for C10 and 0 dB for C20. Mock mixer execution at zero, full and invalid levels and on device failures; assert playback-only writes, validation before execution and nonfatal failure.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Hardware volume uses a stable C20 identity and fails safely if USB is absent."""
@@ -46,10 +46,10 @@ class C20VolumeTests(unittest.TestCase):
             with self.subTest(error=error), patch('zmala_terminal.linux.c20_volume.subprocess.run', side_effect=error):
                 self.assertFalse(apply(50))
 
-    def test_c10_uses_neutral_gain_instead_of_its_positive_maximum(self):
+    def test_c10_uses_12db_hardware_default(self):
         with patch('zmala_terminal.linux.c20_volume.audio_card', return_value='C10'), patch('zmala_terminal.linux.c20_volume.subprocess.run') as run:
             self.assertTrue(apply(50))
-            self.assertEqual(run.call_args.args[0], ['amixer', '-q', '-c', 'C10', 'sset', 'PCM', '0dB'])
+            self.assertEqual(run.call_args.args[0], ['amixer', '-q', '-c', 'C10', 'sset', 'PCM', '12dB'])
 
     def test_old_configuration_without_volume_is_valid(self):
         self.assertEqual(validate(config(), 'test'), config())

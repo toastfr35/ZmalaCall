@@ -37,7 +37,7 @@ text: |
   independent 0–100 percent levels. Zero shall silence only that sound category.
   Missing ringtone settings shall preserve the previous configured speaker level;
   new profiles shall default to call/ringtone 50 percent and button feedback 20 percent.
-  C10/C20 hardware playback gain shall be fixed at 0 dB; call gain shall be applied on the
+  C10/C20 hardware playback gain shall be fixed at +12 dB for C10 and 0 dB for C20; call gain shall be applied on the
   native core owner thread, while ringtone/button PCM shall be attenuated separately
   for C10/C20 playback without changing capture or TV audio.
   During idle navigation and Settings, a distinct physical button press shall request

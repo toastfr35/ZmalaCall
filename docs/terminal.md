@@ -501,7 +501,7 @@ control cannot overwrite a newly applied default.
 `c20_speaker_volume` retains its historical configuration key for the call default.
 `ringtone_volume` defaults to the old call value for older profiles; new profiles
 start at 50%. `action_sound_volume` starts at 20%. The C10/C20 hardware PCM stays at
-0 dB without changing its mute switch. `media.py` applies the logical call level
++12 dB for C10 or 0 dB for C20 without changing its mute switch. `media.py` applies the logical call level
 through the SDK playback gain on its owner thread (50% is -14 dB; 0% is -120 dB).
 `sound_levels.py` scales validated ringtone PCM into a private RAM-backed temporary
 file, replacing and deleting it when the tone or level changes and on shutdown.
@@ -1263,8 +1263,8 @@ compatible configuration identifiers for either model.
 Both models expose stereo S16_LE microphone input at 16 kHz and speaker output at
 48 kHz, plus 720p/1080p MJPEG at 30 camera fps. Both use explicit asymmetric ALSA
 profiles and the staged microphone-before-camera startup. Playback hardware gain
-is fixed at 0 dB while streams retain independent software levels. C10's maximum
-is +12 dB, so using 100% hardware gain would amplify it unnecessarily. Hardware
+is fixed at each model's maximum (+12 dB for C10, 0 dB for C20) while streams
+retain independent software levels. The default is reapplied after startup and USB wake. Hardware
 mute is preserved. Runtime suspend is disabled for either USB identity; the hub
 helper still refuses to cut power with unrelated peripherals or open streams.
 
