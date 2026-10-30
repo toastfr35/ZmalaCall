@@ -1,0 +1,21 @@
+active: true
+area: Developer access
+derived: false
+header: |
+  Controlled developer access
+level: 110.0
+links:
+- PROD012: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_developer_access.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  An explicitly selected terminal shall establish an authenticated reverse SSH
+  tunnel to its enrolled server for developer access. It shall stop access when
+  deactivated, keep shell ingress loopback-only and preserve normal calling.
+verification: |
+  Enable a real terminal, open a shell through its server, disable access and verify closure and failed reconnection; verify calling remains registered.

@@ -3,6 +3,7 @@
 // Administrator-only operations; handler.js authenticates the caller before dispatching here.
 const { wifiPayload, serverPayload, setupPdf } = require('../setup-pdf');
 const { send: sendResponse, readJson, httpError } = require('./responses');
+const developerAccess = require('../developer-access');
 const { sshStatus, setSsh } = require('../server-ssh');
 /** Called only after the central handler has verified administration credentials.
  * @param {import('node:http').IncomingMessage} req
@@ -16,6 +17,33 @@ async function adminRoutes(req, res, url, context) {
     if (req.method === 'PUT') {
       const update = await readJson(req, 1024);
       return sendResponse(res, 200, await setSsh(update.enabled));
+    }
+  }
+  // @llr LLR-SRV-HOST-007
+  if (url.pathname === '/api/developer-access') {
+    if (req.method === 'GET')
+      return sendResponse(res, 200, await developerAccess.control('status'));
+    if (req.method === 'PUT') {
+      const update = await readJson(req, 1024);
+      if (update.terminal_id === null)
+        return sendResponse(res, 200, await developerAccess.control('off'));
+      const account = store.terminalAccount(update.terminal_id);
+      if (!account || !account.device_id) throw httpError(400, 'Choose an enrolled terminal.');
+      if (!store.secureCalls) throw httpError(400, 'Developer access requires HTTPS.');
+      const current = await developerAccess.control('status');
+      if (!current?.supported)
+        throw httpError(503, 'Install developer access on the server first.');
+      if (current.terminal_id && current.terminal_id !== update.terminal_id)
+        throw httpError(409, 'Deactivate developer access on the other terminal first.');
+      return sendResponse(
+        res,
+        200,
+        await developerAccess.control('on', {
+          terminal_id: update.terminal_id,
+          device_id: account.device_id,
+          host: new URL(store.secureCalls.httpsUrl).hostname,
+        }),
+      );
     }
   }
   /** @param {Parameters<typeof sendResponse>} args */

@@ -17,6 +17,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The server shall restrict installed SSH access to physical Ethernet. Authenticated administration shall control wired SSH without stopping the HTTP, SIP or media services.
+  The server shall restrict ordinary administrative SSH access to physical Ethernet. Authenticated administration shall control wired SSH without stopping the HTTP, SIP or media services.
 verification: |
   Check IPv4 and IPv6 ingress by interface and exercise enabled, disabled, unavailable and protected host states.

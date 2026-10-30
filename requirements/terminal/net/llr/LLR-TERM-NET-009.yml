@@ -1,0 +1,32 @@
+active: true
+area: Developer access
+derived: false
+header: |
+  Isolated developer tunnel
+level: 111.0
+links:
+- HLR-TERM-NET-008: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/developer_access.py
+  type: file
+- path: zmala_terminal/common/configuration.py
+  type: file
+- path: build_tools/linux/developer-access.py
+  type: file
+- path: tests/terminal/LLT/test_developer_access.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Developer access shall accept live settings only for the enrolled device over
+  HTTPS, connect back only to the enrolled server, verify its supplied SSH host
+  key, and keep the tunnel password out of command arguments, logs and ordinary
+  configuration caches. The terminal shall forward the server-loopback endpoint
+  to a dedicated terminal-loopback SSH listener and reconnect while manually
+  enabled. Deactivation shall stop the tunnel and shell listener and remove
+  runtime secrets. Developer-control failures shall not prevent normal calls.
+verification: |
+  Exercise authorization, credential scope, process lifecycle and failure paths;
+  verify the configured SSH and firewall boundaries and secret cleanup.

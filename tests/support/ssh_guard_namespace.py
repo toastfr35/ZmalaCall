@@ -20,6 +20,8 @@ spec.loader.exec_module(guard)
 @unittest.skipUnless(sys.platform == 'linux' and os.geteuid() == 0 if hasattr(os, 'geteuid') else False,
                      'requires Linux root and network namespaces')
 class GuardScenario(unittest.TestCase):
+    developer_subnets = False
+
     def test_real_tcp_ingress_ipv4_ipv6_and_repeat_install(self):
         ip, nft = shutil.which('ip'), shutil.which('nft')
         if not ip or not nft:
@@ -42,8 +44,21 @@ class GuardScenario(unittest.TestCase):
                     run(ip, '-n', ns, 'addr', 'add', f'{subnet}.{host}/24', 'dev', name)
                     run(ip, '-n', ns, '-6', 'addr', 'add', f'fd00:{index}::{host}/64', 'dev', name, 'nodad')
                     run(ip, '-n', ns, 'link', 'set', name, 'up')
+            if self.developer_subnets:
+                from tests.support.developer_access import module
+                policy = module('developer-lan-guard').rules('eth0', [
+                    {'local': '192.0.2.1', 'prefixlen': 24},
+                    {'local': 'fd00:1::1', 'prefixlen': 64}], [22])
+                # Non-local source addresses arriving on the correct physical
+                # interface must still be rejected. No host firewall is touched.
+                run(ip, '-n', client_ns, 'addr', 'add', '203.0.113.2/24', 'dev', 'eth0')
+                run(ip, '-n', client_ns, '-6', 'addr', 'add', 'fd00:3::2/64', 'dev', 'eth0', 'nodad')
+                run(ip, '-n', server_ns, 'route', 'add', '203.0.113.0/24', 'dev', 'eth0')
+                run(ip, '-n', server_ns, '-6', 'route', 'add', 'fd00:3::/64', 'dev', 'eth0')
+            else:
+                policy = guard.rules('eth0', [2222])
             for _ in range(2):
-                run(ip, 'netns', 'exec', server_ns, nft, '-f', '-', input=guard.rules('eth0', [2222]))
+                run(ip, 'netns', 'exec', server_ns, nft, '-f', '-', input=policy)
             server = '''import socket,select
 sockets=[]
 for family,host in [(socket.AF_INET,'0.0.0.0'),(socket.AF_INET6,'::')]:
@@ -60,7 +75,8 @@ while True:
             self.assertIsNone(process.poll())
             client = '''import socket,sys
 try:
- s=socket.create_connection((sys.argv[1],int(sys.argv[2])),.6)
+ source=(sys.argv[3],0) if len(sys.argv)>3 else None
+ s=socket.create_connection((sys.argv[1],int(sys.argv[2])),.6,source_address=source)
  assert s.recv(2)==b'OK'
 except (OSError,AssertionError):sys.exit(3)
 '''
@@ -68,7 +84,14 @@ except (OSError,AssertionError):sys.exit(3)
                                 ('198.51.100.1', False), ('fd00:2::1', False)]:
                 for port in (22, 2222, 8080):
                     result = subprocess.run([ip, 'netns', 'exec', client_ns, sys.executable, '-c', client, host, str(port)], timeout=3)
-                    self.assertEqual(result.returncode, 0 if wired or port == 8080 else 3, (host, port))
+                    public = port == 8080 or self.developer_subnets and port == 2222
+                    self.assertEqual(result.returncode, 0 if wired or public else 3, (host, port))
+            if self.developer_subnets:
+                for host, source in [('192.0.2.1', '203.0.113.2'), ('fd00:1::1', 'fd00:3::2')]:
+                    for port in (22, 2222, 8080):
+                        result = subprocess.run([ip, 'netns', 'exec', client_ns, sys.executable,
+                            '-c', client, host, str(port), source], timeout=3)
+                        self.assertEqual(result.returncode, 3 if port == 22 else 0, ('routed-source', source, port))
             # Linux accepts packets addressed to another interface locally. Force
             # the client route for the Ethernet address through the Wi-Fi veth.
             # This catches a ListenAddress-only restriction which is not ingress isolation.
@@ -80,7 +103,8 @@ except (OSError,AssertionError):sys.exit(3)
                 for port in (22, 2222, 8080):
                     result = subprocess.run([ip, 'netns', 'exec', client_ns, sys.executable,
                         '-c', client, host, str(port)], timeout=3)
-                    self.assertEqual(result.returncode, 0 if port == 8080 else 3, ('weak-host', host, port))
+                    public = port == 8080 or self.developer_subnets and port == 2222
+                    self.assertEqual(result.returncode, 0 if public else 3, ('weak-host', host, port))
         finally:
             if process:
                 process.terminate()

@@ -1,19 +1,27 @@
 // @ts-check
 'use strict';
 // Device API routes use the bearer token identity, not a terminal ID supplied by the request.
+const developerAccess = require('../developer-access');
 const { terminalStatus } = require('../terminal-status');
 const { contactPresence } = require('../registrations');
 const { send, readJson, requireDevice, httpError } = require('./responses');
 // @llr LLR-SRV-CONFIG-022
 /** Full snapshots after reads and writes must expose the same live fields.
  * @param {string} id @param {import('../types/http').DeviceContext} context */
-function liveConfiguration(id, { store, sipServer, callbacks }) {
+async function liveConfiguration(id, { store, sipServer, callbacks }) {
   const config = store.config(id);
   config.contacts = config.contacts.map((contact) => ({
     ...contact,
     ...contactPresence(sipServer, contact.id),
   }));
   config.callbacks = callbacks.list(id);
+  // @llr LLR-SRV-HOST-007
+  config.developer_access = store.secureCalls
+    ? await developerAccess.control('config', {
+        terminal_id: id,
+        device_id: config.device_id,
+      })
+    : null;
   return config;
 }
 
@@ -101,9 +109,10 @@ async function deviceRoutes(req, res, url, context) {
             ...contactPresence(sipServer, id),
           })),
           callbacks: callbacks.list(deviceId),
+          developer_access: null,
         },
       });
-    return send(res, 200, liveConfiguration(deviceId, context));
+    return send(res, 200, await liveConfiguration(deviceId, context));
   }
   if (url.pathname === '/api/device/settings' && req.method === 'POST') {
     deviceId = requireDevice(deviceId);
@@ -124,7 +133,7 @@ async function deviceRoutes(req, res, url, context) {
       /** @type {Record<string, unknown>} */ (update.expected),
     );
     await store.flush();
-    return send(res, 200, liveConfiguration(deviceId, context));
+    return send(res, 200, await liveConfiguration(deviceId, context));
   }
   if (url.pathname === '/api/callbacks' && req.method === 'POST') {
     deviceId = requireDevice(deviceId);

@@ -103,6 +103,7 @@ chmod 440 /etc/sudoers.d/zmalacall-server-ssh
 visudo -cf /etc/sudoers.d/zmalacall-server-ssh
 # Installation and post-reboot verification require wired SSH to remain on.
 /usr/local/libexec/zmala-server-ssh on
+python3 "$task_root/build_tools/linux/install-developer-access.py" server --user zmalaserver
 sh "$task_root/build_tools/linux/install-low-wear.sh"
 task_stage='starting server'
 if [ -L /opt/zmalacall-server/current ] && [ -d /opt/zmalacall-server/current ]; then

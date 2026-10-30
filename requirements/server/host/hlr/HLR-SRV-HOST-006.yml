@@ -1,0 +1,24 @@
+active: true
+area: Developer access
+derived: false
+header: |
+  Controlled developer access
+level: 110.0
+links:
+- PROD012: null
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/test_ssh_guard_linux.py
+  type: file
+- path: tests/server/HLT/developer-access.test.js
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Authenticated administrators shall manually enable developer access for at most one
+  remote terminal at a time and disable it without disrupting calling. Developer
+  shell access through the server shall be restricted to its wired local subnets;
+  the separate internet-reachable terminal tunnel endpoint shall not grant a server shell.
+verification: |
+  Exercise authorized and unauthorized controls, competing terminals, remote shell forwarding, local-subnet enforcement and revocation. Record physical-network evidence separately.

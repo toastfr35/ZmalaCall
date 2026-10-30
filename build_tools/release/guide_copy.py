@@ -292,6 +292,8 @@ def improve_readability(root):
         path = root / 'docs' / filename
         doc = Document(path)
         for paragraph in list(doc.paragraphs):
+            if paragraph._p.getparent() is None:
+                continue  # A preceding replacement already removed this duplicate.
             for prefix, replacements in revisions.items():
                 if not paragraph.text.startswith(prefix):
                     continue
@@ -327,6 +329,21 @@ def improve_readability(root):
                 paragraph = doc.add_paragraph(text)
                 paragraph.paragraph_format.keep_together = True
         if filename == 'server_prep.docx':
+            if not any(p.text == 'Developer access to a terminal' for p in doc.paragraphs):
+                doc.add_heading('Developer access to a terminal', level=1)
+                for text in (
+                    'For remote TV-plugin testing, open Terminals, choose Developer access on the '
+                    'required terminal and select Enable for this terminal. Only one terminal can '
+                    'have access at a time. The dialog shows whether its tunnel has connected.',
+                    'Developer access stays enabled until you select Disable developer access. '
+                    'Disabling disconnects existing sessions. Keep your development computer on '
+                    'the same subnet as the server and use your normal server and Pi SSH logins.',
+                    'For a terminal on another network, forward TCP port 2222 on the server router '
+                    'to TCP 2222 on the server Pi. This separate port accepts only the tunnel '
+                    'account. Never forward ordinary SSH port 22. Point the C20 at the TV so '
+                    'the developer can check the displayed picture while testing.',
+                ):
+                    doc.add_paragraph(text).paragraph_format.keep_together = True
             ports = [
                 ('Purpose', 'Protocol', 'Public port', 'Pi port'),
                 ('HTTPS setup', 'TCP', '443', '8443'),
