@@ -14,7 +14,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The terminal shall restrict SSH access to physical Ethernet. This restriction shall
+  The terminal shall restrict ordinary network SSH access to physical Ethernet. This restriction shall
   leave normal terminal communication available through Wi-Fi.
 verification: |
   Attempt SSH through each network interface and address family. Check permitted

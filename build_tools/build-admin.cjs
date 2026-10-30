@@ -14,6 +14,7 @@ const scripts = [
   'groups',
   'ringtones',
   'terminalfields',
+  'developer',
   'terminals',
   'callbacks',
   'backups',

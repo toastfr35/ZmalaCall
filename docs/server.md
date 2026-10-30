@@ -274,6 +274,44 @@ the repository and are excluded from the embedded Pi package. Generate a local
 Linux source archive separately with
 `python build_tools/linux/package-server.py`; it includes an `install.sh` wrapper.
 
+## Developer access to a remote terminal
+
+In **Terminals → Developer access**, enable access for one enrolled terminal.
+The control remains enabled until an administrator disables it; enabling another
+terminal requires disabling the current one first. The dialog shows the selected
+terminal and whether the reverse-forward listener is connected. An unavailable
+helper is reported instead of pretending access is enabled.
+
+The server has two distinct SSH paths. Ordinary developer/administrative SSH
+keeps its configured ports (normally TCP 22) and accepts only source addresses
+in the Ethernet interface's directly connected IPv4/IPv6 subnets. Keep those
+ports unforwarded on the router. A separate sshd on TCP 2222 accepts only the
+restricted `terminal` account. Forward public TCP 2222 to the server Pi's TCP
+2222 for terminals outside the server network. This listener permits only a
+remote forward bound to `127.0.0.1:22001`, without server shell sessions, local
+forwarding, agent forwarding or stream-local forwarding.
+
+The root-owned helper generates a fresh password on each activation, binds it
+to the selected account and device identity, and stores it outside the account
+backup at `/var/lib/zmalacall-developer/session.json`. Only that device's HTTPS
+configuration response contains it. Public/admin status responses contain no
+password. Disabling stops the sshd service and its entire process group before
+locking the account and deleting the secret, so established tunnels are revoked.
+
+From a PC on the server subnet, use your normal server and remote-Pi credentials:
+`ssh -J SERVER_USER@SERVER_LAN_ADDRESS -p 22001 PI_USER@127.0.0.1`.
+The generated tunnel password is not the remote Pi's login password. Check the
+remote Pi's SSH host key; a different selected terminal can legitimately have a
+different key. SSH restrictions do not replace authentication. Router rules must
+never forward ordinary administrative SSH, including routers that rewrite the
+source address to a local address.
+
+Installation uses `install-developer-access.py server --user <service-user>`.
+The network dispatcher and boot service rebuild subnet rules after wired address
+changes. Missing addresses leave ordinary SSH blocked rather than allowing all
+sources. Terminal tunnel setup, TV commands and optional C20 viewing are described
+in the terminal technical guide. Pairing and physical TV tests remain separate.
+
 ## Service, SSH and storage
 
 ```sh

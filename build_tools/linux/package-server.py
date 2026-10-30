@@ -8,7 +8,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ('install-server.sh', 'server-launch.py', 'check-server.py',
            'install-low-wear.sh', 'low-wear-journal.conf', 'low-wear-swap.conf',
            'install-ssh-guard.sh', 'ssh-guard.py', 'zmalacall-ssh-guard.service',
-           'zmalacall-server.service', 'server-ssh.py')
+           'zmalacall-server.service', 'server-ssh.py', 'developer-access.py',
+           'install-developer-access.py', 'developer-lan-guard.py')
 
 
 def package(destination=None):

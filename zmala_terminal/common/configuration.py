@@ -1,5 +1,7 @@
 """Authenticated configuration retrieval and validated atomic local caching."""
 import json
+import logging
+import sys
 import copy
 import threading
 import urllib.request
@@ -24,6 +26,7 @@ def stable_configuration(config):
     """Offline snapshots retain settings, never live presence or callback state."""
     stable = copy.deepcopy(config)
     stable.pop('callbacks', None)
+    stable.pop('developer_access', None)
     for contact in stable['contacts']:
         contact.pop('online', None)
         contact.pop('presence', None)
@@ -110,6 +113,7 @@ class Configuration:
                 contact['online'] = update.get('online', False)
                 contact['presence'] = update.get('presence', 'available' if contact['online'] else 'offline')
             config['callbacks'] = live['callbacks']
+            config['developer_access'] = live.get('developer_access')
         else:
             config = reply
         return self.accept(config, previous, persist)
@@ -122,6 +126,14 @@ class Configuration:
             raise ValueError('Secure-call enrollment requires HTTPS')
         if previous and previous['configuration_version'] > config['configuration_version']:
             raise ValueError('Refusing an older configuration')
+        # @llr LLR-TERM-NET-009
+        if persist and not self.cancelled and sys.platform == 'linux':
+            from zmala_terminal.linux.developer_access import apply
+            try:
+                apply(config.get('developer_access'), self.bootstrap)
+            except Exception:
+                logging.warning('Developer access update failed; normal calls remain available')
+        config.pop('developer_access', None)
         stable = stable_configuration(config)
         if persist:
             self.persist(stable)

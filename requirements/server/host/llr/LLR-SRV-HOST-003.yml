@@ -5,7 +5,7 @@ header: |
   Ethernet-only SSH ingress
 level: 105.0
 links:
-- HLR-SRV-HOST-001: vR9hI3ssh6ugNMcQqL8p0oCDw9vpH0tIaPy56GJRwhw=
+- HLR-SRV-HOST-001: s1hoUSdoqn2P2Fb1O_4ty4pIvkfbDFwMhntzOzcVjXE=
 normative: true
 ref: ''
 references:
@@ -20,6 +20,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The SSH guard shall permit configured SSH ports only on the physical Ethernet input interface for IPv4 and IPv6. Wi-Fi ingress addressed to an Ethernet IP shall remain blocked. The guard shall be active before SSH service exposure.
+  The SSH guard shall permit ordinary administrative SSH ports only on the physical Ethernet input interface for IPv4 and IPv6. Wi-Fi ingress addressed to an Ethernet IP shall remain blocked. The guard shall be active before SSH service exposure.
 verification: |
   Apply the real guard in isolated network namespaces. Attempt both IP families and cross-address ingress while checking other service ports remain available.

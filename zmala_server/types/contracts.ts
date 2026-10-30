@@ -112,6 +112,7 @@ export interface TerminalContact {
   presence?: 'available' | 'push' | 'offline';
 }
 export interface TerminalConfiguration {
+  developer_access?: JsonObject | null;
   ringtone?: string;
   ringtones?: RingtoneChoice[];
   schema_version: number;
@@ -312,27 +313,29 @@ export type AdminModel = ReturnType<StoreInstance['admin']> & {
   terminal_status: TerminalStatus;
   callbacks: CallbackView[];
 };
-export type ApiResult<U extends string> = U extends '/api/auth/status'
-  ? { setup_required: boolean; can_setup: boolean }
-  : U extends '/api/server/backup/status'
-    ? { result: 'none' | 'restored' | 'rolled_back'; completed_at?: string }
-    : U extends '/api/server/ssh'
-      ? { supported: boolean; enabled?: boolean; active?: boolean; interface?: string }
-      : U extends '/api/admin'
-        ? AdminModel
-        : U extends '/api/admin/live'
-          ? Pick<
-              AdminModel,
-              | 'configuration_version'
-              | 'sip_status'
-              | 'terminal_statuses'
-              | 'terminal_status'
-              | 'callbacks'
-            >
-          : U extends '/api/photos'
-            ? { photo: string }
-            : U extends `/api/terminals/${string}/console`
-              ? { jobs: ConsoleView[]; id: string }
-              : U extends `/api/terminal-bootstrap${string}`
-                ? Enrollment
-                : { ok: boolean; id: string; configuration_version?: number };
+export type ApiResult<U extends string> = U extends '/api/developer-access'
+  ? { supported: boolean; terminal_id: string | null; connected: boolean; port: number }
+  : U extends '/api/auth/status'
+    ? { setup_required: boolean; can_setup: boolean }
+    : U extends '/api/server/backup/status'
+      ? { result: 'none' | 'restored' | 'rolled_back'; completed_at?: string }
+      : U extends '/api/server/ssh'
+        ? { supported: boolean; enabled?: boolean; active?: boolean; interface?: string }
+        : U extends '/api/admin'
+          ? AdminModel
+          : U extends '/api/admin/live'
+            ? Pick<
+                AdminModel,
+                | 'configuration_version'
+                | 'sip_status'
+                | 'terminal_statuses'
+                | 'terminal_status'
+                | 'callbacks'
+              >
+            : U extends '/api/photos'
+              ? { photo: string }
+              : U extends `/api/terminals/${string}/console`
+                ? { jobs: ConsoleView[]; id: string }
+                : U extends `/api/terminal-bootstrap${string}`
+                  ? Enrollment
+                  : { ok: boolean; id: string; configuration_version?: number };

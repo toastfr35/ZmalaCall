@@ -1,0 +1,40 @@
+active: true
+area: Developer access
+derived: false
+header: |
+  Isolated developer tunnel
+level: 111.0
+links:
+- HLR-SRV-HOST-006: null
+normative: true
+ref: ''
+references:
+- path: zmala_server/developer-access.js
+  type: file
+- path: zmala_server/http/admin-routes.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/web/admin-developer.js
+  type: file
+- path: build_tools/linux/developer-access.py
+  type: file
+- path: build_tools/linux/developer-lan-guard.py
+  type: file
+- path: tests/server/LLT/test_developer_access.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  Only authenticated administration shall enable or disable developer access.
+  The server shall allow one selected terminal at a time, generate a new random
+  password on activation, and deliver it only to the bound device through its
+  HTTPS configuration refresh. Credentials shall remain outside ordinary backups
+  and public status responses. The terminal account shall use a separate SSH
+  listener restricted to remote forwarding to a server-loopback endpoint, without
+  shell sessions. Deactivation shall stop all listener sessions, lock the account
+  and remove its secret. Ordinary developer SSH shall accept only wired local
+  source subnets for IPv4 and IPv6. Failures shall not silently claim success.
+verification: |
+  Exercise authorization, credential scope, process lifecycle and failure paths;
+  verify the configured SSH and firewall boundaries and secret cleanup.

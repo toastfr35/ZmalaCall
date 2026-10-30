@@ -130,6 +130,7 @@ fi
 if ! id "$task_user" >/dev/null 2>&1; then
     useradd --system --create-home --home-dir /var/lib/zmalacall-user --shell /usr/sbin/nologin "$task_user"
 fi
+python3 "$task_root/build_tools/linux/install-developer-access.py" terminal --user "$task_user"
 for group in audio video render input; do
     getent group "$group" >/dev/null || groupadd --system "$group"
     usermod -a -G "$group" "$task_user"

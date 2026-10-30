@@ -26,6 +26,7 @@ import {
 import { state, $ } from './admin-state.js';
 import { openWifi, serverPdf } from './admin-setup.js';
 import { openConsole } from './admin-console.js';
+import { openDeveloperAccess } from './admin-developer.js';
 /** @param {HTMLElement} card @param {string} title @param {string} kind @returns {import('../types/admin-dom').TerminalForm} */
 export function terminalForm(card, title, kind) {
   const form = Object.assign(el('form', null, 'terminal-settings-form'), {
@@ -161,7 +162,7 @@ export function terminalCardState(card, id) {
     const labels = {
       active: 'Automatic framing active',
       waiting: 'Automatic framing ready for a call',
-      unavailable: 'Automatic framing unavailable · full view',
+      unavailable: 'Automatic framing unavailable Ã‚Â· full view',
       unsupported: 'Automatic framing requires a Pi C20 terminal',
     };
     features.append(
@@ -179,7 +180,7 @@ export function terminalCardState(card, id) {
       badge(
         audioStatus.audio_profile === 'speech'
           ? 'Speech audio active'
-          : 'Speech unavailable · normal audio',
+          : 'Speech unavailable Ã‚Â· normal audio',
         audioStatus.audio_profile === 'speech' ? 'accent' : 'neutral',
       ),
     );
@@ -244,6 +245,12 @@ function buildDevicesForm(card, id) {
   tools.append(
     setup,
     actionButton('Console', () => openConsole(terminalId(card)), 'secondary', 'terminal'),
+    actionButton(
+      'Developer access',
+      () => openDeveloperAccess(terminalId(card)),
+      'secondary',
+      'terminal',
+    ),
   );
   footer.append(tools);
   devices.append(footer);

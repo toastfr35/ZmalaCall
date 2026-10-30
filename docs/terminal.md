@@ -597,6 +597,36 @@ timeout: button activity resets it, a thin blue bar appears after ten seconds
 idle, and expiry restores the captured state. Calls and pending saves suspend
 the timer. Volume/mute are not changed by CEC. Unknown previous input is not guessed.
 
+### Remote developer access
+
+The server administrator can enable one terminal through **Terminals → Developer
+access**. Live HTTPS settings carry the tunnel credentials and server host key;
+ordinary configuration caches omit them. The client rejects another device ID,
+non-HTTPS enrollment or a host different from its enrolled server.
+
+`linux/developer_access.py` applies settings through a narrow root helper. A
+separate SSH service listens on `127.0.0.1:2223` and allows the configured Pi user;
+that user needs an existing usable SSH login. The generated server `terminal`
+password does not create or change the Pi user's credentials. The outbound client
+pins the server's Ed25519 key, forwards server-loopback port 22001 to this local
+listener, and reconnects every ten seconds while enabled. Normal network SSH
+policy remains separate; the dedicated shell listener is never bound to Wi-Fi
+or Ethernet. Runtime secrets live under root-only `/run/zmalacall-developer`.
+
+Disabling on the server immediately breaks the tunnel; the next successful
+settings refresh stops local reconnects and the shell listener and removes
+runtime secrets. After a terminal reboot, a fresh authenticated refresh is needed
+to recreate them. A temporary network failure does not change the administrator's
+manual enable/disable choice. Developer-helper failures do not prevent normal
+configuration or calling. Installation uses `install-developer-access.py terminal
+--user <service-user>` after that user has been created.
+
+For TV plugin development, point the C20 at the television and inspect its video
+while trying a driver. This provides visual evidence in addition to TV status
+reports. Avoid replacing/restarting software during a call, preserve the existing
+pairing file and keep a recoverable copy of the plugin. Ordinary calls do not
+implicitly start a developer preview or change TV settings.
+
 ### TV driver plugins
 
 `linux/tv_plugins/<model-family>/driver.py` exports one `TVDriver` class.
