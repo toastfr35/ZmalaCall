@@ -1,7 +1,7 @@
 # @test T-LLT-036
-# @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032
+# @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032, LLR-TERM-TV-033
 # @environment portable
-# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
+# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup. Normal call wake uses the model driver before CEC fallback, preserves power/source qualification, and fences cancellation after driver I/O. Ambiguous restoration observations are delegated to the guarded driver, never used as permission for a blind toggle.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 # With power-only qualification, wake is sent but no active-source or Samsung input command is sent.
 
@@ -155,7 +155,7 @@ class TVControlTests(unittest.TestCase):
         tv._worker(tv._cancel, restore=False, initial=initial)
         self.assertTrue(woke)
         self.assertIsNone(tv._browse_previous, 'Unknown power must not become a standby restoration baseline')
-        tv._driver_call.assert_not_called()
+        self.assertFalse(any(c.args[0] == 'set_current_input' for c in tv._driver_call.call_args_list))
 
         tv.power_enabled = False
         for source_enabled in (False, True):
@@ -418,7 +418,7 @@ class TVControlTests(unittest.TestCase):
 
     def test_wake_uses_connector_address_and_retries(self):
         tv = self.controller()
-        cancel = Mock()
+        cancel = tv._cancel = Mock()
         cancel.is_set.return_value = False
         cancel.wait.return_value = False
         tv._worker(cancel)
@@ -426,6 +426,26 @@ class TVControlTests(unittest.TestCase):
         selected = [call for call in tv._run.call_args_list if call.args[0] == '--active-source']
         self.assertEqual(len(selected), 6)
         self.assertTrue(all(call.args == ('--active-source', 'phys-addr=3.0.0.0') for call in selected))
+
+    def test_call_wake_uses_driver_without_redundant_cec_and_fences_cancellation(self):
+        for outcome in ('success', 'unavailable', 'cancelled'):
+            with self.subTest(outcome=outcome):
+                tv = self.controller()
+                tv.source_enabled = False
+                tv._previous_power = Mock(return_value=True)
+                tv._previous_source = Mock(return_value='0.0.0.0')
+                def wake(method, **kwargs):
+                    self.assertEqual(method, 'set_power_on')
+                    self.assertTrue(kwargs['is_current']())
+                    if outcome == 'cancelled':
+                        tv._cancel.set()
+                    return outcome == 'success'
+                tv._driver_call.side_effect = wake
+                tv._worker(tv._cancel)
+                tv._driver_call.assert_called_once()
+                fallback = any(c.args == ('--to', '0', '--image-view-on') for c in tv._run.call_args_list)
+                self.assertEqual(fallback, outcome == 'unavailable')
+                self.assertFalse(any(c.args[0] == '--active-source' for c in tv._run.call_args_list))
 
     def test_power_only_wake_never_selects_an_unqualified_source(self):
         for off in (True, None):
@@ -438,7 +458,7 @@ class TVControlTests(unittest.TestCase):
                 tv._worker(tv._cancel)
                 tv._run.assert_any_call('--to', '0', '--image-view-on')
                 self.assertFalse(any(call.args[0] == '--active-source' for call in tv._run.call_args_list))
-                tv._driver_call.assert_not_called()
+                self.assertFalse(any(c.args[0] == 'set_current_input' for c in tv._driver_call.call_args_list))
 
     def test_broadcast_selection_uses_paired_fallback_only_for_awake_tuner(self):
         for off, source, expected in ((False, '0.0.0.0', True), (True, '0.0.0.0', False),
@@ -448,7 +468,8 @@ class TVControlTests(unittest.TestCase):
             tv._previous_source = Mock(return_value=source)
             tv._cancel.wait = Mock(return_value=False)
             tv._worker(tv._cancel, restore=False)
-            self.assertEqual(tv._driver_call.called, expected)
+            source_calls = [c for c in tv._driver_call.call_args_list if c.args[0] == 'set_current_input']
+            self.assertEqual(bool(source_calls), expected)
             if expected:
                 _, address = tv._driver_call.call_args.args
                 current = tv._driver_call.call_args.kwargs['is_current']
@@ -473,7 +494,7 @@ class TVControlTests(unittest.TestCase):
         # Ignore the host's live observer when this test runs on a real Pi.
         tv._previous_source = Mock(return_value='1.0.0.0')
         tv._run.side_effect = lambda *args: ('pwr-state: on (0x00)' if '--give-device-power-status' in args else '2.0.0.0')
-        cancel = Mock()
+        cancel = tv._cancel = Mock()
         cancel.is_set.return_value = False
         cancel.wait.return_value = False
         tv._worker(cancel)
@@ -575,15 +596,15 @@ class TVControlTests(unittest.TestCase):
         self.assertFalse(any('--standby' in call.args for call in tv._run.call_args_list))
         self.assertIsNotNone(tv._previous)
 
-    def test_network_standby_fallback_requires_settled_on(self):
+    def test_network_standby_fallback_delegates_ambiguous_cec_to_guarded_driver(self):
         for power, expected in (('on', True), ('standby', False),
-                                ('to-on', False), ('to-standby', False), ('unknown', False)):
+                                ('to-on', True), ('to-standby', True), ('unknown', True)):
             with self.subTest(power=power):
                 tv = self.remembered(off=True, source='2.0.0.0')
                 tv._run.return_value = 'pwr-state: ' + power + ' (0x00)'
                 tv._restore(tv._cancel)
                 self.assertEqual(tv._driver_call.called, expected)
-                self.assertEqual(tv._driver_power_status() is True, expected)
+                self.assertEqual(tv._driver_power_status() is True, power == 'on')
 
     def test_new_incoming_call_supersedes_old_restore_and_keeps_baseline(self):
         tv = self.remembered(off=True)

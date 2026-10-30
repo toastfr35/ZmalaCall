@@ -117,3 +117,49 @@ local `make.exe` failed to start). Existing implementation requirements, trace
 comments and user workflows are unchanged. The technical guide now explains the
 setup gates and the remaining call-worker wake limitation. No unresolved result
 above is presented as passed, and the feature PR remains unqualified for merge.
+
+
+## Normal-call follow-up — 30 October 2026
+
+Issue #46 follows the failed real-call qualification above. Normal call wake now
+uses the qualified model driver's guarded `set_power_on` before CEC fallback,
+with a cancellation check after driver I/O. Restoration may delegate ambiguous
+CEC results to the driver's independently guarded power-off operation. The
+controller and Samsung plugin are installed on term2; journals confirm normal
+calls invoke the model driver's wake method.
+
+The controller change alone did not eliminate “Check Device Power”: `fix-tv1`
+and `fix-off1` still failed. The Pi reported an active 1280x720 HDMI output with
+DPMS disabled. Resetting the output did not immediately resolve the picture.
+The TV's Universal Remote setup contained an obsolete Sky profile assigned to
+the Pi's HDMI2 input. Only that profile was removed; the other Samsung device
+profile was left untouched. This is a useful configuration finding, not proof
+that it was the only cause.
+
+After removal, actual phone calls alternated live TV, standby, live TV, standby:
+
+| Evidence | Result |
+| --- | --- |
+| `verified-tv1` | Both video views visible by the 25-second sample; live TV restored. |
+| `verified-off1` | Both video views visible by the 25-second sample; standby restored. |
+| `verified-tv2` | Both video views visible by the 25-second sample; live TV restored. |
+| `verified-off2` | Failed wake/picture: still ringing at 25 seconds; connected around 31 seconds; the 35-second C20 view showed a dark TV. Afterward power reported off. |
+
+The final case sent the guarded network power key, then spent about 23 seconds
+in input selection before starting the five-second answer countdown. Command
+acceptance did not prove visible wake. Saved observations do not distinguish a
+power-state race from a missed wake; the issue remains open. No further phone
+calls or cancellation retest were made because the user needed the phone back.
+The phone was left on contacts, automatic answer restored to off/10 seconds,
+developer access disabled, and terminal/display/compositor services checked
+active. The TV was left in standby. The source and network-control flags remain
+enabled so the installed normal-call integration can be exercised; the original
+setup record is retained in `tv-check.in-situ-backup.json`. These manually enabled
+flags do not represent a completed user wizard or full reliability qualification.
+
+Focused checks: 80 tests passed; one display-dependent HLT was skipped on Windows.
+Python lint and the requirements report builder passed. The helper guide source
+and Word document were updated and the generated eight-page release PDF visually
+reviewed. Native Word rendering was unavailable because LibreOffice is absent.
+Private photos, timestamps and journals remain under `build_tools/tmp/tv-real-calls/`.
+The PR remains draft: do not merge or claim this TV fully fixed from these results.

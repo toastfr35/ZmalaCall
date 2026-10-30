@@ -274,7 +274,17 @@ class TVControl:
                 if cancel.is_set():
                     return
                 if self.power_enabled:
-                    self._run('--to', '0', '--image-view-on')
+                    # @llr LLR-TERM-TV-033
+                    # Let the model driver leave an already-on TV untouched.
+                    # A redundant Image View On can disrupt Samsung's picture.
+                    current = lambda: cancel is self._cancel and not cancel.is_set()
+                    woke = self._driver_call('set_power_on', is_current=current)
+                    if not current():
+                        return
+                    if woke:
+                        logging.info('TV: model driver handled wake')
+                    else:
+                        self._driver_power_on()
                 # @llr LLR-TERM-TV-021
                 # Power qualification does not authorize input switching. In
                 # power-only mode leave source selection to the TV/user.
@@ -406,11 +416,11 @@ class TVControl:
                         if re.search(r'pwr-state:\s*standby\s*\(', power):
                             break
                     # Samsung may ignore CEC Standby after returning to its
-                    # tuner. Never toggle power based on transition/unknown
-                    # replies: query again after network authentication, and
-                    # send only if this call still owns restoration and the
-                    # TV explicitly reports settled on.
-                    if re.search(r'pwr-state:\s*on\s*\(', power):
+                    # tuner. Let the driver resolve ambiguous observations and
+                    # recheck confirmed on after authentication before a toggle.
+                    if not re.search(r'pwr-state:\s*standby\s*\(', power):
+                        # The driver can resolve ambiguous CEC via fresh metadata;
+                        # it still refuses a toggle unless on is confirmed twice.
                         self._driver_call('set_power_off', is_current=lambda: cancel is self._cancel)
                 logging.info('CEC: previous TV state restoration sent')
             except (OSError, subprocess.SubprocessError, RuntimeError):

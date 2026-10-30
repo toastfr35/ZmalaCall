@@ -172,3 +172,13 @@ call-controller wake sequence and real phone calls were not changed or retested.
 The tested plugin remains installed on term2; developer access is disabled after
 inspection. Private reports retain both the failed CEC experiment and successful
 network-wake runs, alongside the earlier timing failures.
+
+
+## Normal-call integration follow-up
+
+Normal calls now invoke the guarded Samsung wake API. Removing an obsolete Sky
+universal-remote profile on the Pi's HDMI2 port was followed by three successful
+call/restore cycles, but a fourth standby call still left a dark TV. The profile
+was not the sole proven cause. See [the dated in-situ results](tv-in-situ-test-plan.md)
+for the failed case, timing, retained configuration and remaining qualification
+limit. The phone was released to its owner; no further phone tests were run.

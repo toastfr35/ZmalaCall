@@ -17,6 +17,8 @@ references:
   type: file
 - path: zmala_terminal/linux/tv_control.py
   type: file
+- path: tests/terminal/LLT/test_tv_control.py
+  type: file
 - path: tests/terminal/LLT/test_tv_plugins.py
   type: file
 reviewed: null
@@ -40,6 +42,10 @@ text: |
   If unavailable, bounded CEC wake may be used after rechecking that the TV has
   not already turned on and the operation remains current. Power/input observations
   shall not be represented as proof that a source picture is playing.
+  Normal call wake shall invoke the qualified model driver's wake operation before
+  falling back to CEC. After driver I/O the controller shall recheck cancellation
+  before sending fallback commands. Ambiguous CEC standby-restoration observations
+  may be delegated to the guarded driver without authorizing a blind power toggle.
   The controller shall retain cancellation, qualification and restoration policy.
 verification: |
   Load registered and unknown drivers; exercise supported and unsupported methods,
@@ -50,3 +56,6 @@ verification: |
   wake sends no command and cancellation during the power query prevents wake.
   Verify guarded network wake, changed/unknown state during authentication, and
   CEC fallback without a blind network toggle.
+  Exercise normal call wake with successful, unavailable and cancelled drivers;
+  assert no redundant CEC wake after success or cancellation and no unqualified
+  source selection. Verify guarded restoration receives ambiguous CEC results.

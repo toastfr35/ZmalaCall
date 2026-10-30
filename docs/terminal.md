@@ -701,10 +701,13 @@ require the persisted user-verified binding. Power toggle fallback checks a fres
 settled on-state again after authentication and rechecks cancellation before send.
 Driver I/O runs on existing workers with timeouts; failures cannot stop calls.
 Restoration, qualification, retries and idle policy remain in the controller.
-The normal incoming-call worker currently sends CEC Image View On directly;
-it does not yet invoke the driver's guarded `set_power_on`. Standalone driver
-wake tests therefore do not qualify that normal-call path. The real-call test
-plan and measured limitations are in `docs/tv-in-situ-test-plan.md`.
+Normal incoming calls invoke the qualified model driver's `set_power_on` before
+CEC fallback. A successful driver result suppresses redundant Image View On;
+cancellation is rechecked after driver I/O before any fallback. On Samsung this
+leaves an already-on TV's picture untouched. Standby restoration can delegate
+ambiguous CEC replies to the guarded driver, which requires fresh confirmed on
+before a network toggle. The real-call test plan and measured results are in
+`docs/tv-in-situ-test-plan.md`.
 
 ### Installation TV checks
 
@@ -734,6 +737,11 @@ approval. The user selects among discovered TVs. The fallback stores private
 `KEY_TV` for the remembered tuner source. A power-toggle fallback is used only
 after rechecking a settled on-state, never for unknown/transitional/off status.
 It does not restore arbitrary smart-TV apps.
+If the Q60C displays “Check Device Power” despite an active Pi HDMI output, inspect
+its source identification and Universal remote setup. Term2's HDMI 2 had retained
+a Sky box profile; remove only that obsolete association from the Pi's port and
+repeat physical call qualification. Do not reset all TV settings or remove other
+devices. The plugin does not silently rewrite the TV's universal-remote profiles.
 
 Some Samsung models need a verified HDMI key bound to their actual physical
 address, for example `"terminal_source":{"address":"1.0.0.0","key":"KEY_HDMI"}`.
