@@ -223,6 +223,20 @@ recorded as skipped. Each operation runs in a separate process with a deadline,
 followed by observations scheduled at three absolute offsets, each with a photo
 then state queries. Actual capture start/completion times expose sampling overhead. The overview compares
 reported state with requested state; this is separate from visual qualification.
+The camera now stays open and drains frames continuously in a bounded child process.
+It warms once before the initial observation; each snapshot requests the next
+frame. Frame-read and save timings are recorded, rather than claiming an exact
+sensor exposure timestamp. A stalled camera times out instead of reusing a stale
+photo. The camera closes before normal terminal ownership resumes.
+
+For a controlled settling comparison, run the same sequence separately with
+`--observation-count 1 --delay 5`, then with delays 10 and 15. Keep the driver,
+inputs and initial state identical. This takes one photo and queries power/input
+per command; it does not wait for three samples. Actual inter-command gaps also
+include photo and query overhead and are recorded explicitly. Compare pictures
+against query answers, retain failed runs and repeat before attributing an
+intermittent fault to timing. Queries themselves may affect the device, so this
+is evidence for the tested polling pattern, not a proof of behaviour without it.
 The report records command duration, not time to a visibly completed transition.
 
 Retrieve the ZIP over the developer shell using an SSH binary stream (or SCP/SFTP

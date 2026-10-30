@@ -133,3 +133,62 @@ class TVSelfTestTests(unittest.TestCase):
         end = events.index('set_power_on')
         self.assertEqual(events[start:end].count('photo'), 3)
         self.assertFalse(any(e.startswith('set_') for e in events[start+1:end]))
+
+    def test_single_sample_controls_settling_and_records_query_overhead(self):
+        now = [0.0]
+        def sleep(seconds):
+            now[0] += seconds
+        def invoke(method, args):
+            now[0] += .2
+            return self.invoke(method, args)
+        def snapshot(index):
+            now[0] += .05
+        report = run_sequence(invoke, snapshot, [], delay=5, sleep=sleep,
+                              clock=lambda: now[0], observation_count=1)
+        for step in report['steps'][1:]:
+            self.assertEqual(len(step['observations']), 1)
+            sample = step['observations'][0]
+            self.assertEqual(sample['started_seconds'], 5)
+            self.assertEqual(sample['power_query_started_seconds'], 5.05)
+            self.assertEqual(sample['input_query_started_seconds'], 5.25)
+        self.assertEqual(report['steps'][2]['gap_since_previous_command_seconds'], 5.45)
+
+    def test_camera_wait_detects_dead_process_and_missing_receipt(self):
+        from unittest.mock import Mock, patch
+        spec = importlib.util.spec_from_file_location('tv_cli', 'build_tools/linux/tv-plugin-self-test.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'missing'
+            with self.assertRaises(RuntimeError):
+                module.wait_for_file(path, Mock(poll=Mock(return_value=1)), 5)
+            with patch.object(module.time, 'monotonic', side_effect=[0, 6]):
+                with self.assertRaises(TimeoutError):
+                    module.wait_for_file(path, Mock(poll=Mock(return_value=None)), 5)
+
+    def test_continuous_camera_warms_once_and_saves_next_requested_frame(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock, patch
+        spec = importlib.util.spec_from_file_location('tv_cli_camera', 'build_tools/linux/tv-plugin-self-test.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            frames = [0]
+            def read():
+                frames[0] += 1
+                if frames[0] == 30:
+                    (folder / 'camera-request.json').write_text('1')
+                if frames[0] == 32:
+                    raise RuntimeError('End fake stream')
+                return True, frames[0]
+            camera = Mock(read=read)
+            cv = Mock(VideoCapture=Mock(return_value=camera), imwrite=Mock(return_value=True))
+            with patch.dict('sys.modules', {'cv2': cv}):
+                with self.assertRaisesRegex(RuntimeError, 'End fake stream'):
+                    module.capture_stream(SimpleNamespace(camera='/dev/fake', capture_stream=directory))
+            self.assertTrue((folder / 'camera-ready').exists())
+            self.assertTrue((folder / 'capture-1.json').exists())
+            cv.imwrite.assert_called_once_with(str(folder / 'photo-01.jpg'), 31)
+            cv.VideoCapture.assert_called_once()
+            camera.release.assert_called_once()

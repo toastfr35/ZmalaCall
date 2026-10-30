@@ -48,20 +48,69 @@ def worker(args):
     print(json.dumps(result))
 
 
-def capture(args):
-    """A separate camera process prevents a stalled USB read hanging the test."""
+def capture_stream(args):
+    """Drain frames continuously in an isolated child; save a fresh requested frame.
+
+    The parent bounds startup and each request, so a blocked USB read cannot
+    hang the test. Keeping the stream warm removes per-photo camera startup.
+    """
     import cv2
+    folder = Path(args.capture_stream)
     camera = cv2.VideoCapture(args.camera, cv2.CAP_V4L2)
     try:
         camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        for _ in range(15):
+        camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        warmed = 0
+        pending = None
+        while True:
+            # Read the request before acquiring the next frame, not afterwards.
+            request = folder / 'camera-request.json'
+            if request.exists():
+                pending = json.loads(request.read_text())
+                request.unlink()
             ok, frame = camera.read()
-        if not ok or not cv2.imwrite(args.capture, frame):
-            raise RuntimeError('Camera capture failed')
+            captured = time.monotonic()
+            if not ok:
+                raise RuntimeError('Camera read failed')
+            warmed += 1
+            if warmed == 30:
+                (folder / 'camera-ready').touch()
+            if pending is not None:
+                index = int(pending)
+                name = f'photo-{index:02d}.jpg'
+                if not cv2.imwrite(str(folder / name), frame):
+                    raise RuntimeError('Camera write failed')
+                receipt = folder / f'capture-{index}.json'
+                temporary = receipt.with_suffix('.tmp')
+                temporary.write_text(json.dumps({'frame_read_monotonic': captured,
+                                                  'saved_monotonic': time.monotonic()}))
+                temporary.replace(receipt)
+                pending = None
     finally:
         camera.release()
+
+
+def wait_for_file(path, process, timeout):
+    """Fail closed if the camera exits or stops delivering frames."""
+    deadline = time.monotonic() + timeout
+    while not path.exists():
+        if process.poll() is not None:
+            raise RuntimeError('Camera process exited')
+        if time.monotonic() >= deadline:
+            raise TimeoutError('Camera observation timed out')
+        time.sleep(.01)
+
+
+def stop_process(process):
+    if process is not None:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
 
 
 def main():
@@ -72,19 +121,21 @@ def main():
     parser.add_argument('--camera', default='/dev/video0')
     parser.add_argument('--input', action='append', default=[], help='Restorable plugin input ID; repeat in test order')
     parser.add_argument('--delay', type=float, default=5)
+    parser.add_argument('--observation-count', type=int, choices=(1, 3), default=3,
+                        help='Use 1 to compare inter-command settling intervals; default 3 samples')
     parser.add_argument('--timeout', type=float, default=20)
     parser.add_argument('--output', type=Path, help='New ZIP filename; existing files are never overwritten')
     parser.add_argument('--operate-tv', action='store_true', help='Explicitly permit power and source changes')
     parser.add_argument('--pause-terminal', action='store_true', help='Pause terminal/C20 ownership, then restart it')
     parser.add_argument('--no-test-card', action='store_true', help='Skip fullscreen HDMI pattern when no X display is available')
     parser.add_argument('--worker', help=argparse.SUPPRESS)
-    parser.add_argument('--capture', help=argparse.SUPPRESS)
+    parser.add_argument('--capture-stream', help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.worker:
         worker(args)
         return 0
-    if args.capture:
-        capture(args)
+    if args.capture_stream:
+        capture_stream(args)
         return 0
     if not args.operate_tv or not args.output:
         parser.error('--operate-tv and --output are required; run only while no call is active')
@@ -99,6 +150,7 @@ def main():
     paused = False
     report = None
     card = None
+    camera = None
     try:
         if active:
             subprocess.run(['sudo', '-n', 'systemctl', 'stop', 'zmalacall-terminal'], check=True, timeout=30)
@@ -134,27 +186,41 @@ def main():
                 except Exception as error:
                     return {'status': 'error', 'error': type(error).__name__, 'value': None}
 
+            camera = subprocess.Popen(command + ['--camera', args.camera, '--capture-stream', str(folder)],
+                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            wait_for_file(folder / 'camera-ready', camera, 20)
+            captures = {}
+
             def snapshot(index):
                 name = f'photo-{index:02d}.jpg'
-                subprocess.run(command + ['--camera', args.camera, '--capture', str(folder / name)],
-                               capture_output=True, timeout=20, check=True)
-                print(f'Captured step {index}', flush=True)
+                request = folder / 'camera-request.json'
+                temporary = request.with_suffix('.tmp')
+                temporary.write_text(json.dumps(index))
+                temporary.replace(request)
+                receipt = folder / f'capture-{index}.json'
+                wait_for_file(receipt, camera, 5)
+                captures[name] = json.loads(receipt.read_text())
+                print(f'Captured photo {index}', flush=True)
                 return name
 
-            report = run_sequence(invoke, snapshot, args.input, args.delay)
+            report = run_sequence(invoke, snapshot, args.input, args.delay,
+                                  observation_count=args.observation_count)
+            report['camera_mode'] = 'continuous warmed stream; requested next frame'
+            for step in report['steps']:
+                for observation in step['observations']:
+                    timing = captures.get(observation.get('photo'))
+                    if timing:
+                        observation['frame_read_seconds'] = round(timing['frame_read_monotonic'] - step['command_completed_monotonic'], 3)
+            stop_process(camera)
+            camera = None
             report['driver'] = args.driver
             report['test_card'] = not args.no_test_card
             report['terminal_service_paused'] = paused
             package_report(report, folder, args.output)
             print('Evidence ZIP:', args.output, flush=True)
     finally:
-        if card is not None:
-            card.terminate()
-            try:
-                card.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                card.kill()
-                card.wait()
+        stop_process(camera)
+        stop_process(card)
         if paused:
             subprocess.run(['sudo', '-n', 'systemctl', 'start', 'zmalacall-terminal'], check=True, timeout=30)
     return 0 if report and report.get('sequence_status', '').startswith('Sequence finished') else 1

@@ -112,3 +112,37 @@ remove the earlier intermittent failures. Repeat qualification remains necessary
 The original runtime plugin was restored, the terminal service was confirmed
 active and developer access was disabled after testing. Private photos and the
 reviewed HTML/ZIP are retained locally, outside version control.
+
+## Continuous-camera settling comparison
+
+Three further trials used the same candidate, on/tuner baseline and 23-step
+sequence, with one observation per command at 5, 10 or 15 seconds. The camera
+stayed open and drained frames throughout each trial; frame reads occurred
+approximately 44–81 ms after the target. All 69 photos were visually reviewed.
+Power and input getters ran after every photo, and all 66 setter/state comparisons
+matched. Those matches did **not** establish that the programme picture was ready.
+
+- At 5 seconds, initial wake and repeated on were dark (steps 3–4). Later tuner
+  wake was also dark, and re-selection showed only an OSD banner (15–16).
+- At 10 seconds, initial wake was dark and repeated on showed only a banner
+  (3–4). Later tuner wake and re-selection showed live television.
+- At 15 seconds, initial wake showed only a banner and repeated on was dark
+  (3–4). Later tuner wake and re-selection showed live television.
+- In all three trials, standby photos were dark; HDMI wake, HDMI/tuner switching
+  and final restoration showed the expected pictures. The terminal card clock
+  advanced between samples.
+
+Thus a blanket 15-second wait is not a demonstrated remedy. Reported on/source
+state must not be interpreted as visible playback readiness. The experiments
+changed both standby dwell and post-command observation time; sequential trial
+order and one run per interval also limit causal conclusions. The next focused
+investigation should isolate wake from tuner versus HDMI, holding standby dwell
+fixed, and observe picture recovery without intervening setters. No production
+wake delay or controller behaviour was changed by this experiment.
+
+The runner now records actual frame-read, getter-start and inter-command timings.
+Its continuous camera child has bounded readiness/capture waits and is stopped
+before the terminal resumes. Tool tests cover next-frame capture, single-sample
+scheduling, query overhead, process failure and timeout. Runtime requirements and
+user workflows remain unchanged. The original plugin was restored and developer
+access disabled; private HTML/photo evidence remains outside Git.

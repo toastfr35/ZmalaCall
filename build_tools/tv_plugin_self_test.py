@@ -16,10 +16,12 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep, clock=time.monotonic):
+def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep, clock=time.monotonic, observation_count=3):
     """Inject bounded driver/camera operations so the sequence is independently testable."""
+    if observation_count not in (1, 3):
+        raise ValueError('observation_count must be 1 or 3')
     report = {'schema_version': 1, 'sequence': 'power-and-directed-input-transitions-v3', 'started_at': utc_now(), 'steps': [], 'visual_verdict': 'Not assessed',
-              'restoration': 'Not attempted'}
+              'restoration': 'Not attempted', 'observation_count': observation_count}
     capabilities = set()
     initial = {}
     photo_number = 0
@@ -32,6 +34,7 @@ def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep, clock=time
     def step(label, method=None, args=(), restoring=False):
         nonlocal photo_number
         started = clock()
+        previous = report['steps'][-1] if report['steps'] else None
         result = call(method, *args) if method else {'status': 'observation', 'value': None}
         completed = clock()
         command_seconds = completed - started
@@ -39,11 +42,13 @@ def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep, clock=time
                   'arguments': list(args), 'result': result,
                   'power': {'status': 'not observed', 'value': None},
                   'input': {'status': 'not observed', 'value': None},
+                  'command_started_monotonic': started, 'command_completed_monotonic': completed,
+                  'gap_since_previous_command_seconds': round(started - previous['command_completed_monotonic'], 3) if previous else None,
                   'command_seconds': round(command_seconds, 3), 'delay_seconds': delay if method else 0,
                   'restoring': restoring}
         report['steps'].append(record)
         record['observations'] = []
-        offsets = (delay, delay * 2, delay * 3) if method and result['status'] != 'unsupported' else (0,)
+        offsets = tuple(delay * n for n in range(1, observation_count + 1)) if method and result['status'] != 'unsupported' else (0,)
         for offset in offsets:
             # Absolute deadlines avoid accumulating the duration of previous
             # camera/status operations into subsequent observation times.
@@ -57,7 +62,9 @@ def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep, clock=time
                 observation['photo_completed_seconds'] = round(clock() - completed, 3)
             except Exception as error:
                 observation['photo_error'] = type(error).__name__
+            observation['power_query_started_seconds'] = round(clock() - completed, 3)
             observation['power'] = call('get_power_status')
+            observation['input_query_started_seconds'] = round(clock() - completed, 3)
             observation['input'] = call('get_current_input')
             observation['observed_at'] = utc_now()
             observation['completed_seconds'] = round(clock() - completed, 3)
@@ -149,7 +156,12 @@ def render_html(report, folder):
                     photo = f'<img alt="TV photograph after step {index}" src="data:image/jpeg;base64,{encoded}">'
             title = f'Observation at +{observation.get("target_seconds", 0)} seconds'
             timing = f'Capture started +{observation.get("started_seconds", 0):.2f}s; completed +{observation.get("photo_completed_seconds", 0):.2f}s'
-            values = json.dumps({'power': observation.get('power'), 'input': observation.get('input')}, indent=2)
+            if 'frame_read_seconds' in observation:
+                timing += f'; frame read +{observation["frame_read_seconds"]:.2f}s'
+            values = json.dumps({'power': observation.get('power'), 'input': observation.get('input'),
+                                 'power_query_started_seconds': observation.get('power_query_started_seconds'),
+                                 'input_query_started_seconds': observation.get('input_query_started_seconds'),
+                                 'queries_completed_seconds': observation.get('completed_seconds')}, indent=2)
             photos.append(f'<h3>{escaped(title)}</h3><p>{escaped(timing)}</p>' +
                           (photo or '<p class="warning">Photo unavailable</p>') + f'<pre>{escaped(values)}</pre>')
         photo = ''.join(photos)
@@ -162,7 +174,8 @@ def render_html(report, folder):
                               'result': result, 'reported_power': step['power'],
                               'reported_input': step['input']}, indent=2)
         cards.append(f'''<section id="step-{index}"><h2>{index}. {escaped(step['label'])}</h2>
-<p>{escaped(step['timestamp'])} · Command: {step['command_seconds']:.3f}s · Observation interval: {step['delay_seconds']}s (three samples)</p>
+<p>{escaped(step['timestamp'])} · Command: {step['command_seconds']:.3f}s · Observation interval: {step['delay_seconds']}s ({len(step.get("observations", []))} samples)</p>
+<p>Gap since preceding command completed: {escaped(step.get("gap_since_previous_command_seconds"))}s</p>
 {photo or '<p class="warning">No photo: '+escaped(step.get('photo_error', 'unavailable'))+'</p>'}
 <details open><summary>Plugin observations</summary><pre>{escaped(details)}</pre></details>
 <p class="review">Visual review: compare the picture with the requested action. No automatic pass is claimed.</p></section>''')
