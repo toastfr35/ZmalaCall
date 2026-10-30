@@ -190,7 +190,7 @@ During an idle maintenance window, run the generic developer self-test on the Pi
 ```sh
 sudo python3 /opt/zmalacall/current/build_tools/linux/tv-plugin-self-test.py \
   --driver samsung --input 2.0.0.0 --input 0.0.0.0 \
-  --delay 4 --operate-tv --pause-terminal \
+  --delay 5 --operate-tv --pause-terminal \
   --output /var/tmp/tv-self-test.zip
 ```
 
@@ -201,12 +201,27 @@ select a private configuration file; `--cec-device` overrides automatic adapter
 selection. The tool needs the deployed Pi runtime, OpenCV, camera access and
 permission to pause/restart the terminal and wake the C20. Do not run during calls.
 
-The standard sequence records the initial state, requests on twice, selects each
-supplied input, requests off twice, wakes again, and attempts to restore the
-initial source and power. An unknown initial power state limits the run to
-observation. Unknown original input is reported as incomplete source restoration.
-Unsupported methods are recorded as skipped. Each operation runs in a separate
-process with a deadline, followed by a settling delay, state queries and a photo.
+The standard sequence is:
+
+1. Photograph the initial state.
+2. Request off, then on, then on again, waiting five seconds and photographing
+   after **each** command.
+3. For each supplied input: select it, select it again, request standby, repeat
+   standby, wake, then re-select the same input. Each action has its own delay/photo.
+4. Exercise every directed pair of inputs (A → B and B → A for two inputs).
+5. Attempt to restore the original input and power, with photos of restoration.
+
+A fullscreen colour-bar card labelled **ZmalaCall TV TEST / TERMINAL HDMI INPUT**
+with a live clock appears on the Pi's X display during the run. It makes the
+terminal source recognisable and helps reveal frozen camera frames. The card
+closes before the terminal service restarts. `--no-test-card` explicitly skips it
+on systems without an X display. The Pi display service must already be running.
+
+An unknown initial power state limits the run to observation. Unknown original
+input is reported as incomplete source restoration. Unsupported methods are
+recorded as skipped. Each operation runs in a separate process with a deadline,
+followed by the settling delay, a photo, then state queries. The overview compares
+reported state with requested state; this is separate from visual qualification.
 The report records command duration, not time to a visibly completed transition.
 
 Retrieve the ZIP over the developer shell using an SSH binary stream (or SCP/SFTP

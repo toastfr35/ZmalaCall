@@ -16,9 +16,9 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def run_sequence(invoke, snapshot, inputs, delay=4, sleep=time.sleep):
+def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep):
     """Inject bounded driver/camera operations so the sequence is independently testable."""
-    report = {'started_at': utc_now(), 'steps': [], 'visual_verdict': 'Not assessed',
+    report = {'schema_version': 1, 'sequence': 'power-and-directed-input-transitions-v2', 'started_at': utc_now(), 'steps': [], 'visual_verdict': 'Not assessed',
               'restoration': 'Not attempted'}
     capabilities = set()
     initial = {}
@@ -34,18 +34,33 @@ def run_sequence(invoke, snapshot, inputs, delay=4, sleep=time.sleep):
         command_seconds = time.monotonic() - started
         if method and result['status'] != 'unsupported':
             sleep(delay)
-        power = call('get_power_status')
-        source = call('get_current_input')
         record = {'label': label, 'timestamp': utc_now(), 'method': method,
-                  'arguments': list(args), 'result': result, 'power': power, 'input': source,
+                  'arguments': list(args), 'result': result,
+                  'power': {'status': 'not observed', 'value': None},
+                  'input': {'status': 'not observed', 'value': None},
                   'command_seconds': round(command_seconds, 3), 'delay_seconds': delay if method else 0,
                   'restoring': restoring}
         report['steps'].append(record)
-        # Retain the attempted action even if the camera fails.
+        # Photograph immediately after the settling delay, before status queries
+        # add latency or affect a TV's firmware behaviour.
         try:
             record['photo'] = snapshot(len(report['steps']))
+            record['photo_at'] = utc_now()
         except Exception as error:
             record['photo_error'] = type(error).__name__
+        record['power'] = call('get_power_status')
+        record['input'] = call('get_current_input')
+        record['observed_at'] = utc_now()
+        expected = None
+        actual = None
+        if method in ('set_power_on', 'set_power_off'):
+            expected, actual = method == 'set_power_on', record['power'].get('value')
+        elif method == 'set_current_input':
+            expected, actual = args[0], record['input'].get('value')
+        record['expected_state'] = expected
+        record['reported_state_comparison'] = ('not applicable' if method is None else
+            'unsupported' if result['status'] == 'unsupported' else
+            'unknown' if actual is None else 'matches' if actual == expected else 'differs')
         return record
 
     try:
@@ -64,13 +79,26 @@ def run_sequence(invoke, snapshot, inputs, delay=4, sleep=time.sleep):
         if not isinstance(initial['power'], bool):
             report['sequence_status'] = 'Observation only: initial power unknown'
             return report
+        step('Initial power off', 'set_power_off')
         step('Power on', 'set_power_on')
         step('Repeat power on (must remain on)', 'set_power_on')
         for source in inputs:
             step('Select input ' + source, 'set_current_input', (source,))
-        step('Power off', 'set_power_off')
-        step('Repeat power off (must remain off)', 'set_power_off')
-        step('Wake after standby', 'set_power_on')
+            step('Repeat selection of ' + source, 'set_current_input', (source,))
+            step('Standby from input ' + source, 'set_power_off')
+            step('Repeat standby from ' + source, 'set_power_off')
+            step('Wake after standby from ' + source, 'set_power_on')
+            step('Re-select ' + source + ' after wake', 'set_current_input', (source,))
+        # Every directed pair is exercised, without assuming wake preserves input.
+        for origin in inputs:
+            for destination in inputs:
+                if origin != destination:
+                    step('Prepare transition from ' + origin, 'set_current_input', (origin,))
+                    step('Switch ' + origin + ' → ' + destination, 'set_current_input', (destination,))
+        if not inputs:
+            step('Power off', 'set_power_off')
+            step('Repeat power off (must remain off)', 'set_power_off')
+            step('Wake after standby', 'set_power_on')
         report['sequence_status'] = 'Sequence finished; inspect photos and reported states'
     except (Exception, KeyboardInterrupt) as error:
         report['sequence_status'] = 'Interrupted: ' + type(error).__name__
@@ -98,6 +126,7 @@ def render_html(report, folder):
 
     notes = ''.join('<li>' + escaped(note) + '</li>' for note in report.get('review_notes', []))
     cards = []
+    overview = []
     for index, step in enumerate(report['steps'], 1):
         photo = ''
         if step.get('photo'):
@@ -106,10 +135,14 @@ def render_html(report, folder):
                 encoded = base64.b64encode(path.read_bytes()).decode('ascii')
                 photo = f'<img alt="TV photograph after step {index}" src="data:image/jpeg;base64,{encoded}">'
         result = step['result']
+        overview.append(f'<tr><td><a href="#step-{index}">{index}</a></td><td>{escaped(step["label"])}</td>'
+                        f'<td>{escaped(result.get("value"))} ({escaped(result["status"])})</td>'
+                        f'<td>{escaped(step["power"].get("value"))}</td><td>{escaped(step["input"].get("value"))}</td>'
+                        f'<td>{escaped(step.get("reported_state_comparison", "not assessed"))}</td></tr>')
         details = json.dumps({'action': step['method'], 'arguments': step['arguments'],
                               'result': result, 'reported_power': step['power'],
                               'reported_input': step['input']}, indent=2)
-        cards.append(f'''<section><h2>{index}. {escaped(step['label'])}</h2>
+        cards.append(f'''<section id="step-{index}"><h2>{index}. {escaped(step['label'])}</h2>
 <p>{escaped(step['timestamp'])} · Command: {step['command_seconds']:.3f}s · Requested settling delay: {step['delay_seconds']}s</p>
 {photo or '<p class="warning">No photo: '+escaped(step.get('photo_error', 'unavailable'))+'</p>'}
 <details open><summary>Plugin observations</summary><pre>{escaped(details)}</pre></details>
@@ -120,7 +153,7 @@ def render_html(report, folder):
 body{{font:16px system-ui,sans-serif;background:#10151e;color:#e6edf5;margin:0 auto;max-width:1000px;padding:24px}}
 h1,h2{{line-height:1.3}}section{{background:#1c2532;border:1px solid #354456;border-radius:12px;padding:20px;margin:24px 0}}
 img{{width:100%;height:auto;border-radius:8px}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:#111923;padding:14px}}
-p{{line-height:1.6}}.warning{{color:#ffd38a}}.review{{color:#afc8e7}}summary{{cursor:pointer}}code{{overflow-wrap:anywhere}}
+p{{line-height:1.6}}.warning{{color:#ffd38a}}.review{{color:#afc8e7}}summary{{cursor:pointer}}table{{border-collapse:collapse;width:100%;font-size:14px}}th,td{{border:1px solid #354456;padding:8px;text-align:left}}a{{color:#8bc7ff}}.table{{overflow-x:auto}}code{{overflow-wrap:anywhere}}
 </style><h1>TV plugin self-test</h1>
 <p><strong>Model:</strong> {escaped(report.get('model', {}).get('value'))}<br>
 <strong>Started:</strong> {escaped(report['started_at'])}<br>
@@ -129,6 +162,7 @@ p{{line-height:1.6}}.warning{{color:#ffd38a}}.review{{color:#afc8e7}}summary{{cu
 <p class="warning">This is an evidence record, not automatic qualification. A successful command does not prove that the TV changed. Times measure the API call, not time to visible completion. Photos may show private household content.</p>
 <p><strong>Visual review:</strong> {escaped(report.get("visual_verdict", "Not assessed"))}</p><ul>{notes}</ul>
 <p>Capabilities: {escaped(', '.join(report.get('capabilities', [])))}</p>
+<div class="table"><table><thead><tr><th>Step</th><th>Action</th><th>Command result</th><th>Power</th><th>Input</th><th>Reported state vs request</th></tr></thead><tbody>{''.join(overview)}</tbody></table></div>
 {''.join(cards)}</html>'''
 
 

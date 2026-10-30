@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from build_tools.tv_plugin_self_test import package_report, run_sequence  # noqa: E402
@@ -70,11 +71,12 @@ def main():
     parser.add_argument('--cec-device', help='Optional CEC adapter; otherwise detect connected output')
     parser.add_argument('--camera', default='/dev/video0')
     parser.add_argument('--input', action='append', default=[], help='Restorable plugin input ID; repeat in test order')
-    parser.add_argument('--delay', type=float, default=4)
+    parser.add_argument('--delay', type=float, default=5)
     parser.add_argument('--timeout', type=float, default=20)
     parser.add_argument('--output', type=Path, help='New ZIP filename; existing files are never overwritten')
     parser.add_argument('--operate-tv', action='store_true', help='Explicitly permit power and source changes')
     parser.add_argument('--pause-terminal', action='store_true', help='Pause terminal/C20 ownership, then restart it')
+    parser.add_argument('--no-test-card', action='store_true', help='Skip fullscreen HDMI pattern when no X display is available')
     parser.add_argument('--worker', help=argparse.SUPPRESS)
     parser.add_argument('--capture', help=argparse.SUPPRESS)
     args = parser.parse_args()
@@ -96,6 +98,7 @@ def main():
         parser.error('terminal is active; use --pause-terminal during an idle maintenance window')
     paused = False
     report = None
+    card = None
     try:
         if active:
             subprocess.run(['sudo', '-n', 'systemctl', 'stop', 'zmalacall-terminal'], check=True, timeout=30)
@@ -103,6 +106,18 @@ def main():
         subprocess.run(['sudo', '-n', '/usr/local/libexec/zmala-usb-power', 'on'], check=True, timeout=45)
         with tempfile.TemporaryDirectory(prefix='zmala-tv-test-') as temporary:
             folder = Path(temporary)
+            if not args.no_test_card:
+                environment = dict(os.environ, DISPLAY=os.environ.get('DISPLAY', ':0'),
+                                   XAUTHORITY=os.environ.get('XAUTHORITY', '/run/zmalacall-display/Xauthority'))
+                ready = folder / 'card-ready'
+                card = subprocess.Popen([sys.executable, str(Path(__file__).resolve().parents[1] / 'tv_test_card.py'),
+                                         '--ready', str(ready)], env=environment,
+                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                deadline = time.monotonic() + 10
+                while not ready.exists() and card.poll() is None and time.monotonic() < deadline:
+                    time.sleep(.1)
+                if not ready.exists():
+                    raise RuntimeError('HDMI test card did not start')
             command = [sys.executable, str(Path(__file__).resolve()), '--driver', args.driver]
             for flag, value in [('--config', args.config), ('--cec-device', args.cec_device)]:
                 if value:
@@ -128,10 +143,18 @@ def main():
 
             report = run_sequence(invoke, snapshot, args.input, args.delay)
             report['driver'] = args.driver
+            report['test_card'] = not args.no_test_card
             report['terminal_service_paused'] = paused
             package_report(report, folder, args.output)
             print('Evidence ZIP:', args.output, flush=True)
     finally:
+        if card is not None:
+            card.terminate()
+            try:
+                card.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                card.kill()
+                card.wait()
         if paused:
             subprocess.run(['sudo', '-n', 'systemctl', 'start', 'zmalacall-terminal'], check=True, timeout=30)
     return 0 if report and report.get('sequence_status', '').startswith('Sequence finished') else 1

@@ -41,8 +41,11 @@ class TVSelfTestTests(unittest.TestCase):
         self.assertFalse(self.power)
         self.assertEqual(self.source, 'original')
         self.assertEqual(len(photos), len(report['steps']))
-        self.assertEqual([a for m, a in self.calls if m == 'set_current_input'], [['other'], ['original']])
+        self.assertEqual([a for m, a in self.calls if m == 'set_current_input'], [['other'], ['other'], ['other'], ['original']])
         self.assertEqual(report['visual_verdict'], 'Not assessed')
+        self.assertEqual([step['method'] for step in report['steps'][:4]],
+                         [None, 'set_power_off', 'set_power_on', 'set_power_on'])
+        self.assertEqual([step['delay_seconds'] for step in report['steps'][1:4]], [5, 5, 5])
 
     def test_unknown_power_runs_observation_only(self):
         self.power = None
@@ -92,3 +95,22 @@ class TVSelfTestTests(unittest.TestCase):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         self.assertEqual(len(module.METHODS), 7)
+
+    def test_every_directed_input_transition_and_per_input_power_cycle(self):
+        report = run_sequence(self.invoke, lambda _: None, ['A', 'B'], sleep=lambda _: None)
+        labels = [s['label'] for s in report['steps']]
+        for source in ['A', 'B']:
+            self.assertIn('Standby from input ' + source, labels)
+            self.assertIn('Repeat standby from ' + source, labels)
+            self.assertIn('Wake after standby from ' + source, labels)
+        self.assertIn('Switch A → B', labels)
+        self.assertIn('Switch B → A', labels)
+
+    def test_interrupt_during_photo_still_produces_a_report(self):
+        def photo(index):
+            if index == 3:
+                raise KeyboardInterrupt()
+        report = run_sequence(self.invoke, photo, ['other'], sleep=lambda _: None)
+        self.assertEqual(report['steps'][2]['power']['status'], 'not observed')
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertIn('Interrupted', render_html(report, Path(directory)))

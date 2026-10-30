@@ -79,3 +79,16 @@ Its exact path and access details are in ignored local hardware records. Rollbac
 restores those files while the terminal is idle, then restarts its service.
 The candidate preserves pairing and source-binding data. There are no end-user
 setup workflow changes, so the user guides require no new instructions.
+
+## Expanded transition run
+
+The revised generic runner completed 23 photographed steps with five-second
+settling delays, beginning with initial/off/on/on. It exercised per-input
+idempotence and power cycles, both directed input transitions, then restoration.
+The fullscreen colour-bar card is clearly visible at step 10, and live TV at
+step 11. Steps 5–6 accepted HDMI selection but reported tuner; their photos did
+not confirm the test card (a TV source/pairing screen appeared on repetition).
+Step 15 accepted wake but still reported standby. Subsequent source transitions
+were therefore inconclusive because the TV remained off. Restoration showed
+live TV again and the terminal service restarted. This candidate is not fully
+qualified; retain the failure evidence and investigate before release.
