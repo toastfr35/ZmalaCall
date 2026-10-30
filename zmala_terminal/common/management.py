@@ -24,11 +24,12 @@ def defer_auto_answer(model, tv, now):
 
 
 class ManagementLoop:
-    def usb_media_ready(self):
+    # @llr LLR-TERM-POWER-016
+    def usb_media_ready(self, reason='media preparation'):
         power = getattr(self, 'usb_power', None)
         if not power or not power.enabled:
             return True
-        power.require()
+        power.require(reason=reason)
         power.refresh(self.engine)
         return power.ready
 
@@ -39,7 +40,16 @@ class ManagementLoop:
             active = bool(self.setup_stage or self.scanner or self.model.state != State.HOME
                           or self.engine and self.engine.call or self.settings_open
                           or getattr(self, 'keys_down', None))
-            power.update(active, self.presenter_input.battery, self.model.state == State.RINGING)
+            # Fixed diagnostic labels avoid logging contacts or enrollment data.
+            reasons = []
+            if self.setup_stage: reasons.append('setup')
+            if self.scanner: reasons.append('QR scanner')
+            if self.model.state != State.HOME: reasons.append(self.model.state.value)
+            if self.engine and self.engine.call: reasons.append('native call active')
+            if self.settings_open: reasons.append('settings open')
+            if getattr(self, 'keys_down', None): reasons.append('button held')
+            power.update(active, self.presenter_input.battery, self.model.state == State.RINGING,
+                         reason=', '.join(reasons) or 'idle')
             power.refresh(self.engine)
 
     def poll_wifi(self):

@@ -32,9 +32,9 @@ class CallControl:
             if not self.model.incoming(user, domain):
                 self.engine.call_decline(call, 6 if self.model.state != State.HOME else 2)
                 return
-            # @llr LLR-TERM-POWER-014
+            # @llr LLR-TERM-POWER-014, LLR-TERM-POWER-016
             if getattr(self, 'usb_power', None):
-                self.usb_power.require(urgent=True)
+                self.usb_power.require(urgent=True, reason='incoming call')
             if getattr(self, 'settings_hold', None):
                 self.settings_hold.clear()
                 self.settings_open = False
@@ -139,7 +139,7 @@ class CallControl:
     def answer_when_ready(self):
         """Wait for USB enumeration without blocking SIP iteration or answering an obsolete call."""
         ready = getattr(self, 'usb_media_ready', None)
-        if ready and not ready():
+        if ready and not ready(reason='answering incoming call'):
             generation, call = self.generation, self.engine.call
             self.root.after(100, lambda: self.action('answer')
                 if not self.closed and self.generation == generation and self.engine
@@ -219,7 +219,7 @@ class CallControl:
         else:
             try:
                 ready = getattr(self, 'usb_media_ready', None)
-                if ready and not ready():
+                if ready and not ready(reason='outgoing call'):
                     self.root.after(100, lambda: self.dial_ready(generation, serial, contact, available, ring_timeout))
                     return
                 self.outgoing_deadline = time.monotonic() + ring_timeout

@@ -8,13 +8,13 @@ from zmala_terminal.common.volume_control import VolumeControl
 
 
 class InputControl:
-    # @llr LLR-TERM-POWER-014
+    # @llr LLR-TERM-POWER-014, LLR-TERM-POWER-016
     def input_activity(self):
         """Wake USB before any TV routing, debounce or setup consumption."""
         self.last_button = time.monotonic()
         power = getattr(self, 'usb_power', None)
         if power:
-            power.require(urgent=True)
+            power.require(urgent=True, reason='remote/keyboard input')
 
     def bind_inputs(self):
         from zmala_terminal.linux.action_sounds import ActionSounds

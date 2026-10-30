@@ -2,6 +2,8 @@
 # @requirements LLR-TERM-POWER-012, LLR-TERM-POWER-013, LLR-TERM-POWER-014, LLR-TERM-POWER-015, LLR-TERM-POWER-016, LLR-TERM-POWER-017
 # @environment portable
 # @plan Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication. Inject applied-volume status and worker time to verify ringing only after nonzero mixer convergence, atomic power telemetry, ringer termination escalation and unconditional shutdown power restoration.
+# Verify wake-reason logs for policy, explicit requests, retries, success/failure, helper
+# rollback and shutdown; steady polling emits no transition logs. No real USB is switched.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Boundary, wake-race, stale-input and cancellation tests without powering USB."""
@@ -98,6 +100,60 @@ class UsbPowerTests(unittest.TestCase):
         self.assertEqual(enabled.state, 'starting')
         thread.return_value.start.assert_called_once()
 
+    def test_power_policy_reasons_and_explicit_requests(self):
+        power = self.controller()
+        power.active = False; power.updated = 1000; power.last_use = 0
+        for battery, text in [(None, 'unknown'), (True, 'unknown'), (101, 'unknown'),
+                              (24, 'below 25%'), (25, 'idle timeout reached')]:
+            power.battery = battery
+            self.assertIn(text, power.power_reason(1000))
+        power.last_use = 999
+        self.assertIn('within five-minute', power.power_reason(1000))
+        self.assertIn('heartbeat stale', power.power_reason(1011))
+        for reason in ('incoming call', 'remote/keyboard input', 'configuration refresh', 'outgoing call'):
+            power.require(reason=reason)
+            self.assertEqual(power.last_request_reason, reason)
+            power.updated = 1000
+            self.assertEqual(power.power_reason(1000), reason)
+        power.update(True, 95, reason='settings open')
+        self.assertEqual(power.activity_reason, 'settings open')
+        power.preview_tone(Path('tone.wav'))
+        self.assertEqual(power.last_request_reason, 'ringtone preview')
+
+    def test_wake_logs_request_outcome_context_and_shutdown_without_poll_spam(self):
+        for previous in ('starting', 'off', 'error'):
+            power = self.controller(); power.state = previous
+            power.active = True; power.activity_reason = 'incoming call'
+            power.battery = 95; power.updated = power.last_use = 1000
+            def command(action):
+                power.stopped = True
+            power.command = command
+            with patch('time.monotonic', return_value=1000), \
+                    patch('zmala_terminal.linux.usb_power.media_present', return_value=True), \
+                    self.assertLogs(level='INFO') as logs:
+                power.run()
+            text = '\n'.join(logs.output)
+            self.assertIn('reason=' + ('startup: ' if previous == 'starting' else
+                          'retry after failed transition: ' if previous == 'error' else '') + 'incoming call', text)
+            self.assertIn('previous=' + previous, text)
+            self.assertIn('battery=95; idle=0.0s; update_age=0.0s', text)
+            self.assertIn('power on completed:', text)
+            self.assertIn('reason=worker shutdown', text)
+        power = self.controller(); power.state = 'on'; power.command = Mock()
+        power.changed.wait = Mock(side_effect=lambda delay: setattr(power, 'stopped', True))
+        with self.assertLogs(level='INFO') as logs: power.run()
+        self.assertEqual(len(logs.output), 2)  # Only shutdown request/result, no polling wake.
+        self.assertTrue(all('worker shutdown' in text for text in logs.output))
+
+    def test_helper_rollback_output_survives_subprocess_capture(self):
+        import subprocess
+        power = self.controller()
+        with patch('zmala_terminal.linux.usb_power.subprocess.run', side_effect=
+                   subprocess.CalledProcessError(1, 'helper', stderr='reason=failed power-off rollback')), \
+                self.assertLogs(level='WARNING') as logs:
+            with self.assertRaises(subprocess.CalledProcessError): power.command('off')
+        self.assertIn('failed power-off rollback', logs.output[0])
+
     def test_exact_idle_and_battery_boundaries(self):
         self.assertFalse(should_power_off(299.9, 0, False, 100))
         self.assertTrue(should_power_off(300, 0, False, 25))
@@ -143,7 +199,7 @@ class UsbPowerTests(unittest.TestCase):
         app.keys_down = {'red'}
         app.presenter_input = Mock(battery=95)
         app.tick_usb()
-        app.usb_power.update.assert_called_once_with(True, 95, False)
+        app.usb_power.update.assert_called_once_with(True, 95, False, reason='button held')
 
     def test_incoming_call_wakes_before_tv_work(self):
         app = CallControl()

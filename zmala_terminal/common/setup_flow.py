@@ -60,7 +60,8 @@ class ProvisioningFlow:
             self.start_wifi_cleanup()
             return
         ready = getattr(self, 'usb_media_ready', None)
-        if ready and not ready():
+        # @llr LLR-TERM-POWER-016
+        if ready and not ready(reason='QR scanner setup'):
             return
         self.render()
         self.root.update_idletasks()
