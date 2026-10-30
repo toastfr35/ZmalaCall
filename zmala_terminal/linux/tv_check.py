@@ -9,7 +9,7 @@ import time
 import urllib.request
 
 from zmala_terminal.linux.cec_device import connector
-from zmala_terminal.linux.samsung_tv import connect, save_config
+from zmala_terminal.linux.tv_plugins.samsung.driver import connect, save_config
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -23,7 +23,7 @@ class CheckTransport:
         self.tv.pause_for_setup()
         self.address = None
         self.trial_key = None
-        self.tv._samsung.enabled = False
+        self.tv._network_enabled = False
 
     def probe(self, cancel):
         # Wait for any cancelled normal worker before dropping its TV lease.
@@ -49,14 +49,14 @@ class CheckTransport:
         return {'address': self.address, 'display': hashlib.sha256(edid).hexdigest() if edid else None}
 
     def resume_network(self, enabled):
-        self.tv._samsung.enabled = bool(enabled)
+        self.tv._network_enabled = bool(enabled)
         if enabled:
             try:
-                config = json.loads(self.tv._samsung.config_file.read_text(encoding='utf-8'))
+                config = json.loads(self.tv._driver_config_file.read_text(encoding='utf-8'))
                 if config.get('terminal_source', {}).get('address') != self.address:
                     self.trial_key = 'KEY_HDMI'
             except (OSError, ValueError, AttributeError):
-                self.tv._samsung.enabled = False
+                self.tv._network_enabled = False
 
     def run(self, cancel, *args):
         if cancel.is_set():
@@ -110,10 +110,9 @@ class CheckTransport:
             self.run(cancel, '--active-source', 'phys-addr=' + self.address)
         except (OSError, RuntimeError, subprocess.SubprocessError) as caught:
             error = caught
-        if self.trial_key:
-            network = self.tv._samsung._send_key(self.trial_key, lambda: not cancel.is_set())
-        else:
-            network = self.tv._samsung.select_terminal(self.address, lambda: not cancel.is_set())
+        trial = {'address': self.address, 'key': self.trial_key} if self.trial_key else None
+        network = self.tv._driver_call('set_current_input', self.address,
+                                       is_current=lambda: not cancel.is_set(), trial_source=trial)
         if error and not network:
             raise error
 
@@ -137,7 +136,8 @@ class CheckTransport:
                     return False
                 self.run(cancel, '--to', '0', '--inactive-source', 'phys-addr=' + self.address)
                 if previous == '0.0.0.0':
-                    self.tv._samsung.restore_broadcast(lambda: not cancel.is_set())
+                    self.tv._driver_call('set_current_input', '0.0.0.0',
+                                         is_current=lambda: not cancel.is_set())
                 else:
                     self.run(cancel, '--set-stream-path', 'phys-addr=' + previous)
                     self.run(cancel, '--active-source', 'phys-addr=' + previous)
@@ -185,16 +185,16 @@ class CheckTransport:
         try:
             if not cancel.is_set():
                 # Permission alone does not establish a working HDMI command.
-                save_config(self.tv._samsung.config_file, config)
+                save_config(self.tv._driver_config_file, config)
                 self.trial_key = 'KEY_HDMI'
-                self.tv._samsung.enabled = True
+                self.tv._network_enabled = True
         finally:
             remote.close(timeout=0)
         return True
 
     def confirm_source(self):
         if self.trial_key:
-            path = self.tv._samsung.config_file
+            path = self.tv._driver_config_file
             value = json.loads(path.read_text(encoding='utf-8'))
             value['terminal_source'] = {'address': self.address, 'key': self.trial_key}
             save_config(path, value)

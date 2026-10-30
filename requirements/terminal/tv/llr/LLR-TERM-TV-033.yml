@@ -1,0 +1,39 @@
+active: true
+area: TV control
+derived: false
+header: |
+  Model-specific TV driver API
+level: 109.0
+links:
+- HLR-TERM-TV-018: ZYWJZfxPFY-U2Faag_owNyuH0jhoHw1LvN3GtcRGSgo=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/tv_plugins/__init__.py
+  type: file
+- path: zmala_terminal/linux/tv_plugins/api.py
+  type: file
+- path: zmala_terminal/linux/tv_plugins/samsung/driver.py
+  type: file
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+- path: tests/terminal/LLT/test_tv_plugins.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  TV model integrations shall reside in separate bundled plugin directories and
+  expose one TVDriver class with get_model, get_capabilities, get_power_status,
+  set_power_on, set_power_off, get_current_input and set_current_input methods.
+  Capabilities shall identify supported optional methods independently of setup
+  qualification; unsupported methods shall raise NotImplementedError. Power and
+  source getters shall return None when unknown and shall not infer success from
+  sent commands. Input identifiers shall be reusable for selection. Setters shall
+  report command acceptance without claiming observed completion, and power setters
+  shall not blindly toggle. Operations shall use bounded I/O outside the UI thread.
+  The controller shall retain cancellation, qualification and restoration policy.
+verification: |
+  Load registered and unknown drivers; exercise supported and unsupported methods,
+  unknown/transition observations, source round trips, failed and cancelled commands
+  and timeout configuration. Assert no optimistic getter updates, no blind toggles
+  and no propagation of optional driver failures into calls.
