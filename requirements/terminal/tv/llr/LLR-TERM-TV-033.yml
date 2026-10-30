@@ -31,9 +31,13 @@ text: |
   sent commands. Input identifiers shall be reusable for selection. Setters shall
   report command acceptance without claiming observed completion, and power setters
   shall not blindly toggle. Operations shall use bounded I/O outside the UI thread.
+  For Samsung, ambiguous or absent CEC power reports may be resolved by fresh local
+  metadata reporting on or standby. Unavailable, malformed, oversized or unrecognized
+  metadata shall remain unknown; settled CEC observations take precedence.
   The controller shall retain cancellation, qualification and restoration policy.
 verification: |
   Load registered and unknown drivers; exercise supported and unsupported methods,
   unknown/transition observations, source round trips, failed and cancelled commands
   and timeout configuration. Assert no optimistic getter updates, no blind toggles
-  and no propagation of optional driver failures into calls.
+  and no propagation of optional driver failures into calls. Exercise ambiguous CEC
+  with fresh metadata, network failure and oversized payloads.

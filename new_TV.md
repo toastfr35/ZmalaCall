@@ -183,6 +183,42 @@ answer-to-picture and command-to-visible-change timings rather than inventing
 performance targets. Repeat critical cases at least three times for the prototype
 and retain failures; this is a smoke test, not proof of long-term reliability.
 
+### Repeatable plugin evidence bundle
+
+During an idle maintenance window, run the generic developer self-test on the Pi:
+
+```sh
+sudo python3 /opt/zmalacall/current/build_tools/linux/tv-plugin-self-test.py \
+  --driver samsung --input 2.0.0.0 --input 0.0.0.0 \
+  --delay 4 --operate-tv --pause-terminal \
+  --output /var/tmp/tv-self-test.zip
+```
+
+Replace the driver and input identifiers for the TV being investigated; those
+values are plugin identifiers, not assumptions made by the runner. The example
+uses a previously verified Samsung HDMI-2 binding and its tuner. `--config` can
+select a private configuration file; `--cec-device` overrides automatic adapter
+selection. The tool needs the deployed Pi runtime, OpenCV, camera access and
+permission to pause/restart the terminal and wake the C20. Do not run during calls.
+
+The standard sequence records the initial state, requests on twice, selects each
+supplied input, requests off twice, wakes again, and attempts to restore the
+initial source and power. An unknown initial power state limits the run to
+observation. Unknown original input is reported as incomplete source restoration.
+Unsupported methods are recorded as skipped. Each operation runs in a separate
+process with a deadline, followed by a settling delay, state queries and a photo.
+The report records command duration, not time to a visibly completed transition.
+
+Retrieve the ZIP over the developer shell using an SSH binary stream (or SCP/SFTP
+where configured). The restricted developer shell need not expose an SFTP
+subsystem. Open `index.html` after extraction: photos are embedded, so this HTML
+also works alone. `report.json` and individual JPEGs accompany it. The report
+contains no configuration file, credential or raw third-party exception text;
+photos can show private household content, so keep the bundle out of Git.
+Existing ZIPs are never overwritten. Inspect every picture and result before
+claiming physical qualification. Failed commands and missing photographs remain
+visible evidence, even when the sequence reaches its end.
+
 ## 7. Deploy, document and close access
 
 - [ ] Review the candidate diff and confirm private pairing files, images and

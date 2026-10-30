@@ -1,7 +1,7 @@
 # @test T-LLT-086
 # @requirements LLR-TERM-TV-033, LLR-TERM-TV-031
 # @environment portable
-# @plan Load only registered drivers; exercise all seven API methods with temporary paired settings and mocked HTTP, WebSocket and CEC. Check truthful capabilities, unknown/transition states, source round trips, metadata timeout/redirect rejection, unchanged getters after writes, no constructor I/O, cancellation before/after authentication and before toggle, and controller fallback failure isolation.
+# @plan Load only registered drivers; exercise all seven API methods with temporary paired settings and mocked HTTP, WebSocket and CEC. Check truthful capabilities, unknown/transition states, source round trips, metadata timeout/redirect/oversize rejection, fresh LAN power fallback for ambiguous CEC, unchanged getters after writes, no constructor I/O, cancellation before/after authentication and before toggle, and controller fallback failure isolation.
 # @pass Assertions pass without operating a TV; this does not qualify physical Samsung input or power behaviour.
 """Contract and controller integration tests for the simple TV driver API."""
 import json
@@ -25,6 +25,10 @@ class TVPluginTests(unittest.TestCase):
                       'certificate_sha256': 'a' * 64,
                       'terminal_source': {'address': '2.0.0.0', 'key': 'KEY_HDMI'}}
         samsung.save_config(self.path, self.saved)
+        metadata = patch.object(samsung.http.client, 'HTTPConnection')
+        self.http = metadata.start()
+        self.addCleanup(metadata.stop)
+        self.http.return_value.getresponse.return_value.status = 503
 
     def driver(self, **config):
         return load_driver('samsung', {'config_file': self.path, **config})
@@ -33,13 +37,13 @@ class TVPluginTests(unittest.TestCase):
         with patch.object(samsung, 'connect') as connect, patch.object(samsung.http.client, 'HTTPConnection') as http:
             driver = self.driver()
             self.assertIsInstance(driver, BaseTVDriver)
-            self.assertEqual(driver.get_capabilities(), {'set_current_input'})
+            self.assertEqual(driver.get_capabilities(), {'set_current_input', 'get_power_status', 'set_power_off'})
             connect.assert_not_called()
             http.assert_not_called()
         for name in ('../samsung', 'os', 'unknown', None):
             with self.assertRaises(ValueError):
                 load_driver(name, {})
-        for method in ('get_power_status', 'get_current_input', 'set_power_on', 'set_power_off'):
+        for method in ('get_current_input', 'set_power_on'):
             with self.assertRaises(NotImplementedError):
                 getattr(driver, method)()
 
@@ -78,7 +82,7 @@ class TVPluginTests(unittest.TestCase):
             self.assertEqual(self.driver().get_model(), 'Samsung test model')
             factory.assert_called_once_with('192.0.2.10', 8001, timeout=2)
             connection.request.assert_called_once_with('GET', '/api/v2/')
-            response.read.assert_called_once_with(65536)
+            response.read.assert_called_once_with(65537)
             connection.close.assert_called_once()
             response.status = 302
             self.assertIsNone(self.driver().get_model())
@@ -143,3 +147,31 @@ class TVPluginTests(unittest.TestCase):
             self.assertEqual(json.loads(self.path.read_text()), self.saved)
             self.assertFalse(self.driver().set_current_input('3.0.0.0'))
             self.assertFalse(self.driver(trial_source={'address':'3.0.0.0','key':'KEY_MUTE'}).set_current_input('3.0.0.0'))
+
+    def test_metadata_power_fallback_is_fresh_and_never_guesses_on_failure(self):
+        response = self.http.return_value.getresponse.return_value
+        response.status = 200
+        driver = self.driver(read_power=lambda: None)
+        for state, expected in [('standby', False), ('on', True), ('to-on', None),
+                                ('off', None), (True, None), ({}, None)]:
+            response.read.return_value = json.dumps({'device': {'PowerState': state}}).encode()
+            self.assertIs(driver.get_power_status(), expected)
+        response.read.return_value = b'x' * 65537
+        self.assertIsNone(driver.get_power_status())
+        response.read.return_value = b'{"device": {"PowerState": "on"}}'
+        response.status = 302
+        self.assertIsNone(driver.get_power_status())
+        self.http.return_value.request.side_effect = TimeoutError()
+        self.assertIsNone(driver.get_power_status())
+        self.assertFalse(driver.set_power_off())
+
+    def test_settled_cec_avoids_network_query_and_metadata_cannot_cache_a_write(self):
+        self.assertTrue(self.driver(read_power=lambda: True).get_power_status())
+        self.http.assert_not_called()
+        response = self.http.return_value.getresponse.return_value
+        response.status = 200
+        response.read.side_effect = [b'{"device":{"PowerState":"on"}}',
+                                    b'{"device":{"PowerState":"standby"}}']
+        with patch.object(samsung, 'connect', return_value=(Mock(), self.saved)) as connect:
+            self.assertFalse(self.driver().set_power_off())
+            connect.return_value[0].send.assert_not_called()

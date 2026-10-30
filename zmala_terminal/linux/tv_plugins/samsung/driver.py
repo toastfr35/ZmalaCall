@@ -110,32 +110,41 @@ class TVDriver(BaseTVDriver):
         self.config_file = Path(config.get('config_file', DEFAULT_CONFIG))
         self._is_current = config.get('is_current', lambda: True)
 
-    def get_model(self) -> str | None:
-        model = self.config.get('model')
-        if isinstance(model, str) and model.strip():
-            return model
+    def _metadata(self) -> dict:
+        """Read fresh local observations; never cache a command as TV state.
+
+        Port 8001 remains available in standby on the tested Q60C, while its
+        authenticated WebSocket port closes. Metadata contains no credentials;
+        all commands still require the separately pinned TLS connection.
+        """
         connection = None
         try:
             settings = json.loads(self.config_file.read_text(encoding='utf-8'))
-            # Use only the paired IP, never discovered URLs or redirects.
             host = str(ipaddress.ip_address(settings['host']))
             connection = http.client.HTTPConnection(host, 8001, timeout=2)
             connection.request('GET', '/api/v2/')
             response = connection.getresponse()
             if response.status != 200:
-                return None
-            model = json.loads(response.read(65536)).get('device', {}).get('modelName')
-            return model if isinstance(model, str) and model.strip() else None
+                return {}
+            payload = response.read(65537)
+            if len(payload) > 65536:
+                return {}
+            device = json.loads(payload).get('device', {})
+            return device if isinstance(device, dict) else {}
         except (OSError, ValueError, TypeError, KeyError, AttributeError, http.client.HTTPException):
-            return None
+            return {}
         finally:
             if connection:
                 connection.close()
 
+    def get_model(self) -> str | None:
+        model = self.config.get('model')
+        if not isinstance(model, str) or not model.strip():
+            model = self._metadata().get('modelName')
+        return model if isinstance(model, str) and model.strip() else None
+
     def get_capabilities(self) -> set[str]:
-        capabilities = {'set_current_input'}
-        if callable(self.config.get('read_power')):
-            capabilities.update(('get_power_status', 'set_power_off'))
+        capabilities = {'set_current_input', 'get_power_status', 'set_power_off'}
         if callable(self.config.get('read_input')):
             capabilities.add('get_current_input')
         if callable(self.config.get('power_on')):
@@ -143,10 +152,14 @@ class TVDriver(BaseTVDriver):
         return capabilities
 
     def get_power_status(self) -> bool | None:
-        if 'get_power_status' not in self.get_capabilities():
-            raise NotImplementedError
-        power = self.config['read_power']()
-        return power if isinstance(power, bool) else None
+        reader = self.config.get('read_power')
+        power = reader() if callable(reader) else None
+        if isinstance(power, bool):
+            return power
+        # This Q60C reports CEC 'to-on' indefinitely in standby. Ask the TV's
+        # local metadata endpoint instead; unreachable is unknown, never off.
+        state = self._metadata().get('PowerState')
+        return {'on': True, 'standby': False}.get(state) if isinstance(state, str) else None
 
     def get_current_input(self) -> str | None:
         if 'get_current_input' not in self.get_capabilities():

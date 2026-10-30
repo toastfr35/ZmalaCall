@@ -1,0 +1,147 @@
+"""Brand-neutral TV driver experiment runner and offline evidence report.
+
+This is a development tool, not automatic TV qualification. Command acceptance,
+reported state and photographed display remain separate pieces of evidence.
+"""
+import base64
+from datetime import datetime, timezone
+import html
+import json
+from pathlib import Path
+import time
+import zipfile
+
+
+def utc_now():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def run_sequence(invoke, snapshot, inputs, delay=4, sleep=time.sleep):
+    """Inject bounded driver/camera operations so the sequence is independently testable."""
+    report = {'started_at': utc_now(), 'steps': [], 'visual_verdict': 'Not assessed',
+              'restoration': 'Not attempted'}
+    capabilities = set()
+    initial = {}
+
+    def call(method, *args):
+        if method not in ('get_model', 'get_capabilities') and method not in capabilities:
+            return {'status': 'unsupported', 'value': None}
+        return invoke(method, list(args))
+
+    def step(label, method=None, args=(), restoring=False):
+        started = time.monotonic()
+        result = call(method, *args) if method else {'status': 'observation', 'value': None}
+        command_seconds = time.monotonic() - started
+        if method and result['status'] != 'unsupported':
+            sleep(delay)
+        power = call('get_power_status')
+        source = call('get_current_input')
+        record = {'label': label, 'timestamp': utc_now(), 'method': method,
+                  'arguments': list(args), 'result': result, 'power': power, 'input': source,
+                  'command_seconds': round(command_seconds, 3), 'delay_seconds': delay if method else 0,
+                  'restoring': restoring}
+        report['steps'].append(record)
+        # Retain the attempted action even if the camera fails.
+        try:
+            record['photo'] = snapshot(len(report['steps']))
+        except Exception as error:
+            record['photo_error'] = type(error).__name__
+        return record
+
+    try:
+        report['model'] = call('get_model')
+        cap_result = call('get_capabilities')
+        report['capabilities_result'] = cap_result
+        capabilities = set(cap_result.get('value') or [])
+        report['capabilities'] = sorted(capabilities)
+        baseline = step('Initial TV state')
+        initial = {'power': baseline['power'].get('value'), 'input': baseline['input'].get('value')}
+        report['initial_state'] = initial
+        if 'photo_error' in baseline:
+            initial = {}  # Nothing has changed; do not issue restoration commands.
+            raise RuntimeError('Initial camera observation failed')
+        # Without a known power baseline we cannot restore a power cycle safely.
+        if not isinstance(initial['power'], bool):
+            report['sequence_status'] = 'Observation only: initial power unknown'
+            return report
+        step('Power on', 'set_power_on')
+        step('Repeat power on (must remain on)', 'set_power_on')
+        for source in inputs:
+            step('Select input ' + source, 'set_current_input', (source,))
+        step('Power off', 'set_power_off')
+        step('Repeat power off (must remain off)', 'set_power_off')
+        step('Wake after standby', 'set_power_on')
+        report['sequence_status'] = 'Sequence finished; inspect photos and reported states'
+    except (Exception, KeyboardInterrupt) as error:
+        report['sequence_status'] = 'Interrupted: ' + type(error).__name__
+    finally:
+        if isinstance(initial.get('power'), bool):
+            try:
+                # Wake before restoring a source: many TVs cannot select it in standby.
+                if initial.get('input') is not None:
+                    step('Restore: wake for original input', 'set_power_on', restoring=True)
+                    step('Restore original input', 'set_current_input', (initial['input'],), restoring=True)
+                step('Restore original power', 'set_power_on' if initial['power'] else 'set_power_off', restoring=True)
+                report['restoration'] = 'Attempted; inspect final state and photo'
+                if initial.get('input') is None:
+                    report['restoration'] += '; original input unknown, source not restored'
+            except (Exception, KeyboardInterrupt) as error:
+                report['restoration'] = 'Incomplete: ' + type(error).__name__
+        report['finished_at'] = utc_now()
+    return report
+
+
+def render_html(report, folder):
+    """Embed photos so the HTML remains useful after extraction or sharing alone."""
+    def escaped(value):
+        return html.escape(str(value))
+
+    notes = ''.join('<li>' + escaped(note) + '</li>' for note in report.get('review_notes', []))
+    cards = []
+    for index, step in enumerate(report['steps'], 1):
+        photo = ''
+        if step.get('photo'):
+            path = folder / step['photo']
+            if path.is_file():
+                encoded = base64.b64encode(path.read_bytes()).decode('ascii')
+                photo = f'<img alt="TV photograph after step {index}" src="data:image/jpeg;base64,{encoded}">'
+        result = step['result']
+        details = json.dumps({'action': step['method'], 'arguments': step['arguments'],
+                              'result': result, 'reported_power': step['power'],
+                              'reported_input': step['input']}, indent=2)
+        cards.append(f'''<section><h2>{index}. {escaped(step['label'])}</h2>
+<p>{escaped(step['timestamp'])} · Command: {step['command_seconds']:.3f}s · Requested settling delay: {step['delay_seconds']}s</p>
+{photo or '<p class="warning">No photo: '+escaped(step.get('photo_error', 'unavailable'))+'</p>'}
+<details open><summary>Plugin observations</summary><pre>{escaped(details)}</pre></details>
+<p class="review">Visual review: compare the picture with the requested action. No automatic pass is claimed.</p></section>''')
+    return f'''<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TV plugin self-test</title><style>
+body{{font:16px system-ui,sans-serif;background:#10151e;color:#e6edf5;margin:0 auto;max-width:1000px;padding:24px}}
+h1,h2{{line-height:1.3}}section{{background:#1c2532;border:1px solid #354456;border-radius:12px;padding:20px;margin:24px 0}}
+img{{width:100%;height:auto;border-radius:8px}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;background:#111923;padding:14px}}
+p{{line-height:1.6}}.warning{{color:#ffd38a}}.review{{color:#afc8e7}}summary{{cursor:pointer}}code{{overflow-wrap:anywhere}}
+</style><h1>TV plugin self-test</h1>
+<p><strong>Model:</strong> {escaped(report.get('model', {}).get('value'))}<br>
+<strong>Started:</strong> {escaped(report['started_at'])}<br>
+<strong>Sequence:</strong> {escaped(report.get('sequence_status', 'Not completed'))}<br>
+<strong>Restoration:</strong> {escaped(report['restoration'])}</p>
+<p class="warning">This is an evidence record, not automatic qualification. A successful command does not prove that the TV changed. Times measure the API call, not time to visible completion. Photos may show private household content.</p>
+<p><strong>Visual review:</strong> {escaped(report.get("visual_verdict", "Not assessed"))}</p><ul>{notes}</ul>
+<p>Capabilities: {escaped(', '.join(report.get('capabilities', [])))}</p>
+{''.join(cards)}</html>'''
+
+
+def package_report(report, folder, output):
+    """Create exclusively, with private permissions and no configuration or raw logs."""
+    folder = Path(folder)
+    (folder / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+    (folder / 'index.html').write_text(render_html(report, folder), encoding='utf-8')
+    output = Path(output)
+    with output.open('xb') as target:
+        output.chmod(0o600)
+        with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for path in sorted(folder.iterdir()):
+                if path.name in ('index.html', 'report.json') or (path.name.startswith('photo-') and path.suffix == '.jpg'):
+                    archive.write(path, path.name)
+    return output

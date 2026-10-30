@@ -648,10 +648,16 @@ The Samsung driver reuses the existing private `tv-remote.json` and pairing
 workflow. Its LAN input identifiers are the TV/tuner `0.0.0.0` and the verified
 terminal HDMI physical address. Other inputs and smart-TV apps cannot be restored
 by this LAN driver. It reports the paired TV's model through a bounded local
-metadata request, or `None` when unavailable. Network control alone cannot reliably
-read power/current input or wake a sleeping TV: the controller supplies bounded
-CEC callbacks through the constructor's runtime config. Capability reporting
-reflects those callbacks; it never invents observations from sent commands.
+metadata request, or `None` when unavailable. Settled CEC power replies take
+precedence; when CEC is ambiguous or unavailable, fresh `/api/v2/` metadata on
+port 8001 can report `on` or `standby`. The tested QE55Q60CAUXXU reports CEC
+`to-on` while in standby; its metadata endpoint remains available even when the
+TLS remote port closes. Unknown values, oversized responses, redirects and network
+failures remain unknown. Metadata is a local, unauthenticated observation and
+contains no credentials; command authentication still uses pinned TLS.
+Current-input observation and wake still require controller-supplied bounded CEC
+callbacks. Capabilities describe these mechanisms, not current reachability.
+See `docs/samsung-tv-investigation.md` for measured scope and remaining limitations.
 
 CEC remains the primary transport. The controller dispatches network fallbacks
 through the common API and creates a driver instance per operation so cancellation

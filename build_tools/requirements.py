@@ -45,6 +45,7 @@ def installer_source(name: str) -> bool:
 
 
 EXCLUSIONS = {
+    'build_tools/linux/tv-plugin-self-test.py': 'Opt-in developer experiment/evidence CLI; not a terminal runtime behavior. Regression tests live in tests/adhoc/test_tv_plugin_self_test.py.',
     'zmala_phone/app/src/main/assets/licenses/SDK-SOURCES.json': 'Packaged dependency source provenance, not runtime configuration.',
     'zmala_server/web/admin.js': 'Generated bundle; authored admin modules are mapped.',
     'zmala_server/web/admin.css': 'Generated bundle; authored stylesheets are mapped.',
