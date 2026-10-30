@@ -225,7 +225,7 @@ REVISIONS = {
         'To choose a ringtone,': [
             'Open Ringtone with green. Press left or right to browse and hear each choice after a '
             'short pause. The list wraps at both ends. Press green to save or red to keep the previous tone.',
-            'Use Ringtone volume to change its loudness; 0% is silent. Button sounds volume is '
+            'Ringtone volume controls incoming ringing, previews and the tone while waiting for someone to answer; 0% is silent. Button sounds volume is '
             'separate. Use middle and left/right to change the sound heard during calls. A call stops '
             'any ringtone preview.',
         ],
