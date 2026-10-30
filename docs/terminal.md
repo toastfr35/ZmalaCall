@@ -627,6 +627,33 @@ reports. Avoid replacing/restarting software during a call, preserve the existin
 pairing file and keep a recoverable copy of the plugin. Ordinary calls do not
 implicitly start a developer preview or change TV settings.
 
+### Internal TV qualification tool
+
+The Pi terminal package installs `/usr/local/sbin/zmala-tv-test`. Its CLI, report
+generator and fullscreen test-card helper are bundled together under the active
+release's `build_tools/linux/` directory. The wrapper follows
+`/opt/zmalacall/current`, so updates and rollback use the matching tool version.
+OpenCV and Tk are already part of the terminal dependencies. No service, UI entry
+or additional passwordless sudo permission is installed.
+
+During an idle maintenance window, point the C20 at the TV and run:
+
+```sh
+sudo zmala-tv-test --help
+sudo zmala-tv-test --driver samsung --input 2.0.0.0 --input 0.0.0.0 \
+  --operate-tv --pause-terminal --output /home/zmala/tv-test.zip
+```
+
+Use that terminal's verified driver/input identifiers and a new output filename.
+This deliberately operates the TV and temporarily stops the terminal; never run
+during a call. It attempts to restore the TV state and restarts the terminal after
+testing. Retrieve the ZIP through the developer shell and inspect its embedded
+HTML photos alongside power/input readings. Pictures may contain private household
+content; reports stay on the terminal until retrieved and are not published.
+The tool is for internal deployment/plugin qualification, not automatic support
+certification. See `new_TV.md` for the complete investigation procedure and timing
+options. Existing installations receive the command on their next installer update.
+
 ### TV driver plugins
 
 `linux/tv_plugins/<model-family>/driver.py` exports one `TVDriver` class.
@@ -648,10 +675,22 @@ The Samsung driver reuses the existing private `tv-remote.json` and pairing
 workflow. Its LAN input identifiers are the TV/tuner `0.0.0.0` and the verified
 terminal HDMI physical address. Other inputs and smart-TV apps cannot be restored
 by this LAN driver. It reports the paired TV's model through a bounded local
-metadata request, or `None` when unavailable. Network control alone cannot reliably
-read power/current input or wake a sleeping TV: the controller supplies bounded
-CEC callbacks through the constructor's runtime config. Capability reporting
-reflects those callbacks; it never invents observations from sent commands.
+metadata request, or `None` when unavailable. Settled CEC power replies take
+precedence; when CEC is ambiguous or unavailable, fresh `/api/v2/` metadata on
+port 8001 can report `on` or `standby`. The tested QE55Q60CAUXXU reports CEC
+`to-on` while in standby; its metadata endpoint remains available even when the
+TLS remote port closes. Unknown values, oversized responses, redirects and network
+failures remain unknown. Metadata is a local, unauthenticated observation and
+contains no credentials; command authentication still uses pinned TLS.
+Current-input observation and wake capability still require controller-supplied
+bounded CEC callbacks. Samsung wake first observes power: already-on is a no-op.
+Confirmed standby allows a paired network power key, with another fresh standby
+check after authentication. If the network attempt is unavailable or rejected,
+the driver rechecks power and cancellation before using the existing CEC wake
+fallback. It never sends a network toggle when power is unknown. This keeps
+repeated wake requests from disturbing an already-on source. Power/input getters
+report control state, not proof that the programme picture is playing. Capabilities describe these mechanisms, not current reachability.
+See `docs/samsung-tv-investigation.md` for measured scope and remaining limitations.
 
 CEC remains the primary transport. The controller dispatches network fallbacks
 through the common API and creates a driver instance per operation so cancellation

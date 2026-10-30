@@ -31,9 +31,22 @@ text: |
   sent commands. Input identifiers shall be reusable for selection. Setters shall
   report command acceptance without claiming observed completion, and power setters
   shall not blindly toggle. Operations shall use bounded I/O outside the UI thread.
+  For Samsung, ambiguous or absent CEC power reports may be resolved by fresh local
+  metadata reporting on or standby. Unavailable, malformed, oversized or unrecognized
+  metadata shall remain unknown; settled CEC observations take precedence.
+  Samsung wake shall query current power and leave an already-on TV unchanged,
+  checking cancellation again after the observation. A paired network wake toggle
+  shall require confirmed standby before authentication and again before sending.
+  If unavailable, bounded CEC wake may be used after rechecking that the TV has
+  not already turned on and the operation remains current. Power/input observations
+  shall not be represented as proof that a source picture is playing.
   The controller shall retain cancellation, qualification and restoration policy.
 verification: |
   Load registered and unknown drivers; exercise supported and unsupported methods,
   unknown/transition observations, source round trips, failed and cancelled commands
   and timeout configuration. Assert no optimistic getter updates, no blind toggles
-  and no propagation of optional driver failures into calls.
+  and no propagation of optional driver failures into calls. Exercise ambiguous CEC
+  with fresh metadata, network failure and oversized payloads. Verify already-on
+  wake sends no command and cancellation during the power query prevents wake.
+  Verify guarded network wake, changed/unknown state during authentication, and
+  CEC fallback without a blind network toggle.

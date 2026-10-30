@@ -183,6 +183,77 @@ answer-to-picture and command-to-visible-change timings rather than inventing
 performance targets. Repeat critical cases at least three times for the prototype
 and retain failures; this is a smoke test, not proof of long-term reliability.
 
+### Repeatable plugin evidence bundle
+
+During an idle maintenance window, run the generic developer self-test on the Pi:
+
+```sh
+sudo zmala-tv-test \
+  --driver samsung --input 2.0.0.0 --input 0.0.0.0 \
+  --delay 5 --operate-tv --pause-terminal \
+  --output /var/tmp/tv-self-test.zip
+```
+
+The Pi terminal installer includes the internal `zmala-tv-test` command and all
+its helpers. `sudo zmala-tv-test --help` lists the options without operating the TV.
+The command follows `/opt/zmalacall/current`, including after upgrades or rollback.
+It is not a startup service or a normal user settings action.
+
+Replace the driver and input identifiers for the TV being investigated; those
+values are plugin identifiers, not assumptions made by the runner. The example
+uses a previously verified Samsung HDMI-2 binding and its tuner. `--config` can
+select a private configuration file; `--cec-device` overrides automatic adapter
+selection. The tool needs the deployed Pi runtime, OpenCV, camera access and
+permission to pause/restart the terminal and wake the C20. Do not run during calls.
+
+The standard sequence is:
+
+1. Photograph the initial state.
+2. Request off, then on, then on again, photographing and querying state at
+   **5, 10 and 15 seconds after each command**, without intervening commands.
+3. For each supplied input: select it, select it again, request standby, repeat
+   standby, wake, then re-select the same input. Each action has the same three observations.
+4. Exercise every directed pair of inputs (A → B and B → A for two inputs).
+5. Attempt to restore the original input and power, with photos of restoration.
+
+A fullscreen colour-bar card labelled **ZmalaCall TV TEST / TERMINAL HDMI INPUT**
+with a live clock appears on the Pi's X display during the run. It makes the
+terminal source recognisable and helps reveal frozen camera frames. The card
+closes before the terminal service restarts. `--no-test-card` explicitly skips it
+on systems without an X display. The Pi display service must already be running.
+
+An unknown initial power state limits the run to observation. Unknown original
+input is reported as incomplete source restoration. Unsupported methods are
+recorded as skipped. Each operation runs in a separate process with a deadline,
+followed by observations scheduled at three absolute offsets, each with a photo
+then state queries. Actual capture start/completion times expose sampling overhead. The overview compares
+reported state with requested state; this is separate from visual qualification.
+The camera now stays open and drains frames continuously in a bounded child process.
+It warms once before the initial observation; each snapshot requests the next
+frame. Frame-read and save timings are recorded, rather than claiming an exact
+sensor exposure timestamp. A stalled camera times out instead of reusing a stale
+photo. The camera closes before normal terminal ownership resumes.
+
+For a controlled settling comparison, run the same sequence separately with
+`--observation-count 1 --delay 5`, then with delays 10 and 15. Keep the driver,
+inputs and initial state identical. This takes one photo and queries power/input
+per command; it does not wait for three samples. Actual inter-command gaps also
+include photo and query overhead and are recorded explicitly. Compare pictures
+against query answers, retain failed runs and repeat before attributing an
+intermittent fault to timing. Queries themselves may affect the device, so this
+is evidence for the tested polling pattern, not a proof of behaviour without it.
+The report records command duration, not time to a visibly completed transition.
+
+Retrieve the ZIP over the developer shell using an SSH binary stream (or SCP/SFTP
+where configured). The restricted developer shell need not expose an SFTP
+subsystem. Open `index.html` after extraction: photos are embedded, so this HTML
+also works alone. `report.json` and individual JPEGs accompany it. The report
+contains no configuration file, credential or raw third-party exception text;
+photos can show private household content, so keep the bundle out of Git.
+Existing ZIPs are never overwritten. Inspect every picture and result before
+claiming physical qualification. Failed commands and missing photographs remain
+visible evidence, even when the sequence reaches its end.
+
 ## 7. Deploy, document and close access
 
 - [ ] Review the candidate diff and confirm private pairing files, images and
