@@ -5,7 +5,7 @@ header: |
   Selectable ringtone and bounded preview
 level: 128.0
 links:
-- HLR-TERM-AUDIO-001: cVKxa_fbE3jqHlRqzMygvKL9QU0rhZYQf5OW-GB5HCg=
+- HLR-TERM-AUDIO-001: _KkiTouY4V-sS8pEwt1k54uYEJJSWyyPFn7RDnxZZ_w=
 normative: true
 ref: ''
 references:
@@ -35,7 +35,7 @@ text: |
   Settings shall offer the server ringtone list, defaulting to Nokia. In its editor,
   left from the first choice shall wrap to the last, and right from the last shall
   wrap to the first; moving shall not change the saved choice. A highlighted
-  editor choice shall preview after 400 ms without selection changes, through C20
+  editor choice shall preview after 400 ms without selection changes, through C10/C20
   at the independently configured ringtone volume. Preview shall wait for media readiness and
   hardware readiness, respect ringtone mute independently of call mute and stop after ten seconds or earlier at file
   end, selection change, cancellation, leaving the editor, incoming call or shutdown.
@@ -53,4 +53,4 @@ verification: |
   Inject catalog, path, PCM/hash and download errors, valid/corrupt cache files and
   reset cancellation. Control time, player outcomes, readiness and volume; check
   debounce, routing, mute, cutoff, replacement, call priority, disabled power switching
-  and cleanup. Exercise both wrapping boundaries and a one-choice catalog. Render supported languages/layouts. Check actual C20 output separately.
+  and cleanup. Exercise both wrapping boundaries and a one-choice catalog. Render supported languages/layouts. Check actual C10/C20 output separately.

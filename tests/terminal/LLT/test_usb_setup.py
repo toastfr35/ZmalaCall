@@ -1,7 +1,7 @@
 # @test T-LLT-038
 # @requirements LLR-TERM-SETUP-022, LLR-TERM-SETUP-023, LLR-TERM-UI-023
 # @environment portable
-# @plan Supply USB catalogs and setup/call states; assert only the C20 satisfies the camera gate, scanning waits for attachment and installation English does not replace the configured language.
+# @plan Supply USB catalogs and setup/call states; assert only the C10 and C20 satisfies the camera gate, scanning waits for attachment and installation English does not replace the configured language.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """C20-specific presence and the installation-only camera gate."""
@@ -29,6 +29,9 @@ class UsbSetupTests(unittest.TestCase):
                 (device / key).write_text(value)
             self.assertFalse(c20_connected(root))
             (device / 'product').write_text('Nuroum C20')
+            self.assertTrue(c20_connected(root))
+            (device / 'idProduct').write_text('a4b0')
+            (device / 'product').write_text('Nuroum C10')
             self.assertTrue(c20_connected(root))
             (device / 'idProduct').unlink()
             self.assertFalse(c20_connected(root))

@@ -11,7 +11,7 @@ export async function openDeveloperAccess(id) {
   );
   const instructions = el(
     'p',
-    'Connect through the server to 127.0.0.1 port 22001, using the remote Pi’s own SSH account. Point its C20 at the TV to check the picture during plugin testing.',
+    'Connect through the server to 127.0.0.1 port 22001, using the remote Pi’s own SSH account. Point its C10/C20 at the TV to check the picture during plugin testing.',
   );
   const error = el('p', null, 'banner error');
   error.hidden = true;

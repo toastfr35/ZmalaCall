@@ -21,6 +21,7 @@ static void release_capture(MjpegCamera *c);
 // @llr LLR-TERM-VIDEO-019
 static int microphone_running(void) {
     FILE *status = fopen("/proc/asound/C20/pcm0c/sub0/status", "r");
+    if (!status) status = fopen("/proc/asound/C10/pcm0c/sub0/status", "r");
     if (!status) return 0;
     char line[128], state[32];
     int running = 0;

@@ -1,5 +1,6 @@
 """Keep idle C20 feedback warm; release its exclusive PCM before calls or tones."""
 import logging
+from zmala_terminal.linux.nuroum import playback_device
 import os
 import select
 import subprocess
@@ -100,7 +101,7 @@ class ActionSounds:
             try:
                 player.wait(timeout=.1)
             except subprocess.TimeoutExpired:
-                logging.warning('C20 feedback player did not exit after termination')
+                logging.warning('C10/C20 feedback player did not exit after termination')
 
     def run(self):
         player = None
@@ -108,7 +109,7 @@ class ActionSounds:
             sounds = click_bank()
             if self.stop.is_set():
                 return  # Cancellation during preparation must not open the call's PCM.
-            player = subprocess.Popen(['/usr/bin/aplay', '-q', '-D', 'default:C20',
+            player = subprocess.Popen(['/usr/bin/aplay', '-q', '-D', playback_device(),
                 '-t', 'raw', '-f', 'S16_LE', '-c', '2', '-r', '48000',
                 '--buffer-time=5000', '--period-time=2500', '--start-delay=1'],
                 stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,

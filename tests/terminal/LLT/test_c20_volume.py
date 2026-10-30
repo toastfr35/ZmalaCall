@@ -19,6 +19,11 @@ from tests.terminal.LLT.test_terminal import config
 
 
 class C20VolumeTests(unittest.TestCase):
+    def setUp(self):
+        route = patch('zmala_terminal.linux.c20_volume.audio_card', return_value="C20")
+        route.start()
+        self.addCleanup(route.stop)
+
     def test_reject_invalid_volume_before_running_a_command(self):
         with patch('zmala_terminal.linux.c20_volume.subprocess.run') as run:
             for value in [-1, 101, 50.5, '50', True, None]:
@@ -32,7 +37,7 @@ class C20VolumeTests(unittest.TestCase):
         with patch('zmala_terminal.linux.c20_volume.subprocess.run') as run:
             for value in [0, 50, 100]:
                 self.assertTrue(apply(value))
-                run.assert_called_with(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', '100%'],
+                run.assert_called_with(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', '0dB'],
                                        check=True, capture_output=True, timeout=5, env=playback_environment())
 
     def test_missing_or_unresponsive_device_is_nonfatal(self):
@@ -40,6 +45,11 @@ class C20VolumeTests(unittest.TestCase):
                       subprocess.TimeoutExpired('amixer', 5)]:
             with self.subTest(error=error), patch('zmala_terminal.linux.c20_volume.subprocess.run', side_effect=error):
                 self.assertFalse(apply(50))
+
+    def test_c10_uses_neutral_gain_instead_of_its_positive_maximum(self):
+        with patch('zmala_terminal.linux.c20_volume.audio_card', return_value='C10'), patch('zmala_terminal.linux.c20_volume.subprocess.run') as run:
+            self.assertTrue(apply(50))
+            self.assertEqual(run.call_args.args[0], ['amixer', '-q', '-c', 'C10', 'sset', 'PCM', '0dB'])
 
     def test_old_configuration_without_volume_is_valid(self):
         self.assertEqual(validate(config(), 'test'), config())

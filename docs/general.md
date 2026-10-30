@@ -40,7 +40,7 @@ calls. Family members use ZmalaPhone on Android or another Pi terminal.
 | Component | Current deployment |
 | --- | --- |
 | Server | Raspberry Pi OS Lite 64-bit, Debian 13 Trixie; installer accepts Pi 3 Model B/B+ and Pi 4 Model B |
-| TV terminal | Raspberry Pi 4 Model B, the same OS, Nuroum C20, Presenter+, HDMI TV; Argon ONE Pi 4 V2 fan integration |
+| TV terminal | Raspberry Pi 4 Model B, the same OS, Nuroum C10/C20, Presenter+, HDMI TV; Argon ONE Pi 4 V2 fan integration |
 | Android app | ZmalaPhone LAN or encrypted relay video with Firebase incoming alerts, Android 9+, Linphone SDK 5.5.32 |
 | Development compatibility terminal | 64-bit Windows with Tk/Liblinphone and server-selected camera/audio devices |
 | Installers | Windows executables deploying over Ethernet SSH; graphical and headless modes |

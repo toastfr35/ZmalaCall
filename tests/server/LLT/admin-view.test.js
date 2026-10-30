@@ -1,7 +1,7 @@
 // @test S-LLT-027
 // @requirements LLR-SRV-DIR-033, LLR-SRV-UI-012, LLR-SRV-UI-013, LLR-SRV-UI-014, LLR-SRV-UI-015, LLR-SRV-UI-017, LLR-SRV-CONFIG-018
 // @environment display
-// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Verify fixed C20 media information without camera, microphone or speaker selectors. Check GIF guidance and first-frame dimensions against accepted and rejected synthetic files. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation. Check readable supporting text and desktop action targets, name-first terminal choices, unsaved-state feedback and a save bar that stays within the viewport while scrolled.
+// @plan Render the actual admin HTML/CSS/controllers in headless Chromium with every API replaced by a deterministic fixture. Verify fixed C10/C20 media information without camera, microphone or speaker selectors. Check GIF guidance and first-frame dimensions against accepted and rejected synthetic files. Check six English pages and sign-in at 320, 390, 700 and 1920 pixels, narrow labelled rows, touch sizes, modal scrolling, focused drafts and editor-local errors/cancellation. Check readable supporting text and desktop action targets, name-first terminal choices, unsaved-state feedback and a save bar that stays within the viewport while scrolled.
 // @pass All computed layout and interaction assertions must pass against the mocked API; no live service or account is changed.
 
 'use strict';
@@ -154,7 +154,7 @@ test('admin component fits phones and desktop and preserves modal drafts', async
             .evaluate((el) => parseFloat(getComputedStyle(el).fontSize) >= 12),
         );
 
-        await page.getByText('Nuroum C20 supplies', { exact: false }).waitFor();
+        await page.getByText('Nuroum C10/C20 supplies', { exact: false }).waitFor();
         for (const label of ['Camera', 'Microphone', 'Speaker']) {
           assert.equal(await page.getByLabel(label, { exact: true }).count(), 0);
         }

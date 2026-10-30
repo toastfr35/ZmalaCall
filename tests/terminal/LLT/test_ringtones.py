@@ -22,6 +22,11 @@ def sound(frames=1600):
 
 
 class RingtoneTests(unittest.TestCase):
+    def setUp(self):
+        route = patch('zmala_terminal.linux.usb_power.playback_device', return_value="default:C20")
+        route.start()
+        self.addCleanup(route.stop)
+
     def catalog(self, data=None):
         data = data or sound()
         key = hashlib.sha256(data).hexdigest()
