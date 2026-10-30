@@ -12,4 +12,3 @@ def module(name):
     with patch.dict(sys.modules, {'fcntl': SimpleNamespace()}):
         spec.loader.exec_module(result)
     return result
-

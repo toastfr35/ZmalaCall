@@ -29,4 +29,3 @@ def apply(config, bootstrap):
     if result.returncode:
         raise RuntimeError('Developer access could not be applied')
     _applied = signature
-
