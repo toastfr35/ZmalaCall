@@ -251,7 +251,7 @@ class TransportTests(unittest.TestCase):
 
     def test_source_roundtrip_restores_observed_route_not_a_hardcoded_port(self):
         self.tv._previous_source = Mock(return_value='4.0.0.0')
-        self.tv._samsung = Mock()
+        self.tv._driver_call = Mock()
         self.transport.source(self.cancel)
         routes = [c.args for c in self.tv._run.call_args_list if '--active-source' in c.args]
         self.assertEqual(routes, [('--active-source', 'phys-addr=2.0.0.0'),

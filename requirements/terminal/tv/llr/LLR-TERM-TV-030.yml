@@ -19,7 +19,7 @@ references:
   type: file
 - path: zmala_terminal/linux/cec_observer.py
   type: file
-- path: zmala_terminal/linux/samsung_tv.py
+- path: zmala_terminal/linux/tv_plugins/samsung/driver.py
   type: file
 - path: zmala_terminal/linux/tv_control.py
   type: file

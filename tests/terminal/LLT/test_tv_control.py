@@ -106,8 +106,8 @@ class TVControlTests(unittest.TestCase):
         tv = TVControl(device='/dev/cec0', state_file='/nonexistent-zmala-test-state.json')
         tv.command = 'cec-ctl'
         tv._run = Mock(return_value='3.0.0.0')
-        tv._samsung = Mock()
-        tv._samsung.restore_broadcast.return_value = False
+        tv._driver_call = Mock()
+        tv._driver_call.return_value = False
         return tv
 
     def test_visible_terminal_buttons_do_not_start_cec_commands(self):
@@ -155,7 +155,7 @@ class TVControlTests(unittest.TestCase):
         tv._worker(tv._cancel, restore=False, initial=initial)
         self.assertTrue(woke)
         self.assertIsNone(tv._browse_previous, 'Unknown power must not become a standby restoration baseline')
-        tv._samsung.select_terminal.assert_not_called()
+        tv._driver_call.assert_not_called()
 
         tv.power_enabled = False
         for source_enabled in (False, True):
@@ -246,7 +246,8 @@ class TVControlTests(unittest.TestCase):
             if off:
                 tv._run.assert_any_call('--to', '0', '--standby')
             elif source == '0.0.0.0':
-                tv._samsung.restore_broadcast.assert_called_once()
+                self.assertEqual(sum(c.args == ('set_current_input', '0.0.0.0')
+                                     for c in tv._driver_call.call_args_list), 1)
             else:
                 tv._run.assert_any_call('--set-stream-path', 'phys-addr=' + source)
             self.assertIsNone(tv._browse_previous)
@@ -437,7 +438,7 @@ class TVControlTests(unittest.TestCase):
                 tv._worker(tv._cancel)
                 tv._run.assert_any_call('--to', '0', '--image-view-on')
                 self.assertFalse(any(call.args[0] == '--active-source' for call in tv._run.call_args_list))
-                tv._samsung.select_terminal.assert_not_called()
+                tv._driver_call.assert_not_called()
 
     def test_broadcast_selection_uses_paired_fallback_only_for_awake_tuner(self):
         for off, source, expected in ((False, '0.0.0.0', True), (True, '0.0.0.0', False),
@@ -447,9 +448,10 @@ class TVControlTests(unittest.TestCase):
             tv._previous_source = Mock(return_value=source)
             tv._cancel.wait = Mock(return_value=False)
             tv._worker(tv._cancel, restore=False)
-            self.assertEqual(tv._samsung.select_terminal.called, expected)
+            self.assertEqual(tv._driver_call.called, expected)
             if expected:
-                address, current = tv._samsung.select_terminal.call_args.args
+                _, address = tv._driver_call.call_args.args
+                current = tv._driver_call.call_args.kwargs['is_current']
                 self.assertEqual(address, '3.0.0.0')
                 self.assertTrue(current())
                 tv._cancel.set()
@@ -546,29 +548,29 @@ class TVControlTests(unittest.TestCase):
         tv = self.remembered()
         tv._restore(tv._cancel)
         self.assertFalse(any('--user-control-pressed' in call.args for call in tv._run.call_args_list))
-        tv._samsung.restore_broadcast.assert_not_called()
+        tv._driver_call.assert_not_called()
 
     def test_paired_samsung_restores_tuner_after_cec_release(self):
         tv = self.remembered(source='0.0.0.0')
-        tv._samsung.restore_broadcast.return_value = True
+        tv._driver_call.return_value = True
         tv._restore(tv._cancel)
-        tv._samsung.restore_broadcast.assert_called_once()
-        self.assertTrue(tv._samsung.restore_broadcast.call_args.args[0]())
+        tv._driver_call.assert_called_once()
+        self.assertTrue(tv._driver_call.call_args.kwargs['is_current']())
         tv._restore_wait.assert_any_call(3, tv._cancel)
 
     def test_network_failure_still_allows_standby_restoration(self):
         tv = self.remembered(off=True, source='0.0.0.0')
-        tv._samsung.restore_broadcast.return_value = False
+        tv._driver_call.return_value = False
         tv._restore(tv._cancel)
         tv._run.assert_any_call('--to', '0', '--standby')
 
     def test_new_call_during_network_restore_prevents_standby(self):
         tv = self.remembered(off=True, source='0.0.0.0')
-        def incoming(is_current):
+        def incoming(*args, is_current):
             tv._cancel = threading.Event()
             self.assertFalse(is_current())
             return False
-        tv._samsung.restore_broadcast.side_effect = incoming
+        tv._driver_call.side_effect = incoming
         tv._restore(tv._cancel)
         self.assertFalse(any('--standby' in call.args for call in tv._run.call_args_list))
         self.assertIsNotNone(tv._previous)
@@ -580,8 +582,8 @@ class TVControlTests(unittest.TestCase):
                 tv = self.remembered(off=True, source='2.0.0.0')
                 tv._run.return_value = 'pwr-state: ' + power + ' (0x00)'
                 tv._restore(tv._cancel)
-                self.assertEqual(tv._samsung.standby_if_on.called, expected)
-                self.assertEqual(tv._tv_is_on(), expected)
+                self.assertEqual(tv._driver_call.called, expected)
+                self.assertEqual(tv._driver_power_status() is True, expected)
 
     def test_new_incoming_call_supersedes_old_restore_and_keeps_baseline(self):
         tv = self.remembered(off=True)

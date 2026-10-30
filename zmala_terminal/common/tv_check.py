@@ -6,7 +6,7 @@ import queue
 import threading
 import time
 
-from zmala_terminal.linux.samsung_tv import save_config
+from zmala_terminal.linux.tv_plugins.samsung.driver import save_config
 
 
 class TVCheck:

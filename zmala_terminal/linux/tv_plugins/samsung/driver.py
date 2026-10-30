@@ -10,6 +10,7 @@ The token and pinned TLS certificate live in private terminal runtime data.
 import base64
 import hashlib
 import hmac
+import http.client
 import ipaddress
 import json
 import logging
@@ -21,7 +22,10 @@ import time
 from urllib.parse import urlencode
 
 
-DEFAULT_CONFIG = Path(__file__).resolve().parents[1] / 'data/tv-remote.json'
+from zmala_terminal.linux.tv_plugins.api import TVDriver as BaseTVDriver
+
+
+DEFAULT_CONFIG = Path(__file__).resolve().parents[3] / 'data/tv-remote.json'
 
 
 def save_config(path, value):
@@ -91,43 +95,127 @@ def connect(host, token=None, fingerprint=None, timeout=8):
         raise
 
 
-class SamsungTV:
-    def __init__(self, config_file=DEFAULT_CONFIG):
-        self.config_file = Path(config_file)
-        self.enabled = True
+# @llr LLR-TERM-TV-033
+class TVDriver(BaseTVDriver):
+    """Paired Samsung LAN control, optionally backed by bounded CEC callbacks.
 
-    def restore_broadcast(self, is_current):
-        """Do not connect for unpaired TVs or send a key after a new call starts."""
-        return self._send_key('KEY_TV', is_current)
+    config_file points to private paired credentials. read_power, read_input and
+    power_on are optional controller-supplied CEC operations, not user settings.
+    is_current fences each operation against newer calls, including after I/O.
+    A fresh instance captures these callbacks for one operation.
+    """
 
-    def standby_if_on(self, is_current, is_on):
-        """Samsung's power key toggles: recheck settled on immediately before sending."""
-        return self._send_key('KEY_POWER', is_current, is_on)
+    def __init__(self, config: dict):
+        super().__init__(config)
+        self.config_file = Path(config.get('config_file', DEFAULT_CONFIG))
+        self._is_current = config.get('is_current', lambda: True)
 
-    def select_terminal(self, address, is_current):
-        """Use a source command verified for this TV and physical HDMI route.
-
-        KEY_HDMI1 is ignored on some Tizen TVs; KEY_HDMI works on the tested TV
-        but is not a universal numbered-input selector. Require an explicit
-        local binding rather than applying it to every Samsung/HDMI port.
-        """
+    def get_model(self) -> str | None:
+        model = self.config.get('model')
+        if isinstance(model, str) and model.strip():
+            return model
+        connection = None
         try:
-            config = json.loads(self.config_file.read_text(encoding='utf-8'))
-            binding = config.get('terminal_source', {})
-            key = binding.get('key')
-            if (binding.get('address') != address or
-                    not re.fullmatch(r'[1-9a-f](\.[0-9a-f]){3}', address) or
-                    key not in ('KEY_HDMI', 'KEY_HDMI1', 'KEY_HDMI2', 'KEY_HDMI3', 'KEY_HDMI4')):
-                return False
-        except (OSError, ValueError, TypeError, AttributeError):
+            settings = json.loads(self.config_file.read_text(encoding='utf-8'))
+            # Use only the paired IP, never discovered URLs or redirects.
+            host = str(ipaddress.ip_address(settings['host']))
+            connection = http.client.HTTPConnection(host, 8001, timeout=2)
+            connection.request('GET', '/api/v2/')
+            response = connection.getresponse()
+            if response.status != 200:
+                return None
+            model = json.loads(response.read(65536)).get('device', {}).get('modelName')
+            return model if isinstance(model, str) and model.strip() else None
+        except (OSError, ValueError, TypeError, KeyError, AttributeError, http.client.HTTPException):
+            return None
+        finally:
+            if connection:
+                connection.close()
+
+    def get_capabilities(self) -> set[str]:
+        capabilities = {'set_current_input'}
+        if callable(self.config.get('read_power')):
+            capabilities.update(('get_power_status', 'set_power_off'))
+        if callable(self.config.get('read_input')):
+            capabilities.add('get_current_input')
+        if callable(self.config.get('power_on')):
+            capabilities.add('set_power_on')
+        return capabilities
+
+    def get_power_status(self) -> bool | None:
+        if 'get_power_status' not in self.get_capabilities():
+            raise NotImplementedError
+        power = self.config['read_power']()
+        return power if isinstance(power, bool) else None
+
+    def get_current_input(self) -> str | None:
+        if 'get_current_input' not in self.get_capabilities():
+            raise NotImplementedError
+        source = self.config['read_input']()
+        # Only sources this LAN driver can select are restorable identifiers.
+        if source == '0.0.0.0':
+            return source
+        binding = self._binding()
+        return source if source is not None and source == binding.get('address') else None
+
+    def set_power_on(self) -> bool:
+        if 'set_power_on' not in self.get_capabilities():
+            raise NotImplementedError
+        return bool(self._is_current() and self.config['power_on']())
+
+    # @llr LLR-TERM-TV-031
+    def set_power_off(self) -> bool:
+        if 'set_power_off' not in self.get_capabilities():
+            raise NotImplementedError
+        if not self._is_current():
             return False
-        return self._send_key(key, is_current)
+        power = self.get_power_status()
+        if not self._is_current():
+            return False
+        if power is False:
+            return True
+        if power is not True:
+            return False
+        # Query after authentication: pairing may take seconds. Unknown is never
+        # permission to toggle. The callback is bounded by the CEC transport.
+        return self._send_key('KEY_POWER', self._is_current,
+                              lambda: self.get_power_status() is True)
+
+    def _binding(self):
+        try:
+            value = json.loads(self.config_file.read_text(encoding='utf-8'))
+            binding = value.get('terminal_source', {})
+            if (isinstance(binding, dict) and
+                    isinstance(binding.get('address'), str) and
+                    re.fullmatch(r'[1-9a-f](\.[0-9a-f]){3}', binding['address']) and
+                    binding.get('key') in ('KEY_HDMI', 'KEY_HDMI1', 'KEY_HDMI2', 'KEY_HDMI3', 'KEY_HDMI4')):
+                return binding
+            return {}
+        except (OSError, ValueError, TypeError, AttributeError):
+            return {}
+
+    # @llr LLR-TERM-TV-031
+    def set_current_input(self, input_id: str) -> bool:
+        if input_id == '0.0.0.0':
+            return self._send_key('KEY_TV', self._is_current)
+        if not isinstance(input_id, str) or not re.fullmatch(r'[1-9a-f](\.[0-9a-f]){3}', input_id):
+            return False
+        binding = self._binding()
+        # The guided input test can try a key before the user confirms it.
+        # Ordinary calls only use the persisted, connector-bound result.
+        trial = self.config.get('trial_source', {})
+        if trial:
+            binding = trial
+        if (binding.get('address') != input_id or binding.get('key') not in
+                ('KEY_HDMI', 'KEY_HDMI1', 'KEY_HDMI2', 'KEY_HDMI3', 'KEY_HDMI4')):
+            return False
+        return self._send_key(binding['key'], self._is_current)
 
     def _send_key(self, key, is_current, can_send=lambda: True):
         """Keep remote commands restricted to source selection and guarded standby."""
         if key not in ('KEY_TV', 'KEY_POWER', 'KEY_HDMI', 'KEY_HDMI1', 'KEY_HDMI2', 'KEY_HDMI3', 'KEY_HDMI4'):
             raise ValueError('Unsupported restoration key')
-        if not self.enabled or not self.config_file.exists():
+        if not self.config_file.exists():
             return False
         remote = None
         try:

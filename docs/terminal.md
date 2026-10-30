@@ -597,6 +597,42 @@ timeout: button activity resets it, a thin blue bar appears after ten seconds
 idle, and expiry restores the captured state. Calls and pending saves suspend
 the timer. Volume/mute are not changed by CEC. Unknown previous input is not guessed.
 
+### TV driver plugins
+
+`linux/tv_plugins/<model-family>/driver.py` exports one `TVDriver` class.
+`tv_plugins/api.py` defines the seven-method contract: `get_model`,
+`get_capabilities`, `get_power_status`, `set_power_on`, `set_power_off`,
+`get_current_input` and `set_current_input`. Each future model/family has its own
+folder and an explicit entry in the bundled registry. Configuration cannot load
+arbitrary modules. `TVControl(driver='samsung')` selects the existing integration.
+
+Capabilities contain supported optional method names, independently of the
+wizard's user-confirmed power/source results. Unsupported methods raise
+`NotImplementedError`; unavailable observations return `None`. Power is `True`
+for on and `False` for standby, with transitions remaining unknown. Setters return
+whether the command was sent (or the requested power state was already observed),
+not confirmation that the picture changed. Inputs are opaque, round-trippable
+identifiers; no input enumeration or channel/volume API is required.
+
+The Samsung driver reuses the existing private `tv-remote.json` and pairing
+workflow. Its LAN input identifiers are the TV/tuner `0.0.0.0` and the verified
+terminal HDMI physical address. Other inputs and smart-TV apps cannot be restored
+by this LAN driver. It reports the paired TV's model through a bounded local
+metadata request, or `None` when unavailable. Network control alone cannot reliably
+read power/current input or wake a sleeping TV: the controller supplies bounded
+CEC callbacks through the constructor's runtime config. Capability reporting
+reflects those callbacks; it never invents observations from sent commands.
+
+CEC remains the primary transport. The controller dispatches network fallbacks
+through the common API and creates a driver instance per operation so cancellation
+belongs to that operation. It supplies a private config path, cancellation predicate
+and CEC callbacks; these callbacks are internal services, not serialized settings.
+Only the guided source test supplies a temporary trial binding. Ordinary calls
+require the persisted user-verified binding. Power toggle fallback checks a fresh
+settled on-state again after authentication and rechecks cancellation before send.
+Driver I/O runs on existing workers with timeouts; failures cannot stop calls.
+Restoration, qualification, retries and idle policy remain in the controller.
+
 ### Installation TV checks
 
 After server enrollment the wizard pauses media startup and idle restoration.

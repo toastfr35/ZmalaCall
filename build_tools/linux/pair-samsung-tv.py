@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from zmala_terminal.linux.samsung_tv import DEFAULT_CONFIG, connect, save_config  # noqa: E402
+from zmala_terminal.linux.tv_plugins.samsung.driver import DEFAULT_CONFIG, connect, save_config  # noqa: E402
 
 
 def main():

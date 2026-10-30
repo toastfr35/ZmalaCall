@@ -16,12 +16,12 @@ import sys
 import threading
 import time
 
-from zmala_terminal.linux.samsung_tv import SamsungTV
+from zmala_terminal.linux.tv_plugins import load_driver
 from zmala_terminal.linux.cec_device import select_device
 
 
 class TVControl:
-    def __init__(self, device=None, state_file='/run/zmalacall-cec/state.json'):
+    def __init__(self, device=None, state_file='/run/zmalacall-cec/state.json', driver='samsung'):
         self._automatic_device = device is None
         self.device = device or select_device()
         self.state_file = Path(state_file)
@@ -34,7 +34,9 @@ class TVControl:
         self._started = None
         self._previous = None
         self._changed = False
-        self._samsung = SamsungTV()
+        self._driver_name = driver
+        self._driver_config_file = Path(__file__).resolve().parents[1] / 'data/tv-remote.json'
+        self._network_enabled = True
         self._address = None
         self._input_pending = False
         self._browse_previous = None
@@ -282,7 +284,8 @@ class TVControl:
                     # Some Samsung tuners ignore CEC source selection while on.
                     # Use only the paired TV's explicitly verified source key,
                     # bound to this connector address; never guess/cycle inputs.
-                    self._samsung.select_terminal(address, lambda: cancel is self._cancel and not cancel.is_set())
+                    self._driver_call('set_current_input', address,
+                                      is_current=lambda: cancel is self._cancel and not cancel.is_set())
                 # Pairing/network I/O can race a cancelled or superseded call.
                 if cancel.is_set():
                     return
@@ -379,7 +382,8 @@ class TVControl:
                         # Some Samsung TVs acknowledge CEC release but keep
                         # displaying HDMI. The explicitly paired network
                         # remote selects the tuner without changing channel.
-                        if self._samsung.restore_broadcast(lambda: cancel is self._cancel):
+                        if self._driver_call('set_current_input', '0.0.0.0',
+                                             is_current=lambda: cancel is self._cancel):
                             if not self._restore_wait(3, cancel):
                                 return
                     else:
@@ -407,8 +411,7 @@ class TVControl:
                     # send only if this call still owns restoration and the
                     # TV explicitly reports settled on.
                     if re.search(r'pwr-state:\s*on\s*\(', power):
-                        self._samsung.standby_if_on(
-                            lambda: cancel is self._cancel, self._tv_is_on)
+                        self._driver_call('set_power_off', is_current=lambda: cancel is self._cancel)
                 logging.info('CEC: previous TV state restoration sent')
             except (OSError, subprocess.SubprocessError, RuntimeError):
                 logging.warning('CEC: TV restoration failed', exc_info=True)
@@ -422,10 +425,45 @@ class TVControl:
                         self._previous = None
                         self._changed = False
 
-    def _tv_is_on(self):
-        """A settled power reply is required before any network power toggle."""
-        power = self._run('--to', '0', '--give-device-power-status')
-        return bool(re.search(r'pwr-state:\s*on\s*\(', power))
+    # @llr LLR-TERM-TV-033
+    def _driver_call(self, method, *args, is_current, trial_source=None):
+        """Use the common API; capture cancellation per operation, never globally.
+
+        CEC remains the primary transport. Model plugins supply the qualified
+        network fallback. Setup and calls use the same driver and private file.
+        """
+        if not self._network_enabled or not is_current():
+            return False
+        try:
+            driver = load_driver(self._driver_name, {
+                'config_file': self._driver_config_file,
+                'is_current': is_current,
+                'read_power': self._driver_power_status,
+                'read_input': self._previous_source,
+                'power_on': self._driver_power_on,
+                'trial_source': trial_source or {},
+            })
+            if method not in driver.get_capabilities():
+                return False
+            return getattr(driver, method)(*args)
+        except Exception as error:
+            # Driver errors may contain credentials. Calls must continue even
+            # when an optional TV operation fails.
+            logging.warning('TV: driver operation failed (%s)', type(error).__name__)
+            return False
+
+    def _driver_power_status(self):
+        """Fresh, settled CEC status; transitions and failures remain unknown."""
+        try:
+            output = self._run('--to', '0', '--give-device-power-status')
+            match = re.search(r'pwr-state:\s*(on|standby)\s*\(', output)
+            return match[1] == 'on' if match else None
+        except (OSError, subprocess.SubprocessError, RuntimeError):
+            return None
+
+    def _driver_power_on(self):
+        self._run('--to', '0', '--image-view-on')
+        return True
 
     def _restore_wait(self, seconds, cancel):
         """Allow firmware to settle, stopping promptly when another call arrives."""

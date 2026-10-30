@@ -23,7 +23,7 @@ class Clock:
 class TVTransportTests(unittest.TestCase):
     def setUp(self):
         temp=tempfile.TemporaryDirectory(); self.addCleanup(temp.cleanup); self.folder=Path(temp.name)
-        self.tv=Mock(); self.tv._lock=threading.Lock(); self.tv._samsung.config_file=self.folder/'tv.json'
+        self.tv=Mock(); self.tv._lock=threading.Lock(); self.tv._driver_config_file=self.folder/'tv.json'
         self.tv.device=str(self.folder/'cec0'); Path(self.tv.device).touch(); self.tv.command='cec-ctl'
         self.tv._physical_address.return_value='2.0.0.0'; self.clock=Clock()
         timer=patch.object(tv_check.time,'monotonic',side_effect=lambda:self.clock.now); timer.start(); self.addCleanup(timer.stop)
@@ -42,11 +42,11 @@ class TVTransportTests(unittest.TestCase):
         self.tv.command=None; self.assertIsNone(self.transport.probe(self.clock))
 
     def test_resume_requires_readable_network_binding_and_prepare_checks_route(self):
-        self.transport.resume_network(True); self.assertFalse(self.tv._samsung.enabled)
-        self.tv._samsung.config_file.write_text(json.dumps({'terminal_source':{'address':'2.0.0.0'}}))
-        self.transport.resume_network(True); self.assertTrue(self.tv._samsung.enabled); self.assertIsNone(self.transport.trial_key)
-        self.tv._samsung.config_file.write_text('{}'); self.transport.resume_network(True); self.assertEqual(self.transport.trial_key,'KEY_HDMI')
-        self.transport.resume_network(False); self.assertFalse(self.tv._samsung.enabled)
+        self.transport.resume_network(True); self.assertFalse(self.tv._network_enabled)
+        self.tv._driver_config_file.write_text(json.dumps({'terminal_source':{'address':'2.0.0.0'}}))
+        self.transport.resume_network(True); self.assertTrue(self.tv._network_enabled); self.assertIsNone(self.transport.trial_key)
+        self.tv._driver_config_file.write_text('{}'); self.transport.resume_network(True); self.assertEqual(self.transport.trial_key,'KEY_HDMI')
+        self.transport.resume_network(False); self.assertFalse(self.tv._network_enabled)
         self.tv._run.side_effect=['3.0.0.0']
         with self.assertRaisesRegex(RuntimeError,'route changed'): self.transport.prepare(self.clock)
         self.tv._run.side_effect=['2.0.0.0','1','']; self.transport.prepare(self.clock)
@@ -66,14 +66,14 @@ class TVTransportTests(unittest.TestCase):
 
     def test_source_broadcast_roundtrip_and_cancel_never_reselect_after_cancellation(self):
         self.tv._previous_source.return_value='0.0.0.0'; self.assertTrue(self.transport.source(self.clock))
-        self.tv._samsung.restore_broadcast.assert_called_once(); self.assertEqual(self.clock.waits,[3,3])
+        self.assertTrue(any(c.args == ('set_current_input', '0.0.0.0') for c in self.tv._driver_call.call_args_list)); self.assertEqual(self.clock.waits,[3,3])
         self.clock.wait=lambda _:setattr(self.clock,'cancelled',True) or True
         self.tv._run.reset_mock(); self.assertFalse(self.transport.source(self.clock))
         self.assertEqual(sum('--active-source' in c.args for c in self.tv._run.call_args_list),1)
-        self.clock.cancelled=False; self.transport.trial_key='KEY_HDMI'; self.tv._run.side_effect=OSError('CEC unavailable')
-        self.tv._samsung._send_key.return_value=True; self.transport.select_terminal(self.clock)
-        self.tv._samsung._send_key.assert_called_once()
-        self.tv._samsung._send_key.return_value=False
+        self.clock.cancelled=False; self.tv._driver_call.reset_mock(); self.transport.trial_key='KEY_HDMI'; self.tv._run.side_effect=OSError('CEC unavailable')
+        self.tv._driver_call.return_value=True; self.transport.select_terminal(self.clock)
+        self.tv._driver_call.assert_called_once()
+        self.tv._driver_call.return_value=False
         with self.assertRaisesRegex(OSError,'CEC unavailable'): self.transport.select_terminal(self.clock)
 
     def test_discovery_ignores_advertised_urls_redirects_and_bad_payloads(self):
@@ -109,8 +109,8 @@ class TVTransportTests(unittest.TestCase):
                 else: self.assertTrue(self.transport.pair(self.clock,'192.0.2.2'))
                 connect.assert_called_once_with('192.0.2.2',timeout=25); remote.close.assert_called_once_with(timeout=0)
                 if cancelled: save.assert_not_called()
-                else: save.assert_called_once_with(self.tv._samsung.config_file,saved)
-        self.tv._samsung.config_file.write_text(json.dumps(saved)); self.transport.trial_key='KEY_HDMI'
+                else: save.assert_called_once_with(self.tv._driver_config_file,saved)
+        self.tv._driver_config_file.write_text(json.dumps(saved)); self.transport.trial_key='KEY_HDMI'
         with patch.object(tv_check,'save_config') as save: self.transport.confirm_source()
         self.assertEqual(save.call_args.args[1]['terminal_source'],{'address':'2.0.0.0','key':'KEY_HDMI'})
 
