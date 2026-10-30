@@ -98,7 +98,7 @@ configuration wait until the terminal is idle. Supported live changes do not end
 
 The remote has left, right, green, red and middle controls. Green and red stickers
 identify the two action buttons. Button actions depend on the current page or call
-state. Pressing the middle button opens a compact call-volume overlay; left/right changes volume and a second middle press closes it.
+state. Pressing the middle button opens a compact call-volume overlay; left/right changes volume and red or a second middle press closes it.
 
 The terminal detects remote connection, battery level and external charging power
 where the device reports them. It shows help when the remote is unavailable.
@@ -489,7 +489,7 @@ The call-volume overlay uses a black frame, direction icons and the current
 percentage above the existing page or video. Its width is at most 900 pixels
 and its height at most 160 pixels, leaving most of the screen visible.
 Press middle to open it, click left/right for
-5% steps, and press middle again to close it. Button release does not close it,
+5% steps, and press red or middle again to close it. Button release does not close it,
 and it has no automatic timeout. A red exclamation indicates mixer failure.
 It changes received call playback, not ringtone or microphone gain/mute. Level requests
 coalesce on one worker at at most ten per second, with a final pending value

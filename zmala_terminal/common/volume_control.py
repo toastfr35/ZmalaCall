@@ -57,10 +57,14 @@ class VolumeControl:
         self.activity()
         self.refresh()
 
+    # @llr LLR-TERM-REMOTE-016
     def button(self, button):
         if not self.active or self.closed:
             return
         self.activity()
+        if button == 'red':
+            self.dismiss()  # Consume the press here; never pass it to call control.
+            return
         self.level.adjust(button)
 
     # @llr LLR-TERM-AUDIO-007
