@@ -1248,3 +1248,5 @@ and the worker checks current contact ownership before publishing a late result.
 Only one request runs at once; retry backoff applies only to current portraits.
 `media_diagnostics.py` reads native media snapshots independently of engine setup
 and always releases each acquired statistics reference, including on getter errors.
+
+The Pi manual incoming-call prompt shows a green circular remote-button cue beside the localized answer action. Only the Windows terminal shows ENTER. Automatic answering replaces either hint with the countdown; remote disconnection does not select keyboard hints.
