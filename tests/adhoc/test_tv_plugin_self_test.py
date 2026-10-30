@@ -40,7 +40,7 @@ class TVSelfTestTests(unittest.TestCase):
         report = run_sequence(self.invoke, lambda index: photos.append(index), ['other'], sleep=lambda _: None)
         self.assertFalse(self.power)
         self.assertEqual(self.source, 'original')
-        self.assertEqual(len(photos), len(report['steps']))
+        self.assertEqual(len(photos), 1 + 3 * (len(report['steps']) - 1))
         self.assertEqual([a for m, a in self.calls if m == 'set_current_input'], [['other'], ['other'], ['other'], ['original']])
         self.assertEqual(report['visual_verdict'], 'Not assessed')
         self.assertEqual([step['method'] for step in report['steps'][:4]],
@@ -111,6 +111,25 @@ class TVSelfTestTests(unittest.TestCase):
             if index == 3:
                 raise KeyboardInterrupt()
         report = run_sequence(self.invoke, photo, ['other'], sleep=lambda _: None)
-        self.assertEqual(report['steps'][2]['power']['status'], 'not observed')
+        self.assertEqual(report['sequence_status'], 'Interrupted: KeyboardInterrupt')
         with tempfile.TemporaryDirectory() as directory:
             self.assertIn('Interrupted', render_html(report, Path(directory)))
+
+    def test_three_absolute_deadlines_without_intervening_commands(self):
+        now = [0.0]
+        events = []
+        def sleep(seconds):
+            now[0] += seconds
+        def invoke(method, args):
+            events.append(method)
+            return self.invoke(method, args)
+        def snapshot(index):
+            events.append('photo')
+            now[0] += 1
+        report = run_sequence(invoke, snapshot, [], sleep=sleep, clock=lambda: now[0])
+        samples = report['steps'][1]['observations']
+        self.assertEqual([s['started_seconds'] for s in samples], [5, 10, 15])
+        start = events.index('set_power_off')
+        end = events.index('set_power_on')
+        self.assertEqual(events[start:end].count('photo'), 3)
+        self.assertFalse(any(e.startswith('set_') for e in events[start+1:end]))

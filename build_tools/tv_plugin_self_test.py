@@ -16,12 +16,13 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep):
+def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep, clock=time.monotonic):
     """Inject bounded driver/camera operations so the sequence is independently testable."""
-    report = {'schema_version': 1, 'sequence': 'power-and-directed-input-transitions-v2', 'started_at': utc_now(), 'steps': [], 'visual_verdict': 'Not assessed',
+    report = {'schema_version': 1, 'sequence': 'power-and-directed-input-transitions-v3', 'started_at': utc_now(), 'steps': [], 'visual_verdict': 'Not assessed',
               'restoration': 'Not attempted'}
     capabilities = set()
     initial = {}
+    photo_number = 0
 
     def call(method, *args):
         if method not in ('get_model', 'get_capabilities') and method not in capabilities:
@@ -29,11 +30,11 @@ def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep):
         return invoke(method, list(args))
 
     def step(label, method=None, args=(), restoring=False):
-        started = time.monotonic()
+        nonlocal photo_number
+        started = clock()
         result = call(method, *args) if method else {'status': 'observation', 'value': None}
-        command_seconds = time.monotonic() - started
-        if method and result['status'] != 'unsupported':
-            sleep(delay)
+        completed = clock()
+        command_seconds = completed - started
         record = {'label': label, 'timestamp': utc_now(), 'method': method,
                   'arguments': list(args), 'result': result,
                   'power': {'status': 'not observed', 'value': None},
@@ -41,16 +42,26 @@ def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep):
                   'command_seconds': round(command_seconds, 3), 'delay_seconds': delay if method else 0,
                   'restoring': restoring}
         report['steps'].append(record)
-        # Photograph immediately after the settling delay, before status queries
-        # add latency or affect a TV's firmware behaviour.
-        try:
-            record['photo'] = snapshot(len(report['steps']))
-            record['photo_at'] = utc_now()
-        except Exception as error:
-            record['photo_error'] = type(error).__name__
-        record['power'] = call('get_power_status')
-        record['input'] = call('get_current_input')
-        record['observed_at'] = utc_now()
+        record['observations'] = []
+        offsets = (delay, delay * 2, delay * 3) if method and result['status'] != 'unsupported' else (0,)
+        for offset in offsets:
+            # Absolute deadlines avoid accumulating the duration of previous
+            # camera/status operations into subsequent observation times.
+            sleep(max(0, completed + offset - clock()))
+            observation = {'target_seconds': offset, 'started_seconds': round(clock() - completed, 3)}
+            record['observations'].append(observation)
+            photo_number += 1
+            try:
+                observation['photo'] = snapshot(photo_number)
+                observation['photo_at'] = utc_now()
+                observation['photo_completed_seconds'] = round(clock() - completed, 3)
+            except Exception as error:
+                observation['photo_error'] = type(error).__name__
+            observation['power'] = call('get_power_status')
+            observation['input'] = call('get_current_input')
+            observation['observed_at'] = utc_now()
+            observation['completed_seconds'] = round(clock() - completed, 3)
+            record.update(observation)  # Overview uses the last observation only.
         expected = None
         actual = None
         if method in ('set_power_on', 'set_power_off'):
@@ -128,12 +139,20 @@ def render_html(report, folder):
     cards = []
     overview = []
     for index, step in enumerate(report['steps'], 1):
-        photo = ''
-        if step.get('photo'):
-            path = folder / step['photo']
-            if path.is_file():
-                encoded = base64.b64encode(path.read_bytes()).decode('ascii')
-                photo = f'<img alt="TV photograph after step {index}" src="data:image/jpeg;base64,{encoded}">'
+        photos = []
+        for observation in step.get('observations', [step]):
+            photo = ''
+            if observation.get('photo'):
+                path = folder / observation['photo']
+                if path.is_file():
+                    encoded = base64.b64encode(path.read_bytes()).decode('ascii')
+                    photo = f'<img alt="TV photograph after step {index}" src="data:image/jpeg;base64,{encoded}">'
+            title = f'Observation at +{observation.get("target_seconds", 0)} seconds'
+            timing = f'Capture started +{observation.get("started_seconds", 0):.2f}s; completed +{observation.get("photo_completed_seconds", 0):.2f}s'
+            values = json.dumps({'power': observation.get('power'), 'input': observation.get('input')}, indent=2)
+            photos.append(f'<h3>{escaped(title)}</h3><p>{escaped(timing)}</p>' +
+                          (photo or '<p class="warning">Photo unavailable</p>') + f'<pre>{escaped(values)}</pre>')
+        photo = ''.join(photos)
         result = step['result']
         overview.append(f'<tr><td><a href="#step-{index}">{index}</a></td><td>{escaped(step["label"])}</td>'
                         f'<td>{escaped(result.get("value"))} ({escaped(result["status"])})</td>'
@@ -143,7 +162,7 @@ def render_html(report, folder):
                               'result': result, 'reported_power': step['power'],
                               'reported_input': step['input']}, indent=2)
         cards.append(f'''<section id="step-{index}"><h2>{index}. {escaped(step['label'])}</h2>
-<p>{escaped(step['timestamp'])} · Command: {step['command_seconds']:.3f}s · Requested settling delay: {step['delay_seconds']}s</p>
+<p>{escaped(step['timestamp'])} · Command: {step['command_seconds']:.3f}s · Observation interval: {step['delay_seconds']}s (three samples)</p>
 {photo or '<p class="warning">No photo: '+escaped(step.get('photo_error', 'unavailable'))+'</p>'}
 <details open><summary>Plugin observations</summary><pre>{escaped(details)}</pre></details>
 <p class="review">Visual review: compare the picture with the requested action. No automatic pass is claimed.</p></section>''')

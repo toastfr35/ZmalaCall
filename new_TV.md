@@ -204,10 +204,10 @@ permission to pause/restart the terminal and wake the C20. Do not run during cal
 The standard sequence is:
 
 1. Photograph the initial state.
-2. Request off, then on, then on again, waiting five seconds and photographing
-   after **each** command.
+2. Request off, then on, then on again, photographing and querying state at
+   **5, 10 and 15 seconds after each command**, without intervening commands.
 3. For each supplied input: select it, select it again, request standby, repeat
-   standby, wake, then re-select the same input. Each action has its own delay/photo.
+   standby, wake, then re-select the same input. Each action has the same three observations.
 4. Exercise every directed pair of inputs (A → B and B → A for two inputs).
 5. Attempt to restore the original input and power, with photos of restoration.
 
@@ -220,7 +220,8 @@ on systems without an X display. The Pi display service must already be running.
 An unknown initial power state limits the run to observation. Unknown original
 input is reported as incomplete source restoration. Unsupported methods are
 recorded as skipped. Each operation runs in a separate process with a deadline,
-followed by the settling delay, a photo, then state queries. The overview compares
+followed by observations scheduled at three absolute offsets, each with a photo
+then state queries. Actual capture start/completion times expose sampling overhead. The overview compares
 reported state with requested state; this is separate from visual qualification.
 The report records command duration, not time to a visibly completed transition.
 
