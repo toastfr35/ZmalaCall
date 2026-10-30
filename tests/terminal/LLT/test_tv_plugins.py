@@ -1,7 +1,7 @@
 # @test T-LLT-086
 # @requirements LLR-TERM-TV-033, LLR-TERM-TV-031
 # @environment portable
-# @plan Load only registered drivers; exercise all seven API methods with temporary paired settings and mocked HTTP, WebSocket and CEC. Check truthful capabilities, unknown/transition states, source round trips, metadata timeout/redirect/oversize rejection, fresh LAN power fallback for ambiguous CEC, unchanged getters after writes, no constructor I/O, cancellation before/after authentication and before toggle, and controller fallback failure isolation.
+# @plan Load only registered drivers; exercise all seven API methods with temporary paired settings and mocked HTTP, WebSocket and CEC. Check truthful capabilities, unknown/transition states, source round trips, metadata timeout/redirect/oversize rejection, fresh LAN power fallback for ambiguous CEC, unchanged getters after writes, no constructor I/O, already-on wake idempotence, standby-guarded network wake and CEC fallback, cancellation before/after authentication and before toggle, and controller fallback failure isolation.
 # @pass Assertions pass without operating a TV; this does not qualify physical Samsung input or power behaviour.
 """Contract and controller integration tests for the simple TV driver API."""
 import json
@@ -175,3 +175,52 @@ class TVPluginTests(unittest.TestCase):
         with patch.object(samsung, 'connect', return_value=(Mock(), self.saved)) as connect:
             self.assertFalse(self.driver().set_power_off())
             connect.return_value[0].send.assert_not_called()
+
+    def test_already_on_wake_does_not_disturb_source_and_checks_cancellation(self):
+        wake = Mock(return_value=True)
+        self.assertTrue(self.driver(read_power=lambda: True, power_on=wake).set_power_on())
+        wake.assert_not_called()
+        with patch.object(samsung.TVDriver, '_send_key', return_value=False):
+            for state in (False, None):
+                self.assertTrue(self.driver(read_power=lambda: state, power_on=wake).set_power_on())
+        self.assertEqual(wake.call_count, 2)
+        wake.reset_mock()
+        current = Mock(side_effect=[True, False])
+        self.assertFalse(self.driver(read_power=lambda: False, power_on=wake,
+                                     is_current=current).set_power_on())
+        wake.assert_not_called()
+
+    def test_network_wake_requires_fresh_standby_and_preserves_cec_fallback(self):
+        wake = Mock(return_value=True)
+        with patch.object(samsung, 'connect', return_value=(Mock(), self.saved)) as connect:
+            remote = connect.return_value[0]
+            self.assertTrue(self.driver(read_power=lambda: False, power_on=wake).set_power_on())
+            self.assertEqual(json.loads(remote.send.call_args.args[0])['params']['DataOfCmd'], 'KEY_POWER')
+            wake.assert_not_called()
+            remote.send.reset_mock()
+            reader = Mock(side_effect=[False, True, True])
+            self.assertTrue(self.driver(read_power=reader, power_on=wake).set_power_on())
+            remote.send.assert_not_called()
+            wake.assert_not_called()
+            reader = Mock(side_effect=[False, None, None])
+            self.assertTrue(self.driver(read_power=reader, power_on=wake).set_power_on())
+            remote.send.assert_not_called()
+            wake.assert_called_once()
+        wake.reset_mock()
+        with patch.object(samsung.TVDriver, '_send_key', return_value=False):
+            self.assertTrue(self.driver(read_power=lambda: False, power_on=wake).set_power_on())
+        wake.assert_called_once()
+
+    def test_network_wake_cancellation_after_authentication_sends_nothing(self):
+        wake = Mock(return_value=True)
+        active = [True]
+        remote = Mock()
+        def connect(*args):
+            active[0] = False
+            return remote, self.saved
+        with patch.object(samsung, 'connect', side_effect=connect):
+            self.assertFalse(self.driver(read_power=lambda: False, power_on=wake,
+                                         is_current=lambda: active[0]).set_power_on())
+        remote.send.assert_not_called()
+        wake.assert_not_called()
+        remote.close.assert_called_once()

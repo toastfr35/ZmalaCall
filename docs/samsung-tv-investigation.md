@@ -146,3 +146,29 @@ before the terminal resumes. Tool tests cover next-frame capture, single-sample
 scheduling, query overhead, process failure and timeout. Runtime requirements and
 user workflows remain unchanged. The original plugin was restored and developer
 access disabled; private HTML/photo evidence remains outside Git.
+
+## Guarded paired-network wake improvement
+
+A discrete CEC Power On Function experiment did not wake this Q60C: getters and
+photos remained in standby. That experimental transport was discarded; the
+controller's existing CEC callback is unchanged.
+
+The Samsung plugin now leaves an already-on TV alone. For confirmed standby it
+prefers the paired network power key, rechecking standby after authentication
+before sending the toggle. Unknown or changed state never authorizes a toggle.
+If the network attempt fails, the plugin rechecks power and cancellation before
+using the original CEC wake fallback. A newly-on state avoids the fallback too.
+The seven-method API, TLS pinning, source binding and controller policy remain.
+No fixed settling sleep was added to the plugin.
+
+Two subsequent 23-step trials at five-second observation intervals were reviewed
+photograph by photograph. All 46 photos showed the expected state; all 44 setter
+comparisons matched. Initial live-TV wake, later live-TV wake and HDMI wake all
+showed their picture in both trials (six actual wakes). Repeated on left the
+picture playing. The second trial included the final post-authentication fallback
+recheck. This is smoke-test evidence on this Q60C, not a reliability guarantee for
+other TVs, long standby or unavailable network remote. The separate legacy
+call-controller wake sequence and real phone calls were not changed or retested.
+The tested plugin remains installed on term2; developer access is disabled after
+inspection. Private reports retain both the failed CEC experiment and successful
+network-wake runs, alongside the earlier timing failures.

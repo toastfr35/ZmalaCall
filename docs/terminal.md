@@ -655,8 +655,14 @@ port 8001 can report `on` or `standby`. The tested QE55Q60CAUXXU reports CEC
 TLS remote port closes. Unknown values, oversized responses, redirects and network
 failures remain unknown. Metadata is a local, unauthenticated observation and
 contains no credentials; command authentication still uses pinned TLS.
-Current-input observation and wake still require controller-supplied bounded CEC
-callbacks. Capabilities describe these mechanisms, not current reachability.
+Current-input observation and wake capability still require controller-supplied
+bounded CEC callbacks. Samsung wake first observes power: already-on is a no-op.
+Confirmed standby allows a paired network power key, with another fresh standby
+check after authentication. If the network attempt is unavailable or rejected,
+the driver rechecks power and cancellation before using the existing CEC wake
+fallback. It never sends a network toggle when power is unknown. This keeps
+repeated wake requests from disturbing an already-on source. Power/input getters
+report control state, not proof that the programme picture is playing. Capabilities describe these mechanisms, not current reachability.
 See `docs/samsung-tv-investigation.md` for measured scope and remaining limitations.
 
 CEC remains the primary transport. The controller dispatches network fallbacks

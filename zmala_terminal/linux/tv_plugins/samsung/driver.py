@@ -3,8 +3,9 @@
 CEC requests HDMI switching and standby first. An explicitly verified,
 connector-bound source key can select HDMI when the broadcast tuner ignores CEC.
 This adapter also returns to
-the built-in tuner, preserving its last channel, volume and mute. A power-key
-fallback is allowed only after a fresh, explicit confirmation that the TV is on.
+the built-in tuner, preserving its last channel, volume and mute. A power-key command
+is allowed only after fresh confirmation of the opposite power state, repeated
+after authentication: on for standby, standby for wake.
 The token and pinned TLS certificate live in private terminal runtime data.
 """
 import base64
@@ -171,10 +172,32 @@ class TVDriver(BaseTVDriver):
         binding = self._binding()
         return source if source is not None and source == binding.get('address') else None
 
+    # @llr LLR-TERM-TV-031
     def set_power_on(self) -> bool:
         if 'set_power_on' not in self.get_capabilities():
             raise NotImplementedError
-        return bool(self._is_current() and self.config['power_on']())
+        if not self._is_current():
+            return False
+        power = self.get_power_status()
+        if not self._is_current():
+            return False
+        # Repeating wake must not disturb an already-on source. Power state
+        # is not picture readiness; do not try to repair playback here.
+        if power is True:
+            return True
+        # Prefer the paired remote: CEC Image View On left a blank tuner picture
+        # on the tested Q60C, even while power/source getters reported success.
+        # KEY_POWER is a toggle: require fresh standby both before connecting
+        # and immediately before sending, just as standby requires fresh on.
+        if power is False and self._send_key(
+                'KEY_POWER', self._is_current, lambda: self.get_power_status() is False):
+            return True
+        if not self._is_current():
+            return False
+        # Authentication may have overlapped another controller waking the TV.
+        # Re-check before falling back; never disturb a newly-on source.
+        power = self.get_power_status()
+        return bool(self._is_current() and (power is True or self.config['power_on']()))
 
     # @llr LLR-TERM-TV-031
     def set_power_off(self) -> bool:
@@ -225,7 +248,7 @@ class TVDriver(BaseTVDriver):
         return self._send_key(binding['key'], self._is_current)
 
     def _send_key(self, key, is_current, can_send=lambda: True):
-        """Keep remote commands restricted to source selection and guarded standby."""
+        """Keep remote commands restricted to source selection and guarded power changes."""
         if key not in ('KEY_TV', 'KEY_POWER', 'KEY_HDMI', 'KEY_HDMI1', 'KEY_HDMI2', 'KEY_HDMI3', 'KEY_HDMI4'):
             raise ValueError('Unsupported restoration key')
         if not self.config_file.exists():
@@ -256,7 +279,7 @@ class TVDriver(BaseTVDriver):
         except Exception as error:
             # Third-party errors may contain a token-bearing WebSocket URL.
             # Log only the exception type; power restoration must still run.
-            logging.warning('TV: Samsung source restoration failed (%s)', type(error).__name__)
+            logging.warning('TV: Samsung remote command failed (%s)', type(error).__name__)
             return False
         finally:
             if remote:

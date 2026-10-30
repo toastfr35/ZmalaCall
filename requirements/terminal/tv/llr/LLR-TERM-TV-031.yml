@@ -34,8 +34,10 @@ scope: Core
 text: |
   Samsung credentials shall be private and the TLS certificate pinned. HDMI fallback
   shall use a user-verified key and address binding. Incompatible cable or address
-  changes shall invalidate it. Power-toggle fallback shall require a fresh confirmed
-  settled on-state.
+  changes shall invalidate it. A power toggle for standby shall require a fresh
+  confirmed on-state; a power toggle for wake shall require a fresh confirmed
+  standby state. Both shall recheck the required state after authentication and
+  respect cancellation before sending. Unknown state shall never permit a toggle.
 verification: |
   Change certificate, binding and power observations. Check rejected stale control and
   the command used for a verified binding.
