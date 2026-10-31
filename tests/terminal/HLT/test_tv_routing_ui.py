@@ -1,8 +1,8 @@
 # @test T-HLT-027
 # @requirements HLR-TERM-TV-018
 # @environment display
-# @plan Run the real Tk input/idle controllers and asynchronous TVControl workers against a stateful CEC transport fixture. Begin on another input and in standby, press a button, use the visible UI and expire the idle countdown. Also accept an incoming call and end it. Inspect source/power transitions, first-press consumption and all emitted commands.
-# @pass The first hidden-view press reveals the terminal without selecting a contact; idle return and call end restore the captured input/power, without volume/mute commands. Real worker delays run; TV firmware, Samsung network pairing and physical HDMI switching are not qualified by this fixture.
+# @plan Run the real Tk input/idle controllers and asynchronous TVControl workers against a stateful CEC transport fixture. Begin on another input and in standby, press a button, use the visible UI and expire the idle countdown. Then answer, decline, cancel and fail incoming calls; verify a fresh countdown, delayed bar and deferred restoration for each outcome. Inspect source/power transitions, first-press consumption and all emitted commands.
+# @pass The first hidden-view press reveals the terminal without selecting a contact; idle expiry restores the captured input/power; all call endings keep the terminal visible until that countdown expires, without volume/mute commands. Real worker delays run; TV firmware, Samsung network pairing and physical HDMI switching are not qualified by this fixture.
 
 import json
 import os
@@ -74,16 +74,30 @@ class TVRoutingUITests(unittest.TestCase):
                         pump(app, lambda: tv._restore_pending is None, timeout=5)
                         self.assertEqual(state, {'off': standby, 'active_source': '2.0.0.0'})
 
-                        publish()
-                        app.call_event(88, 1, 'alice', 'family.test')
-                        pump(app, lambda: tv._ready.is_set(), timeout=8)
-                        self.assertEqual(app.model.state, State.RINGING)
-                        self.assertEqual(state, {'off': False, 'active_source': '1.0.0.0'})
-                        app.call_event(88, 8, 'alice', 'family.test')
-                        self.assertEqual(app.model.state, State.IN_CALL)
-                        app.call_event(88, 14, 'alice', 'family.test')
-                        pump(app, lambda: tv._previous is None, timeout=5)
-                        self.assertEqual(state, {'off': standby, 'active_source': '2.0.0.0'})
+                        for ending in ('answered', 'declined', 'cancelled', 'failed'):
+                            publish()
+                            app.call_event(88, 1, 'alice', 'family.test')
+                            pump(app, lambda: tv._ready.is_set(), timeout=8)
+                            self.assertEqual(app.model.state, State.RINGING)
+                            self.assertEqual(state, {'off': False, 'active_source': '1.0.0.0'})
+                            if ending == 'answered':
+                                app.call_event(88, 8, 'alice', 'family.test')
+                                self.assertEqual(app.model.state, State.IN_CALL)
+                            elif ending == 'declined':
+                                app.action(app.model.button('red'))
+                            app.call_event(88, 13 if ending == 'failed' else 14, 'alice', 'family.test')
+                            pump(app, lambda: tv._previous is None and tv._ready.is_set(), timeout=5)
+                            self.assertEqual(state, {'off': False, 'active_source': '1.0.0.0'}, ending)
+                            self.assertIsNotNone(tv.browsing_session())
+                            start = time.monotonic()
+                            app.tick_tv_idle(start)
+                            self.assertEqual(app.tv_idle_pixels, 0)
+                            app.tick_tv_idle(start+11)
+                            self.assertGreater(app.tv_idle_pixels, 0)
+                            self.assertEqual(state, {'off': False, 'active_source': '1.0.0.0'}, ending)
+                            app.tick_tv_idle(start+31)
+                            pump(app, lambda: tv._restore_pending is None, timeout=5)
+                            self.assertEqual(state, {'off': standby, 'active_source': '2.0.0.0'}, ending)
                         self.assertTrue(all(thread != threading.get_ident() for _, thread in commands))
                         flattened = ' '.join(' '.join(args) for args, _ in commands)
                         for forbidden in ('volume', 'mute', 'user-control', 'system-audio'):
