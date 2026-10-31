@@ -1296,3 +1296,4 @@ acoustic listening quality, phone video on the TV, or eliminate the separate
 intermittent Samsung wake problem. Auto-answer was restored off afterward.
 Private captures and logs are retained under `build_tools/tmp/c10-*` and
 `build_tools/tmp/tv-real-calls/c10-phone1-*`; they are not release assets.
+The Pi manual incoming-call prompt shows a green circular remote-button cue beside the localized answer action. Only the Windows terminal shows ENTER. Automatic answering replaces either hint with the countdown; remote disconnection does not select keyboard hints.

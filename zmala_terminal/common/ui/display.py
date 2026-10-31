@@ -1,11 +1,12 @@
 """Tk widgets and layout. No worker or SIP callback updates widgets outside the UI thread."""
 import math
+import sys
 import time
 import tkinter as tk
 import tkinter.font as tkfont
 from zmala_terminal.common.model import State
 from zmala_terminal.common.localization import translate
-from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED
+from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED, BUTTON_GREEN
 from zmala_terminal.common.ui.carousel import CarouselView
 from zmala_terminal.common.ui.confirmation import ConfirmationView
 from zmala_terminal.common.ui.remote_help import RemoteHelpView
@@ -22,6 +23,15 @@ INITIAL_VIDEO_GRACE = 8
 
 
 class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsView, UsbSetupView, TVSetupView):
+    # @llr LLR-TERM-CALL-013
+    def ringing_hint(self):
+        """Platform-specific controls; remote connection state cannot imply a keyboard."""
+        if self.model.deadline:
+            return self.text('countdown', seconds=max(1, math.ceil(self.model.deadline-time.monotonic()))), MUTED
+        if sys.platform == 'win32':
+            return 'ENTER  ' + self.text('answer'), MUTED
+        return '●  ' + self.text('answer'), BUTTON_GREEN
+
     def build_ui(self):
         self.top = tk.Frame(self.root, bg=BG)
         self.top.pack(fill='x', padx=18, pady=(12, 0))
@@ -349,13 +359,14 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
                 self.title.configure(text=self.text('callback_requested'))
             elif state == State.HOME and self.callback_alert:
                 self.title.configure(text=f"↩ {self.callback_alert[0]} · {self.text('online')}")
+            subtitle_color = MUTED
             if state == State.HOME:
                 subtitle = self.text(self.notice) if self.notice and self.notice != 'callback_requested' else ('' if contact and registered else self.text('connecting') if contact else self.text('empty'))
             elif state == State.RINGING:
-                subtitle = self.text('countdown', seconds=max(1, math.ceil(self.model.deadline-time.monotonic()))) if self.model.deadline else 'ENTER  '+self.text('answer')
+                subtitle, subtitle_color = self.ringing_hint()
             else:
                 subtitle = self.text('wait')
-            self.subtitle.configure(text=subtitle)
+            self.subtitle.configure(text=subtitle, fg=subtitle_color)
             if state == State.HOME and not subtitle:
                 self.subtitle.grid_remove()
         self.fit_text()
