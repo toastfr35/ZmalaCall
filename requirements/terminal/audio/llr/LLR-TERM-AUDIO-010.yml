@@ -39,6 +39,10 @@ scope: Core
 text: |
   Call playback, incoming ringtone/preview/outgoing ringback and remote-button feedback shall have
   independent 0–100 percent levels. Zero shall silence only that sound category.
+  Call playback shall map 5 percent to -16.8 dB (the former 40-percent gain),
+  and 100 percent to 0 dB, interpolating linearly in dB between these endpoints.
+  Legacy positive integer levels below 5 percent shall use -16.8 dB.
+  Ringtone, ringback and button gains shall retain their existing -28 to 0 dB curve.
   Missing ringtone settings shall preserve the previous configured speaker level;
   new profiles shall default to call/ringtone 50 percent and button feedback 20 percent.
   C10/C20 hardware playback gain shall be fixed at +12 dB for both C10 and C20; call gain shall be applied on the

@@ -1403,3 +1403,13 @@ Live C20 ALSA readback on term2 (31 October 2026) confirmed its PCM hardware
 range is -28 to +12 dB, matching the C10. Both now use +12 dB by default; the
 previous C20 0 dB setting was below its supported maximum. The separate call,
 ringtone and button-sound levels still attenuate their respective streams.
+
+
+### Voice-volume scale
+
+The Pi call-volume overlay still uses 5% steps. `sound_levels.call_gain_db` maps
+0% to mute, 5% to -16.8 dB (the previous 40% setting) and 100% to 0 dB. Nonzero
+steps are evenly spaced in dB; legacy positive integer defaults below 5% use
+-16.8 dB. The existing saved percentage remains unchanged, so most intermediate
+settings sound louder after updating. C10/C20 hardware remains at +12 dB.
+Ringtone, outgoing ringback and button feedback keep their independent old curve.

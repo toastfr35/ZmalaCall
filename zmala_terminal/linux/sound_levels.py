@@ -1,4 +1,4 @@
-"""Independent playback gains; retain the C20's existing -28..0 dB level curve."""
+"""Independent playback gains: useful voice range and the original tone curve."""
 import array
 import io
 import math
@@ -23,6 +23,17 @@ def gain_db(percent):
     if type(percent) is not int or not 0 <= percent <= 100:
         raise ValueError('Volume must be 0–100 percent')
     return -28 * (100-percent)/100 if percent else -120
+
+
+# @llr LLR-TERM-AUDIO-010
+def call_gain_db(percent):
+    """Keep mute/max; map the first 5% voice step to the former 40% (-16.8 dB).
+
+    Interpolate in dB, as the original control did. Legacy integer defaults below
+    5% use the first audible step; ringtone and button scaling still use gain_db.
+    """
+    gain_db(percent)  # Share strict percentage validation, including rejecting bool.
+    return -16.8 * (100-max(5, percent))/95 if percent else -120
 
 
 def scale_wav(data, percent, *, sample_rate=16000, streaming_header=False):
