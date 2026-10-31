@@ -168,9 +168,11 @@ REVISIONS = {
         'To cancel your request,': [
             'To cancel a request you sent, select that person, press red, then confirm with green.',
         ],
-        'A numbered badge can mean': [
+        'A numbered badge': [
             'A numbered badge marks missed calls or message notifications. Opening that person’s '
             'call or callback confirmation clears the count, even if you go back without calling.',
+            'After a missed call, the caller’s portrait is selected automatically so you can easily '
+            'call them back. Their missed-call badge stays unread until you open their confirmation.',
         ],
         'A thin blue bar at the bottom': [
             'A thin blue bar at the bottom appears after ten seconds without a button press and shows '

@@ -39,6 +39,9 @@ class CallControl:
                 self.settings_hold.clear()
                 self.settings_open = False
             self.engine.hold_call(call)
+            # A short missed call may end before the first ringing render.
+            # Do not let an earlier carousel animation override its selection.
+            self.carousel_motion = None
             if getattr(self, 'tv_control', None):
                 self.tv_control.wake()
             self.root.after_idle(lambda: self.root.lift())

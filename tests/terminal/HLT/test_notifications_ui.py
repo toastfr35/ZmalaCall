@@ -1,7 +1,7 @@
 # @test T-HLT-024
 # @requirements HLR-TERM-HISTORY-013, HLR-TERM-HISTORY-014
 # @environment display
-# @plan Deliver signed text notifications at the native ABI boundary into the real Engine validator, UI controller, model and atomic notification store. Reject forged/duplicate/foreign messages, add a missed call, reconstruct persisted counts, acknowledge a contact and change account scope. Inspect saved JSON for content leakage.
+# @plan Deliver signed text notifications at the native ABI boundary into the real Engine validator, UI controller, model and atomic notification store. Reject forged/duplicate/foreign messages, add a missed call and check the caller is centered without clearing their badge, reconstruct persisted counts, acknowledge a contact and change account scope. Inspect saved JSON for content leakage.
 # Render pending incoming callback snapshots on selected/adjacent cards in English/French at 900x620, 1280x720 and 1920x1080. Check the yellow flag/caption stays within the portrait; outgoing requests retain their separate tag; cancellation/completion removes the incoming flag and no call is dialed.
 # Inject unanswered outgoing native-end events and terminal timeout/cancel actions through the real controllers. Check the rendered callback question omits an unavailable claim, No returns home, Yes dispatches one callback action, and answered/incoming calls do not offer it. No live SIP/HTTP delivery is claimed by this display fixture.
 # @pass Only authorized new notifications increase counts; the model restores unread counts and saves acknowledgements without message bodies or credentials. Native transport is substituted; this test does not establish cross-engine deduplication beyond the implemented in-memory window.
@@ -118,11 +118,17 @@ class NotificationUITests(unittest.TestCase):
             self.assertEqual(app.model.notifications, {'alice': 1})
             message.update(id='message-2', sender='alice', domain='family.test')
             deliver()
+            # End before Tk draws ringing; stale navigation must not win on return.
+            app.carousel_motion = object()
             app.call_event(42, 1, 'bob', 'family.test')
             self.assertEqual(app.model.state, State.RINGING)
             app.call_event(42, 14, 'bob', 'family.test')
             pump(app)
             self.assertEqual(app.model.notifications, {'alice': 2, 'bob': 1})
+            self.assertEqual(app.model.selected['id'], 'bob')
+            self.assertIsNone(app.carousel_motion)
+            x, _ = app.avatar.coords('contact-name-bob')
+            self.assertAlmostEqual(x, app.avatar.winfo_width()/2, delta=1)
             path = directory/'notifications.json'
             raw = path.read_text()
             self.assertEqual(set(json.loads(raw)), {'account', 'contacts', 'counts'})

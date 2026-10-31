@@ -549,6 +549,10 @@ idle interval, but still need call confirmation; there is no automatic callback 
 Missed incoming calls and authenticated phone texts share per-contact unread
 counts. Merely browsing preserves them; opening that contact's confirmation clears
 its count, even when cancelled. Connecting an incoming call also clears its count.
+After a missed incoming call, the carousel selects that caller without clearing
+the badge. Selection is unchanged for other outcomes or if the caller is absent
+from the callable contacts. Incoming calls discard any unfinished carousel motion,
+including when cancellation arrives before the first ringing frame is drawn.
 Answered/locally declined/outgoing calls do not create missed counts. Bodies are
 not displayed or stored. Counts persist by SIP account/domain and are pruned for
 removed/ineligible contacts. The corner badge totals them; values over 99 display
