@@ -95,14 +95,14 @@ PHONE = {
                 'seconds; a later message does not end the call. You can keep talking while waiting.',
             ]),
             ('Show a photo during a call', [
-                'While talking to someone using a TV terminal, tap Share photo and choose a picture '
+                'During a call to a phone or TV terminal, tap Share photo and choose a picture '
                 'on your phone. You can keep talking while the picture picker is open. Cancel the '
                 'picker if you do not want to share.',
                 'The picture appears on both screens, keeping its proportions. It covers both video '
                 'views, but sound and call controls still work. Tap Stop sharing to return to video. '
                 'To show another picture, stop sharing and choose again.',
-                'This needs updated software on the phone, terminal and server. It is not available '
-                'for phone-to-phone calls. The photo is temporary: it is not saved to the other '
+                'This needs updated software on both devices and the server. Only one person can share '
+                'at a time; on phones, either person can share after the previous sender stops. The photo is temporary: it is not saved to the other '
                 'person’s album or used as a portrait. If sharing loses its connection, video returns '
                 'after a short delay. Ending the call also clears the picture.',
             ]),

@@ -60,7 +60,7 @@ test('participants alone see leased photo; only sender mutates; stop invalidates
     status: 404,
   });
 });
-test('expiry, unconnected and app-to-app calls never expose photo', async () => {
+test('expiry, unconnected and terminal-only calls never expose photo', async () => {
   const f = fixture();
   await f.invoke('PUT');
   f.dialog.photoShare.expires = 0;
@@ -68,7 +68,7 @@ test('expiry, unconnected and app-to-app calls never expose photo', async () => 
   f.dialog.connected = false;
   await assert.rejects(f.invoke(), { status: 403 });
   f.dialog.connected = true;
-  f.users.term.type = 'app';
+  f.users.app.type = 'terminal';
   await assert.rejects(f.invoke(), { status: 409 });
 });
 test('stop, call closure and token revocation fence delayed decoding', async () => {
@@ -109,4 +109,36 @@ test('configuration advertises sharing and contact account types', (t) => {
     store.appConfig('phone1').contacts.find((c) => c.id === 'term1').account_type,
     'terminal',
   );
+});
+
+test('app peers have exclusive sender ownership and can take turns', async () => {
+  const f = fixture();
+  f.users.term.type = 'app';
+  const first = (await f.invoke('PUT')).json();
+  assert.equal(first.sender, 'app');
+  for (const method of ['PUT', 'POST', 'DELETE'])
+    await assert.rejects(f.invoke(method, 'term'), { status: 409 });
+  assert.equal((await f.invoke('GET', 'term')).json().sharing, true);
+  await f.invoke('DELETE');
+  const second = (await f.invoke('PUT', 'term')).json();
+  assert.equal(second.sender, 'term');
+  await assert.rejects(f.invoke('DELETE', 'app'), { status: 409 });
+  await f.invoke('DELETE', 'term');
+  assert.equal((await f.invoke()).json().sharing, false);
+});
+test('competing app upload cannot claim pending decoding', async () => {
+  const f = fixture();
+  f.users.term.type = 'app';
+  let ready, finish;
+  const started = new Promise((r) => (ready = r));
+  const pending = f.invoke('PUT', 'app', '', Buffer.from('image'), () => {
+    ready();
+    return new Promise((r) => (finish = r));
+  });
+  await started;
+  await assert.rejects(f.invoke('PUT', 'term'), { status: 409 });
+  await f.invoke('DELETE', 'app');
+  finish(Buffer.from('image'));
+  await assert.rejects(pending, { status: 409 });
+  assert.equal((await f.invoke('PUT', 'term')).json().sender, 'term');
 });

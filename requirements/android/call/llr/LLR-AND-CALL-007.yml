@@ -9,7 +9,7 @@ ref: ''
 reviewed: null
 area: In-call photo sharing
 scope: Core
-text: For a connected call to a Terminal contact with server photo-sharing capability, the app shall offer
+text: For a connected call to an App or Terminal contact with server photo-sharing capability, the app shall offer
   the system image picker without broad library access and upload one selected photo to the authenticated
   current-call endpoint. It shall bound source data to 20 MiB/64 million pixels and normalize orientation
   and size to a metadata-free JPEG of at most 1600 pixels per side and 2 MiB. The same photo shall appear
@@ -17,7 +17,9 @@ text: For a connected call to a Terminal contact with server photo-sharing capab
   active. Stop or cancel shall clear local sharing immediately and request server deletion; a periodically
   renewed lease shall limit stale remote display. Sharing shall survive Activity recreation, stop when
   the call changes/ends, reject late picker/upload results and report upload/renewal failure. Choosing
-  no image shall leave the call unchanged.
+  no image shall leave the call unchanged. The receiving app shall poll authenticated current-call status
+  and bounded JPEG bytes, preserve proportions, hide sender-only actions, and clear on stop, call change
+  or lease expiry even if a request is blocked. It shall not renew or delete the peer’s share.
 references:
 - path: zmala_phone/app/src/main/java/org/zmala/phone/CallPhotoHttp.java
   type: file
@@ -39,3 +41,5 @@ verification: Unit-test result generation fencing across stop and new calls. Dec
   images on Android and reject malformed/oversized input. Use the call HLT to exercise picker-result delivery,
   authenticated upload/renewal/stop, Activity recreation and retained native call/audio state. Qualify
   the system picker and real speech/video separately on hardware.
+
+# Receiving uses the same authenticated dialog and retains native call surfaces.

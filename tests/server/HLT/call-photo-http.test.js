@@ -47,6 +47,25 @@ test('call photo HTTP boundary normalizes and scopes a disposable image', async 
     assert.equal(Buffer.from(await photo.arrayBuffer()).readUInt16BE(0), 0xffd8);
     await request('DELETE', 'phone1');
     assert.equal((await (await request('GET', 'term1')).json()).sharing, false);
+    // Use the second app as the connected peer, then exercise both sender directions.
+    f.sipServer.dialogs.set('share-http', {
+      connected: true,
+      peers: [{ user: 'phone1' }, { user: 'outsider' }],
+    });
+    const appShare = await (await request('PUT', 'phone1', '', png)).json();
+    assert.equal(
+      (await request('GET', 'outsider', '&image=1&revision=' + appShare.revision)).status,
+      200,
+    );
+    assert.equal((await request('DELETE', 'outsider')).status, 409);
+    await request('DELETE', 'phone1');
+    const reverse = await (await request('PUT', 'outsider', '', png)).json();
+    assert.equal(reverse.sender, 'outsider');
+    assert.equal(
+      (await request('GET', 'phone1', '&image=1&revision=' + reverse.revision)).status,
+      200,
+    );
+    await request('DELETE', 'outsider');
     f.sipServer.dialogs.clear();
     assert.equal((await request('GET', 'term1')).status, 403);
     assert.ok(

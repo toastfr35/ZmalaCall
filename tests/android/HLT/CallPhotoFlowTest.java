@@ -1,7 +1,7 @@
 // @test A-HLT-012
 // @requirements HLR-AND-CALL-001
 // @environment native-display
-// @plan On a disposable emulator answer a signed SIP call, deliver a synthetic picker result, inspect the photo and renewal, recreate the activity, stop sharing and end the call. Check unchanged native call and audio state and absence of replacement INVITEs.
+// @plan On a disposable emulator answer a signed SIP call, deliver a synthetic picker result, inspect local and remote photos, sender-only renewal, receiver stop/failed-lease expiry, recreate the activity, stop sharing and end the call. Check unchanged native call and audio state and absence of replacement INVITEs.
 // @pass Photo sharing survives recreation, renews, clears on Stop/end, preserves call audio/media state and rejects a late result. Physical speech/video quality and the system picker provider are qualified separately.
 package org.zmala.phone;
 
@@ -30,7 +30,7 @@ public class CallPhotoFlowTest {
     CallSession session = CallSession.get(context);
     try (PhoneFixture.Sip sip = new PhoneFixture.Sip()) {
       var config = PhoneFixture.config(sip.port()).put("call_photo_sharing", true);
-      config.getJSONArray("contacts").getJSONObject(0).put("account_type", "terminal");
+      config.getJSONArray("contacts").getJSONObject(0).put("account_type", "app");
       try (CallPhotoFixture http = new CallPhotoFixture(config)) {
         Files.writeString(enrollment.toPath(), PhoneFixture.qr(http.port(), "app"));
         MainActivity screen = activity.launchActivity(null);
@@ -61,6 +61,21 @@ public class CallPhotoFlowTest {
         assertNull(sip.invites.poll(300, java.util.concurrent.TimeUnit.MILLISECONDS));
         PhoneFixture.INSTRUMENTATION.runOnMainSync(session.photos::stop);
         PhoneFixture.waitFor(() -> !http.sharing); assertNull(session.photos.image);
+        // The other phone now shares; this receiver must neither renew nor delete its share.
+        int renewals=http.renewals;
+        http.photo=CallPhotoImage.read(new FileInputStream(photo)); http.revision++; http.sharing=true;
+        PhoneFixture.waitFor(() -> session.photos.receiving && session.photos.image != null);
+        assertFalse(session.photos.active()); assertSame(call,session.engine.call);
+        assertTrue(call.getCurrentParams().isAudioEnabled());
+        http.sharing=false; http.revision++;
+        PhoneFixture.waitFor(() -> !session.photos.receiving && session.photos.image == null);
+        assertEquals(renewals,http.renewals);
+        // A failed fetch must not extend the last advertised lease.
+        http.remaining=1500; http.sharing=true; http.revision++;
+        PhoneFixture.waitFor(() -> session.photos.receiving);
+        http.failPhotoRequests=true;
+        PhoneFixture.waitFor(() -> !session.photos.receiving && session.photos.image == null);
+        http.failPhotoRequests=false; http.sharing=false; http.remaining=12000; http.revision++;
         String oldId = session.callId();
         PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> session.photos.choose(Uri.fromFile(photo), oldId));
         PhoneFixture.waitFor(() -> session.photos.image != null);

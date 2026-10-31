@@ -51,8 +51,8 @@ async function callPhotoRoute(req, res, url, context, convert = normalize) {
   if (!dialog?.connected || !account || !dialog.peers.some((p) => p.user === user))
     throw httpError(403, 'This connected call is unavailable.');
   const kinds = dialog.peers.map((p) => context.store.enrolledAccount(p.user)?.type);
-  if (!kinds.includes('app') || !kinds.includes('terminal'))
-    throw httpError(409, 'Photo sharing requires an app and a terminal.');
+  if (!kinds.includes('app') || kinds.some((kind) => kind !== 'app' && kind !== 'terminal'))
+    throw httpError(409, 'Photo sharing requires an app participant.');
   const identities = dialog.peers.map((p) => [
     p.user,
     context.store.enrolledAccount(p.user)?.device_token,
@@ -63,14 +63,22 @@ async function callPhotoRoute(req, res, url, context, convert = normalize) {
     identities.every(
       ([peer, token]) => context.store.enrolledAccount(peer)?.device_token === token,
     );
-  const state = (dialog.photoShare ||= { revision: 0, bytes: null, expires: 0, uploading: false });
+  const state = (dialog.photoShare ||= {
+    revision: 0,
+    bytes: null,
+    expires: 0,
+    uploading: false,
+    sender: null,
+  });
   if (state.bytes && state.expires <= Date.now()) {
     state.bytes = null;
+    state.sender = null;
     state.revision++;
   }
   const status = () => ({
     revision: state.revision,
     sharing: !!state.bytes,
+    sender: state.sender,
     lease_ms: LEASE_MS,
     remaining_ms: Math.max(0, state.expires - Date.now()),
   });
@@ -83,10 +91,12 @@ async function callPhotoRoute(req, res, url, context, convert = normalize) {
     return send(res, 200, status());
   }
   if (account.type !== 'app') throw httpError(403, 'Only the app can share or stop sharing.');
+  if (state.sender && state.sender !== user) throw httpError(409, 'The other person is sharing.');
   if (req.method === 'DELETE') {
     state.revision++;
     state.bytes = null;
     state.expires = 0;
+    state.sender = null;
     return send(res, 200, status());
   }
   if (req.method === 'POST') {
@@ -96,6 +106,7 @@ async function callPhotoRoute(req, res, url, context, convert = normalize) {
   }
   if (req.method !== 'PUT') throw httpError(405, 'Unsupported photo action.');
   if (state.uploading || decoding >= 2) throw httpError(429, 'Photo processing is busy.');
+  state.sender = user;
   state.uploading = true;
   decoding++;
   const revision = ++state.revision;
@@ -110,6 +121,7 @@ async function callPhotoRoute(req, res, url, context, convert = normalize) {
     state.expires = Date.now() + LEASE_MS;
     return send(res, 200, status());
   } finally {
+    if (!state.bytes && state.revision === revision) state.sender = null;
     state.uploading = false;
     decoding--;
   }

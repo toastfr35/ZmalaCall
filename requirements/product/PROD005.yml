@@ -13,7 +13,7 @@ reviewed: null
 scope: Core
 text: 'The product shall exchange live audio and video, provide a local self-view, and allow
 
-  per-terminal quality and optional automatic framing settings. During an App/Terminal call, an App user
+  per-terminal quality and optional automatic framing settings. During an App/Terminal or App/App call, an App user
   shall be able to show a selected still photo on both devices while voice continues, then stop sharing
   to return to video.'
 verification: 'Make a two-way Pi call, inspect remote and local pictures and audible speech, then

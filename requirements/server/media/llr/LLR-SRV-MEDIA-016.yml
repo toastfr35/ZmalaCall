@@ -10,7 +10,7 @@ reviewed: null
 area: In-call photo sharing
 scope: Core
 text: The server shall expose temporary call photos only to authenticated enrolled peers of a connected
-  App/Terminal dialog. Only the App peer may upload, renew or stop sharing. Uploads shall be limited to
+  App/Terminal or App/App dialog. Either App peer may claim an idle share; only its sender may renew or stop it. Concurrent claims shall be rejected until the current share stops or expires. Uploads shall be limited to
   2 MiB and JPEG/PNG with at most 16 million decoded pixels, normalized to an oriented metadata-free JPEG
   of at most 1600 pixels per side. At most two uploads may decode concurrently and one per dialog. Stop
   and expired sender leases shall invalidate the image revision; call closure shall release dialog-owned

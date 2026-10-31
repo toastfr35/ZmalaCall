@@ -1,8 +1,8 @@
 ## Temporary call photos
 
 `call-photo.js` handles `/api/call/photo?call_id=…` through the existing enrolled-device
-route. Only peers of a connected App/Terminal SIP dialog can read it; only the app
-can upload (`PUT`), stop (`DELETE`) or renew (`POST` with `revision`). `GET` returns
+route. Only peers of a connected App/Terminal or App/App SIP dialog can read it; only an app
+can claim an idle share; the sender alone can upload (`PUT`), stop (`DELETE`) or renew (`POST` with `revision`). `GET` returns
 revision and lease status; `GET` with `image=1&revision=…` returns a private,
 non-cacheable JPEG. Configurations advertise `call_photo_sharing`; app contacts
 include `account_type` so the control is shown only for terminal calls.

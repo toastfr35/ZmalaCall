@@ -684,7 +684,7 @@ public final class MainActivity extends Activity {
 
               public void photo() {
                 if (session.photos.active()) { session.photos.stop(); return; }
-                if (!canSharePhoto()) return;
+                if (!canSharePhoto() || session.photos.receiving) return;
                 photoPickerCall = session.callId();
                 try { startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("image/*")
                     .addCategory(Intent.CATEGORY_OPENABLE), 10); }
@@ -742,13 +742,15 @@ public final class MainActivity extends Activity {
     if (state != Call.State.StreamsRunning && state != Call.State.Connected
         && state != Call.State.Updating && state != Call.State.UpdatedByRemote) return false;
     JSONObject peer=findContact(engine.call.getRemoteAddress().getUsername());
-    return peer != null && "terminal".equals(peer.optString("account_type"));
+    return peer != null && java.util.Set.of("terminal", "app").contains(peer.optString("account_type"));
   }
 
   // @llr LLR-AND-CALL-007
   void photoChanged() {
     if (callScreen == null) return;
+    session.photos.reconcile();
     callScreen.photo(canSharePhoto(), session.photos.image, session.photos.busy);
+    if (session.photos.receiving) callScreen.sharePhoto.setVisibility(android.view.View.GONE);
     if (session.photos.error != 0) {
       Toast.makeText(this, session.photos.error, Toast.LENGTH_LONG).show(); session.photos.error=0;
     }

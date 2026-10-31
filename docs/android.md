@@ -722,7 +722,7 @@ owns exactly one renewable wake lock, even if Android delivers repeated starts.
 
 `CallPhotoShare` belongs to `CallSession`, so rotating the Activity or opening the
 system image picker keeps the share and the native call. `MainActivity` offers
-Share photo only for connected Terminal contacts when the server advertises
+Share photo only for connected App or Terminal contacts when the server advertises
 `call_photo_sharing`. `ACTION_OPEN_DOCUMENT` selects one image without requesting
 broad library permission. Picker cancellation leaves the call unchanged.
 
@@ -734,4 +734,4 @@ and hangup remain usable. Cameras/media surfaces are retained beneath the layer.
 Stop clears it immediately and requests deletion; renewals every three seconds
 maintain the server's 12-second lease. Call identity plus `PhotoShareEpoch` reject
 late results after stop or a new call. Network failure ends sharing with a message;
-it does not end the voice call. This is not a photo album or app-to-app transfer.
+it does not end the voice call. A receiving phone polls the same authenticated endpoint, preserving the last lease deadline through failed requests. It hides sender-only actions and clears the image on stop, expiry or call change. Only one caller shares at a time; either app can claim the next idle share. This is not a photo album.

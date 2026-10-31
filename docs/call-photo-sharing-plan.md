@@ -12,7 +12,10 @@ An app user selects a photo during a connected call to a terminal. The same
 photo fills the terminal display in place of both video views and appears on the
 phone. Images keep their proportions. Voice and call controls remain available.
 The sender stops sharing to return to video. Ending the call clears the photo.
-The initial scope is one photo at a time in App-to-Terminal calls.
+The scope includes App-to-Terminal and App-to-App calls, with one shared photo at a time.
+Either app may start a share when none is active; only its sender may renew or stop it.
+Both phones display the photo while voice continues. Receiver polling must survive
+rotation, clear on stop/end/expiry, and never renew another phone’s share.
 
 ## Implementation order
 
@@ -68,3 +71,29 @@ claim a hardware call test passed from fixture-only evidence.
 - Physical system-picker selection, two-screen display and audible speech still need a
   real call. The phone remained locked; fixture results are not hardware qualification.
   Terminal automatic-answer settings were restored while waiting for the user.
+
+## Scope extension: App-to-App (requested after initial phone test)
+
+App-to-App extension implemented and tested:
+
+1. Completed: track the sender account on the server and permit App/App dialogs. Atomically
+   claim an idle share; reject competing uploads and non-sender renewal/deletion.
+2. Completed: add a session-owned Android receiver that polls status and fetches bounded
+   authenticated image bytes. Keep sender and receiver state distinct, including
+   lease deadlines and late-result fencing. A receiving phone must not show Stop
+   sharing as though it owns the photo.
+3. Completed: enable selection for either contact type, update requirements and guides, and
+   exercise both directions and simultaneous attempts in Android/server fixtures.
+4. Physical qualification remains partial. Initial OnePlus test successfully opened
+   the system picker, selected the synthetic image, displayed it and stopped sharing
+   without ending the call. The terminal screenshot attempt failed X authorization;
+   terminal display and physical speech remain unqualified. Test call ended and
+   terminal automatic-answer settings were restored.
+
+
+App-to-App validation: eight focused server tests pass, including authenticated image
+retrieval in both directions, competing claims and non-sender mutation rejection.
+Android image and native-call integration tests pass on the disposable emulator,
+including receiver stop and failure/lease expiry without ending the native call.
+Android lint and signed build pass. Updated server and signed OnePlus candidate
+are installed; a two-physical-phone sharing test has not been performed.

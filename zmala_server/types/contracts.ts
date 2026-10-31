@@ -264,6 +264,7 @@ export interface DialogPeer {
   tag?: string | number | null;
 }
 export interface PhotoShare {
+  sender?: string | null;
   revision: number;
   bytes: Buffer | null;
   expires: number;

@@ -37,12 +37,19 @@ final class CallSession {
   private CallSession(Context context) {
     this.context = context;
     engine = new CallEngine(this::changed);
-    photos = new CallPhotoShare(context, this::callId, () -> {
+    photos = new CallPhotoShare(context, this::photoCallId, () -> {
       MainActivity activity = screen.get(); if (activity != null) activity.photoChanged();
     });
   }
 
   boolean ongoing() { return engine.call != null && engine.call.getState() != Call.State.IncomingReceived; }
+  private String photoCallId() {
+    if (configuration == null || !configuration.optBoolean("call_photo_sharing") || engine.call == null) return null;
+    switch (engine.call.getState()) {
+      case Connected: case StreamsRunning: case Updating: case UpdatedByRemote: return callId();
+      default: return null;
+    }
+  }
   String callId() { return engine.call == null ? null : engine.call.getCallLog().getCallId(); }
 
   void attach(MainActivity activity) {

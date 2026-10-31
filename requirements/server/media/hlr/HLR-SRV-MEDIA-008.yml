@@ -20,7 +20,7 @@ reviewed: null
 scope: Core
 text: The server shall activate media changes only after accepted negotiation. A rejected change shall
   preserve the established path. Call closure shall release all owned relay resources. The server shall
-  relay a temporary still photo from an App participant to its connected Terminal participant without
+  relay a temporary still photo from an App participant to the other connected participant without
   interrupting voice, scoped to that call and removed from access on stop, expiry or closure.
 verification: Accept and reject media changes, disable a stream and close during asynchronous allocation.
   Check destinations and socket ownership. Exercise photo upload, display and stop with a connected-call

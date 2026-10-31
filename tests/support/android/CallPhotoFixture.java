@@ -9,7 +9,8 @@ import org.json.JSONObject;
 public final class CallPhotoFixture implements AutoCloseable {
   private final ServerSocket server = new ServerSocket(0);
   private final Thread thread;
-  public volatile boolean sharing;
+  public volatile boolean sharing, failPhotoRequests;
+  public volatile long remaining=12000;
   public volatile byte[] photo;
   public volatile int revision, renewals;
   public CallPhotoFixture(JSONObject config) throws IOException {
@@ -26,13 +27,14 @@ public final class CallPhotoFixture implements AutoCloseable {
           byte[] body = input.readNBytes(length);
           JSONObject response = config;
           if (request.contains(" /api/call/photo?")) {
+            if (failPhotoRequests) continue;
             if (request.startsWith("PUT ")) { photo = body; revision++; sharing = true; }
             if (request.startsWith("DELETE ")) { photo = null; revision++; sharing = false; }
             if (request.startsWith("POST ")) renewals++;
             response = new JSONObject().put("revision", revision).put("sharing", sharing)
-                .put("lease_ms", 12000).put("remaining_ms", 12000);
+                .put("lease_ms", 12000).put("remaining_ms", remaining);
           }
-          byte[] bytes = response.toString().getBytes(StandardCharsets.UTF_8);
+          byte[] bytes = request.contains("&image=1") && photo != null ? photo : response.toString().getBytes(StandardCharsets.UTF_8);
           socket.getOutputStream().write(("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: "
               + bytes.length + "\r\nConnection: close\r\n\r\n").getBytes(StandardCharsets.US_ASCII));
           socket.getOutputStream().write(bytes);

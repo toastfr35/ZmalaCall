@@ -10,7 +10,10 @@ import org.json.JSONObject;
 /** Authenticated live-call endpoint. Never follow redirects with enrollment credentials. */
 final class CallPhotoHttp {
   static JSONObject request(Enrollment enrollment, String call, String method, long revision, byte[] bytes) throws Exception {
-    String route = "/api/call/photo?call_id=" + URLEncoder.encode(call, StandardCharsets.UTF_8.name()) + "&revision=" + revision;
+    return new JSONObject(new String(exchange(enrollment,call,method,revision,bytes,false),StandardCharsets.UTF_8));
+  }
+  static byte[] exchange(Enrollment enrollment, String call, String method, long revision, byte[] bytes, boolean image) throws Exception {
+    String route = "/api/call/photo?call_id=" + URLEncoder.encode(call, StandardCharsets.UTF_8.name()) + "&revision=" + revision + (image ? "&image=1" : "");
     HttpURLConnection connection = (HttpURLConnection) enrollment.server.resolve(route).toURL().openConnection();
     connection.setConnectTimeout(6000); connection.setReadTimeout(15000);
     connection.setInstanceFollowRedirects(false);
@@ -27,10 +30,10 @@ final class CallPhotoHttp {
       try (InputStream in = connection.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
         byte[] buffer = new byte[1024]; int n;
         while ((n = in.read(buffer)) != -1) {
-          if (out.size()+n > 8192) throw new IOException("Response too large");
+          if (out.size()+n > (image ? 2097152 : 8192)) throw new IOException("Response too large");
           out.write(buffer, 0, n);
         }
-        return new JSONObject(out.toString(StandardCharsets.UTF_8.name()));
+        return out.toByteArray();
       }
     } finally { connection.disconnect(); }
   }
