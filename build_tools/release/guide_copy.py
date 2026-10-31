@@ -150,7 +150,7 @@ REVISIONS = {
         'Sound and everyday help': [],
         'Press the middle button to show the call-volume overlay.': [
             'Press the middle button to show the volume bar. Press left for quieter sound or right '
-            'for louder sound. Each click changes it by 5%. Press middle again to close the bar. '
+            'for louder sound. Each click changes it by 5%. Press red or middle again to close the bar. Red closes only the bar while it is open; it does not end the call. '
             'You can do this during a call and keep seeing the other person.',
         ],
         'The call-volume overlay changes only': [
