@@ -78,6 +78,8 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
+Outgoing local ringback uses the saved Ringtone volume at dial time, independently of call playback. The SDK tone is scaled into a disposable RAM-backed WAV (silent at 0%) and reused until its level changes; the SDK still controls its lifetime. The bundled 8 kHz WAV has a streaming length header, so scaling bounds reads by actual PCM size.
+
 All terminal volume UI uses 5% steps. Settings has separate Ringtone volume and Button sounds volume editors; the middle-button overlay adjusts received call sound. The server exposes all three defaults. Left/right on the overlay moves an existing between-step level to the next boundary in the chosen direction. Settings editors display the nearest step without saving until accepted.
 
 The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.

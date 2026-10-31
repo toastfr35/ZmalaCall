@@ -25,16 +25,21 @@ def gain_db(percent):
     return -28 * (100-percent)/100 if percent else -120
 
 
-def scale_wav(data, percent):
+def scale_wav(data, percent, *, sample_rate=16000, streaming_header=False):
     """Scale validated mono PCM, never a global mixer or microphone control."""
     db = gain_db(percent)
     gain = 10 ** (db/20) if percent else 0
     with wave.open(io.BytesIO(data), 'rb') as source:
-        if source.getsampwidth() != 2 or source.getnchannels() != 1 or source.getframerate() != 16000:
-            raise ValueError('Expected mono 16-bit 16 kHz sound')
-        if source.getnframes() > 16000*30:
+        if source.getsampwidth() != 2 or source.getnchannels() != 1 or source.getframerate() != sample_rate:
+            raise ValueError(f'Expected mono 16-bit {sample_rate} Hz sound')
+        if not streaming_header and source.getnframes() > sample_rate*30:
             raise ValueError('Sound exceeds thirty seconds')
-        samples = array.array('h', source.readframes(source.getnframes()))
+        # The bundled SDK ringback has a streaming (near-2 GiB) data header.
+        # Bound reads by real PCM duration, never by that untrusted declaration.
+        pcm = source.readframes(sample_rate*30+1)
+        if len(pcm) > sample_rate*2*30 or len(pcm) % 2:
+            raise ValueError('Invalid or oversized sound PCM')
+        samples = array.array('h', pcm)
     if sys.byteorder != 'little':
         samples.byteswap()
     samples = array.array('h', (round(value*gain) for value in samples))
@@ -42,7 +47,7 @@ def scale_wav(data, percent):
         samples.byteswap()
     output = io.BytesIO()
     with wave.open(output, 'wb') as target:
-        target.setparams((1, 2, 16000, 0, 'NONE', 'not compressed'))
+        target.setparams((1, 2, sample_rate, 0, 'NONE', 'not compressed'))
         target.writeframes(samples.tobytes())
     return output.getvalue()
 
@@ -50,7 +55,8 @@ def scale_wav(data, percent):
 # @llr LLR-TERM-AUDIO-009, LLR-TERM-AUDIO-010
 class ToneLevels:
     """One RAM-backed scaled tone per player; delete it on change/shutdown."""
-    def __init__(self):
+    def __init__(self, *, sample_rate=16000, streaming_header=False):
+        self.sample_rate, self.streaming_header = sample_rate, streaming_header
         self.key, self.path = None, None
 
     def prepare(self, file, percent):
@@ -58,9 +64,10 @@ class ToneLevels:
         info = file.stat()
         key = (str(file), info.st_mtime_ns, info.st_size, percent)
         if key != self.key:
-            if info.st_size > 44+16000*2*30:
+            if info.st_size > 44+self.sample_rate*2*30:
                 raise ValueError('Ringtone is too large')
-            data = scale_wav(file.read_bytes(), percent)
+            data = scale_wav(file.read_bytes(), percent, sample_rate=self.sample_rate,
+                             streaming_header=self.streaming_header)
             self.close()
             # /run is RAM-backed on the Pi; no per-level writes to the microSD.
             folder = Path('/run/zmalacall')

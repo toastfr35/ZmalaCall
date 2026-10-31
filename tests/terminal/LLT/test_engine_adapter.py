@@ -16,6 +16,7 @@ from unittest.mock import Mock, call, patch
 from zmala_terminal.common import engine
 from zmala_terminal.common.linphone_api import SIGNATURES, S, ListNode, VideoSize
 from tests.terminal.LLT.test_terminal import config
+from tests.terminal.LLT.test_ringback_volume import ringback_wav
 
 
 def bind_native(e):
@@ -152,10 +153,13 @@ class LinuxMediaAdapterTests(unittest.TestCase):
 class EngineAdapterTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(); self.addCleanup(temporary.cleanup)
+        sdk = Path(temporary.name)/'sdk'
+        tone = sdk/'share/sounds/linphone/ringback.wav'
+        tone.parent.mkdir(parents=True); tone.write_bytes(ringback_wav())
         self.media = Mock(CODECS={'H264'}, DISPLAY_FILTER=b'ZmalaDisplay')
         self.media.select_settings.side_effect = lambda e, settings: {'speaker': ''} | settings
         self.media.filter_devices.side_effect = lambda devices: devices
-        patches = [patch.object(engine, 'WINDOWS', False), patch.object(engine, 'ROOT', Path(temporary.name)),
+        patches = [patch.object(engine, 'SDK', sdk), patch.object(engine, 'WINDOWS', False), patch.object(engine, 'ROOT', Path(temporary.name)),
                    patch.object(engine, 'resource', return_value=Path(temporary.name)),
                    patch.object(engine, 'library', return_value=Mock()),
                    patch.object(engine, 'media_backend', return_value=self.media),
@@ -185,7 +189,7 @@ class EngineAdapterTests(unittest.TestCase):
         e.core_use_preview_window.assert_called_once_with(2, 1)
         e.core_enable_self_view.assert_called_once_with(2, 0)
         self.assertEqual(e.dll.linphone_core_set_preferred_framerate.call_args.args, (2, 15.0))
-        self.assertTrue(e.core_set_ringback.call_args.args[1].endswith(b'ringback.wav'))
+        e.core_set_ringback.assert_called_with(2, None)  # Prepared at dial time from saved ringtone volume.
         e.core_cbs_set_call_state_changed.assert_called_once_with(3, e.call_callback)
         e.core_cbs_set_registration_state_changed.assert_called_once_with(3, e.reg_callback)
         e.core_cbs_set_message_received.assert_called_once_with(3, e.message_callback)
