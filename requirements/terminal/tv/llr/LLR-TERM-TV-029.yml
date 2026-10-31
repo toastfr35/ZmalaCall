@@ -26,10 +26,11 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Browsing shall restore previous TV state after the configured idle timeout, with 30
-  seconds as default and Never supported. Every button activity shall restart the
+  Browsing, including the period after an incoming call ends, shall restore previous
+  TV state after the configured idle timeout, with 30 seconds as default and Never
+  supported. Call end shall start a fresh full interval, even without button input. Every button activity shall restart the
   countdown. A thin blue bar at the screen bottom shall appear after ten seconds
   without button activity.
 verification: |
   Control time at bar and timeout boundaries. Press consumed and normal buttons and
-  check countdown reset and Never behavior.
+  check countdown reset and Never behavior, including after a short missed call.

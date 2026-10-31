@@ -1,7 +1,7 @@
 # @test T-LLT-036
 # @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032
 # @environment portable
-# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, restoration uses the saved state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
+# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, call endings defer restoration to a fresh idle lease, consecutive calls preserve the original state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 # With power-only qualification, wake is sent but no active-source or Samsung input command is sent.
 
@@ -100,7 +100,7 @@ class TVControlTests(unittest.TestCase):
         app.tv_control.wake.assert_called_once()
         app.engine.call = 'call'
         CallControl.call_event(app, 'call', 14, 'alice', 'family.test')
-        app.tv_control.cancel.assert_called_once()
+        app.tv_control.cancel.assert_called_once_with(defer=True)
 
     def controller(self):
         tv = TVControl(device='/dev/cec0', state_file='/nonexistent-zmala-test-state.json')
@@ -252,6 +252,85 @@ class TVControlTests(unittest.TestCase):
                 tv._run.assert_any_call('--set-stream-path', 'phys-addr=' + source)
             self.assertIsNone(tv._browse_previous)
 
+    def test_call_end_hands_original_state_to_idle_without_tv_commands(self):
+        for off in (False, True):
+            tv = self.controller()
+            original = tv._previous = {'off': off, 'source': '0.0.0.0', 'address': '3.0.0.0'}
+            tv._changed = True
+            with patch('threading.Thread') as thread:
+                tv.cancel(defer=True)
+                thread.assert_called_once()
+                self.assertFalse(tv._ready.is_set())
+            with patch('zmala_terminal.linux.tv_control.time.monotonic', return_value=100):
+                tv._defer_restore(tv._cancel)
+            self.assertEqual(tv._browse_previous, dict(original, idle_started=100))
+            self.assertIsNone(tv._previous)
+            self.assertTrue(tv._ready.is_set())
+            tv._run.assert_not_called()
+            # A duplicate native end event must not reset the timer again.
+            session = tv._browse_previous
+            tv._defer_restore(tv._cancel)
+            self.assertIs(tv._browse_previous, session)
+
+    def test_new_call_inherits_idle_baseline_and_fences_old_handoff(self):
+        tv = self.controller()
+        baseline = tv._browse_previous = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0', 'idle_started': 10}
+        old = tv._cancel
+        with patch('threading.Thread'), patch.object(Path, 'exists', return_value=True):
+            tv.wake()
+        self.assertIs(tv._previous, baseline)
+        self.assertTrue(tv._changed)
+        self.assertIsNone(tv._browse_previous)
+        tv._defer_restore(old)
+        self.assertIs(tv._previous, baseline)
+        self.assertFalse(tv._ready.is_set())
+        tv._defer_restore(tv._cancel)
+        self.assertEqual(tv._browse_previous['off'], True)
+        self.assertGreater(tv._browse_previous['idle_started'], 10)
+        tv._run.assert_not_called()
+
+    def test_call_handoff_does_not_invent_an_unknown_baseline(self):
+        tv = self.controller()
+        tv._previous = {'off': None, 'source': None, 'address': '3.0.0.0'}
+        tv._changed = True
+        tv._defer_restore(tv._cancel)
+        self.assertIsNone(tv._browse_previous)
+        tv._run.assert_not_called()
+
+    def test_call_after_manual_source_change_discards_old_idle_target(self):
+        tv = self.controller()
+        tv._browse_previous = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0'}
+        tv._observed_state = Mock(return_value={'off': False, 'active_source': '1.0.0.0'})
+        with patch('threading.Thread'), patch.object(Path, 'exists', return_value=True):
+            tv.wake()
+        self.assertIsNone(tv._previous, 'The wake worker must capture the new input')
+        self.assertIsNone(tv._browse_previous)
+
+    def test_cancelled_wake_handoff_waits_for_baseline_without_blocking_caller(self):
+        tv = self.controller()
+        started = threading.Event()
+        finished = threading.Event()
+        def worker():
+            started.set()
+            tv._defer_restore(tv._cancel)
+            finished.set()
+        with tv._lock:
+            thread = threading.Thread(target=worker)
+            thread.start()
+            self.assertTrue(started.wait(1))
+            self.assertFalse(finished.is_set())
+            tv._previous = {'off': True, 'source': None, 'address': '3.0.0.0'}
+            tv._changed = True
+        thread.join(2)
+        self.assertFalse(thread.is_alive())
+        self.assertTrue(tv._browse_previous['off'])
+        tv._run.assert_not_called()
+
+        tv = self.controller()
+        tv._previous = {'off': False, 'source': '3.0.0.0', 'address': '3.0.0.0'}
+        tv._defer_restore(tv._cancel)
+        self.assertIsNone(tv._browse_previous, 'An already visible TV needs no new return target')
+
     def test_manual_tv_change_releases_browsing_lease_without_restoration(self):
         for state in ({'off': True}, {'off': False, 'active_source': '0.0.0.0'}):
             tv = self.controller()
@@ -366,11 +445,11 @@ class TVControlTests(unittest.TestCase):
         app.missed_calls_store, app.dial_serial = Mock(), 0
         return app
 
-    def test_rejection_restores_without_waiting_for_sip_end(self):
+    def test_rejection_defers_restore_without_waiting_for_sip_end(self):
         app = self.call_app()
         CallControl.call_event(app, 'call', 1, 'alice', 'family.test')
         CallControl.action(app, app.model.button('red'))
-        app.tv_control.cancel.assert_called_once()
+        app.tv_control.cancel.assert_called_once_with(defer=True)
         app.engine.end.assert_called_once_with(decline=True)
 
     def test_acceptance_preserves_tv_until_the_call_ends(self):
@@ -383,13 +462,13 @@ class TVControlTests(unittest.TestCase):
                 CallControl.call_event(app, 'call', 8, 'alice', 'family.test')
                 app.tv_control.cancel.assert_not_called()
                 CallControl.call_event(app, 'call', ending, 'alice', 'family.test')
-                app.tv_control.cancel.assert_called_once()
+                app.tv_control.cancel.assert_called_once_with(defer=True)
 
     def test_ending_without_sip_call_still_restores_tv(self):
         app = self.call_app()
         app.engine.call = None
         CallControl.action(app, 'end')
-        app.tv_control.cancel.assert_called_once()
+        app.tv_control.cancel.assert_called_once_with(defer=True)
 
     def test_already_watching_terminal_needs_no_cec_changes(self):
         tv = self.controller()

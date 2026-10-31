@@ -2,8 +2,8 @@
 
 The connector's physical address identifies the input even after moving the Pi
 to another HDMI port. Incoming calls retain the previous power/routing state;
-rejecting or ending the call restores it outside the UI thread. Accepting a call
-keeps the saved baseline until hang-up. Volume and mute are never controlled.
+rejecting or ending the call hands it to the browsing inactivity countdown.
+Expiry restores it outside the UI thread. Volume and mute are never controlled.
 Windows and displays without CEC continue to work without TV control.
 """
 import json
@@ -126,10 +126,14 @@ class TVControl:
         self._refresh_device()
         if self._closed or not self.command or not Path(self.device).exists():
             return
+        if restore and self._browse_previous and self._restore_pending is None:
+            # A manual TV change just before a call may precede the next UI tick.
+            self.browsing_session()
         # A new call supersedes queued restoration, but inherits the original
         # baseline if the previous call ended before its worker could restore it.
-        if restore and self._restore_pending is not None and self._browse_previous:
-            # A call that interrupts idle restoration owns that original state.
+        if restore and self._browse_previous:
+            # Consecutive calls keep the original TV baseline, even while the
+            # previous call's inactivity countdown is still running.
             self._previous, self._browse_previous = self._browse_previous, None
             self._changed = True
         elif not restore and self._restore_pending is not None and self._browse_previous:
@@ -146,12 +150,38 @@ class TVControl:
         threading.Thread(target=self._worker, args=(cancel, restore, initial), daemon=True,
                          name='zmala-cec').start()
 
-    def cancel(self):
+    # @llr LLR-TERM-TV-028
+    def cancel(self, defer=False):
+        """Stop pending wake work; call endings hand restoration to idle policy."""
         self._cancel.set()
+        if defer:
+            self._ready.clear()
+            threading.Thread(target=self._defer_restore, args=(self._cancel,), daemon=True,
+                             name='zmala-cec-call-idle').start()
+            return
         self._ready.set()
         if self.command and self._started is not None:
             threading.Thread(target=self._restore, args=(self._cancel,), daemon=True,
                              name='zmala-cec-restore').start()
+
+    # @llr LLR-TERM-TV-028
+    def _defer_restore(self, cancel):
+        """Wait off the UI thread for a cancelled wake to finish capturing state.
+
+        No TV command is sent here. A new call owns a new token and must not
+        have its baseline stolen by this older call's delayed worker.
+        """
+        with self._lock:
+            if cancel is not self._cancel or self._closed:
+                return
+            if self._previous and self._changed and (
+                    self._previous['off'] is True or self._previous['source'] is not None):
+                self._browse_previous = dict(self._previous, idle_started=time.monotonic())
+                logging.info('CEC: call ended; TV restoration deferred to inactivity timeout')
+            self._previous = None
+            self._changed = False
+            self._started = None
+            self._ready.set()
 
     def browsing_session(self):
         """Return the saved browsing lease only once HDMI switching has settled."""

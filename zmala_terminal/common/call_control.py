@@ -64,7 +64,8 @@ class CallControl:
             self.engine.hold_call(None)
             self.notice = 'unavailable' if failed else ''
             if getattr(self, 'tv_control', None):
-                self.tv_control.cancel()
+                # @llr LLR-TERM-TV-028
+                self.tv_control.cancel(defer=True)
         self.root.after_idle(self.render)
 
     # @llr LLR-TERM-HISTORY-021
@@ -175,16 +176,16 @@ class CallControl:
                 self.answer_when_ready()
             elif action in ('end', 'decline'):
                 self.dial_serial += 1
-                # Rejection ends the TV interruption immediately, even if the
-                # SIP end callback arrives late. Answering retains the baseline.
+                # Stop late wake commands on rejection, but retain the picture
+                # until the shared inactivity countdown restores the TV.
                 if action == 'decline' and getattr(self, 'tv_control', None):
-                    self.tv_control.cancel()
+                    self.tv_control.cancel(defer=True)
                 self.engine.end(decline=action == 'decline')
                 if not self.engine.call:
                     self.finish_call()
                     self.outgoing_deadline = None
                     if action != 'decline' and getattr(self, 'tv_control', None):
-                        self.tv_control.cancel()
+                        self.tv_control.cancel(defer=True)
         except Exception:
             logging.exception('Call action failed')
             if self.engine and self.engine.call:
@@ -192,7 +193,7 @@ class CallControl:
             self.finish_call()
             self.notice = 'unavailable'
             if getattr(self, 'tv_control', None):
-                self.tv_control.cancel()
+                self.tv_control.cancel(defer=True)
 
     # @llr LLR-TERM-NAV-005
     def contact_online(self, contact):

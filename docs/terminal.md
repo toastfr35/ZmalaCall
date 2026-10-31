@@ -593,11 +593,19 @@ The first press configures the CEC playback identity if needed and wakes the TV;
 it remains consumed. Unknown power is never saved as a standby restoration target.
 If power control was not qualified, an unknown state cannot authorize waking it.
 
-Incoming calls remember observed power/source before revealing the UI. Decline,
-caller cancellation or hangup restores that state. Browsing has its own return
-timeout: button activity resets it, a thin blue bar appears after ten seconds
-idle, and expiry restores the captured state. Calls and pending saves suspend
-the timer. Volume/mute are not changed by CEC. Unknown previous input is not guessed.
+Incoming calls remember observed power/source before revealing the UI. Answered,
+declined, cancelled, failed and missed calls leave the terminal view available
+for a fresh configured inactivity interval (30 seconds by default; Never disables
+return). The TV goes back to standby if originally off, or its previous input if
+originally on, only when this interval expires. The same browsing timer and thin
+blue bar are used: the bar appears after ten seconds idle, and any button activity
+restarts it. Calls and pending saves suspend the timer. Consecutive calls preserve
+the original TV baseline; a manual power/input change releases the pending return.
+`TVControl.cancel(defer=True)` stops pending wake commands and transfers the saved
+baseline to a browsing lease outside Tk, after any in-flight command finishes.
+The lease's `idle_started` timestamp prevents a short missed call from inheriting
+an expired idle anchor. Shutdown still uses immediate cancellation. Volume/mute
+are not changed by CEC. Unknown previous input is not guessed.
 
 ### Remote developer access
 
