@@ -1,7 +1,7 @@
 # @test T-LLT-008
 # @requirements LLR-TERM-AUDIO-007
 # @environment portable
-# @plan Assert +12 dB for C10 and 0 dB for C20. Mock mixer execution at zero, full and invalid levels and on device failures; assert playback-only writes, validation before execution and nonfatal failure.
+# @plan Assert +12 dB for both C10 and C20. Mock mixer execution at zero, full and invalid levels and on device failures; assert playback-only writes, validation before execution and nonfatal failure.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Hardware volume uses a stable C20 identity and fails safely if USB is absent."""
@@ -37,7 +37,7 @@ class C20VolumeTests(unittest.TestCase):
         with patch('zmala_terminal.linux.c20_volume.subprocess.run') as run:
             for value in [0, 50, 100]:
                 self.assertTrue(apply(value))
-                run.assert_called_with(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', '0dB'],
+                run.assert_called_with(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', '12dB'],
                                        check=True, capture_output=True, timeout=5, env=playback_environment())
 
     def test_missing_or_unresponsive_device_is_nonfatal(self):

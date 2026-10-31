@@ -503,7 +503,7 @@ control cannot overwrite a newly applied default.
 `c20_speaker_volume` retains its historical configuration key for the call default.
 `ringtone_volume` defaults to the old call value for older profiles; new profiles
 start at 50%. `action_sound_volume` starts at 20%. The C10/C20 hardware PCM stays at
-+12 dB for C10 or 0 dB for C20 without changing its mute switch. `media.py` applies the logical call level
++12 dB for both C10 and C20 without changing its mute switch. `media.py` applies the logical call level
 through the SDK playback gain on its owner thread (50% is -14 dB; 0% is -120 dB).
 `sound_levels.py` scales validated ringtone PCM into a private RAM-backed temporary
 file, replacing and deleting it when the tone or level changes and on shutdown.
@@ -1301,7 +1301,7 @@ compatible configuration identifiers for either model.
 Both models expose stereo S16_LE microphone input at 16 kHz and speaker output at
 48 kHz, plus 720p/1080p MJPEG at 30 camera fps. Both use explicit asymmetric ALSA
 profiles and the staged microphone-before-camera startup. Playback hardware gain
-is fixed at each model's maximum (+12 dB for C10, 0 dB for C20) while streams
+is fixed at each model's maximum (+12 dB for both C10 and C20) while streams
 retain independent software levels. The default is reapplied after startup and USB wake. Hardware
 mute is preserved. Runtime suspend is disabled for either USB identity; the hub
 helper still refuses to cut power with unrelated peripherals or open streams.
@@ -1323,3 +1323,8 @@ intermittent Samsung wake problem. Auto-answer was restored off afterward.
 Private captures and logs are retained under `build_tools/tmp/c10-*` and
 `build_tools/tmp/tv-real-calls/c10-phone1-*`; they are not release assets.
 The Pi incoming-call screen shows two distinct controls beneath the caller: green with a check mark and the localized Answer action, and red with a cross and Decline. Both remain visible alongside an automatic-answer countdown. Colours match the remote buttons; symbols and action labels make the choices clear without relying on colour alone. Only the Windows terminal shows ENTER; remote disconnection does not select keyboard hints.
+
+Live C20 ALSA readback on term2 (31 October 2026) confirmed its PCM hardware
+range is -28 to +12 dB, matching the C10. Both now use +12 dB by default; the
+previous C20 0 dB setting was below its supported maximum. The separate call,
+ringtone and button-sound levels still attenuate their respective streams.
