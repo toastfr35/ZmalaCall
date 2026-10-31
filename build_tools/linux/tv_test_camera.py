@@ -46,5 +46,3 @@ def capture_stream(args):
                 pending = None
     finally:
         camera.release()
-
-
