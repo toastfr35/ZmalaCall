@@ -51,7 +51,7 @@ class CallOrchestrationTests(unittest.TestCase):
         c=self.controller(); c.setup_stage='wifi'; c.call_event(42,1,'alice','family.test'); c.engine.call_decline.assert_called_with(42,6)
         c.setup_stage=None; c.call_event(42,1,'unknown','family.test'); c.engine.call_decline.assert_called_with(42,2)
         c.usb_power.require.assert_not_called(); c.call_event(42,1,'alice','family.test')
-        c.usb_power.require.assert_called_once_with(urgent=True, reason='incoming call'); c.settings_hold.clear.assert_called_once()
+        c.usb_power.require.assert_called_once_with(urgent=True); c.settings_hold.clear.assert_called_once()
         self.assertEqual(c.engine.call,42); self.assertEqual(c.model.state,State.RINGING); c.tv_control.wake.assert_called_once()
         c.root.after_idle.call_args_list[-2].args[0](); c.root.lift.assert_called_once()
         c.call_event(43,1,'alice','family.test'); c.engine.call_decline.assert_called_with(43,6)

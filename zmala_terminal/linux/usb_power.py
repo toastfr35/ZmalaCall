@@ -46,7 +46,6 @@ class UsbPower:
         self.state = 'starting' if self.enabled else 'unsupported'
         self.powered = None  # Confirmed supply state, independent of camera readiness.
         self.wake_serial = 0
-        self.activity_reason = self.last_request_reason = 'startup'
         self.revision = self.refreshed = 0
         self.next_refresh = 0
         self.ringer = None
@@ -73,7 +72,7 @@ class UsbPower:
         with self.lock:
             return self.powered
 
-    def update(self, active, battery, ringing=False, *, reason='terminal activity'):
+    def update(self, active, battery, ringing=False):
         if not self.enabled:
             with self.lock:
                 self.ringing = ringing
@@ -87,21 +86,18 @@ class UsbPower:
             changed = (active, battery, ringing) != (self.active, self.battery, self.ringing)
             was_active = self.active
             self.active, self.battery, self.ringing, self.updated = active, battery, ringing, now
-            if active:
-                self.activity_reason = reason
             if active or was_active:
                 self.last_use = now
         if changed:
             self.changed.set()
 
     # @llr LLR-TERM-POWER-013, LLR-TERM-POWER-014
-    def require(self, urgent=False, *, reason='media preparation'):
+    def require(self, urgent=False):
         """Record activity and wake the worker; never perform USB I/O on the caller."""
         if self.enabled:
             with self.lock:
                 self.last_use = time.monotonic()
                 self.active = True
-                self.activity_reason = self.last_request_reason = reason
                 if urgent:
                     self.wake_serial += 1
             self.changed.set()
@@ -140,7 +136,7 @@ class UsbPower:
             if not self.enabled and self.worker is None and sys.platform == 'linux':
                 self.worker = threading.Thread(target=self.preview_worker, name='ringtone-preview', daemon=True)
                 self.worker.start()
-        self.require(reason='ringtone preview')
+        self.require()
         self.changed.set()
 
     # @llr LLR-TERM-AUDIO-009
@@ -239,32 +235,15 @@ class UsbPower:
                     return
             self.refreshed = self.revision
 
-    # @llr LLR-TERM-POWER-016
-    def power_reason(self, now):
-        """Explain the existing policy without altering its power decision."""
-        if now - self.updated > 10:
-            return 'UI heartbeat stale (over 10 seconds); keep charger powered'
-        if self.active:
-            return self.activity_reason
-        if type(self.battery) is not int or not 0 <= self.battery <= 100:
-            return 'remote battery unknown; keep charger powered'
-        if self.battery < 25:
-            return 'remote battery below 25%; keep charger powered'
-        if now - self.last_use < IDLE_SECONDS:
-            return 'activity within five-minute idle timeout'
-        return 'idle timeout reached; remote battery sufficient'
-
     def command(self, action):
         try:
-            result = subprocess.run(['sudo', '-n', HELPER, action], check=True,
+            subprocess.run(['sudo', '-n', HELPER, action], check=True,
                        capture_output=True, timeout=30, text=True)
         except subprocess.CalledProcessError as error:
             # The helper can restore power after a failed off; don't hide that
             # explanation inside captured stderr.
             logging.warning('C10/C20 USB helper: %s', (error.stderr or '').strip())
             raise
-        if result.stderr:
-            logging.info('C10/C20 USB helper: %s', result.stderr.strip())
 
     # @llr LLR-TERM-POWER-016
     def run(self):
@@ -284,8 +263,6 @@ class UsbPower:
                     off = should_power_off(now, self.last_use, active, self.battery)
                     desired = 'off' if off else 'on'
                     state = self.state
-                    reason = self.power_reason(now)
-                    context = (self.battery, now-self.last_use, now-self.updated, self.last_request_reason)
                     if now >= next_status:
                         folder = os.environ.get('ZMALA_RUNTIME_DIR')
                         if folder:
@@ -305,13 +282,6 @@ class UsbPower:
                         if desired == 'off' and not should_power_off(time.monotonic(), self.last_use,
                                 self.active or time.monotonic() - self.updated > 10, self.battery):
                             continue
-                        if state == 'starting':
-                            reason = 'startup: ' + reason
-                        elif state == 'error':
-                            reason = 'retry after failed transition: ' + reason
-                        logging.info('C10/C20 USB power %s requested: reason=%s; previous=%s; '
-                                     'battery=%r; idle=%.1fs; update_age=%.1fs; last_request=%s',
-                                     desired, reason, state, *context)
                         self.state = 'switching'
                         self.powered = None
                     try:
@@ -329,9 +299,8 @@ class UsbPower:
                             self.state = desired
                             if desired == 'on':
                                 self.revision += 1
-                        logging.info('C10/C20 USB power %s completed: reason=%s', desired, reason)
                     except Exception as error:
-                        logging.warning('C10/C20 USB power %s failed: reason=%s; error=%s', desired, reason, error)
+                        logging.warning('C10/C20 USB power %s failed: %s', desired, error)
                         # A failed off attempt restores power in the helper. Refresh
                         # device lists even after a rollback may have re-enumerated it.
                         with self.lock:
@@ -346,9 +315,7 @@ class UsbPower:
         finally:
             self.stop_ringing()
             try:
-                logging.info('C10/C20 USB power on requested: reason=worker shutdown; restore charger power')
                 self.command('on')
-                logging.info('C10/C20 USB power on completed: reason=worker shutdown')
             except Exception:
                 logging.exception('Could not restore USB power; systemd cleanup will retry')
 

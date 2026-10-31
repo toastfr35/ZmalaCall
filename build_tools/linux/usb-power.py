@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 """Fixed Pi 4 USB power helper. Installed root-owned; no arbitrary commands/paths."""
 import argparse
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -52,8 +51,6 @@ def power(action):
     validate_board()
     if action == 'on':
         # @llr LLR-TERM-POWER-016
-        reason = 'systemd service cleanup' if 'SERVICE_RESULT' in os.environ else 'application or manual request'
-        print('USB helper restoring power: reason=' + reason, file=sys.stderr, flush=True)
         switch('on')
         return
     attached = devices()
@@ -72,7 +69,7 @@ def power(action):
         (camera / 'authorized').write_text('0')
         switch('off')
     except Exception:
-        print('USB helper restoring power: reason=failed power-off rollback', file=sys.stderr, flush=True)
+        print('USB power-off failed; restoring power', file=sys.stderr, flush=True)
         switch('on')
         if (camera / 'authorized').exists():
             (camera / 'authorized').write_text('1')

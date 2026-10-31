@@ -109,11 +109,11 @@ class ManagementPumpTests(unittest.TestCase):
         loop.usb_power.refresh.side_effect=lambda engine:order.append(engine)
         self.assertTrue(loop.usb_media_ready()); self.assertEqual(order,['require',loop.engine])
         loop.usb_power.ready=False; self.assertFalse(loop.usb_media_ready())
-        loop.tick_usb(); loop.usb_power.update.assert_called_with(False,75,False,reason='idle')
+        loop.tick_usb(); loop.usb_power.update.assert_called_with(False,75,False)
         for attribute,value in [('setup_stage','server'),('scanner',object()),('settings_open',True),('keys_down',{'green'})]:
             before=getattr(loop,attribute); setattr(loop,attribute,value); loop.tick_usb()
-            loop.usb_power.update.assert_called_with(True,75,False,reason={'setup_stage':'setup','scanner':'QR scanner','settings_open':'settings open','keys_down':'button held'}[attribute]); setattr(loop,attribute,before)
-        loop.model.state=State.RINGING; loop.tick_usb(); loop.usb_power.update.assert_called_with(True,75,True,reason='ringing')
+            loop.usb_power.update.assert_called_with(True,75,False); setattr(loop,attribute,before)
+        loop.model.state=State.RINGING; loop.tick_usb(); loop.usb_power.update.assert_called_with(True,75,True)
         loop.usb_power.enabled=False; self.assertTrue(loop.usb_media_ready()); loop.usb_power=None; self.assertTrue(loop.usb_media_ready())
 
     def test_timers_apply_pending_config_expire_notices_and_publish_diagnostics(self):

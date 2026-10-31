@@ -34,7 +34,7 @@ class CallControl:
                 return
             # @llr LLR-TERM-POWER-014, LLR-TERM-POWER-016
             if getattr(self, 'usb_power', None):
-                self.usb_power.require(urgent=True, reason='incoming call')
+                self.usb_power.require(urgent=True)
             if getattr(self, 'settings_hold', None):
                 self.settings_hold.clear()
                 self.settings_open = False
@@ -145,7 +145,7 @@ class CallControl:
     def answer_when_ready(self):
         """Wait for USB enumeration without blocking SIP iteration or answering an obsolete call."""
         ready = getattr(self, 'usb_media_ready', None)
-        if ready and not ready(reason='answering incoming call'):
+        if ready and not ready():
             generation, call = self.generation, self.engine.call
             self.root.after(100, lambda: self.action('answer')
                 if not self.closed and self.generation == generation and self.engine
@@ -225,7 +225,7 @@ class CallControl:
         else:
             try:
                 ready = getattr(self, 'usb_media_ready', None)
-                if ready and not ready(reason='outgoing call'):
+                if ready and not ready():
                     self.root.after(100, lambda: self.dial_ready(generation, serial, contact, available, ring_timeout))
                     return
                 self.outgoing_deadline = time.monotonic() + ring_timeout

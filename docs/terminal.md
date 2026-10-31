@@ -1011,17 +1011,12 @@ Successful renewal logs `Relay credentials refreshed without waking USB media`.
 
 ### Optional USB power control
 
-Power transitions are recorded in `journalctl -u zmalacall-terminal` with the prefix
-`C10/C20 USB power`. Each request includes its reason, previous state, remote
-battery, inactivity, UI-update age and last explicit wake request; completion or
-failure repeats the reason. This distinguishes input/calls from configuration,
-setup, settings, previews, unknown/low battery, stale UI, retries and startup.
-Shutdown deliberately restores shared USB power for charging. The root helper
-also reports failed-off rollback and systemd cleanup, which can wake the camera
-without a user action. Unchanged polling does not produce wake entries.
-These logs explain software power commands, not spontaneous hardware reconnects;
-use the kernel journal alongside them for USB disconnect/re-enumeration events.
-
+Routine USB power transitions and shutdown restoration are quiet. Power-operation
+failures and failed-off rollback remain reported in `journalctl -u zmalacall-terminal`.
+Shutdown still restores shared USB power for charging. Runtime power telemetry
+continues to drive the camera indicator and server status. The temporary wake-cause
+tracing and periodic wake monitor have been removed; kernel USB disconnect and
+re-enumeration events remain available in the kernel journal.
 
 This experiment is not enabled by the regular installer. The Pi 4's external USB
 ports switch together, including the C20 and charger. It cuts power only after

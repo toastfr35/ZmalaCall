@@ -61,7 +61,7 @@ class ProvisioningFlow:
             return
         ready = getattr(self, 'usb_media_ready', None)
         # @llr LLR-TERM-POWER-016
-        if ready and not ready(reason='QR scanner setup'):
+        if ready and not ready():
             return
         self.render()
         self.root.update_idletasks()

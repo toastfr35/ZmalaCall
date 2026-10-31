@@ -57,7 +57,7 @@ class ConfigurationControl:
             logging.info('Relay credentials refreshed without waking USB media')
         else:
             # @llr LLR-TERM-POWER-016
-            if not self.usb_media_ready(reason='configuration refresh'):
+            if not self.usb_media_ready():
                 self.pending_config = config
                 return
         from zmala_terminal.common.audio_processing import requested_profile
