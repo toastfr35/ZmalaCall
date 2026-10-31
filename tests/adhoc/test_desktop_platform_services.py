@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from zmala_terminal.common.platform_services import create_platform_services
+from zmala_terminal.common import platform_services
 
 
 class DesktopPlatformTests(unittest.TestCase):
@@ -18,6 +19,20 @@ class DesktopPlatformTests(unittest.TestCase):
 
         with patch('sys.platform', 'win32'), patch('builtins.__import__', side_effect=guarded):
             services = create_platform_services(Path('fixture'))
+            remote = platform_services.create_remote(Mock(), Mock(), Mock())
+            sound = platform_services.create_action_sounds()
+            pairing = platform_services.create_pairing_status()
+            camera = platform_services.create_camera_status()
+            self.assertFalse(remote.supported)
+            self.assertIsNone(remote.battery)
+            self.assertIsNone(pairing.read())
+            self.assertIsNone(camera.read())
+            sound.play(50, 'green')
+            sound.cancel()
+            sound.close()
+            remote.close()
+            with self.assertRaisesRegex(RuntimeError, 'not supported'):
+                platform_services.create_tv_check_transport(services.television)
         self.assertFalse(services.usb_power.enabled)
         self.assertTrue(services.usb_power.ready)
         self.assertIsNone(services.usb_power.power_state)

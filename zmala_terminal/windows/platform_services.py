@@ -87,3 +87,44 @@ class DesktopPower:
     def close(self):
         self.stopped = True
         self.stop_ringing()
+
+
+class DesktopRemote:
+    supported = False
+    connected = None
+    battery = None
+    charger_connected = None
+    status = None
+
+    def close(self):
+        pass
+
+
+class DesktopSounds:
+    def set_enabled(self, enabled):
+        pass
+
+    def play(self, percent, button='left'):
+        pass
+
+    def cancel(self):
+        pass
+
+    def close(self):
+        pass
+
+
+class DesktopPairing:
+    path = None
+    state = None
+    bond = None
+
+    def read(self):
+        return None
+
+
+class DesktopCameraStatus:
+    enabled = False
+
+    def read(self):
+        return None

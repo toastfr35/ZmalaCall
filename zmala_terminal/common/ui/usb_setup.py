@@ -2,7 +2,7 @@
 import tkinter as tk
 from zmala_terminal.common.configuration import ROOT
 from zmala_terminal.common.model import State
-from zmala_terminal.linux.c20_status import C20Status
+from zmala_terminal.common.platform_services import create_camera_status as C20Status
 from zmala_terminal.common.theme import BG
 
 

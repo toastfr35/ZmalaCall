@@ -1428,3 +1428,8 @@ without patching hardware classes in the UI module.
 If platform construction fails, the factory closes already-created services in
 reverse order before propagating the startup error. Normal shutdown remains owned
 by the application.
+
+The same platform boundary selects remote input, feedback audio, pairing/camera
+status and TV-check transport. Windows uses explicit inactive substitutes; these
+factories do not import Pi adapters on the desktop. Fan, USB-power and television
+interfaces are structural protocols, while the application retains shutdown ownership.

@@ -9,7 +9,7 @@ from zmala_terminal.common.ui.remote_test import RemoteTestView
 
 class RemoteHelpView(RemoteTestView):
     def build_remote_help(self):
-        from zmala_terminal.linux.pairing_status import PairingStatus
+        from zmala_terminal.common.platform_services import create_pairing_status as PairingStatus
         self.pairing_status = PairingStatus()
         self.pairing_page_visible = False
         self.remote_missing_since = None

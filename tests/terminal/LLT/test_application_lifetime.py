@@ -14,6 +14,24 @@ from zmala_terminal.common import main
 
 
 class ApplicationLifetimeTests(unittest.TestCase):
+    def test_pi_auxiliary_factories_forward_collaborators_without_replacing_owners(self):
+        from zmala_terminal.common import platform_services as services
+        root, press, release, pointer, motion, observe = (Mock() for _ in range(6))
+        with patch.object(services.sys, 'platform', 'linux'), \
+                patch('zmala_terminal.linux.presenter_input.PresenterInput') as remote, \
+                patch('zmala_terminal.linux.action_sounds.ActionSounds') as sounds, \
+                patch('zmala_terminal.linux.pairing_status.PairingStatus') as pairing, \
+                patch('zmala_terminal.linux.c20_status.C20Status') as camera, \
+                patch('zmala_terminal.linux.tv_check.CheckTransport') as transport:
+            self.assertIs(services.create_remote(root, press, release, pointer, motion, observe), remote.return_value)
+            remote.assert_called_once_with(root, press, release, pointer, motion, observe)
+            self.assertIs(services.create_action_sounds(), sounds.return_value)
+            self.assertIs(services.create_pairing_status(), pairing.return_value)
+            self.assertIs(services.create_camera_status(), camera.return_value)
+            television = Mock()
+            self.assertIs(services.create_tv_check_transport(television), transport.return_value)
+            transport.assert_called_once_with(television)
+
     def setUp(self):
         folder=tempfile.TemporaryDirectory(); self.addCleanup(folder.cleanup)
         self.root=Path(folder.name); (self.root/'data').mkdir()

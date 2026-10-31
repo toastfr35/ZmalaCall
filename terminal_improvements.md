@@ -100,13 +100,14 @@ and verification are recorded below; no hardware qualification is implied.
 
 ## Implementation progress
 
-Stage 1 started: a replaceable factory now constructs fan, USB-power and TV-control
-services. Pi implementations and shutdown ownership remain. Explicit Windows substitutes
-now avoid importing Pi fan, USB-power and TV-control modules through the factory.
-Remaining device construction and stronger platform contracts are still planned.
-Stages 2–6 are not implemented. No hardware qualification is claimed for this slice.
+Stage 1 implementation complete: the platform factory selects typed fan, power
+and television contracts and lazily constructs remote input, feedback sounds,
+pairing/camera status and TV-check transport. Windows substitutes perform no Pi
+hardware I/O. Application shutdown still owns resources; partial factory failure
+closes already-created services in reverse order. Native media selection remains
+lazy and is addressed in stage 5.
 
-Validation of the platform increment: 31 focused tests passed; 95 additional
-USB/TV/Windows regression tests passed and one was skipped. Hardware behaviour
-has not yet been qualified on term2. Failed construction now releases already
-created services before propagating its original error.
+Portable verification covers constructor arguments, failed construction, shutdown,
+Windows import isolation, input dispatch, setup and settings. Physical startup and
+shutdown qualification on term2 is still pending; no hardware pass is claimed.
+Stages 2–6 continue below as they are implemented.
