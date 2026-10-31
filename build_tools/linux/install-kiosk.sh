@@ -204,6 +204,9 @@ if [ -L /opt/zmalacall/current ]; then
 fi
 ln -sfn "$release" /opt/zmalacall/current.new
 mv -Tf /opt/zmalacall/current.new /opt/zmalacall/current
+# Internal TV qualification tool. No service, menu item or passwordless sudo rule.
+install -d -m 755 /usr/local/sbin
+install -m 755 -o root -g root "$release/build_tools/linux/tv-plugin-self-test.sh" /usr/local/sbin/zmala-tv-test
 printf 'ZMALA_USER=%s\nZMALA_WIFI_MODE=%s\nZMALA_DISPLAY_MODE=%s\nZMALA_ARGON_ONE_FAN=%s\n' "$task_user" "$wifi_mode" "$display_mode" "$argon_one" > /etc/zmalacall/terminal.conf
 install -m 644 "$task_root/build_tools/linux/zmalacall-display.service" /etc/systemd/system/
 install -m 644 "$task_root/build_tools/linux/zmalacall-pairing.service" /etc/systemd/system/

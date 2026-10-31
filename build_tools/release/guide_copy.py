@@ -213,6 +213,17 @@ REVISIONS = {
         ],
     },
     'terminal_config.docx': {
+        'For Samsung, follow the on-screen Anynet+': [
+            'For Samsung, follow the on-screen Anynet+ and Network Control instructions. Select '
+            'the correct TV if several are found, and approve its ZmalaCall permission prompt '
+            'using the TV remote. For Sony BRAVIA, check BRAVIA Sync and TV auto power on. '
+            'Menu wording varies; physical Sony operation has not yet been verified by this project.',
+            'If Samsung shows “Check Device Power”, first confirm the HDMI port and cable. '
+            'Check Connected Devices or Source: the Pi must not be configured as an old cable '
+            'or satellite box, such as Sky. In Universal remote setup, remove only the obsolete '
+            'box profile assigned to the Pi’s HDMI port. Leave other devices alone. Repeat '
+            'the TV setup checks and a call from both standby and live TV.',
+        ],
         'For the person setting up the terminal': [
             'This part is for the helper setting up the TV terminal. Install the software first using '
             'ZmalaTerminal-Installation.pdf. Have the Presenter remote, TV remote and Wi-Fi and server '

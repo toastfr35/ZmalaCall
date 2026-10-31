@@ -3,7 +3,7 @@
 # @environment display
 # @plan Run the real Tk input/idle controllers and asynchronous TVControl workers against a stateful CEC transport fixture. Begin on another input and in standby, press a button, use the visible UI and expire the idle countdown. Then answer, decline, cancel and fail incoming calls; verify a fresh countdown, delayed bar and deferred restoration for each outcome. Inspect source/power transitions, first-press consumption and all emitted commands.
 # @pass The first hidden-view press reveals the terminal without selecting a contact; idle expiry restores the captured input/power; all call endings keep the terminal visible until that countdown expires, without volume/mute commands. Real worker delays run; TV firmware, Samsung network pairing and physical HDMI switching are not qualified by this fixture.
-# Ignore the initial driver request and CEC input announcements while reporting power On. Require a delayed driver retry to select HDMI during ringing, readiness before retries, and no further selection after answer.
+# Require the guarded model power-on call, then ignore the initial driver input request and CEC input announcements while reporting power On. Require a delayed driver retry to select HDMI during ringing, readiness before retries, and no further selection after answer.
 
 import json
 import os
@@ -29,12 +29,16 @@ class TVRoutingUITests(unittest.TestCase):
             app.tv_control = tv
             state = {'off': False, 'active_source': '0.0.0.0'}
             attempts = []
+            wake_requests = []
             def transport(*arguments):
                 if arguments == ('--physical-address',): return '1.0.0.0'
                 if arguments == ('--logical-address',): return '4'
                 if '--give-device-power-status' in arguments: return 'pwr-state: on (0)'
                 return ''  # TV ignores initial CEC announcements.
-            def driver(method, address, is_current):
+            def driver(method, address=None, *, is_current):
+                if method == 'set_power_on':
+                    wake_requests.append(method)
+                    return is_current()  # Already-on TV stays on its tuner.
                 self.assertEqual(method, 'set_current_input')
                 if not is_current(): return False
                 attempts.append(time.monotonic())
@@ -48,6 +52,7 @@ class TVRoutingUITests(unittest.TestCase):
                 app.call_event(88, 1, 'alice', 'family.test')
                 pump(app, lambda: tv._ready.is_set(), timeout=8)
                 ready_at = time.monotonic()
+                self.assertEqual(wake_requests, ['set_power_on'])
                 self.assertEqual(len(attempts), 1)
                 self.assertEqual(state['active_source'], '0.0.0.0')
                 pump(app, lambda: state['active_source'] == '1.0.0.0', timeout=7)
@@ -56,6 +61,7 @@ class TVRoutingUITests(unittest.TestCase):
                 stop = time.monotonic()+5.5
                 pump(app, lambda: time.monotonic() >= stop, timeout=7)
                 self.assertEqual(len(attempts), 2, 'No further input requests after answer')
+                self.assertEqual(wake_requests, ['set_power_on'], 'Retries never send power commands')
             finally:
                 # End this fixture without restoring through its intentionally
                 # input-only driver stub; no real TV has been controlled.

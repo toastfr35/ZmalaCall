@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[3]
 spec = importlib.util.spec_from_file_location('linux_package', ROOT / 'build_tools/linux/package-terminal.py')
@@ -126,6 +127,40 @@ class LinuxPackageTests(unittest.TestCase):
                 self.assertEqual(checked, names - {'SHA256SUMS'})
             self.assertEqual(release.with_name(release.name + '.sha256').read_text().split()[0],
                              hashlib.sha256(release.read_bytes()).hexdigest())
+
+    def test_tv_tool_runs_from_release_without_checkout_helpers(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            release = module.package(root / 'terminal.tar.gz')
+            extracted = root / 'release'
+            required = ('build_tools/linux/tv-plugin-self-test.py',
+                        'build_tools/linux/tv_plugin_self_test.py',
+                        'build_tools/linux/tv_test_card.py',
+                        'build_tools/linux/tv_test_camera.py',
+                        'build_tools/linux/tv_test_processes.py',
+                        'build_tools/linux/tv-plugin-self-test.sh',
+                        'zmala_terminal/linux/tv_plugins/__init__.py')
+            with tarfile.open(release) as archive:
+                for name in required:
+                    target = extracted / name
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(archive.extractfile(name).read())
+                self.assertEqual(archive.getmember('build_tools/linux/tv-plugin-self-test.sh').mode, 0o755)
+            # Isolated mode and an unrelated cwd prevent the repository from
+            # hiding missing dependencies in the actual distributable.
+            result = subprocess.run([sys.executable, '-I', str(extracted / required[0]), '--help'],
+                                    cwd=root, capture_output=True, text=True, timeout=20)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('--operate-tv', result.stdout)
+            self.assertIn('--pause-terminal', result.stdout)
+            self.assertIn('--observation-count', result.stdout)
+            wrapper = (extracted / 'build_tools/linux/tv-plugin-self-test.sh').read_text()
+            self.assertIn('/opt/zmalacall/current/build_tools/linux/tv-plugin-self-test.py "$@"', wrapper)
+            installer = (ROOT / 'build_tools/linux/install-kiosk.sh').read_text()
+            self.assertIn('"$release/build_tools/linux/tv-plugin-self-test.sh" /usr/local/sbin/zmala-tv-test', installer)
+            dependencies = (ROOT / 'build_tools/linux/dependencies.txt').read_text().splitlines()
+            self.assertIn('python3-opencv', dependencies)
+            self.assertIn('python3-tk', dependencies)
 
 
 if __name__ == '__main__':

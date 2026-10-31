@@ -651,6 +651,37 @@ reports. Avoid replacing/restarting software during a call, preserve the existin
 pairing file and keep a recoverable copy of the plugin. Ordinary calls do not
 implicitly start a developer preview or change TV settings.
 
+### Internal TV qualification tool
+
+The Pi terminal package installs `/usr/local/sbin/zmala-tv-test`. Its CLI, report
+generator, continuous camera, process cleanup and fullscreen test-card helpers are bundled together under the active
+release's `build_tools/linux/` directory. The wrapper follows
+`/opt/zmalacall/current`, so updates and rollback use the matching tool version.
+OpenCV and Tk are already part of the terminal dependencies. No service, UI entry
+or additional passwordless sudo permission is installed.
+
+During an idle maintenance window, point the C10/C20 at the TV and run:
+
+```sh
+sudo zmala-tv-test --help
+sudo zmala-tv-test --driver samsung --input 2.0.0.0 --input 0.0.0.0 \
+  --operate-tv --pause-terminal --output /home/zmala/tv-test.zip
+```
+
+Use that terminal's verified driver/input identifiers and a new output filename.
+This deliberately operates the TV and temporarily stops the terminal; never run
+during a call. It attempts to restore the TV state and restarts the terminal after
+testing. Camera loss stops further experimental actions while restoration is
+still attempted. Cleanup tries every helper and restarts a previously active
+terminal even after child shutdown failure or a timed-out stop command. Helpers
+have bounded termination waits; cleanup failures return a nonzero exit. A
+previously stopped terminal is not started. Retrieve the ZIP through the developer shell and inspect its embedded
+HTML photos alongside power/input readings. Pictures may contain private household
+content; reports stay on the terminal until retrieved and are not published.
+The tool is for internal deployment/plugin qualification, not automatic support
+certification. See `new_TV.md` for the complete investigation procedure and timing
+options. Existing installations receive the command on their next installer update.
+
 ### TV driver plugins
 
 `linux/tv_plugins/<model-family>/driver.py` exports one `TVDriver` class.
@@ -672,10 +703,22 @@ The Samsung driver reuses the existing private `tv-remote.json` and pairing
 workflow. Its LAN input identifiers are the TV/tuner `0.0.0.0` and the verified
 terminal HDMI physical address. Other inputs and smart-TV apps cannot be restored
 by this LAN driver. It reports the paired TV's model through a bounded local
-metadata request, or `None` when unavailable. Network control alone cannot reliably
-read power/current input or wake a sleeping TV: the controller supplies bounded
-CEC callbacks through the constructor's runtime config. Capability reporting
-reflects those callbacks; it never invents observations from sent commands.
+metadata request, or `None` when unavailable. Settled CEC power replies take
+precedence; when CEC is ambiguous or unavailable, fresh `/api/v2/` metadata on
+port 8001 can report `on` or `standby`. The tested QE55Q60CAUXXU reports CEC
+`to-on` while in standby; its metadata endpoint remains available even when the
+TLS remote port closes. Unknown values, oversized responses, redirects and network
+failures remain unknown. Metadata is a local, unauthenticated observation and
+contains no credentials; command authentication still uses pinned TLS.
+Current-input observation and wake capability still require controller-supplied
+bounded CEC callbacks. Samsung wake first observes power: already-on is a no-op.
+Confirmed standby allows a paired network power key, with another fresh standby
+check after authentication. If the network attempt is unavailable or rejected,
+the driver rechecks power and cancellation before using the existing CEC wake
+fallback. It never sends a network toggle when power is unknown. This keeps
+repeated wake requests from disturbing an already-on source. Power/input getters
+report control state, not proof that the programme picture is playing. Capabilities describe these mechanisms, not current reachability.
+See `docs/samsung-tv-investigation.md` for measured scope and remaining limitations.
 
 CEC remains the primary transport. The controller dispatches network fallbacks
 through the common API and creates a driver instance per operation so cancellation
@@ -686,6 +729,13 @@ require the persisted user-verified binding. Power toggle fallback checks a fres
 settled on-state again after authentication and rechecks cancellation before send.
 Driver I/O runs on existing workers with timeouts; failures cannot stop calls.
 Restoration, qualification, retries and idle policy remain in the controller.
+Normal incoming calls invoke the qualified model driver's `set_power_on` before
+CEC fallback. A successful driver result suppresses redundant Image View On;
+cancellation is rechecked after driver I/O before any fallback. On Samsung this
+leaves an already-on TV's picture untouched. Standby restoration can delegate
+ambiguous CEC replies to the guarded driver, which requires fresh confirmed on
+before a network toggle. The real-call test plan and measured results are in
+`docs/tv-in-situ-test-plan.md`.
 
 ### Installation TV checks
 
@@ -703,6 +753,11 @@ skips, completion, EDID hash and HDMI address. Save failures block completion.
 Interrupted tests resume at a prompt, not another automatic power command.
 A changed TV/route invalidates previous results on startup; reset clears them.
 Failed/skipped features are disabled independently; keep the TV remote available.
+The saved `network_paired` flag separately enables the paired network fallback.
+A credential file installed by a development experiment does not enable it in
+normal calls. Standalone tests bypass these setup gates: always inspect both
+power/source results and pairing state before comparing them with a real call.
+Do not mark an unobserved setup check as passed to hide a routing failure.
 
 Samsung recovery covers Anynet+/Network Control, local discovery and permission
 approval. The user selects among discovered TVs. The fallback stores private
@@ -710,6 +765,11 @@ approval. The user selects among discovered TVs. The fallback stores private
 `KEY_TV` for the remembered tuner source. A power-toggle fallback is used only
 after rechecking a settled on-state, never for unknown/transitional/off status.
 It does not restore arbitrary smart-TV apps.
+If the Q60C displays “Check Device Power” despite an active Pi HDMI output, inspect
+its source identification and Universal remote setup. Term2's HDMI 2 had retained
+a Sky box profile; remove only that obsolete association from the Pi's port and
+repeat physical call qualification. Do not reset all TV settings or remove other
+devices. The plugin does not silently rewrite the TV's universal-remote profiles.
 
 Some Samsung models need a verified HDMI key bound to their actual physical
 address, for example `"terminal_source":{"address":"1.0.0.0","key":"KEY_HDMI"}`.

@@ -3,8 +3,9 @@
 CEC requests HDMI switching and standby first. An explicitly verified,
 connector-bound source key can select HDMI when the broadcast tuner ignores CEC.
 This adapter also returns to
-the built-in tuner, preserving its last channel, volume and mute. A power-key
-fallback is allowed only after a fresh, explicit confirmation that the TV is on.
+the built-in tuner, preserving its last channel, volume and mute. A power-key command
+is allowed only after fresh confirmation of the opposite power state, repeated
+after authentication: on for standby, standby for wake.
 The token and pinned TLS certificate live in private terminal runtime data.
 """
 import base64
@@ -110,32 +111,41 @@ class TVDriver(BaseTVDriver):
         self.config_file = Path(config.get('config_file', DEFAULT_CONFIG))
         self._is_current = config.get('is_current', lambda: True)
 
-    def get_model(self) -> str | None:
-        model = self.config.get('model')
-        if isinstance(model, str) and model.strip():
-            return model
+    def _metadata(self) -> dict:
+        """Read fresh local observations; never cache a command as TV state.
+
+        Port 8001 remains available in standby on the tested Q60C, while its
+        authenticated WebSocket port closes. Metadata contains no credentials;
+        all commands still require the separately pinned TLS connection.
+        """
         connection = None
         try:
             settings = json.loads(self.config_file.read_text(encoding='utf-8'))
-            # Use only the paired IP, never discovered URLs or redirects.
             host = str(ipaddress.ip_address(settings['host']))
             connection = http.client.HTTPConnection(host, 8001, timeout=2)
             connection.request('GET', '/api/v2/')
             response = connection.getresponse()
             if response.status != 200:
-                return None
-            model = json.loads(response.read(65536)).get('device', {}).get('modelName')
-            return model if isinstance(model, str) and model.strip() else None
+                return {}
+            payload = response.read(65537)
+            if len(payload) > 65536:
+                return {}
+            device = json.loads(payload).get('device', {})
+            return device if isinstance(device, dict) else {}
         except (OSError, ValueError, TypeError, KeyError, AttributeError, http.client.HTTPException):
-            return None
+            return {}
         finally:
             if connection:
                 connection.close()
 
+    def get_model(self) -> str | None:
+        model = self.config.get('model')
+        if not isinstance(model, str) or not model.strip():
+            model = self._metadata().get('modelName')
+        return model if isinstance(model, str) and model.strip() else None
+
     def get_capabilities(self) -> set[str]:
-        capabilities = {'set_current_input'}
-        if callable(self.config.get('read_power')):
-            capabilities.update(('get_power_status', 'set_power_off'))
+        capabilities = {'set_current_input', 'get_power_status', 'set_power_off'}
         if callable(self.config.get('read_input')):
             capabilities.add('get_current_input')
         if callable(self.config.get('power_on')):
@@ -143,10 +153,14 @@ class TVDriver(BaseTVDriver):
         return capabilities
 
     def get_power_status(self) -> bool | None:
-        if 'get_power_status' not in self.get_capabilities():
-            raise NotImplementedError
-        power = self.config['read_power']()
-        return power if isinstance(power, bool) else None
+        reader = self.config.get('read_power')
+        power = reader() if callable(reader) else None
+        if isinstance(power, bool):
+            return power
+        # This Q60C reports CEC 'to-on' indefinitely in standby. Ask the TV's
+        # local metadata endpoint instead; unreachable is unknown, never off.
+        state = self._metadata().get('PowerState')
+        return {'on': True, 'standby': False}.get(state) if isinstance(state, str) else None
 
     def get_current_input(self) -> str | None:
         if 'get_current_input' not in self.get_capabilities():
@@ -158,10 +172,32 @@ class TVDriver(BaseTVDriver):
         binding = self._binding()
         return source if source is not None and source == binding.get('address') else None
 
+    # @llr LLR-TERM-TV-031
     def set_power_on(self) -> bool:
         if 'set_power_on' not in self.get_capabilities():
             raise NotImplementedError
-        return bool(self._is_current() and self.config['power_on']())
+        if not self._is_current():
+            return False
+        power = self.get_power_status()
+        if not self._is_current():
+            return False
+        # Repeating wake must not disturb an already-on source. Power state
+        # is not picture readiness; do not try to repair playback here.
+        if power is True:
+            return True
+        # Prefer the paired remote: CEC Image View On left a blank tuner picture
+        # on the tested Q60C, even while power/source getters reported success.
+        # KEY_POWER is a toggle: require fresh standby both before connecting
+        # and immediately before sending, just as standby requires fresh on.
+        if power is False and self._send_key(
+                'KEY_POWER', self._is_current, lambda: self.get_power_status() is False):
+            return True
+        if not self._is_current():
+            return False
+        # Authentication may have overlapped another controller waking the TV.
+        # Re-check before falling back; never disturb a newly-on source.
+        power = self.get_power_status()
+        return bool(self._is_current() and (power is True or self.config['power_on']()))
 
     # @llr LLR-TERM-TV-031
     def set_power_off(self) -> bool:
@@ -212,7 +248,7 @@ class TVDriver(BaseTVDriver):
         return self._send_key(binding['key'], self._is_current)
 
     def _send_key(self, key, is_current, can_send=lambda: True):
-        """Keep remote commands restricted to source selection and guarded standby."""
+        """Keep remote commands restricted to source selection and guarded power changes."""
         if key not in ('KEY_TV', 'KEY_POWER', 'KEY_HDMI', 'KEY_HDMI1', 'KEY_HDMI2', 'KEY_HDMI3', 'KEY_HDMI4'):
             raise ValueError('Unsupported restoration key')
         if not self.config_file.exists():
@@ -243,7 +279,7 @@ class TVDriver(BaseTVDriver):
         except Exception as error:
             # Third-party errors may contain a token-bearing WebSocket URL.
             # Log only the exception type; power restoration must still run.
-            logging.warning('TV: Samsung source restoration failed (%s)', type(error).__name__)
+            logging.warning('TV: Samsung remote command failed (%s)', type(error).__name__)
             return False
         finally:
             if remote:
