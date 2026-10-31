@@ -32,15 +32,10 @@ scope: Experimental
 text: |
   One worker shall perform blocking hub operations. Failures and application stop
   shall favor power-on. Hub work shall not block UI iteration.
-  Every requested power transition shall log its cause, previous state, remote
-  battery, inactivity and UI-update age, and last explicit wake request. The result
-  shall identify success or failure with the same cause. Causes shall distinguish
-  startup, input, calls, media/configuration preparation, setup/scanning, settings,
-  previews, battery protection, stale UI, retries and shutdown restoration.
-  Helper power-on and failed-off rollback shall be logged, including systemd cleanup.
-  Routine polling without a transition shall not emit wake logs. Logs shall not
-  contain contact identities or enrollment credentials.
+  Successful power transitions, routine polling and shutdown restoration shall not
+  emit wake-tracing logs. Power-operation and failed-off rollback errors shall
+  remain reported without contact identities or enrollment credentials.
 verification: |
   Block and fail hub operations, then stop the application. Check one worker,
-  continued UI and power-on requests. Assert policy/caller reasons, outcome and
-  cleanup logs, and no transition logging during steady-state polling.
+  continued UI and power-on requests. Check successful transitions and cleanup are
+  quiet, while helper failure/rollback diagnostics remain visible.

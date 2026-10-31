@@ -197,6 +197,10 @@ class TerminalModel:
     def ended(self, remote=False):
         if remote and self.state == State.RINGING and self.contact:
             self.mark_notification(self.contact['id'])
+            # Focus the missed caller without acknowledging their unread badge.
+            # A receive-only or removed contact may not be in the carousel.
+            self.index = next((i for i, person in enumerate(self.contacts)
+                               if person['id'] == self.contact['id']), self.index)
         self.state = State.HOME
         self.contact = None
         self.callback_request = None

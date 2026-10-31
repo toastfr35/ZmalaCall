@@ -89,12 +89,11 @@ def apply(percent):
         # changing the level must preserve any existing hardware mute state.
         # @llr LLR-TERM-AUDIO-010
         # A shared hardware gain would couple calls, ringtones and button sounds.
-        # Use each supported model's maximum; independent stream gains still
+        # Both C10 and C20 report a +12 dB maximum; independent stream gains still
         # control call, ringtone and button loudness.
         # Engine applies the call-only gain on its owning thread.
         card = audio_card()
-        gain = '12dB' if card == 'C10' else '0dB'
-        subprocess.run(['amixer', '-q', '-c', card, 'sset', 'PCM', gain],
+        subprocess.run(['amixer', '-q', '-c', card, 'sset', 'PCM', '12dB'],
                        check=True, capture_output=True, timeout=5, env=playback_environment())
         logging.info('C10/C20 output ready; call volume: %s%%', percent)
         return True

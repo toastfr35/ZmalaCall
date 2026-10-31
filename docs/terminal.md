@@ -503,7 +503,7 @@ control cannot overwrite a newly applied default.
 `c20_speaker_volume` retains its historical configuration key for the call default.
 `ringtone_volume` defaults to the old call value for older profiles; new profiles
 start at 50%. `action_sound_volume` starts at 20%. The C10/C20 hardware PCM stays at
-+12 dB for C10 or 0 dB for C20 without changing its mute switch. `media.py` applies the logical call level
++12 dB for both C10 and C20 without changing its mute switch. `media.py` applies the logical call level
 through the SDK playback gain on its owner thread (50% is -14 dB; 0% is -120 dB).
 `sound_levels.py` scales validated ringtone PCM into a private RAM-backed temporary
 file, replacing and deleting it when the tone or level changes and on shutdown.
@@ -549,6 +549,10 @@ idle interval, but still need call confirmation; there is no automatic callback 
 Missed incoming calls and authenticated phone texts share per-contact unread
 counts. Merely browsing preserves them; opening that contact's confirmation clears
 its count, even when cancelled. Connecting an incoming call also clears its count.
+After a missed incoming call, the carousel selects that caller without clearing
+the badge. Selection is unchanged for other outcomes or if the caller is absent
+from the callable contacts. Incoming calls discard any unfinished carousel motion,
+including when cancellation arrives before the first ringing frame is drawn.
 Answered/locally declined/outgoing calls do not create missed counts. Bodies are
 not displayed or stored. Counts persist by SIP account/domain and are pruned for
 removed/ineligible contacts. The corner badge totals them; values over 99 display
@@ -593,11 +597,29 @@ The first press configures the CEC playback identity if needed and wakes the TV;
 it remains consumed. Unknown power is never saved as a standby restoration target.
 If power control was not qualified, an unknown state cannot authorize waking it.
 
-Incoming calls remember observed power/source before revealing the UI. Decline,
-caller cancellation or hangup restores that state. Browsing has its own return
-timeout: button activity resets it, a thin blue bar appears after ten seconds
-idle, and expiry restores the captured state. Calls and pending saves suspend
-the timer. Volume/mute are not changed by CEC. Unknown previous input is not guessed.
+Incoming calls remember observed power/source before revealing the UI. Answered,
+declined, cancelled, failed and missed calls leave the terminal view available
+for a fresh configured inactivity interval (30 seconds by default; Never disables
+return). The TV goes back to standby if originally off, or its previous input if
+originally on, only when this interval expires. The same browsing timer and thin
+blue bar are used: the bar appears after ten seconds idle, and any button activity
+restarts it. Calls and pending saves suspend the timer. Consecutive calls preserve
+the original TV baseline; a manual power/input change releases the pending return.
+`TVControl.cancel(defer=True)` stops pending wake commands and transfers the saved
+baseline to a browsing lease outside Tk, after any in-flight command finishes.
+The lease's `idle_started` timestamp prevents a short missed call from inheriting
+an expired idle anchor. Shutdown still uses immediate cancellation. Volume/mute
+are not changed by CEC. Unknown previous input is not guessed.
+
+If an incoming call needed to reveal the terminal, source selection is retried
+up to three times after the initial wake/selection sequence, waiting five seconds
+before each attempt. The retries use the paired driver's verified HDMI input,
+with CEC Active Source as fallback, and never repeat a power toggle.
+The initial readiness/auto-answer gate does not wait for this retry sequence.
+Each attempt and the driver's post-authentication send require the same native
+call still to be ringing; answer, cancellation, replacement or shutdown stops
+further requests. A power-On report or accepted command alone cannot establish
+that HDMI is visible. Logs identify each ringing input retry and its transport.
 
 ### Remote developer access
 
@@ -989,17 +1011,12 @@ Successful renewal logs `Relay credentials refreshed without waking USB media`.
 
 ### Optional USB power control
 
-Power transitions are recorded in `journalctl -u zmalacall-terminal` with the prefix
-`C10/C20 USB power`. Each request includes its reason, previous state, remote
-battery, inactivity, UI-update age and last explicit wake request; completion or
-failure repeats the reason. This distinguishes input/calls from configuration,
-setup, settings, previews, unknown/low battery, stale UI, retries and startup.
-Shutdown deliberately restores shared USB power for charging. The root helper
-also reports failed-off rollback and systemd cleanup, which can wake the camera
-without a user action. Unchanged polling does not produce wake entries.
-These logs explain software power commands, not spontaneous hardware reconnects;
-use the kernel journal alongside them for USB disconnect/re-enumeration events.
-
+Routine USB power transitions and shutdown restoration are quiet. Power-operation
+failures and failed-off rollback remain reported in `journalctl -u zmalacall-terminal`.
+Shutdown still restores shared USB power for charging. Runtime power telemetry
+continues to drive the camera indicator and server status. The temporary wake-cause
+tracing and periodic wake monitor have been removed; kernel USB disconnect and
+re-enumeration events remain available in the kernel journal.
 
 This experiment is not enabled by the regular installer. The Pi 4's external USB
 ports switch together, including the C20 and charger. It cuts power only after
@@ -1284,7 +1301,7 @@ compatible configuration identifiers for either model.
 Both models expose stereo S16_LE microphone input at 16 kHz and speaker output at
 48 kHz, plus 720p/1080p MJPEG at 30 camera fps. Both use explicit asymmetric ALSA
 profiles and the staged microphone-before-camera startup. Playback hardware gain
-is fixed at each model's maximum (+12 dB for C10, 0 dB for C20) while streams
+is fixed at each model's maximum (+12 dB for both C10 and C20) while streams
 retain independent software levels. The default is reapplied after startup and USB wake. Hardware
 mute is preserved. Runtime suspend is disabled for either USB identity; the hub
 helper still refuses to cut power with unrelated peripherals or open streams.
@@ -1305,4 +1322,9 @@ acoustic listening quality, phone video on the TV, or eliminate the separate
 intermittent Samsung wake problem. Auto-answer was restored off afterward.
 Private captures and logs are retained under `build_tools/tmp/c10-*` and
 `build_tools/tmp/tv-real-calls/c10-phone1-*`; they are not release assets.
-The Pi manual incoming-call prompt shows a green circular remote-button cue beside the localized answer action. Only the Windows terminal shows ENTER. Automatic answering replaces either hint with the countdown; remote disconnection does not select keyboard hints.
+The Pi incoming-call screen shows two distinct controls beneath the caller: green with a check mark and the localized Answer action, and red with a cross and Decline. Both remain visible alongside an automatic-answer countdown. Colours match the remote buttons; symbols and action labels make the choices clear without relying on colour alone. Only the Windows terminal shows ENTER; remote disconnection does not select keyboard hints.
+
+Live C20 ALSA readback on term2 (31 October 2026) confirmed its PCM hardware
+range is -28 to +12 dB, matching the C10. Both now use +12 dB by default; the
+previous C20 0 dB setting was below its supported maximum. The separate call,
+ringtone and button-sound levels still attenuate their respective streams.

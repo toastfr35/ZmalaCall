@@ -143,6 +143,12 @@ PHONE = {
 # The pass is idempotent so rebuilding never duplicates instructions.
 REVISIONS = {
     'terminal_use.docx': {
+        'For an incoming call,': [
+            'For an incoming call, the screen shows a green Answer prompt with a check mark '
+            'and a red Decline prompt with a cross. Press the matching button on your remote. '
+            'If automatic answer is enabled, both prompts stay visible beside the countdown. '
+            'Press red to decline before it connects.',
+        ],
         'Choose a person with the arrow buttons,': [
             'Use this guide for everyday calls after setup. Choose a familiar face with the arrow '
             'buttons, press green to confirm, and press red to finish.',
@@ -168,14 +174,20 @@ REVISIONS = {
         'To cancel your request,': [
             'To cancel a request you sent, select that person, press red, then confirm with green.',
         ],
-        'A numbered badge can mean': [
+        'A numbered badge': [
             'A numbered badge marks missed calls or message notifications. Opening that person’s '
             'call or callback confirmation clears the count, even if you go back without calling.',
+            'After a missed call, the caller’s portrait is selected automatically so you can easily '
+            'call them back. Their missed-call badge stays unread until you open their confirmation.',
         ],
-        'After ten seconds without a button press,': [
-            'A thin blue bar at the bottom shows the countdown to returning to TV. A button press '
-            'restarts the countdown, and calls pause it. Your helper chooses the delay. This works '
-            'only when automatic TV control passed setup; otherwise use the TV remote.',
+        'A thin blue bar at the bottom': [
+            'A thin blue bar at the bottom appears after ten seconds without a button press and shows '
+            'the countdown to returning to TV. A button press '
+            'restarts the countdown. After any incoming call ends, answered or not, a fresh countdown '
+            'starts. When it finishes, the TV switches off if it was off before the call, or returns '
+            'to what you were watching if it was on. Your helper chooses the delay; Never disables '
+            'automatic return. This works only when automatic TV control passed setup; otherwise '
+            'use the TV remote.',
         ],
         'Webcam icon (if shown):': [
             'If a webcam symbol is shown, mint means power is on, a grey slash means off, and a '
@@ -228,6 +240,12 @@ REVISIONS = {
             'Ringtone volume controls incoming ringing, previews and the tone while waiting for someone to answer; 0% is silent. Button sounds volume is '
             'separate. Use middle and left/right to change the sound heard during calls. A call stops '
             'any ringtone preview.',
+        ],
+        'End the call with red.': [
+            'End the call with red. Then wait without pressing a button: the blue countdown bar should appear '
+            'after ten seconds. After the Return to TV delay, check that the TV returns to standby '
+            'if it was off, or the previous input if it was on. Repeat with an unanswered call. '
+            'Automatic return is disabled when the delay is set to Never.',
         ],
     },
     'server_prep.docx': {

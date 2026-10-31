@@ -34,13 +34,18 @@ class CallControl:
                 return
             # @llr LLR-TERM-POWER-014, LLR-TERM-POWER-016
             if getattr(self, 'usb_power', None):
-                self.usb_power.require(urgent=True, reason='incoming call')
+                self.usb_power.require(urgent=True)
             if getattr(self, 'settings_hold', None):
                 self.settings_hold.clear()
                 self.settings_open = False
             self.engine.hold_call(call)
+            # A short missed call may end before the first ringing render.
+            # Do not let an earlier carousel animation override its selection.
+            self.carousel_motion = None
             if getattr(self, 'tv_control', None):
-                self.tv_control.wake()
+                # @llr LLR-TERM-TV-034
+                self.tv_control.wake(ringing=lambda: bool(self.engine and
+                    self.engine.call == call and self.model.state == State.RINGING))
             self.root.after_idle(lambda: self.root.lift())
             self.notice = ''
         elif state in (3, 4, 5, 6) and self.model.state == State.HOME:
@@ -64,7 +69,8 @@ class CallControl:
             self.engine.hold_call(None)
             self.notice = 'unavailable' if failed else ''
             if getattr(self, 'tv_control', None):
-                self.tv_control.cancel()
+                # @llr LLR-TERM-TV-028
+                self.tv_control.cancel(defer=True)
         self.root.after_idle(self.render)
 
     # @llr LLR-TERM-HISTORY-021
@@ -139,7 +145,7 @@ class CallControl:
     def answer_when_ready(self):
         """Wait for USB enumeration without blocking SIP iteration or answering an obsolete call."""
         ready = getattr(self, 'usb_media_ready', None)
-        if ready and not ready(reason='answering incoming call'):
+        if ready and not ready():
             generation, call = self.generation, self.engine.call
             self.root.after(100, lambda: self.action('answer')
                 if not self.closed and self.generation == generation and self.engine
@@ -175,16 +181,16 @@ class CallControl:
                 self.answer_when_ready()
             elif action in ('end', 'decline'):
                 self.dial_serial += 1
-                # Rejection ends the TV interruption immediately, even if the
-                # SIP end callback arrives late. Answering retains the baseline.
+                # Stop late wake commands on rejection, but retain the picture
+                # until the shared inactivity countdown restores the TV.
                 if action == 'decline' and getattr(self, 'tv_control', None):
-                    self.tv_control.cancel()
+                    self.tv_control.cancel(defer=True)
                 self.engine.end(decline=action == 'decline')
                 if not self.engine.call:
                     self.finish_call()
                     self.outgoing_deadline = None
                     if action != 'decline' and getattr(self, 'tv_control', None):
-                        self.tv_control.cancel()
+                        self.tv_control.cancel(defer=True)
         except Exception:
             logging.exception('Call action failed')
             if self.engine and self.engine.call:
@@ -192,7 +198,7 @@ class CallControl:
             self.finish_call()
             self.notice = 'unavailable'
             if getattr(self, 'tv_control', None):
-                self.tv_control.cancel()
+                self.tv_control.cancel(defer=True)
 
     # @llr LLR-TERM-NAV-005
     def contact_online(self, contact):
@@ -219,7 +225,7 @@ class CallControl:
         else:
             try:
                 ready = getattr(self, 'usb_media_ready', None)
-                if ready and not ready(reason='outgoing call'):
+                if ready and not ready():
                     self.root.after(100, lambda: self.dial_ready(generation, serial, contact, available, ring_timeout))
                     return
                 self.outgoing_deadline = time.monotonic() + ring_timeout

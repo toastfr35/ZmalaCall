@@ -29,6 +29,12 @@ text: |
   Caller cancellation of a permitted, still-ringing incoming call shall add one
   missed-call notification. Answered, locally declined and outgoing calls shall not
   add one. Cancellation shall stop ringtone and countdown and return to idle.
+  On a missed incoming call the carousel shall select the caller if still present
+  in the callable contact list, without acknowledging the missed-call badge.
+  Other call outcomes and callers absent from the carousel shall preserve selection.
 verification: |
   Exercise each call outcome and inspect the count and cleanup. Repeat cancellation
   events to check that one call is counted once.
+  Start with a different contact selected; miss successive callers and check the
+  latest caller is selected with unread count intact. Check other outcomes and
+  receive-only or removed callers do not change selection.

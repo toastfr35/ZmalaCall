@@ -1,7 +1,7 @@
 # @test T-LLT-022
 # @requirements LLR-TERM-HISTORY-015, LLR-TERM-HISTORY-016, LLR-TERM-HISTORY-017, LLR-TERM-HISTORY-018
 # @environment portable
-# @plan Drive incoming, rejected, answered, failed and late call events and reload temporary notification state; assert exact per-contact counts, acknowledgement boundaries, identity isolation and restart persistence.
+# @plan Drive incoming, rejected, answered, failed and late call events and reload temporary notification state; assert exact per-contact counts, missed-caller selection without acknowledgement, unchanged selection for other outcomes/unlisted callers, identity isolation and restart persistence.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 import copy
@@ -31,6 +31,40 @@ class MissedCallsTests(unittest.TestCase):
         model = TerminalModel()
         model.configure(configuration())
         return model
+
+    def test_missed_call_selects_latest_caller_without_clearing_badge(self):
+        m = self.model()
+        m.index = 1
+        for caller, count in (('alice', 1), ('bob', 1), ('alice', 2)):
+            m.incoming(caller, 'family.test')
+            m.ended(remote=True)
+            self.assertEqual(m.selected['id'], caller)
+            self.assertEqual(m.notification_count(caller), count)
+        m.button('right')
+        selected = m.selected['id']
+        m.ended(remote=True)  # Duplicate end cannot move the carousel again.
+        self.assertEqual(m.selected['id'], selected)
+        self.assertEqual(m.notification_count('alice'), 2)
+
+    def test_other_outcomes_and_unlisted_caller_keep_selection(self):
+        for outcome in ('answered', 'declined', 'failed', 'receive-only', 'removed'):
+            with self.subTest(outcome=outcome):
+                m = self.model()
+                m.index = 1  # Bob is selected; Alice calls.
+                m.incoming('alice', 'family.test')
+                if outcome == 'answered':
+                    m.connected()
+                elif outcome == 'declined':
+                    m.button('red')
+                elif outcome in ('receive-only', 'removed'):
+                    config = copy.deepcopy(m.config)
+                    if outcome == 'removed':
+                        config['contacts'].pop(0)
+                    else:
+                        config['contacts'][0]['can_call'] = False
+                    m.configure(config)
+                m.ended(remote=outcome != 'failed')
+                self.assertEqual(m.selected['id'], 'bob')
 
     def test_remote_hangup_marks_each_contact_once_and_other_calls_preserve_flags(self):
         m = self.model()

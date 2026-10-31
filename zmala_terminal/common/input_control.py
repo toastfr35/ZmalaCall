@@ -14,7 +14,7 @@ class InputControl:
         self.last_button = time.monotonic()
         power = getattr(self, 'usb_power', None)
         if power:
-            power.require(urgent=True, reason='remote/keyboard input')
+            power.require(urgent=True)
 
     def bind_inputs(self):
         from zmala_terminal.linux.action_sounds import ActionSounds
