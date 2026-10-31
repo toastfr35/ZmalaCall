@@ -172,7 +172,9 @@ REVISIONS = {
             'You can do this during a call and keep seeing the other person.',
         ],
         'The call-volume overlay changes only': [
-            'This changes the sound you hear during calls. It does not change your microphone, '
+            'This changes the sound you hear during calls. 0% mutes listening; 5% is the lowest '
+            'audible step and matches the former 40% setting. 100% keeps the same maximum. '
+            'The steps in between are now easier to use for speech. It does not change your microphone, '
             'ringtone or button sounds. Ask your helper to adjust those separate sound settings if needed.',
             'During a call, someone using ZmalaPhone can show you a photo. It fills your screen '
             'instead of the video, but you can keep talking and change the volume. They tap Stop '

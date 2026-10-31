@@ -62,12 +62,12 @@ def apply_speaker_volume(self):
 
 def sync_speaker_mute(self):
     from zmala_terminal.linux.c20_volume import status
-    from zmala_terminal.linux.sound_levels import gain_db
+    from zmala_terminal.linux.sound_levels import call_gain_db
     desired, _, _ = status()
     # @llr LLR-TERM-AUDIO-010
     # Only the core owner touches this native call gain; other sounds bypass it.
     if desired is not None and getattr(self, '_speaker_percent', None) != desired:
-        self.core_set_playback_gain_db(self.core, gain_db(desired))
+        self.core_set_playback_gain_db(self.core, call_gain_db(desired))
         self._speaker_percent = desired
 
 

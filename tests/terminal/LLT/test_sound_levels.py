@@ -8,6 +8,8 @@
 # Feed a complete synthesized cue through actual worker framing, bound nonblocking short writes
 # and pipe timeouts, and verify termination escalation and no backlog. Warm every integer
 # level in memory, prove pause/resume reuses it without synthesis, and cancel during startup.
+# Check voice mute, 5% = former 40%, unchanged maximum, equal dB steps, legacy lows
+# and native call-gain application while ringtone/button gains retain their original curve.
 # No physical audio is used.
 # @pass PCM and lifecycle assertions pass; one warm player is used, inactive/busy/old requests
 # do not replay, call/preview input remains quiet and audio helpers exclude the SIP preloader.
@@ -20,7 +22,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock,patch
 import wave
-from zmala_terminal.linux.sound_levels import gain_db,scale_wav,click_pcm,ToneLevels,playback_environment
+from zmala_terminal.linux.sound_levels import gain_db,call_gain_db,scale_wav,click_pcm,ToneLevels,playback_environment
 from zmala_terminal.linux.action_sounds import ActionSounds,FRAME,PERIOD,click_bank
 from zmala_terminal.linux import media
 
@@ -34,6 +36,24 @@ def fixture_wav():
 
 
 class SoundLevelsTests(unittest.TestCase):
+    def test_voice_range_and_native_application(self):
+        self.assertEqual(call_gain_db(0), -120)
+        self.assertAlmostEqual(call_gain_db(5), gain_db(40))
+        self.assertEqual(call_gain_db(100), gain_db(100))
+        for percent in range(1,5):
+            self.assertEqual(call_gain_db(percent), call_gain_db(5))
+        steps=[call_gain_db(p) for p in range(5,101,5)]
+        for before,after in zip(steps,steps[1:]):
+            self.assertAlmostEqual(after-before,16.8/19)
+        engine=Mock(core=1)
+        for percent in (0,5,50,100):
+            with patch('zmala_terminal.linux.c20_volume.status',return_value=(percent,percent,False)):
+                media.sync_speaker_mute(engine)
+            self.assertEqual(engine.core_set_playback_gain_db.call_args.args,(1,call_gain_db(percent)))
+        self.assertEqual(gain_db(5), -26.6)
+        for invalid in (True,-1,101,50.5,'50',None):
+            with self.assertRaises(ValueError):call_gain_db(invalid)
+
     def setUp(self):
         route = patch('zmala_terminal.linux.action_sounds.playback_device', return_value="default:C20")
         route.start()

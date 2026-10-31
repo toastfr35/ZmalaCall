@@ -303,7 +303,7 @@ class UsbPowerTests(unittest.TestCase):
             for _ in range(3):
                 engine.sync_speaker_mute()
         self.assertEqual([call.args for call in engine.core_set_playback_gain_db.call_args_list],
-                         [(123, -120), (123, -27.44)])
+                         [(123, -120), (123, -16.8)])
 
 
 class HelperSafetyTests(unittest.TestCase):
