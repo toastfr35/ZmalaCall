@@ -79,7 +79,7 @@ export function buildMediaFields(devices, media, id) {
   // @llr LLR-SRV-CONFIG-018
   const hardware = el(
     'p',
-    'Nuroum C20 supplies the camera, microphone and speaker automatically. If it is waking up, the terminal waits and retries.',
+    'Nuroum C10/C20 supplies the camera, microphone and speaker automatically. If it is waking up, the terminal waits and retries.',
     'help terminal-media-intro',
   );
   const resolution = terminalSelect(
@@ -119,7 +119,7 @@ export function buildMediaFields(devices, media, id) {
   framing.append(
     el(
       'small',
-      'Experimental · Pi C20 camera. Keeps people in view, up to 2× zoom. Applies during calls.',
+      'Experimental · Pi C10/C20 camera. Keeps people in view, up to 2× zoom. Applies during calls.',
     ),
   );
   // Keep help beneath the switch caption rather than as a third flex column.
@@ -130,7 +130,7 @@ export function buildMediaFields(devices, media, id) {
     'audioProfile',
     [
       ['normal', 'Normal audio'],
-      ['speech', 'Speech · 16 kHz (Linux C20)'],
+      ['speech', 'Speech · 16 kHz (Linux C10/C20)'],
     ],
     profile.audio_profile || 'normal',
   );
@@ -140,7 +140,7 @@ export function buildMediaFields(devices, media, id) {
     el('summary', 'About audio processing'),
     el(
       'p',
-      'Speech processing is available on Linux C20 terminals. Windows uses normal audio. Changes apply when idle.',
+      'Speech processing is available on Linux C10/C20 terminals. Windows uses normal audio. Changes apply when idle.',
       'help',
     ),
   );
@@ -156,7 +156,7 @@ export function buildMediaFields(devices, media, id) {
   volume.append(
     el(
       'small',
-      'C20 call playback only. 5% steps. Default: 50%. Ringtone and button sounds have separate levels.',
+      'C10/C20 call playback only. 5% steps. Default: 50%. Ringtone and button sounds have separate levels.',
     ),
   );
   media.append(hardware, resolution, frameRate, framing, audio, volume, ringtoneField(devices, id));

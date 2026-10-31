@@ -1,8 +1,8 @@
 # @test T-HLT-023
 # @requirements HLR-TERM-REMOTE-011, HLR-TERM-REMOTE-012, HLR-TERM-NAV-002, HLR-TERM-AUDIO-002
 # @environment display
-# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a compact horizontal volume overlay in 5-percent steps. Send three released carousel presses in each direction during animation, verify every selection and the settled center, then confirm the final target without dialing. Keep keyboard releases queued until after later arrows; verify distinct event timestamps count clicks and equal timestamps suppress autorepeat. Also render video beneath the overlay during a simulated established call, assert most video remains uncovered, block physical call actions, preserve programmatic cancellation and expired outgoing-call deadlines and preempt it on incoming ringing. Replace device discovery, Bluetooth status, button audio and the external mixer process. Check that all mixer commands address C20 playback only.
-# @pass Three distinct arrows move three slots despite queued releases, while held/autorepeated downs add no movement. One held press cannot confirm a call; red cancels; middle toggles the volume overlay, arrows change only volume, movement is ignored and the overlay closes on the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
+# @plan Feed measured Presenter reports through OS pipes registered with real Tk file handlers. Exercise the real input controller, confirmation model and volume overlay/mixer worker. Space deliberate confirmation clicks beyond the 80 ms debounce; keep duplicate held reports immediate. Check duplicate down suppression, cancellation, disconnected input, charging/battery state and a compact horizontal volume overlay in 5-percent steps. Send three released carousel presses in each direction during animation, verify every selection and the settled center, then confirm the final target without dialing. Keep keyboard releases queued until after later arrows; verify distinct event timestamps count clicks and equal timestamps suppress autorepeat. Also render video beneath the overlay during a simulated established call, assert most video remains uncovered, block physical call actions, preserve programmatic cancellation and expired outgoing-call deadlines and preempt it on incoming ringing. Replace remote-device discovery, ALSA card discovery, Bluetooth status, button audio and the external mixer process. Check that all mixer commands address C20 playback only.
+# @pass Three distinct arrows move three slots despite queued releases, while held/autorepeated downs add no movement. One held press cannot confirm a call; red cancels; middle toggles the volume overlay, arrows change only volume, movement is ignored and the overlay closes on red or the next middle click. Disconnect releases held buttons and exposes missing input. These scenarios do not qualify radio pairing, physical battery telemetry or acoustic output.
 
 import os
 import sys
@@ -17,7 +17,7 @@ from tests.support.terminal.ui_fixture import terminal_fixture, pump
 from zmala_terminal.common.input_control import InputControl
 from zmala_terminal.common.model import State
 from zmala_terminal.linux import c20_volume
-from zmala_terminal.linux.presenter_input import PresenterInput
+from zmala_terminal.linux.presenter_input import PresenterInput, button_report
 
 
 @unittest.skipUnless(sys.platform == 'linux' and os.environ.get('DISPLAY'), 'Linux Tk display required')
@@ -72,6 +72,7 @@ class RemoteUITests(unittest.TestCase):
                 patch('zmala_terminal.linux.action_sounds.ActionSounds'), \
                 patch.object(PresenterInput, 'discover'), \
                 patch('zmala_terminal.linux.presenter_input.RemoteHealth', return_value=health), \
+                patch.object(c20_volume, 'audio_card', return_value='C20'), \
                 patch.object(c20_volume.subprocess, 'run', side_effect=mixer):
             app.volume_control.close()
             InputControl.bind_inputs(app)
@@ -87,7 +88,12 @@ class RemoteUITests(unittest.TestCase):
                 app.root.createfilehandler(reader, tk.READABLE, presenter.read)
 
             def report(value):
-                os.write(writers[0], bytes.fromhex(value))
+                data = bytes.fromhex(value)
+                button = button_report(data)
+                if button and button[1] and button[0] not in app.keys_down:
+                    # Fast CI must not turn a deliberate later click into bounce.
+                    pump(app, lambda: time.monotonic()-app.last_key.get(button[0],0) > .08)
+                os.write(writers[0], data)
                 # One report per read, as on the hidraw device.
                 pump(app, lambda: True)
 
@@ -140,8 +146,6 @@ class RemoteUITests(unittest.TestCase):
                 self.assertGreater(track[2]-track[0],track[3]-track[1])
                 report('043e010000000000');report('043e000000000000')
                 self.assertIsNone(app.settings_hold.started)
-                self.assertTrue(app.volume_control.active)
-                report('043d010000000000');report('043d000000000000')
                 self.assertFalse(app.volume_control.active)
                 self.assertFalse(app.volume_control.canvas.winfo_ismapped())
                 self.assertTrue(commands)

@@ -1,7 +1,7 @@
 # @test T-LLT-041
 # @requirements LLR-TERM-CONFIG-024, LLR-TERM-REMOTE-016, LLR-TERM-AUDIO-006, LLR-TERM-AUDIO-007, LLR-TERM-AUDIO-008
 # @environment portable
-# @plan Toggle the compact volume overlay with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal overlay feedback on idle and in-call pages, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately; change a saved default while an unsent volume click is pending and verify it cannot overwrite that default.
+# @plan Check red closes on idle and in-call pages, flushes adjustments and consumes the press without hangup. Toggle the compact volume overlay with distinct middle presses; adjust left/right on the five-percent grid and test bounds, duplicate presses, disabled/unknown state, throttled writes and final flush. Check horizontal overlay feedback on idle and in-call pages, mixer failure, context preemption and unchanged microphone routing. Exercise default retries and USB wake separately; change a saved default while an unsent volume click is pending and verify it cannot overwrite that default.
 # @pass Named assertions pass; skips and visual/hardware checks are recorded separately.
 
 """Dedicated volume page and bounded C20 playback writes."""
@@ -17,6 +17,22 @@ from zmala_terminal.linux import c20_volume
 
 
 class VolumeTests(unittest.TestCase):
+    def test_red_closes_and_flushes_without_reaching_underlying_action(self):
+        from zmala_terminal.common.input_control import InputControl
+        for in_call in (False, True):
+            control=VolumeControl(Mock(),lambda:True,Mock(),in_call=lambda:in_call)
+            control.draw=Mock()
+            app=InputControl();app.volume_control=control;app.press=Mock();app.cancel_settings_hold=Mock()
+            with patch.object(c20_volume,'status',return_value=(50,50,False)), patch.object(c20_volume,'request') as request:
+                control.pointer(True);control.pointer(False)
+                control.button('right')
+                app.physical_press('red')
+                self.assertFalse(control.active)
+                request.assert_called_once_with(55)
+                app.press.assert_not_called()
+                control.button('red');request.assert_called_once_with(55)
+
+
     def test_steps_bounds_and_existing_between_step_level(self):
         for start, button, expected in [(50,'right',55),(50,'left',45),
                                         (53,'right',55),(53,'left',50),

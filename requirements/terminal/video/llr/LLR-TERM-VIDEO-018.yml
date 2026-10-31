@@ -20,7 +20,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Camera capture shall accept complete MJPEG frames from an eligible C20 node and
+  Camera capture shall accept complete MJPEG frames from an eligible C10/C20 node and
   retain only the latest waiting frame. Failed startup shall release acquired buffers
   and descriptors. After camera startup, stop shall join the capture worker before
   memory unmapping. A worker whose initialization fails may release its own partial

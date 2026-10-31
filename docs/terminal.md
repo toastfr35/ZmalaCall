@@ -18,7 +18,7 @@ Contents: [purpose and functions](#terminal-purpose-and-functions),
 ## Terminal purpose and functions
 
 ZmalaCall is a home audio and video call terminal. It connects a television,
-a Nuroum C20 camera with a microphone and speaker, and a Microsoft Presenter+
+a Nuroum C10 or C20 camera with a microphone and speaker, and a Microsoft Presenter+
 remote to a Raspberry Pi. The television shows the people that the user can call.
 The remote lets the user select a person and control the call.
 
@@ -78,6 +78,8 @@ for portrait downloads. A late response cannot replace state from a newer operat
 
 ### 5. Configuration
 
+Outgoing local ringback uses the saved Ringtone volume at dial time, independently of call playback. The SDK tone is scaled into a disposable RAM-backed WAV (silent at 0%) and reused until its level changes; the SDK still controls its lifetime. The bundled 8 kHz WAV has a streaming length header, so scaling bounds reads by actual PCM size.
+
 All terminal volume UI uses 5% steps. Settings has separate Ringtone volume and Button sounds volume editors; the middle-button overlay adjusts received call sound. The server exposes all three defaults. Left/right on the overlay moves an existing between-step level to the next boundary in the chosen direction. Settings editors display the nearest step without saving until accepted.
 
 The ringtone editor wraps at both ends: left on the first choice selects the last, and right on the last selects the first, without saving.
@@ -98,7 +100,7 @@ configuration wait until the terminal is idle. Supported live changes do not end
 
 The remote has left, right, green, red and middle controls. Green and red stickers
 identify the two action buttons. Button actions depend on the current page or call
-state. Pressing the middle button opens a compact call-volume overlay; left/right changes volume and a second middle press closes it.
+state. Pressing the middle button opens a compact call-volume overlay; left/right changes volume and red or a second middle press closes it.
 
 The terminal detects remote connection, battery level and external charging power
 where the device reports them. It shows help when the remote is unavailable.
@@ -461,7 +463,7 @@ inside the small-window layout.
 | --- | --- |
 | Language | 16 native labels in alphabetical order, wrapping at both ends |
 | Automatic answer | Never, 10 seconds, 30 seconds, 1, 2, 5 or 10 minutes |
-| Automatic framing | On/off; Pi C20 only |
+| Automatic framing | On/off; Pi C10/C20 only |
 | Ringtone volume | 0–100%, in 5% steps; incoming/outgoing tones and previews |
 | Button sounds volume | 0–100%, in 5% steps; idle navigation feedback |
 | Ringtone | Nokia (default) and the private server library |
@@ -489,7 +491,7 @@ The call-volume overlay uses a black frame, direction icons and the current
 percentage above the existing page or video. Its width is at most 900 pixels
 and its height at most 160 pixels, leaving most of the screen visible.
 Press middle to open it, click left/right for
-5% steps, and press middle again to close it. Button release does not close it,
+5% steps, and press red or middle again to close it. Button release does not close it,
 and it has no automatic timeout. A red exclamation indicates mixer failure.
 It changes received call playback, not ringtone or microphone gain/mute. Level requests
 coalesce on one worker at at most ten per second, with a final pending value
@@ -500,8 +502,8 @@ control cannot overwrite a newly applied default.
 
 `c20_speaker_volume` retains its historical configuration key for the call default.
 `ringtone_volume` defaults to the old call value for older profiles; new profiles
-start at 50%. `action_sound_volume` starts at 20%. The C20 hardware PCM stays at
-100% without changing its mute switch. `media.py` applies the logical call level
+start at 50%. `action_sound_volume` starts at 20%. The C10/C20 hardware PCM stays at
++12 dB for C10 or 0 dB for C20 without changing its mute switch. `media.py` applies the logical call level
 through the SDK playback gain on its owner thread (50% is -14 dB; 0% is -120 dB).
 `sound_levels.py` scales validated ringtone PCM into a private RAM-backed temporary
 file, replacing and deleting it when the tone or level changes and on shutdown.
@@ -813,7 +815,7 @@ profile limits echo processing to the native input rate while retaining the
 48 kHz Opus clock and playback resampling. Normal processing remains selectable.
 Before loading Liblinphone, the Pi adapter selects the process-local
 `linux/media/audio/c20-alsa.conf` policy. It retains the distribution configuration
-for other cards and replaces only the Nuroum C20 default PCM with separate
+for other cards and replaces the Nuroum C10 and C20 default PCMs with separate
 capture/playback converters to its hardware rates and stereo S16_LE format.
 The supplied ALSA card identity is retained, including after USB renumbering.
 This avoids generic `dsnoop` opening the C20 input at its default 48 kHz and
@@ -901,7 +903,7 @@ seconds after answer, before the first usable video picture.
 
 ### Automatic framing
 
-Framing defaults off, is per-terminal and currently supports the Pi C20 only.
+Framing defaults off, is per-terminal and currently supports the Pi C10/C20 only.
 Windows leaves its view unchanged. The detector samples the uncropped picture
 every two seconds, frames the group with margin, and limits digital zoom to 1–2×.
 Zoom-in needs stable observations; new people outside the crop widen promptly.
@@ -977,6 +979,13 @@ Hangup/stop requests fan-off. Reads/writes run off the UI thread. There is no
 outside-call thermal override; firmware throttling remains active. Only I2C bus 1,
 address `0x1a`, duty values 0–100 are used. Power-button/IR/vendor power-mode
 software is not installed. An enabled competing `argononed` causes install refusal.
+
+Hourly TURN credential renewal updates the existing idle core's relay policy and
+replaces its superseded TURN authentication entry. It does not request USB power,
+probe devices, recreate the core or refresh SIP registration. During a call renewal
+waits until idle. Failure preserves the core and retries after five seconds; expired
+credentials still block new calls. Real media/transport changes use normal preparation.
+Successful renewal logs `Relay credentials refreshed without waking USB media`.
 
 ### Optional USB power control
 
@@ -1260,3 +1269,40 @@ and the worker checks current contact ownership before publishing a late result.
 Only one request runs at once; retry backoff applies only to current portraits.
 `media_diagnostics.py` reads native media snapshots independently of engine setup
 and always releases each acquired statistics reference, including on getter errors.
+
+
+## Nuroum C10 and C20 compatibility
+
+The Pi accepts either one C10 (USB 0525:a4b0) or one C20 (0525:a4ad).
+`linux/nuroum.py` centralizes name matching and fresh ALSA card lookup. Camera,
+microphone and speaker selection, setup presence and USB readiness accept both;
+HDMI and unrelated devices remain excluded. Missing or multiple supported sound
+cards fail closed for standalone playback. Connect one supported device at a time.
+The existing `c20_speaker_volume`, environment variables and module names remain
+compatible configuration identifiers for either model.
+
+Both models expose stereo S16_LE microphone input at 16 kHz and speaker output at
+48 kHz, plus 720p/1080p MJPEG at 30 camera fps. Both use explicit asymmetric ALSA
+profiles and the staged microphone-before-camera startup. Playback hardware gain
+is fixed at each model's maximum (+12 dB for C10, 0 dB for C20) while streams
+retain independent software levels. The default is reapplied after startup and USB wake. Hardware
+mute is preserved. Runtime suspend is disabled for either USB identity; the hub
+helper still refuses to cut power with unrelated peripherals or open streams.
+
+Earlier measurements in this document were made with a C20 and do not constitute
+C10 qualification. The model-parameterized physical cycle and native loopback
+audio plans can now be run with either device. C10 results are recorded separately.
+
+
+C10 qualification on term2, 30 October 2026: ten staged 1080p MJPEG/microphone/
+silent-speaker cycles passed, followed by three guarded USB power cycles. The
+native loopback call asserted C10 input/output after replacing HDMI routes; both
+ALSA profiles and udev policy passed their real Linux parser checks. Native camera
+catalog tests exercised both models, and the worker's C10 microphone gate passed.
+A real incoming call from the OnePlus displayed the C10 video on the phone and
+logged C10 input/output routing on term2. This did not independently verify
+acoustic listening quality, phone video on the TV, or eliminate the separate
+intermittent Samsung wake problem. Auto-answer was restored off afterward.
+Private captures and logs are retained under `build_tools/tmp/c10-*` and
+`build_tools/tmp/tv-real-calls/c10-phone1-*`; they are not release assets.
+The Pi manual incoming-call prompt shows a green circular remote-button cue beside the localized answer action. Only the Windows terminal shows ENTER. Automatic answering replaces either hint with the countdown; remote disconnection does not select keyboard hints.

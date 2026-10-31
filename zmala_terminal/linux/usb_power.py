@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 import wave
+from zmala_terminal.linux.nuroum import supported_name, playback_device
 from zmala_terminal.linux.sound_levels import ToneLevels, playback_environment
 
 IDLE_SECONDS = 300
@@ -24,9 +25,9 @@ def media_present():
     """Require both V4L2 and ALSA after re-enumeration, not just a USB descriptor."""
     try:
         video = any('1-1.' in str(p.resolve()) and
-                    'nuroum c20' in (p / 'name').read_text().lower()
+                    supported_name((p / 'name').read_text())
                     for p in Path('/sys/class/video4linux').glob('video*'))
-        audio = any(p.read_text().strip() == 'C20' for p in Path('/proc/asound').glob('card*/id'))
+        audio = any(p.read_text().strip() in ('C10', 'C20') for p in Path('/proc/asound').glob('card*/id'))
         return video and audio
     except OSError:
         return False
@@ -182,7 +183,7 @@ class UsbPower:
             if eligible:
                 from zmala_terminal.linux.c20_volume import status
                 desired, applied, failed = status()
-                # Call mute must not mute ringing. Hardware gain is fixed at 100%.
+                # Call mute must not mute ringing. Hardware gain is fixed at the model-specific maximum.
                 eligible = applied is not None and not failed and self.ringtone_volume > 0
                 if preview and self.ringtone_volume == 0:
                     self.preview_state = 'muted'
@@ -204,7 +205,7 @@ class UsbPower:
                 try:
                     file = self.tone_levels.prepare(self.preview_file if preview else self.ringtone_file,
                                                    self.ringtone_volume)
-                    self.ringer = subprocess.Popen(['/usr/bin/aplay', '-q', '-D', 'default:C20', str(file)],
+                    self.ringer = subprocess.Popen(['/usr/bin/aplay', '-q', '-D', playback_device(), str(file)],
                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                         env=playback_environment())
                 except (OSError, ValueError, EOFError, wave.Error):

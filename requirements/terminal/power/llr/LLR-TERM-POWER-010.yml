@@ -2,13 +2,15 @@ active: true
 area: Connected devices and power
 derived: false
 header: |
-  C20 identity after reconnection
+  C10/C20 identity after reconnection
 level: 109.0
 links:
 - HLR-TERM-POWER-008: NaYlkYrPCqDJ7i4TbCec4XByycLyQ74SdjO_px4m5Ms=
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/linux/nuroum.py
+  type: file
 - path: zmala_terminal/linux/99-zmalacall-c20.rules
   type: file
 - path: tests/terminal/LLT/test_c20_power_policy.py
@@ -34,19 +36,19 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The Pi shall use only the Nuroum C20 camera, microphone and speaker, rediscovered
+  The Pi shall use only the Nuroum C10/C20 camera, microphone and speaker, rediscovered
   by identity after USB enumeration changes. It shall bind both future calls and
-  an incoming call waiting during wake to the C20 input and output before answering.
+  an incoming call waiting during wake to the C10/C20 input and output before answering.
   Missing devices or rejected routes shall keep media unready, with diagnostics;
   HDMI, unrelated hardware and stale server identifiers shall never be substitutes.
-  The host shall disable automatic USB runtime suspend for the C20 USB device
+  The host shall disable automatic USB runtime suspend for the C10/C20 USB device
   on enumeration and binding, independently of its port or node number. This
   shall not disable explicit guarded USB hub power switching or affect unrelated
   USB devices.
 verification: |
-  Renumber C20 nodes and supply stale configured names. Start a pending call with
-  HDMI routes, then restore C20 discovery and verify both call routes and defaults.
+  Renumber C10/C20 nodes and supply stale configured names. Start a pending call with
+  HDMI routes, then restore C10/C20 discovery and verify both call routes and defaults.
   Inject missing capabilities, setter failure and wrong readback; check retryable
   failure and release of native references.
-  Validate the C20-only host rule against device/interface and unrelated identity
+  Validate the C10/C20-only host rule against device/interface and unrelated identity
   fixtures and the udev parser. Check runtime power policy after real re-enumeration.

@@ -5,11 +5,15 @@ header: |
   Independent ringtone, call and button levels
 level: 129.0
 links:
-- HLR-TERM-AUDIO-001: cVKxa_fbE3jqHlRqzMygvKL9QU0rhZYQf5OW-GB5HCg=
+- HLR-TERM-AUDIO-001: _KkiTouY4V-sS8pEwt1k54uYEJJSWyyPFn7RDnxZZ_w=
 - HLR-TERM-AUDIO-002: lW9hiMouJja9WRBJlUZBmYmMaSUkNugF77_2t71epGE=
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: tests/terminal/LLT/test_ringback_volume.py
+  type: file
 - path: zmala_terminal/linux/sound_levels.py
   type: file
 - path: zmala_terminal/linux/action_sounds.py
@@ -33,13 +37,13 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Call playback, incoming ringtone/preview and remote-button feedback shall have
+  Call playback, incoming ringtone/preview/outgoing ringback and remote-button feedback shall have
   independent 0–100 percent levels. Zero shall silence only that sound category.
   Missing ringtone settings shall preserve the previous configured speaker level;
   new profiles shall default to call/ringtone 50 percent and button feedback 20 percent.
-  C20 hardware playback gain shall be fixed; call gain shall be applied on the
+  C10/C20 hardware playback gain shall be fixed at +12 dB for C10 and 0 dB for C20; call gain shall be applied on the
   native core owner thread, while ringtone/button PCM shall be attenuated separately
-  for C20 playback without changing capture or TV audio.
+  for C10/C20 playback without changing capture or TV audio.
   During idle navigation and Settings, a distinct physical button press shall request
   one short cue: the same low tap for left/right and middle, a rising cue for green
   and a low double tap for red. Calls, incoming ringing and ringtone previews shall suppress feedback.
@@ -59,16 +63,19 @@ text: |
   20 ms for the first PCM frame, followed by a 20 ms head start only when that
   frame was submitted. Missing feedback shall not hold navigation beyond that bound.
   Audio helpers shall
-  exclude the SDK TURN preloader while retaining the C20 ALSA policy. Stopping
+  exclude the SDK TURN preloader while retaining the C10/C20 ALSA policy. Stopping
   before a call, ringing or ringtone preview shall terminate and reap the player
   with bounded 200 ms termination escalation, including a starting worker. Missing or
   waking audio shall not delay navigation or calls. Closing shall discard pending
   feedback and terminate its player. Scaled ringtone files shall use disposable
-  private storage and be removed on replacement or shutdown.
+  private storage and be removed on replacement or shutdown. Outgoing ringback shall
+  use the saved ringtone level at call initiation, with silent PCM at zero. Scaling
+  shall preserve the SDK tone and use bounded actual PCM reads for its streaming
+  WAV header. Active calls shall not replace tone files or change conversation gain.
   Feedback shall remain stopped until a native engine exists and shall release
-  C20 playback before native-core creation or replacement probes audio devices.
+  C10/C20 playback before native-core creation or replacement probes audio devices.
 verification: |
   Assert category-isolated gains, zero/full PCM, bounded workers, duplicate handling,
   all-level RAM bank bounds/reuse, startup cancellation, stale/zero requests,
   call/preview suppression, player timeout and cleanup. On term2,
-  check idle clicks, independent ringtone/call levels, silent call controls and C20-only routing.
+  check idle clicks, independent ringtone/call levels, silent call controls and C10/C20-only routing.

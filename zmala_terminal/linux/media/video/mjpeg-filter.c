@@ -116,7 +116,8 @@ static void detect(MSWebCamManager *manager) {
         /* Metadata nodes and other cameras must not masquerade as the C20.
          * Names come from the kernel's USB device, rather than /dev ordering. */
         if (ioctl(fd, VIDIOC_QUERYCAP, &capability) < 0 ||
-            !strstr((const char *)capability.card, "Nuroum C20")) { close(fd); continue; }
+            (!strstr((const char *)capability.card, "Nuroum C20") &&
+             !strstr((const char *)capability.card, "Nuroum C10"))) { close(fd); continue; }
         struct v4l2_fmtdesc format = {0};
         format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         while (ioctl(fd, VIDIOC_ENUM_FMT, &format) == 0) {

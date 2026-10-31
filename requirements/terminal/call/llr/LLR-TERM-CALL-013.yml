@@ -27,8 +27,11 @@ reviewed: null
 scope: Core
 text: |
   Incoming ringing shall show the caller portrait and animated call feedback. Green
-  shall answer and red shall decline immediately. Automatic answer shall show its
+  shall answer and red shall decline immediately. Manual-answer guidance on the Pi
+  shall show the green remote-button cue and localized answer action, never a keyboard key.
+  Automatic answer shall show its
   configured countdown and remain cancellable until answer starts.
 verification: |
   Exercise manual answer, decline and automatic countdown, including a red press
-  before expiry.
+  before expiry. Check that Pi guidance identifies the green remote button and
+  automatic-answer countdown replaces that cue.

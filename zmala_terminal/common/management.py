@@ -175,7 +175,7 @@ class ManagementLoop:
         self.callback_requests = config.get('callbacks', [])
         # @llr LLR-TERM-COM-010
         # Hourly relay credentials change without an administrator's revision bump.
-        # Route them through the normal idle/deferred engine replacement as well.
+        # Apply them at idle; credential-only changes preserve the core and USB sleep.
         if (not self.model.config or config['configuration_version'] != self.model.config['configuration_version']
                 or config.get('secure_calls') != self.model.config.get('secure_calls')):
             self.apply_config(config)

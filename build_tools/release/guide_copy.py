@@ -150,7 +150,7 @@ REVISIONS = {
         'Sound and everyday help': [],
         'Press the middle button to show the call-volume overlay.': [
             'Press the middle button to show the volume bar. Press left for quieter sound or right '
-            'for louder sound. Each click changes it by 5%. Press middle again to close the bar. '
+            'for louder sound. Each click changes it by 5%. Press red or middle again to close the bar. Red closes only the bar while it is open; it does not end the call. '
             'You can do this during a call and keep seeing the other person.',
         ],
         'The call-volume overlay changes only': [
@@ -217,15 +217,15 @@ REVISIONS = {
         ],
         'The terminal serial is shown at the bottom': [
             'The terminal ID appears at the bottom of Settings; give it to your helper if they need '
-            'to find this device on the server. The C20 provides the camera, microphone and speaker automatically.',
-            'If the C20 is waking, wait a few seconds. Zmala retries without switching sound to the '
+            'to find this device on the server. The C10/C20 provides the camera, microphone and speaker automatically.',
+            'If the C10/C20 is waking, wait a few seconds. Zmala retries without switching sound to the '
             'TV. Press red if you want to cancel the call. Your administrator can adjust video quality '
             'and the starting call volume on the server.',
         ],
         'To choose a ringtone,': [
             'Open Ringtone with green. Press left or right to browse and hear each choice after a '
             'short pause. The list wraps at both ends. Press green to save or red to keep the previous tone.',
-            'Use Ringtone volume to change its loudness; 0% is silent. Button sounds volume is '
+            'Ringtone volume controls incoming ringing, previews and the tone while waiting for someone to answer; 0% is silent. Button sounds volume is '
             'separate. Use middle and left/right to change the sound heard during calls. A call stops '
             'any ringtone preview.',
         ],
@@ -252,7 +252,7 @@ REVISIONS = {
         'In Terminals, choose native-language labels': [
             'Open Terminals, choose the device by its account name and change its preferences. '
             'Call volume, Ringtone volume and Button sounds volume are separate and use 5% steps. '
-            'Remote & camera shows the remote’s battery and charger, and the C20’s connection and '
+            'Remote & camera shows the remote’s battery and charger, and the C10/C20’s connection and '
             'power when known. The Save changes bar stays visible as you scroll. Unsaved settings '
             'means your changes have not been applied; select Save changes to apply them.',
             'Open Setup to download its Wi-Fi and server QR documents. Give both privately to the '
@@ -340,7 +340,7 @@ def improve_readability(root):
                     'the same subnet as the server and use your normal server and Pi SSH logins.',
                     'For a terminal on another network, forward TCP port 2222 on the server router '
                     'to TCP 2222 on the server Pi. This separate port accepts only the tunnel '
-                    'account. Never forward ordinary SSH port 22. Point the C20 at the TV so '
+                    'account. Never forward ordinary SSH port 22. Point the C10/C20 at the TV so '
                     'the developer can check the displayed picture while testing.',
                 ):
                     doc.add_paragraph(text).paragraph_format.keep_together = True
@@ -386,7 +386,7 @@ def improve_readability(root):
             if paragraph.text.startswith('These ports are an example'):
                 paragraph.paragraph_format.keep_together = True
             if paragraph.text.startswith('No sound:'):
-                paragraph.text = 'No sound: increase the volume and check that the C20 is connected.'
+                paragraph.text = 'No sound: increase the volume and check that the C10/C20 is connected.'
             if paragraph.text.startswith('Remote does not respond:') and 'lightning bolt' not in paragraph.text:
                 paragraph.add_run(' The lightning bolt beside its battery means the charger is connected.')
             if paragraph.text[:1].isdigit() and '  ' in paragraph.text[:5]:

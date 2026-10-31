@@ -1,7 +1,7 @@
 # @test T-LLT-053
 # @requirements LLR-TERM-SETUP-027, LLR-TERM-SETUP-029, LLR-TERM-SETUP-032, LLR-TERM-NET-005, LLR-TERM-UI-015, LLR-TERM-UI-023, LLR-TERM-UI-024, LLR-TERM-UI-025, LLR-TERM-CALL-013, LLR-TERM-CALL-014, LLR-TERM-VIDEO-012, LLR-TERM-POWER-017
 # @environment portable
-# @plan Use recording Tk widgets and controlled font/image metrics to exercise the display controller across call, setup and modal states. Verify persistent video handles, self-view geometry, an eight-second neutral first-video wait, its exact warning boundary, first-frame/stall behaviour, reset for a new call, localized text bounds, setup error visibility and modal precedence. Independently vary Wi-Fi, registration freshness, remote health and USB power and assert icon values/positions and cached redraws without opening a display or media devices.
+# @plan Check Pi green-button and Windows keyboard answer hints, and preserve countdown on both. Use recording Tk widgets and controlled font/image metrics to exercise the display controller across call, setup and modal states. Verify persistent video handles, self-view geometry, an eight-second neutral first-video wait, its exact warning boundary, first-frame/stall behaviour, reset for a new call, localized text bounds, setup error visibility and modal precedence. Independently vary Wi-Fi, registration freshness, remote health and USB power and assert icon values/positions and cached redraws without opening a display or media devices.
 # @pass Each state must select its specified surface and labels, preserve native surfaces and keep text bounded; drawing-command checks do not establish physical font quality or HDMI behavior.
 
 from types import SimpleNamespace
@@ -50,6 +50,18 @@ def fixture():
 
 
 class DisplayStateTests(unittest.TestCase):
+    def test_incoming_hint_matches_platform_and_preserves_countdown(self):
+        v = fixture()
+        v.text = lambda key, **values: 'répondre' if key == 'answer' else 'countdown:' + str(values['seconds'])
+        for platform, expected, color in [('linux', '●  répondre', display.BUTTON_GREEN),
+                                           ('win32', 'ENTER  répondre', display.MUTED)]:
+            with self.subTest(platform=platform), patch.object(display.sys, 'platform', platform):
+                v.model.deadline = None
+                self.assertEqual(v.ringing_hint(), (expected, color))
+                v.model.deadline = 104.2
+                with patch.object(display.time, 'monotonic', return_value=100):
+                    self.assertEqual(v.ringing_hint(), ('countdown:5', display.MUTED))
+
     def test_build_keeps_two_native_surfaces_and_routes_resize_events(self):
         v = fixture()
         for name in ('draw_corner_notification', 'build_remote_help', 'build_settings', 'build_usb_setup',

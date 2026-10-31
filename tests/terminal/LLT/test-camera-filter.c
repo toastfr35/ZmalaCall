@@ -1,7 +1,7 @@
 // @test T-LLT-075
 // @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-018, LLR-TERM-VIDEO-019
 // @environment native-sdk
-// @plan Run the real camera filter against mocked device enumeration and capture lifecycle boundaries. Mix inaccessible, other-model, raw-only and C20 MJPEG nodes; assert only the eligible node is registered. Verify reader ownership, requested size/rate validation, size negotiation without device access, newest-frame transfer and RTP timestamps, empty-tick FPS stability and stopped capture cleanup without physical camera access.
+// @plan Exercise both C10 and C20 identities. Run the real camera filter against mocked device enumeration and capture lifecycle boundaries. Mix inaccessible, other-model, raw-only and C20 MJPEG nodes; assert only the eligible node is registered. Verify reader ownership, requested size/rate validation, size negotiation without device access, newest-frame transfer and RTP timestamps, empty-tick FPS stability and stopped capture cleanup without physical camera access.
 // @pass Every catalog, configuration, buffer and metadata assertion passes using real MediaStreamer buffers/filter objects; driver capture is checked separately by the capture-boundary LLT.
 #include "../../../zmala_terminal/linux/media/video/mjpeg-stream.h"
 #include <mediastreamer2/msfactory.h>
@@ -18,6 +18,7 @@
 #include <unistd.h>
 
 static MSFactory *factory;
+static const char *camera_name = "Nuroum C20";
 static MSWebCam *found[8];
 static int found_count, opens, closes, freed_glob, glob_error, start_error, starts, stops;
 static char *paths[]={"/dev/video0","/dev/video1","/dev/video2","/dev/video3","/dev/video4"};
@@ -32,7 +33,7 @@ static int fake_ioctl(int fd,unsigned long request,void *value) {
     if (request == VIDIOC_QUERYCAP) {
         if (fd == 104) return -1;
         struct v4l2_capability *capability=value;
-        strcpy((char *)capability->card,fd == 101 ? "Other camera" : "Nuroum C20"); return 0;
+        strcpy((char *)capability->card,fd == 101 ? "Other camera" : camera_name); return 0;
     }
     assert(request == VIDIOC_ENUM_FMT); struct v4l2_fmtdesc *format=value;
     if (format->index == 0) { format->pixelformat=V4L2_PIX_FMT_YUYV; return 0; }
@@ -83,6 +84,8 @@ int main(void) {
     mblk_t *frame=ms_queue_get(&output); assert(frame && frame->b_rptr[0] == 0x55 && mblk_get_timestamp_info(frame) == 9000 && mblk_get_marker_info(frame)); freemsg(frame);
     uint64_t last=c->average.last_frame_time; ticker.time=900; process(f); assert(ms_queue_empty(&output) && c->average.last_frame_time == last);
     f->outputs[0]=NULL; f->ticker=NULL; ms_filter_destroy(f); assert(stops>=3);
+    ms_web_cam_destroy(found[0]); found_count=0;
+    camera_name="Nuroum C10"; detect(NULL); assert(found_count == 1);
     ms_web_cam_destroy(found[0]); ms_factory_destroy(factory);
-    puts("C20 catalog, adapter configuration and frame delivery checks: PASS"); return 0;
+    puts("C10/C20 catalog, adapter configuration and frame delivery checks: PASS"); return 0;
 }

@@ -75,7 +75,7 @@ function appendTerminalHardware(summary, status, fresh) {
   if (!fresh) {
     summary.append(
       badge('Remote: status unavailable', 'neutral'),
-      badge('C20: status unavailable', 'neutral'),
+      badge('C10/C20: status unavailable', 'neutral'),
     );
     return;
   }
@@ -118,11 +118,11 @@ function appendTerminalHardware(summary, status, fresh) {
       'neutral',
     ),
     badge(
-      'C20: ' + (camera[status?.camera_status || ''] || 'unknown'),
+      'C10/C20: ' + (camera[status?.camera_status || ''] || 'unknown'),
       status?.camera_status === 'connected' ? 'success' : 'neutral',
     ),
     badge(
-      'C20 power: ' +
+      'C10/C20 power: ' +
         (status?.camera_powered === true
           ? 'on'
           : status?.camera_powered === false
@@ -163,7 +163,7 @@ export function terminalCardState(card, id) {
       active: 'Automatic framing active',
       waiting: 'Automatic framing ready for a call',
       unavailable: 'Automatic framing unavailable Ã‚Â· full view',
-      unsupported: 'Automatic framing requires a Pi C20 terminal',
+      unsupported: 'Automatic framing requires a Pi C10/C20 terminal',
     };
     features.append(
       badge(

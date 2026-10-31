@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import sys
 import time
+from zmala_terminal.linux.nuroum import USB_MODELS
 
 
 # @llr LLR-TERM-POWER-010, LLR-TERM-SETUP-022
@@ -16,7 +17,8 @@ def c20_connected(devices=Path('/sys/bus/usb/devices')):
             vendor = (device / 'idVendor').read_text().strip().lower()
             product = (device / 'idProduct').read_text().strip().lower()
             name = (device / 'product').read_text().strip().casefold()
-            if (vendor, product) == ('0525', 'a4ad') and 'nuroum c20' in name:
+            model = USB_MODELS.get((vendor, product))
+            if model and name == 'nuroum ' + model.lower():
                 return True
         except OSError:
             continue  # USB interfaces and devices disappearing during enumeration.

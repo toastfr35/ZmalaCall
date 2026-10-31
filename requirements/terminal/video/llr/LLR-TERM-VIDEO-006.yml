@@ -34,7 +34,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  C20 capture shall request MJPEG at the selected size. Outgoing video shall use the
+  C10/C20 capture shall request MJPEG at the selected size. Outgoing video shall use the
   Pi V4L2 H.264 encoder. Incoming H.264 video shall use software decoding with two
   threads.
 verification: |

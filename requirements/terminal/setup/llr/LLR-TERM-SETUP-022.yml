@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/linux/nuroum.py
+  type: file
 - path: tests/terminal/LLT/test_pairing_setup.py
   type: file
 - path: tests/terminal/LLT/test_setup_views.py
@@ -24,9 +26,9 @@ references:
 reviewed: null
 scope: Core
 text: |
-  If the C20 is absent, setup shall show the English two-cable picture before remote
+  If the C10/C20 is absent, setup shall show the English two-cable picture before remote
   pairing. It shall show camera connection to blue USB 3 and charger connection to the
   adjacent socket. Charger enumeration shall not be a condition for progress.
 verification: |
-  Supply absent and present C20 states. Check stage order and the picture without a
+  Supply absent and present C10/C20 states. Check stage order and the picture without a
   USB charger device record.

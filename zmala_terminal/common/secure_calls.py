@@ -58,6 +58,18 @@ def configure(engine):
     engine.core_set_media_encryption(engine.core, 1)
     engine.core_set_media_encryption_mandatory(engine.core, 1)
     api('core_enable_forced_ice_relay', None, [p, i], engine.core, 1)
+    _configure_relay(engine, policy)
+
+
+# @llr LLR-TERM-COM-010
+def _configure_relay(engine, policy, previous=None):
+    """Replace only TURN/ICE policy; never enumerate or open media devices."""
+    def api(name, result, types, *args):
+        function = getattr(engine.dll, 'linphone_' + name)
+        function.restype, function.argtypes = result, types
+        return function(*args)
+
+    p, s, i = C.c_void_p, C.c_char_p, C.c_int
     nat = api('core_create_nat_policy', p, [p], engine.core)
     if not nat:
         raise RuntimeError('Cannot allocate secure media policy')
@@ -73,10 +85,55 @@ def configure(engine):
                                     policy['turn_realm'].encode(), None)
         if not auth:
             raise RuntimeError('Cannot allocate TURN credentials')
+        old = saved = None
         try:
-            engine.core_add_auth_info(engine.core, auth)
+            if previous:
+                old = api('core_find_auth_info', p, [p, s, s, s], engine.core,
+                          previous['turn_realm'].encode(), previous['turn_username'].encode(), None)
+                if old:
+                    saved = api('auth_info_clone', p, [p], old)
+                    if not saved:
+                        raise RuntimeError('Cannot retain previous TURN credentials')
+            # The installed SDK can append even when the username is unchanged.
+            # Remove exactly the old TURN entry; retain a copy for rollback.
+            if old:
+                api('core_remove_auth_info', None, [p, p], engine.core, old)
+            try:
+                engine.core_add_auth_info(engine.core, auth)
+                api('core_set_nat_policy', None, [p, p], engine.core, nat)
+            except Exception:
+                api('core_remove_auth_info', None, [p, p], engine.core, auth)
+                if saved:
+                    engine.core_add_auth_info(engine.core, saved)
+                raise
         finally:
+            if saved:
+                engine.auth_info_unref(saved)
             engine.auth_info_unref(auth)
-        api('core_set_nat_policy', None, [p, p], engine.core, nat)
     finally:
         api('nat_policy_unref', None, [p], nat)
+
+
+# @llr LLR-TERM-COM-010
+def credentials_only(previous, desired):
+    """Allow only relay credential changes plus independently polled contact state."""
+    if not isinstance(previous, dict) or not isinstance(desired, dict):
+        return False
+    ignored = {'secure_calls', 'contacts', 'callbacks'}
+    if {k:v for k,v in previous.items() if k not in ignored} != {k:v for k,v in desired.items() if k not in ignored}:
+        return False
+    old, new = previous.get('secure_calls'), desired.get('secure_calls')
+    if not isinstance(old, dict) or not isinstance(new, dict) or old == new:
+        return False
+    credentials = {'turn_username', 'turn_password', 'expires'}
+    return {k:v for k,v in old.items() if k not in credentials} == {k:v for k,v in new.items() if k not in credentials}
+
+
+# @llr LLR-TERM-COM-010
+def refresh_credentials(engine, config):
+    """Apply a validated idle renewal without changing transports or core ownership."""
+    if engine.call or not credentials_only(engine.config, config):
+        raise ValueError('Relay renewal requires an idle, otherwise unchanged core')
+    policy = validate(config)
+    _configure_relay(engine, policy, engine.config['secure_calls'])
+    engine.config = config

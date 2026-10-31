@@ -25,7 +25,7 @@ text: |
   Optional media snapshots shall contain only supported finite nonnegative measurements,
   positive integer resolution pairs no larger than 16384 per side, and nonnegative
   safe integer codec counters. Missing measurements shall remain unavailable, not inferred zero.
-  Status shall be accepted only for the authenticated device and within a 32000-byte request. Supported strings shall contain at most 256 characters; device lists shall contain at most 100 such strings. Registration shall be boolean and revision a nonnegative safe integer. Remote and C20 state shall use supported enumerated values. Remote battery shall be null or an integer from 0 through 100. Charger, C20 connection and C20 power shall be boolean or null; omitted fields shall remain compatible with older devices. Invalid reports shall leave the previous report unchanged.
+  Status shall be accepted only for the authenticated device and within a 32000-byte request. Supported strings shall contain at most 256 characters; device lists shall contain at most 100 such strings. Registration shall be boolean and revision a nonnegative safe integer. Remote and C10/C20 state shall use supported enumerated values. Remote battery shall be null or an integer from 0 through 100. Charger, C10/C20 connection and C10/C20 power shall be boolean or null; omitted fields shall remain compatible with older devices. Invalid reports shall leave the previous report unchanged.
 verification: |
   Submit media measurements, resolution pairs and codec counters, including unavailable,
   nonfinite, negative, fractional-counter and malformed-container cases. Check copied
