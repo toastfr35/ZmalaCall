@@ -39,16 +39,32 @@ class ConfigurationControl:
         if time.monotonic() < getattr(self, 'engine_retry_at', 0):
             self.pending_config = config
             return
-        # @llr LLR-TERM-POWER-016
-        if not self.usb_media_ready(reason='configuration refresh'):
-            self.pending_config = config
-            return
         old_sip = self.model.config.get('sip') if self.model.config else None
+        from zmala_terminal.common.secure_calls import credentials_only, refresh_credentials
+        # @llr LLR-TERM-COM-010
+        renewal = self.engine and credentials_only(self.engine.config, config)
+        if renewal:
+            try:
+                refresh_credentials(self.engine, config)
+            except Exception as error:
+                # Retain the registered core and old policy; a transient renewal
+                # failure must not trigger USB wake/recreation on the next poll.
+                logging.warning('Relay credential refresh failed (%s); retrying in 5 seconds', type(error).__name__)
+                self.pending_config = config
+                self.engine_retry_at = time.monotonic() + 5
+                self.render()
+                return
+            logging.info('Relay credentials refreshed without waking USB media')
+        else:
+            # @llr LLR-TERM-POWER-016
+            if not self.usb_media_ready(reason='configuration refresh'):
+                self.pending_config = config
+                return
         from zmala_terminal.common.audio_processing import requested_profile
-        # Recreate the native audio graph only while idle. In-call updates stay
-        # pending above, and a new core restores the default canceller cleanly.
+        # Actual device/transport changes still use normal idle media preparation.
         try:
-            self.configure_engine(config, old_sip, requested_profile(config))
+            if not renewal:
+                self.configure_engine(config, old_sip, requested_profile(config))
         except Exception as error:
             retry = 1 if isinstance(error, MediaNotReady) else 5
             logging.warning('Could not apply media configuration; retrying in %s seconds: %s', retry, error)

@@ -1,7 +1,7 @@
 # @test T-HLT-022
 # @requirements HLR-TERM-COM-001, HLR-TERM-COM-002, HLR-TERM-COM-009, HLR-TERM-CONFIG-017, HLR-TERM-NET-002
 # @environment display
-# @plan Run real Tk controllers, HTTP Configuration requests and atomic cache writes against an isolated endpoint. Return valid, invalid, unauthorized and delayed responses, change enrollment generations and edit settings. Check UI responsiveness, independent Wi-Fi/server indications, acceptance-only revisions and deferred media changes during a simulated native call. Deliver same-revision relay credential renewal through the real poll controller; require one idle engine replacement, defer the next renewal through a simulated call, then replace at idle. This checks renewal orchestration, not TLS or real network media.
+# @plan Run real Tk controllers, HTTP Configuration requests and atomic cache writes against an isolated endpoint. Return valid, invalid, unauthorized and delayed responses, change enrollment generations and edit settings. Check UI responsiveness, independent Wi-Fi/server indications, acceptance-only revisions and deferred media changes during a simulated native call. Deliver same-revision relay credential renewal through the real poll controller; require idle renewal without USB preparation or engine replacement, defer the next renewal through a simulated call, then renew at idle. This checks renewal orchestration, not TLS or real network media.
 # @pass Invalid and obsolete replies preserve accepted state; only acknowledged edits are applied; navigation continues during blocked I/O; in-call changes retain the native call. Network and native media devices are substituted, so this is not physical Wi-Fi or call-quality acceptance.
 
 import copy
@@ -22,7 +22,7 @@ from tests.support.terminal.config_endpoint import config_endpoint
 
 @unittest.skipUnless(sys.platform == 'linux' and os.environ.get('DISPLAY'), 'Linux Tk display required')
 class ServerExchangeTests(unittest.TestCase):
-    def test_same_revision_relay_renewal_replaces_idle_engine_and_waits_for_call_end(self):
+    def test_same_revision_relay_renewal_keeps_idle_engine_asleep_and_waits_for_call_end(self):
         from tests.terminal.LLT.test_secure_calls import config as secure_profile
         with terminal_fixture() as (app, directory):
             initial = copy.deepcopy(app.model.config)
@@ -32,12 +32,13 @@ class ServerExchangeTests(unittest.TestCase):
             initial['secure_calls']['turn_username'] = str(initial['secure_calls']['expires']) + ':fixture'
             app.apply_poll_config(initial)
             first = app.engine
+            app.usb_media_ready = Mock(side_effect=AssertionError('Renewal must not wake USB'))
             renewed = copy.deepcopy(initial)
             renewed['secure_calls']['turn_password'] = 'renewal-one'
             app.apply_poll_config(renewed)
-            first.close.assert_called_once()
+            first.close.assert_not_called()
             second = app.engine
-            self.assertIsNot(second, first)
+            self.assertIs(second, first)
             self.assertEqual(second.config['secure_calls'], renewed['secure_calls'])
             app.apply_poll_config(copy.deepcopy(renewed))
             self.assertIs(app.engine, second)
@@ -52,8 +53,9 @@ class ServerExchangeTests(unittest.TestCase):
             second.call = None
             app.model.ended()
             app.update_timers(time.monotonic())
-            second.close.assert_called_once()
-            self.assertIsNot(app.engine, second)
+            second.close.assert_not_called()
+            self.assertIs(app.engine, second)
+            app.usb_media_ready.assert_not_called()
             self.assertEqual(app.engine.config['secure_calls'], next_renewal['secure_calls'])
 
     def test_validated_http_cache_and_independent_status_recover_after_errors(self):

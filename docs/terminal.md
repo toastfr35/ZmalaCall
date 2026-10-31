@@ -980,6 +980,13 @@ outside-call thermal override; firmware throttling remains active. Only I2C bus 
 address `0x1a`, duty values 0–100 are used. Power-button/IR/vendor power-mode
 software is not installed. An enabled competing `argononed` causes install refusal.
 
+Hourly TURN credential renewal updates the existing idle core's relay policy and
+replaces its superseded TURN authentication entry. It does not request USB power,
+probe devices, recreate the core or refresh SIP registration. During a call renewal
+waits until idle. Failure preserves the core and retries after five seconds; expired
+credentials still block new calls. Real media/transport changes use normal preparation.
+Successful renewal logs `Relay credentials refreshed without waking USB media`.
+
 ### Optional USB power control
 
 Power transitions are recorded in `journalctl -u zmalacall-terminal` with the prefix
