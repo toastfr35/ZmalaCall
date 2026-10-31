@@ -2,10 +2,10 @@ active: true
 area: Audio
 derived: false
 header: |
-  C20 readiness before calls
+  C10/C20 readiness before calls
 level: 67.0
 links:
-- HLR-TERM-AUDIO-001: cVKxa_fbE3jqHlRqzMygvKL9QU0rhZYQf5OW-GB5HCg=
+- HLR-TERM-AUDIO-001: _KkiTouY4V-sS8pEwt1k54uYEJJSWyyPFn7RDnxZZ_w=
 normative: true
 ref: ''
 references:
@@ -20,7 +20,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  When any required C20 device or audio route is unavailable, the Pi shall keep
+  When any required C10/C20 device or audio route is unavailable, the Pi shall keep
   the call waiting and retry discovery approximately once per second without
   blocking SIP or user input. It shall not start a partial receive-only call.
   Recovery shall allow the waiting call to proceed; cancellation, replacement or

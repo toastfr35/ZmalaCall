@@ -5,7 +5,7 @@ header: |
   Audio processing profile
 level: 65.0
 links:
-- HLR-TERM-AUDIO-001: cVKxa_fbE3jqHlRqzMygvKL9QU0rhZYQf5OW-GB5HCg=
+- HLR-TERM-AUDIO-001: _KkiTouY4V-sS8pEwt1k54uYEJJSWyyPFn7RDnxZZ_w=
 normative: true
 ref: ''
 references:
@@ -42,10 +42,10 @@ text: |
   shall cap capture processing at 16 kHz while retaining the 48 kHz Opus clock and
   playback. Speech echo cancellation shall use a 500 ms window. Missing optional
   processing shall leave calling available and report the applied profile.
-  For both profiles, the Pi's C20 PCM path shall convert application audio to
+  For both profiles, the Pi's C10/C20 PCM path shall convert application audio to
   16 kHz stereo capture and 48 kHz stereo playback, without routing capture
   through a generic 48 kHz hardware-sharing buffer. This policy shall apply
-  before native device enumeration and survive C20 device renumbering.
+  before native device enumeration and survive C10/C20 device renumbering.
 verification: |
   Inject plugin availability and registration failures. Inspect echo-rate parameters
   and the reported profile without assuming acoustic quality.
@@ -53,7 +53,7 @@ verification: |
   hardware direction's format, channels, rate and supplied card identity. Check
   that policy selection precedes SDK loading and missing policy fails explicitly.
   On the physical Pi with the terminal service stopped, repeatedly start and stop
-  native-rate C20 capture and silent playback, then add MJPEG capture after
-  the C20 microphone has remained RUNNING for 750 ms.
+  native-rate C10/C20 capture and silent playback, then add MJPEG capture after
+  the C10/C20 microphone has remained RUNNING for 750 ms.
   Check successful completion, microphone byte count and complete camera data;
   record the requested/completed cycle count separately from portable evidence.

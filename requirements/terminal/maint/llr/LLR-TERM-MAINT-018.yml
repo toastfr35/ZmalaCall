@@ -41,7 +41,7 @@ text: |
   Status shall include application and registration state, applied configuration
   revision, detected devices and available native media statistics. It shall include
   implemented frame, queue and drop counters. Reports shall also include remote
-  connection/input state, battery percentage and charger connection, and C20 USB
+  connection/input state, battery percentage and charger connection, and C10/C20 USB
   presence, confirmed power and transition/recovery state. Unknown observations
   shall remain explicit unknowns; gathering status shall not wake USB or open media. Counters shall not be represented as
   proof of audible speech or perceived image quality.
@@ -51,5 +51,5 @@ verification: |
   native transport and codec snapshot through the normal diagnostic report.
   Vary applied state, devices and native counters. Check report values, unavailable
   fields and absence of inferred quality claims. Vary remote connection, zero and
-  unknown battery, charger, C20 presence and power/wake/error states; assert captured
+  unknown battery, charger, C10/C20 presence and power/wake/error states; assert captured
   report snapshots and no device-control side effects.

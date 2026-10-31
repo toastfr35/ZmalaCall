@@ -1,7 +1,7 @@
 # @test T-LLT-037
 # @requirements LLR-TERM-POWER-012, LLR-TERM-POWER-013, LLR-TERM-POWER-014, LLR-TERM-POWER-015, LLR-TERM-POWER-016, LLR-TERM-POWER-017
 # @environment portable
-# @plan Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication. Inject applied-volume status and worker time to verify ringing only after nonzero mixer convergence, atomic power telemetry, ringer termination escalation and unconditional shutdown power restoration.
+# @plan Verify either supported USB identity may power down, but unrelated devices cannot. Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication. Inject applied-volume status and worker time to verify ringing only after nonzero mixer convergence, atomic power telemetry, ringer termination escalation and unconditional shutdown power restoration.
 # Verify wake-reason logs for policy, explicit requests, retries, success/failure, helper
 # rollback and shutdown; steady polling emits no transition logs. No real USB is switched.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
@@ -25,6 +25,11 @@ from zmala_terminal.common.management import ManagementLoop
 
 
 class UsbPowerTests(unittest.TestCase):
+    def setUp(self):
+        route = patch('zmala_terminal.linux.usb_power.playback_device', return_value='default:C20')
+        route.start()
+        self.addCleanup(route.stop)
+
     def test_power_worker_status_and_ringer_wait_for_applied_nonzero_volume(self):
         import zmala_terminal.linux.usb_power as module
         power = self.controller()
@@ -374,9 +379,10 @@ class HelperSafetyTests(unittest.TestCase):
                 self.assertEqual(action, 'off')
                 self.assertEqual((camera/'authorized').read_text(), '0')
             switch.side_effect = check_off
-            with patch.object(h, 'devices', return_value=[(camera, ('0525','a4ad'))]):
-                h.power('off')
-            switch.assert_called_once_with('off')
+            for product in ('a4ad', 'a4b0'):
+                with patch.object(h, 'devices', return_value=[(camera, ('0525',product))]):
+                    h.power('off')
+            self.assertEqual(switch.call_count, 2)
             self.assertEqual(opened.call_args.kwargs['timeout'], 5)
 
     def test_successful_command_with_unchanged_ports_is_rejected(self):

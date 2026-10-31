@@ -1,12 +1,14 @@
 # @test T-LLT-017
 # @requirements LLR-TERM-AUDIO-004, LLR-TERM-POWER-010
 # @environment portable
-# @plan Supply device catalogs with stale paths, replugged C20 nodes and unrelated devices; assert C20 rediscovery, no silent substitution and playback/ringer routing.
+# @plan Supply device catalogs with stale paths, replugged C10 and C20 nodes and unrelated devices; assert C10 and C20 rediscovery, no silent substitution and playback/ringer routing.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """C20 routing follows identity and never silently switches to other hardware."""
 from pathlib import Path
 import sys
+import tempfile
+from zmala_terminal.linux.nuroum import audio_card, supported_name
 import unittest
 from unittest.mock import Mock, patch
 
@@ -22,6 +24,24 @@ def catalog(node='0'):
 
 
 class C20MediaTests(unittest.TestCase):
+    def test_c10_catalog_routes_all_audio_without_hdmi(self):
+        devices = {kind: [name.replace('C20', 'C10') for name in names] for kind, names in catalog().items()}
+        self.assertEqual(settings(devices)['speaker'], 'ALSA: Nuroum C10 [Unknown]')
+        self.assertEqual(settings(devices)['microphone'], 'ALSA: Nuroum C10 [Unknown]')
+        self.assertFalse(supported_name('Nuroum C100'))
+        self.assertFalse(supported_name('unrelated C10'))
+
+    def test_current_card_identity_rejects_missing_and_multiple_devices(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            with self.assertRaises(FileNotFoundError): audio_card(root)
+            p = root / 'card4'; p.mkdir(); (p/'id').write_text('C10')
+            self.assertEqual(audio_card(root), 'C10')
+            (p/'id').write_text('C20')
+            self.assertEqual(audio_card(root), 'C20')
+            q=root/'card5';q.mkdir();(q/'id').write_text('C10')
+            with self.assertRaises(FileNotFoundError): audio_card(root)
+
     def test_replugged_camera_uses_current_node(self):
         self.assertEqual(settings(catalog('4'))['camera'], 'ZmalaMJPEG: /dev/video4')
 

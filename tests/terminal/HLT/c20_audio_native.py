@@ -1,8 +1,8 @@
 # @test T-HLT-034
 # @requirements HLR-TERM-AUDIO-001, HLR-TERM-POWER-008
 # @environment hardware
-# @plan With the terminal idle and its service stopped, power on the C20 and run two isolated SDK cores over loopback. Route the receiver initially to HDMI, place an incoming audio call, bind the pending call to C20 and answer. Assert both effective native routes remain C20 after streams start. The sender uses file audio and no credentials, recording or external destination.
-# @pass Both connected call routes identify Nuroum C20; every call/core is released. This verifies native routing, not acoustic quality, video or physical wake timing.
+# @plan With the terminal idle and its service stopped, power on the C10 or C20 and run two isolated SDK cores over loopback. Route the receiver initially to HDMI, place an incoming audio call, bind the pending call to C10 or C20 and answer. Assert both effective native routes remain C10 or C20 after streams start. The sender uses file audio and no credentials, recording or external destination.
+# @pass Both connected call routes identify Nuroum C10 or C20; every call/core is released. This verifies native routing, not acoustic quality, video or physical wake timing.
 
 from pathlib import Path
 import sys
@@ -13,9 +13,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from zmala_terminal.common.linphone_api import LinphoneAPI, P, S, I, CALL_CB
 from zmala_terminal.common.native_runtime import library
 from zmala_terminal.linux.media import bind_call_audio
+from zmala_terminal.linux.nuroum import audio_card
 
 
 def main():
+    model = audio_card()
     cores = []
     temporary = tempfile.TemporaryDirectory(prefix="zmala-c20-audio-")
     callbacks = []
@@ -105,9 +107,9 @@ def main():
         for direction in ('input', 'output'):
             device = getattr(receiver, 'call_get_'+direction+'_audio_device')(receiver.call)
             name = receiver.audio_device_get_id(device) or b''
-            assert b'Nuroum C20' in name, (direction, name)
+            assert ('Nuroum '+model).encode() in name, (direction, name)
             print(direction + ': ' + name.decode())
-        print('PASS: HDMI pending call rebound to C20 before connected streams')
+        print('PASS: HDMI pending call rebound to '+model+' before connected streams')
     finally:
         for api in cores:
             if api.call:

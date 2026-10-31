@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/linux/nuroum.py
+  type: file
 - path: tests/terminal/LLT/test_c20_volume.py
   type: file
 - path: tests/terminal/LLT/test_reliability.py
@@ -22,6 +24,6 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Volume-overlay requests shall occur at most ten times per second, with the final pending level flushed on close. One worker shall combine pending requests and establish the fixed C20 hardware playback gain. The core owner shall apply the desired call-only software gain without changing microphone gain, hardware mute, ringtone/button levels or TV volume.
+  Volume-overlay requests shall occur at most ten times per second, with the final pending level flushed on close. One worker shall combine pending requests and establish the fixed model-specific hardware playback gain (+12 dB for C10, 0 dB for C20). The core owner shall apply the desired call-only software gain without changing microphone gain, hardware mute, ringtone/button levels or TV volume.
 verification: |
   Inject rapid adjustments and a delayed mixer. Check request intervals, final close flush, fixed playback-only mixer command and call-only gain updates.

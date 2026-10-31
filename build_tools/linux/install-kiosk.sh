@@ -150,6 +150,7 @@ install -m 644 "$task_root/zmala_terminal/linux/99-zmalacall-c20.rules" /etc/ude
 udevadm control --reload-rules
 udevadm trigger --subsystem-match=hidraw
 udevadm trigger --action=add --subsystem-match=usb --attr-match=idVendor=0525 --attr-match=idProduct=a4ad
+udevadm trigger --action=add --subsystem-match=usb --attr-match=idVendor=0525 --attr-match=idProduct=a4b0
 # Prepare release and persistent appliance state.
 mkdir -p /opt/zmalacall/releases /var/lib/zmalacall /etc/zmalacall
 if [ -n "$data_from" ]; then

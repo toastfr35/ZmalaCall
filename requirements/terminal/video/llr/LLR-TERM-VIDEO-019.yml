@@ -2,7 +2,7 @@ active: true
 area: Video
 derived: false
 header: |
-  C20 microphone and camera startup sequencing
+  C10/C20 microphone and camera startup sequencing
 level: 127.0
 links:
 - HLR-TERM-VIDEO-003: os3xFxhh_DxiDwfgqhuRpXE6TF2VMSL8cB-X-FVV9hM=
@@ -22,7 +22,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The Pi shall defer C20 camera open, format and stream controls until its C20
+  The Pi shall defer C10/C20 camera open, format and stream controls until its C10/C20
   microphone PCM has remained RUNNING for 750 ms. Camera size negotiation shall
   not open the device. Waiting and camera initialization shall run on the camera
   worker, without blocking the UI or media ticker. The readiness wait shall use

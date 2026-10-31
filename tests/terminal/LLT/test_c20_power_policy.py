@@ -1,8 +1,8 @@
 # @test T-LLT-081
 # @requirements LLR-TERM-POWER-010
 # @environment portable
-# @plan Parse the C20 udev policy's match/assignment clauses and evaluate USB add/bind, changed node, unrelated camera/product and USB-interface fixtures. Require runtime power on only for the C20 USB device. When udevadm is available, validate the rule with its real verifier. These configuration checks do not operate USB hardware or prove physical wake reliability.
-# @pass C20 add/bind matches independently of node number; other identities, interfaces and actions do not match. The only assignment disables runtime suspend. Available udev syntax verification succeeds; missing udev is recorded as a skip.
+# @plan Parse the C10 and C20 udev policy's match/assignment clauses and evaluate USB add/bind, changed node, unrelated camera/product and USB-interface fixtures. Require runtime power on only for the C10 and C20 USB device. When udevadm is available, validate the rule with its real verifier. These configuration checks do not operate USB hardware or prove physical wake reliability.
+# @pass C10 and C20 add/bind matches independently of node number; other identities, interfaces and actions do not match. The only assignment disables runtime suspend. Available udev syntax verification succeeds; missing udev is recorded as a skip.
 from pathlib import Path
 import re
 import shutil
@@ -25,6 +25,7 @@ class C20PowerPolicyTests(unittest.TestCase):
                   'ATTR{idVendor}': '0525', 'ATTR{idProduct}': 'a4ad'}
         def applies(properties):
             return all(properties.get(key) in values for key, values in matches)
+        self.assertTrue(applies(device | {'ATTR{idProduct}': 'a4b0'}))
         for action in ('add', 'bind'):
             for node in ('1-1.1', '1-1.4'):
                 self.assertTrue(applies(device | {'ACTION': action, 'KERNEL': node}))

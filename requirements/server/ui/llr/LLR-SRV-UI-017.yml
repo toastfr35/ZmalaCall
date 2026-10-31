@@ -36,11 +36,11 @@ text: |
   The device selector shall show the account name before its identifier. Connection,
   peripheral and call-feature status shall be visually grouped. A sticky save bar
   shall show whether the terminal settings have unsaved changes.
-  C20 speaker volume shall offer 0 through 100 percent in 5-percent steps.
+  C10/C20 speaker volume shall offer 0 through 100 percent in 5-percent steps.
   Existing values between steps shall show the nearest step without changing the
   saved configuration until Save changes is accepted.
   The selected card shall show remote connection/input state, battery and charger,
-  and C20 connection/recovery state and confirmed power from the latest report.
+  and C10/C20 connection/recovery state and confirmed power from the latest report.
   Missing values shall show unknown. After 20 seconds without a fresh terminal
   report, peripheral badges shall show status unavailable rather than old healthy
   readings. Polling shall update badges without discarding unsaved settings.

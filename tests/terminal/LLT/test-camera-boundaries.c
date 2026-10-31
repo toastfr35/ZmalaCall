@@ -1,7 +1,7 @@
 // @test T-LLT-073
 // @requirements LLR-TERM-VIDEO-004, LLR-TERM-VIDEO-018, LLR-TERM-VIDEO-019
 // @environment native-sdk
-// @plan Replace microphone status, monotonic time/sleep, V4L2 open/ioctl/mmap/poll and thread creation/join boundaries, retaining the real capture loop, frame-rate controller, buffers and cleanup. Assert thread scheduling performs no camera I/O, readiness must remain RUNNING for 750 ms, readiness loss resets that interval, and timeout/cancellation prevent device access. Inject each startup failure, driver format clamping, EINTR/EAGAIN, invalid buffers and queue errors. Verify requested dimensions never silently change, only valid frames replace the latest slot, and join precedes unmap/close on stop.
+// @plan Exercise C10 microphone readiness when C20 is absent. Replace microphone status, monotonic time/sleep, V4L2 open/ioctl/mmap/poll and thread creation/join boundaries, retaining the real capture loop, frame-rate controller, buffers and cleanup. Assert thread scheduling performs no camera I/O, readiness must remain RUNNING for 750 ms, readiness loss resets that interval, and timeout/cancellation prevent device access. Inject each startup failure, driver format clamping, EINTR/EAGAIN, invalid buffers and queue errors. Verify requested dimensions never silently change, only valid frames replace the latest slot, and join precedes unmap/close on stop.
 // @pass Every buffer ownership, counter, format and cleanup assertion passes without opening any real device. Hardware USB reliability remains a separate system test.
 #include "../../../zmala_terminal/linux/media/video/mjpeg-stream.h"
 #include <mediastreamer2/msfactory.h>
@@ -23,7 +23,7 @@ static unsigned long failure;
 static int open_error, clamp, short_count, huge_buffer, map_error, thread_error;
 static int opened, closed, mapped, unmapped, joined, streaming, dq, polls, interrupted, q_error, dq_error;
 static uint64_t clock_ms, first_open_ms, expected_open_ms, cancel_ms;
-static int status_mode;
+static int status_mode, c10_status;
 static MjpegCamera *active_camera;
 static void *(*entry)(void *);
 static void *argument;
@@ -73,7 +73,8 @@ static int fake_poll(struct pollfd *fds, nfds_t count, int timeout) {
 }
 static uint64_t fake_time(void) { return clock_ms; }
 static FILE *fake_fopen(const char *path, const char *mode) {
-    assert(strcmp(path,"/proc/asound/C20/pcm0c/sub0/status") == 0 && strcmp(mode,"r") == 0);
+    assert((strcmp(path,"/proc/asound/C20/pcm0c/sub0/status") == 0 || strcmp(path,"/proc/asound/C10/pcm0c/sub0/status") == 0) && strcmp(mode,"r") == 0);
+    if (c10_status && strstr(path,"/C20/")) return NULL;
     if (status_mode == 1) return NULL;
     FILE *f=tmpfile(); assert(f);
     if (status_mode == 4 || status_mode == 5) {
@@ -162,5 +163,8 @@ int main(void) {
         if (mode != 2) { assert(c.latest && c.latest->b_cont); assert(c.latest->b_cont->b_wptr-c.latest->b_cont->b_rptr == 64); }
         cleanup(&c); assert(joined);
     }
+    reset(&c); c10_status=1; expected_open_ms=751;
+    result=zmala_mjpeg_start(&c); assert(result == 0); entry(argument);
+    assert(first_open_ms >= 751 && opened == 1); cleanup(&c);
     ms_factory_destroy(factory); puts("V4L2 capture format, buffer failure and cleanup checks: PASS"); return 0;
 }

@@ -183,8 +183,8 @@ test('terminal hardware badges distinguish fresh values, unknowns and stale repo
       'Remote: connected',
       'Remote battery: 75%',
       'Remote charger: connected',
-      'C20: connected',
-      'C20 power: on',
+      'C10/C20: connected',
+      'C10/C20 power: on',
     ],
   );
   assert.equal(render(status)[0].kind, 'success');
@@ -200,15 +200,15 @@ test('terminal hardware badges distinguish fresh values, unknowns and stale repo
       'Remote: connected',
       'Remote battery: 0%',
       'Remote charger: not connected',
-      'C20: powered off',
-      'C20 power: off',
+      'C10/C20: powered off',
+      'C10/C20 power: off',
     ],
   );
   assert.ok(render(undefined).every((x) => x.text.endsWith('unknown') && x.kind === 'neutral'));
   assert.deepEqual(
     render(status, false).map((x) => x.text),
-    ['Remote: status unavailable', 'C20: status unavailable'],
+    ['Remote: status unavailable', 'C10/C20: status unavailable'],
   );
   assert.ok(render(status, false).every((x) => x.kind === 'neutral'));
-  assert.equal(render({ ...status, camera_status: 'waking' })[3].text, 'C20: waking');
+  assert.equal(render({ ...status, camera_status: 'waking' })[3].text, 'C10/C20: waking');
 });

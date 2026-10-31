@@ -28,14 +28,14 @@ references:
 reviewed: null
 scope: Core
 text: |
-  The terminal settings page shall identify the fixed Nuroum C20 camera, microphone
+  The terminal settings page shall identify the fixed Nuroum C10/C20 camera, microphone
   and speaker without offering alternative hardware selectors. Profiles shall
   accept normal or speech audio processing. Legacy API device selectors shall
   remain strings of at most 256 characters for compatibility; Pi terminals shall
   ignore them and the browser shall clear them when saving. Omitted optional
   settings shall retain existing values; explicit invalid values shall be rejected.
 verification: |
-  Render terminal settings with stale device values and verify C20 information
+  Render terminal settings with stale device values and verify C10/C20 information
   without hardware selectors. Check cleared device values on browser save. Validate
   legacy selector lengths and audio choices with omitted, null and invalid values;
   check atomic updates.
