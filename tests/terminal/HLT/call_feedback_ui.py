@@ -1,7 +1,7 @@
 # @test T-HLT-002
 # @requirements HLR-TERM-CALL-009, HLR-TERM-UI-012, HLR-TERM-VIDEO-001
 # @environment display
-# @plan With disposable state and substituted hardware, drive the real Tk UI through confirmation, answering, initial video wait, stalled video and ending. Render initial and missing-video phases in all 95 languages; inspect the eight-second boundary, neutral/warning icon, first-frame recovery, retained self-view and text geometry. Check notification counts and input guards without a server or real calls.
+# @plan With disposable state and substituted hardware, drive the real Tk UI through confirmation, answering, initial video wait, stalled video and ending. Render initial and missing-video phases in all supported languages; inspect the eight-second boundary, neutral/warning icon, first-frame recovery, retained self-view and text geometry. At 900x620 and 1280x720, check green answer/red decline controls in all supported languages, with and without countdown, bounded and non-overlapping; hide them after ringing. Check notification counts and input guards without a server or real calls.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Exercise confirmation input and missing-video layouts without real calls."""
@@ -58,6 +58,41 @@ if '--preview' in sys.argv:
     sys.exit(0)
 
 try:
+    # Incoming remote actions stay visible even when automatic answer counts down.
+    for width, height in [(900, 620), (1280, 720)]:
+        app.root.geometry(f'{width}x{height}')
+        app.root.update()
+        app.model.contact = dict(app.model.selected)
+        app.model.state = State.RINGING
+        for code in LANGUAGES:
+            app.language = code
+            app.font_family = font_family(code, app.available_fonts)
+            for automatic in (False, True):
+                app.model.deadline = time.monotonic()+30 if automatic else None
+                app.render()
+                app.root.update_idletasks()
+                boxes = []
+                for widget, key, color, symbol in [
+                        (app.ringing_answer, 'answer', theme.BUTTON_GREEN, '✓'),
+                        (app.ringing_decline, 'decline', theme.BUTTON_RED, '✕')]:
+                    assert widget.winfo_ismapped(), (code, automatic)
+                    assert widget.cget('bg') == color and widget.image
+                    assert widget.cget('text') == symbol+'  '+app.text(key).capitalize()
+                    x, y = widget.winfo_rootx()-app.root.winfo_rootx(), widget.winfo_rooty()-app.root.winfo_rooty()
+                    boxes.append((x, y, x+widget.winfo_width(), y+widget.winfo_height()))
+                    assert 0 <= x < boxes[-1][2] <= width, (code, boxes)
+                    assert 0 <= y < boxes[-1][3] <= height, (code, boxes)
+                    assert app.name.winfo_rooty()+app.name.winfo_height() <= widget.winfo_rooty()
+                assert boxes[0][2] < boxes[1][0], (code, boxes)
+                assert bool(app.subtitle.winfo_ismapped()) == automatic
+    app.model.deadline = None
+    app.model.ended()
+    app.language = 'en'
+    app.font_family = font_family('en', app.available_fonts)
+    app.render()
+    app.root.update_idletasks()
+    assert not app.ringing_controls.winfo_ismapped()
+
     selected = app.model.selected['id']
     for button in ['left', 'right', 'red', 'cancel']:
         app.press('green')
@@ -345,7 +380,7 @@ try:
         colors = {app.network_image.get(x,y) for y in range(app.network_image.height()) for x in range(app.network_image.width())}
         flat = {tuple(int(color[i:i+2],16) for i in (1,3,5)) for color in [theme.BG,theme.GREEN,theme.RED,theme.MUTED]}
         assert len(colors-flat)>10, 'Connectivity icon edges are not anti-aliased'
-    print('95-language questions and video feedback; red/white contact counters, combined corner total, partial acknowledgment, smooth transparent icons and input guards passed.')
+    print('Supported-language questions and video feedback; red/white contact counters, combined corner total, partial acknowledgment, smooth transparent icons and input guards passed.')
 finally:
     portrait_root.stop()
     fixture.__exit__(None, None, None)

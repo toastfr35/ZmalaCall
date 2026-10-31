@@ -1322,4 +1322,4 @@ acoustic listening quality, phone video on the TV, or eliminate the separate
 intermittent Samsung wake problem. Auto-answer was restored off afterward.
 Private captures and logs are retained under `build_tools/tmp/c10-*` and
 `build_tools/tmp/tv-real-calls/c10-phone1-*`; they are not release assets.
-The Pi manual incoming-call prompt shows a green circular remote-button cue beside the localized answer action. Only the Windows terminal shows ENTER. Automatic answering replaces either hint with the countdown; remote disconnection does not select keyboard hints.
+The Pi incoming-call screen shows two distinct controls beneath the caller: green with a check mark and the localized Answer action, and red with a cross and Decline. Both remain visible alongside an automatic-answer countdown. Colours match the remote buttons; symbols and action labels make the choices clear without relying on colour alone. Only the Windows terminal shows ENTER; remote disconnection does not select keyboard hints.

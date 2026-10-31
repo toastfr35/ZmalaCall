@@ -143,6 +143,12 @@ PHONE = {
 # The pass is idempotent so rebuilding never duplicates instructions.
 REVISIONS = {
     'terminal_use.docx': {
+        'For an incoming call,': [
+            'For an incoming call, the screen shows a green Answer prompt with a check mark '
+            'and a red Decline prompt with a cross. Press the matching button on your remote. '
+            'If automatic answer is enabled, both prompts stay visible beside the countdown. '
+            'Press red to decline before it connects.',
+        ],
         'Choose a person with the arrow buttons,': [
             'Use this guide for everyday calls after setup. Choose a familiar face with the arrow '
             'buttons, press green to confirm, and press red to finish.',
