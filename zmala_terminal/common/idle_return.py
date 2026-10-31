@@ -54,7 +54,8 @@ class IdleReturn:
                     not self.keys_down and self.model.state in
                     (State.HOME, State.CONFIRMING, State.CONFIRM_CALLBACK))
         fraction, expired = self.idle_countdown.tick(
-            now, session, config.get('tv_idle_seconds', 30), self.last_button, eligible)
+            now, session, config.get('tv_idle_seconds', 30),
+            max(self.last_button, session.get('idle_started', 0) if session else 0), eligible)
         if expired:
             # Cancel only idle UI drafts/confirmation. Calls and writes are never eligible.
             self.settings_open = False

@@ -21,9 +21,9 @@ reviewed: null
 scope: Experimental
 text: |
   The power helper shall reject power-off while another peripheral or open media
-  handle is present. It shall deauthorize C20 interfaces before switching off. Wake
+  handle is present. It shall deauthorize C10/C20 interfaces before switching off. Wake
   shall wait for audio and video enumeration. The SDK owner thread shall refresh
-  devices and restore volume before media readiness. While C20 enumeration or
+  devices and restore volume before media readiness. While C10/C20 enumeration or
   routing is incomplete, it shall retry approximately once per second without
   blocking the user interface or selecting another device.
 verification: |

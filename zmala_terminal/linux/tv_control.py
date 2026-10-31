@@ -2,8 +2,8 @@
 
 The connector's physical address identifies the input even after moving the Pi
 to another HDMI port. Incoming calls retain the previous power/routing state;
-rejecting or ending the call restores it outside the UI thread. Accepting a call
-keeps the saved baseline until hang-up. Volume and mute are never controlled.
+rejecting or ending the call hands it to the browsing inactivity countdown.
+Expiry restores it outside the UI thread. Volume and mute are never controlled.
 Windows and displays without CEC continue to work without TV control.
 """
 import json
@@ -122,14 +122,18 @@ class TVControl:
         # skipped. Unknown power cannot authorize an unqualified power-on.
         return self.source_enabled if off is False else self.power_enabled
 
-    def wake(self, restore=True, initial=None):
+    def wake(self, restore=True, initial=None, ringing=None):
         self._refresh_device()
         if self._closed or not self.command or not Path(self.device).exists():
             return
+        if restore and self._browse_previous and self._restore_pending is None:
+            # A manual TV change just before a call may precede the next UI tick.
+            self.browsing_session()
         # A new call supersedes queued restoration, but inherits the original
         # baseline if the previous call ended before its worker could restore it.
-        if restore and self._restore_pending is not None and self._browse_previous:
-            # A call that interrupts idle restoration owns that original state.
+        if restore and self._browse_previous:
+            # Consecutive calls keep the original TV baseline, even while the
+            # previous call's inactivity countdown is still running.
             self._previous, self._browse_previous = self._browse_previous, None
             self._changed = True
         elif not restore and self._restore_pending is not None and self._browse_previous:
@@ -143,15 +147,41 @@ class TVControl:
         self._ready.clear()
         self._started = time.monotonic()
         cancel = self._cancel = threading.Event()
-        threading.Thread(target=self._worker, args=(cancel, restore, initial), daemon=True,
+        threading.Thread(target=self._worker, args=(cancel, restore, initial, ringing), daemon=True,
                          name='zmala-cec').start()
 
-    def cancel(self):
+    # @llr LLR-TERM-TV-028
+    def cancel(self, defer=False):
+        """Stop pending wake work; call endings hand restoration to idle policy."""
         self._cancel.set()
+        if defer:
+            self._ready.clear()
+            threading.Thread(target=self._defer_restore, args=(self._cancel,), daemon=True,
+                             name='zmala-cec-call-idle').start()
+            return
         self._ready.set()
         if self.command and self._started is not None:
             threading.Thread(target=self._restore, args=(self._cancel,), daemon=True,
                              name='zmala-cec-restore').start()
+
+    # @llr LLR-TERM-TV-028
+    def _defer_restore(self, cancel):
+        """Wait off the UI thread for a cancelled wake to finish capturing state.
+
+        No TV command is sent here. A new call owns a new token and must not
+        have its baseline stolen by this older call's delayed worker.
+        """
+        with self._lock:
+            if cancel is not self._cancel or self._closed:
+                return
+            if self._previous and self._changed and (
+                    self._previous['off'] is True or self._previous['source'] is not None):
+                self._browse_previous = dict(self._previous, idle_started=time.monotonic())
+                logging.info('CEC: call ended; TV restoration deferred to inactivity timeout')
+            self._previous = None
+            self._changed = False
+            self._started = None
+            self._ready.set()
 
     def browsing_session(self):
         """Return the saved browsing lease only once HDMI switching has settled."""
@@ -220,11 +250,12 @@ class TVControl:
         self._address = None
         return None
 
-    def _worker(self, cancel, restore=True, initial=None):
+    def _worker(self, cancel, restore=True, initial=None, ringing=None):
         """Serialize CEC sequences; the per-call cancellation event prevents late source changes."""
         with self._lock:
             if cancel.is_set():
                 return
+            address = None
             try:
                 address = self._physical_address()
                 if not address:
@@ -325,6 +356,41 @@ class TVControl:
             finally:
                 if cancel is self._cancel:
                     self._ready.set()
+                    # Further attempts must not hold up automatic answering.
+                    if (ringing and address and self._changed and self.source_enabled
+                            and not cancel.is_set() and ringing()):
+                        threading.Thread(target=self._retry_ringing_input,
+                                         args=(cancel, address, ringing), daemon=True,
+                                         name='zmala-cec-ringing-input').start()
+
+    # @llr LLR-TERM-TV-034
+    def _retry_ringing_input(self, cancel, address, ringing):
+        """Repeat explicit input selection, never power toggles, during ringing.
+
+        Samsung can acknowledge CEC while still showing its tuner. Neither On
+        nor command acceptance proves that the terminal picture is visible.
+        The call predicate also fences the driver's post-authentication send.
+        """
+        def current():
+            return (cancel is self._cancel and not cancel.is_set() and not self._closed
+                    and self.source_enabled and ringing())
+
+        for attempt in range(1, 4):
+            if cancel.wait(5) or not current():
+                return
+            with self._lock:
+                if not current():
+                    return
+                try:
+                    sent = self._driver_call('set_current_input', address, is_current=current)
+                    if not current():
+                        return
+                    if not sent:
+                        self._run('--active-source', 'phys-addr=' + address)
+                    logging.info('CEC: ringing input retry %s/3 requested (%s, %s)',
+                                 attempt, address, 'driver' if sent else 'CEC')
+                except (OSError, subprocess.SubprocessError, RuntimeError):
+                    logging.warning('CEC: ringing input retry %s/3 failed', attempt, exc_info=True)
 
     def _observed_state(self):
         """An expired/dead observer cannot supply a remembered TV state."""

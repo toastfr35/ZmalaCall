@@ -36,6 +36,7 @@ class Engine(LinphoneAPI):
         self._last_video_frame = None
         self._next_video_probe = 0
         self.core = None
+        self.ringback_levels = None
         self.load_api()
         try:
             self.create_core(profile)
@@ -125,7 +126,7 @@ class Engine(LinphoneAPI):
         # Bundle the same synthesized melody on both platforms; the historical
         # asset name is retained for compatibility with installed terminals.
         self.core_set_ring(self.core, encoded(ROOT / 'common/assets/gentle-chime.wav') if WINDOWS else None)
-        self.core_set_ringback(self.core, encoded(SDK / 'share/sounds/linphone/ringback.wav'))
+        self.core_set_ringback(self.core, encoded(SDK / 'share/sounds/linphone/ringback.wav') if WINDOWS else None)
 
     def configure_video_target(self):
         """Reject silently ignored SDK sizes; repair lost video packets on LAN calls."""
@@ -285,7 +286,22 @@ class Engine(LinphoneAPI):
             self._last_video_frame = time.monotonic()
         return self._last_video_frame is not None and time.monotonic() - self._last_video_frame < 4
 
+    # @llr LLR-TERM-AUDIO-010
+    def apply_ringback_volume(self):
+        """Select an independently scaled local tone before the SDK starts ringing."""
+        if WINDOWS or self.call:
+            return
+        from zmala_terminal.linux.sound_levels import ToneLevels
+        if self.ringback_levels is None:
+            self.ringback_levels = ToneLevels(sample_rate=8000, streaming_header=True)
+        percent = self.config.get('ringtone_volume', self.config.get('c20_speaker_volume', 50))
+        file = self.ringback_levels.prepare(SDK / 'share/sounds/linphone/ringback.wav', percent)
+        # A silent WAV at 0% avoids a native fallback tone. The core owns timing
+        # and stops ringback on answer/cancellation; conversation gain is untouched.
+        self.core_set_ringback(self.core, encoded(file))
+
     def dial(self, uri):
+        self.apply_ringback_volume()
         self.prepare_call_media()
         address = self.address_new(encoded(uri))
         if not address:
@@ -431,6 +447,8 @@ class Engine(LinphoneAPI):
         self.core_stop(self.core)
         self.core_unref(self.core)
         self.core = None
+        if getattr(self, 'ringback_levels', None) is not None:
+            self.ringback_levels.close()
 
 
 def __getattr__(name):

@@ -11,6 +11,8 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from build_tools.linux.tv_plugin_self_test import package_report, run_sequence  # noqa: E402
+from build_tools.linux.tv_test_camera import capture_stream  # noqa: E402
+from build_tools.linux.tv_test_processes import cleanup, stop_process, wait_for_file  # noqa: E402
 from zmala_terminal.linux.tv_plugins import DRIVERS, load_driver  # noqa: E402
 
 METHODS = {'get_model', 'get_capabilities', 'get_power_status', 'set_power_on',
@@ -48,71 +50,6 @@ def worker(args):
     print(json.dumps(result))
 
 
-def capture_stream(args):
-    """Drain frames continuously in an isolated child; save a fresh requested frame.
-
-    The parent bounds startup and each request, so a blocked USB read cannot
-    hang the test. Keeping the stream warm removes per-photo camera startup.
-    """
-    import cv2
-    folder = Path(args.capture_stream)
-    camera = cv2.VideoCapture(args.camera, cv2.CAP_V4L2)
-    try:
-        camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        warmed = 0
-        pending = None
-        while True:
-            # Read the request before acquiring the next frame, not afterwards.
-            request = folder / 'camera-request.json'
-            if request.exists():
-                pending = json.loads(request.read_text())
-                request.unlink()
-            ok, frame = camera.read()
-            captured = time.monotonic()
-            if not ok:
-                raise RuntimeError('Camera read failed')
-            warmed += 1
-            if warmed == 30:
-                (folder / 'camera-ready').touch()
-            if pending is not None:
-                index = int(pending)
-                name = f'photo-{index:02d}.jpg'
-                if not cv2.imwrite(str(folder / name), frame):
-                    raise RuntimeError('Camera write failed')
-                receipt = folder / f'capture-{index}.json'
-                temporary = receipt.with_suffix('.tmp')
-                temporary.write_text(json.dumps({'frame_read_monotonic': captured,
-                                                  'saved_monotonic': time.monotonic()}))
-                temporary.replace(receipt)
-                pending = None
-    finally:
-        camera.release()
-
-
-def wait_for_file(path, process, timeout):
-    """Fail closed if the camera exits or stops delivering frames."""
-    deadline = time.monotonic() + timeout
-    while not path.exists():
-        if process.poll() is not None:
-            raise RuntimeError('Camera process exited')
-        if time.monotonic() >= deadline:
-            raise TimeoutError('Camera observation timed out')
-        time.sleep(.01)
-
-
-def stop_process(process):
-    if process is not None:
-        process.terminate()
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--driver', choices=sorted(DRIVERS), default='samsung')
@@ -144,7 +81,7 @@ def main():
     if args.output.exists():
         parser.error('output already exists')
     os.umask(0o077)
-    active = subprocess.run(['systemctl', 'is-active', '--quiet', 'zmalacall-terminal'], check=False).returncode == 0
+    active = subprocess.run(['systemctl', 'is-active', '--quiet', 'zmalacall-terminal'], check=False, timeout=5).returncode == 0
     if active and not args.pause_terminal:
         parser.error('terminal is active; use --pause-terminal during an idle maintenance window')
     paused = False
@@ -153,8 +90,9 @@ def main():
     camera = None
     try:
         if active:
-            subprocess.run(['sudo', '-n', 'systemctl', 'stop', 'zmalacall-terminal'], check=True, timeout=30)
+            # A timed-out stop may already have stopped the service: always restart it.
             paused = True
+            subprocess.run(['sudo', '-n', 'systemctl', 'stop', 'zmalacall-terminal'], check=True, timeout=30)
         subprocess.run(['sudo', '-n', '/usr/local/libexec/zmala-usb-power', 'on'], check=True, timeout=45)
         with tempfile.TemporaryDirectory(prefix='zmala-tv-test-') as temporary:
             folder = Path(temporary)
@@ -219,10 +157,7 @@ def main():
             package_report(report, folder, args.output)
             print('Evidence ZIP:', args.output, flush=True)
     finally:
-        stop_process(camera)
-        stop_process(card)
-        if paused:
-            subprocess.run(['sudo', '-n', 'systemctl', 'start', 'zmalacall-terminal'], check=True, timeout=30)
+        cleanup(camera, card, paused)
     return 0 if report and report.get('sequence_status', '').startswith('Sequence finished') else 1
 
 

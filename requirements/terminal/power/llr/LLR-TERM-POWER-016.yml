@@ -9,6 +9,16 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/setup_flow.py
+  type: file
 - path: build_tools/linux/usb-power.py
   type: file
 - path: tests/terminal/LLT/test_usb_power.py
@@ -22,6 +32,10 @@ scope: Experimental
 text: |
   One worker shall perform blocking hub operations. Failures and application stop
   shall favor power-on. Hub work shall not block UI iteration.
+  Successful power transitions, routine polling and shutdown restoration shall not
+  emit wake-tracing logs. Power-operation and failed-off rollback errors shall
+  remain reported without contact identities or enrollment credentials.
 verification: |
   Block and fail hub operations, then stop the application. Check one worker,
-  continued UI and power-on requests.
+  continued UI and power-on requests. Check successful transitions and cleanup are
+  quiet, while helper failure/rollback diagnostics remain visible.

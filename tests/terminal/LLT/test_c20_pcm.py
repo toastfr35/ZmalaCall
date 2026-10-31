@@ -1,7 +1,7 @@
 # @test T-LLT-079
 # @requirements LLR-TERM-AUDIO-003
 # @environment portable
-# @plan Record the environment at SDK loading and reject a missing audio policy. On Linux, load the real ALSA configuration and expand the C20 PCM with two supplied card IDs without opening hardware. Inspect asymmetric routing, plug conversion, hardware device, rates, channels and format for both directions. Confirm the distribution sysdefault definition remains present. No SDK, USB device or audio stream is opened.
+# @plan Record the environment at SDK loading and reject a missing audio policy. On Linux, load the real ALSA configuration and expand the C10 and C20 PCM with two supplied card IDs without opening hardware. Inspect asymmetric routing, plug conversion, hardware device, rates, channels and format for both directions. Confirm the distribution sysdefault definition remains present. No SDK, USB device or audio stream is opened.
 # @pass Policy precedes SDK loading; missing policy fails explicitly. Real ALSA expansion selects 16 kHz capture and 48 kHz playback, stereo S16_LE on the supplied card rather than a dsnoop buffer. A skipped native parser test is not a hardware or parser pass.
 import ctypes as C
 import ctypes.util
@@ -73,8 +73,8 @@ class C20PcmTests(unittest.TestCase):
                 return result.value if integer else result.value.decode()
 
             node(tree, 'pcm.sysdefault')
-            definition = node(tree, 'cards.USB-Audio.Nuroum C20.pcm.default')
-            for card in ('C20', '7'):
+            for card in ('C20', 'C10', '7'):
+                definition = node(tree, 'cards.USB-Audio.Nuroum ' + ('C10' if card == 'C10' else 'C20') + '.pcm.default')
                 expanded = pointer()
                 self.assertGreaterEqual(alsa.snd_config_expand(definition, tree, ('CARD='+card).encode(),
                                                               None, C.byref(expanded)), 0)

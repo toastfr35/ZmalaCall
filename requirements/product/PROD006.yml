@@ -11,8 +11,8 @@ references: []
 reviewed: null
 scope: Core
 text: |
-  A new Pi terminal shall guide the user through connecting its C20 and pairing and
+  A new Pi terminal shall guide the user through connecting its C10/C20 and pairing and
   proving operation of its Presenter remote before normal use.
 verification: |
-  Start without a C20 or paired remote and complete the connection, pairing and physical
+  Start without a C10/C20 or paired remote and complete the connection, pairing and physical
   button checks.

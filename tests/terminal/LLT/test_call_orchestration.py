@@ -1,8 +1,9 @@
 # @test T-LLT-066
-# @requirements LLR-TERM-NAV-007, LLR-TERM-CALL-012, LLR-TERM-CALL-014, LLR-TERM-HISTORY-015, LLR-TERM-HISTORY-017, LLR-TERM-HISTORY-021, LLR-TERM-HISTORY-022, LLR-TERM-HISTORY-024, LLR-TERM-POWER-014
+# @requirements LLR-TERM-NAV-007, LLR-TERM-CALL-012, LLR-TERM-CALL-014, LLR-TERM-HISTORY-015, LLR-TERM-HISTORY-017, LLR-TERM-HISTORY-021, LLR-TERM-HISTORY-022, LLR-TERM-HISTORY-024, LLR-TERM-POWER-014, LLR-TERM-TV-034
 # @environment portable
 # @plan Drive real call orchestration and the configured model with fake native SIP, HTTP preflight, scheduling and USB boundaries. Verify incoming permissions, call-handle ownership, persisted notifications, timeout validation, stale/cancelled USB retries, end/error cleanup and callback target/response validation. For unanswered outgoing attempts, inject remote rejection/end, delayed/immediate caller cancellation, synchronous end callbacks, prior connection, incoming decline, permission removal and existing pending requests; verify one callback offer, both choices and late-event fencing. Check callback-availability prompts do not interrupt active settings or calls.
 # @pass Native operations and persisted results match assertions; no actual call, media, TV or network side effects occur.
+# The TV retry predicate remains true only for the same still-ringing native call; answer, replacement, end and engine teardown invalidate it.
 import json
 import queue
 import unittest
@@ -13,6 +14,20 @@ from tests.terminal.LLT.test_terminal import config
 
 
 class CallOrchestrationTests(unittest.TestCase):
+    def test_tv_retries_belong_only_to_the_same_ringing_call(self):
+        c = self.controller()
+        c.call_event(42, 1, 'alice', 'family.test')
+        ringing = c.tv_control.wake.call_args.kwargs['ringing']
+        self.assertTrue(ringing())
+        for state in (State.CONNECTING, State.IN_CALL, State.STOPPING, State.HOME):
+            c.model.state = state
+            self.assertFalse(ringing(), state)
+        c.model.state = State.RINGING
+        c.engine.call = 43
+        self.assertFalse(ringing())
+        c.engine = None
+        self.assertFalse(ringing())
+
     def controller(self):
         c=call_control.CallControl(); c.model=TerminalModel(); c.model.configure(config())
         c.root=Mock(); c.render=Mock(); c.missed_calls_store=Mock(); c.engine=Mock(call=41,registered=True)

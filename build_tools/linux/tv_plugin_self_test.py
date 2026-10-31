@@ -69,6 +69,10 @@ def run_sequence(invoke, snapshot, inputs, delay=5, sleep=time.sleep, clock=time
             observation['observed_at'] = utc_now()
             observation['completed_seconds'] = round(clock() - completed, 3)
             record.update(observation)  # Overview uses the last observation only.
+            if 'photo_error' in observation and not restoring:
+                # Do not keep changing a TV once the evidence camera has failed.
+                # Restoration still attempts the saved baseline without a photo.
+                raise RuntimeError('Camera observation failed')
         expected = None
         actual = None
         if method in ('set_power_on', 'set_power_off'):

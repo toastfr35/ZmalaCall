@@ -1,11 +1,12 @@
 """Tk widgets and layout. No worker or SIP callback updates widgets outside the UI thread."""
 import math
+import sys
 import time
 import tkinter as tk
 import tkinter.font as tkfont
 from zmala_terminal.common.model import State
 from zmala_terminal.common.localization import translate
-from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED
+from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED, BUTTON_GREEN, BUTTON_RED
 from zmala_terminal.common.ui.carousel import CarouselView
 from zmala_terminal.common.ui.confirmation import ConfirmationView
 from zmala_terminal.common.ui.remote_help import RemoteHelpView
@@ -22,6 +23,35 @@ INITIAL_VIDEO_GRACE = 8
 
 
 class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsView, UsbSetupView, TVSetupView):
+    # @llr LLR-TERM-CALL-013
+    def ringing_hint(self):
+        """Platform-specific controls; remote connection state cannot imply a keyboard."""
+        if self.model.deadline:
+            return self.text('countdown', seconds=max(1, math.ceil(self.model.deadline-time.monotonic()))), MUTED
+        if sys.platform == 'win32':
+            return 'ENTER  ' + self.text('answer'), MUTED
+        return '', MUTED  # Pi actions have their own two-colour row.
+
+    # @llr LLR-TERM-CALL-013
+    def render_ringing_controls(self):
+        """Match the remote's two coloured buttons, with symbols and shaped text."""
+        if sys.platform == 'win32' or self.setup_stage or self.model.state != State.RINGING:
+            self.ringing_controls.grid_remove()
+            return
+        self.ringing_controls.grid()
+        width = min(300, max(180, (self.root.winfo_width()-160)//2))
+        signature = (width, self.font_family, self.text('answer'), self.text('decline'))
+        if signature == self.ringing_controls_signature:
+            return
+        self.ringing_controls_signature = signature
+        for label, key, symbol, color in (
+                (self.ringing_answer, 'answer', '✓', BUTTON_GREEN),
+                (self.ringing_decline, 'decline', '✕', BUTTON_RED)):
+            text = symbol + '  ' + self.text(key).capitalize()
+            image = self.text_renderer.photo(text, self.font_family, 24, color, FG, width, True)
+            label.configure(text=text, image=image if image else '', font=(self.font_family, 24, 'bold'))
+            label.image = image
+
     def build_ui(self):
         self.top = tk.Frame(self.root, bg=BG)
         self.top.pack(fill='x', padx=18, pady=(12, 0))
@@ -53,6 +83,16 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         self.name.grid(row=1, column=0, pady=(0, 5))
         self.subtitle = tk.Label(self.home, text='', font=('Segoe UI', 19), bg=BG, fg=MUTED, wraplength=850)
         self.subtitle.grid(row=2, column=0, pady=(0, 4))
+        self.ringing_controls = tk.Frame(self.home, bg=BG)
+        self.ringing_controls_signature = None
+        self.ringing_controls.grid(row=3, column=0, pady=(4, 12))
+        self.ringing_answer = tk.Label(self.ringing_controls, bg=BUTTON_GREEN, fg=FG,
+                                       borderwidth=0, padx=18, pady=12)
+        self.ringing_decline = tk.Label(self.ringing_controls, bg=BUTTON_RED, fg=FG,
+                                        borderwidth=0, padx=18, pady=12)
+        self.ringing_answer.grid(row=0, column=0, padx=(0, 12), sticky='nsew')
+        self.ringing_decline.grid(row=0, column=1, padx=(12, 0), sticky='nsew')
+        self.ringing_controls.grid_remove()
         self.video = tk.Frame(self.body, bg=BG, highlightthickness=0)
         self.video_border = (0, None)
         # Keep the native rendering surface mapped behind this child panel so
@@ -103,6 +143,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
     # @llr LLR-TERM-UI-024, LLR-TERM-UI-025
     def fit_text(self):
         """Fit longer translations and scripts into the available display width."""
+        self.render_ringing_controls()
         width = max(700, self.root.winfo_width() - 80)
         self.video_message.configure(text=self.text(self.video_message_key))
         self.video_reassurance.configure(text=self.text('wait' if self.video_message_key == 'starting_video' else 'audio_continues'))
@@ -276,6 +317,7 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
         """Render the model on Tk's thread; keep the video surface alive through call transitions."""
         if self.closed:
             return
+        self.render_ringing_controls()
         if self.update_usb_setup() or self.update_pairing_page():
             return
         if self.model.state not in (State.HOME, State.CONFIRMING, State.CONFIRM_CALLBACK) or self.setup_stage:
@@ -349,13 +391,14 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
                 self.title.configure(text=self.text('callback_requested'))
             elif state == State.HOME and self.callback_alert:
                 self.title.configure(text=f"↩ {self.callback_alert[0]} · {self.text('online')}")
+            subtitle_color = MUTED
             if state == State.HOME:
                 subtitle = self.text(self.notice) if self.notice and self.notice != 'callback_requested' else ('' if contact and registered else self.text('connecting') if contact else self.text('empty'))
             elif state == State.RINGING:
-                subtitle = self.text('countdown', seconds=max(1, math.ceil(self.model.deadline-time.monotonic()))) if self.model.deadline else 'ENTER  '+self.text('answer')
+                subtitle, subtitle_color = self.ringing_hint()
             else:
                 subtitle = self.text('wait')
-            self.subtitle.configure(text=subtitle)
-            if state == State.HOME and not subtitle:
+            self.subtitle.configure(text=subtitle, fg=subtitle_color)
+            if state in (State.HOME, State.RINGING) and not subtitle:
                 self.subtitle.grid_remove()
         self.fit_text()

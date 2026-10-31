@@ -5,6 +5,7 @@ C20 without a server edit. Native media policy lives here; SIP stays shared.
 """
 import ctypes as C
 import logging
+from zmala_terminal.linux.nuroum import supported_name
 from zmala_terminal.common.native_runtime import ROOT
 from zmala_terminal.common.media_errors import MediaNotReady
 
@@ -39,7 +40,7 @@ def c20_devices(devices):
     """Exclude unrelated cameras and HDMI/default audio from Linux choices."""
     selected = {'camera': [name for name in devices['camera'] if name.startswith('ZmalaMJPEG:')]}
     for kind in ('microphone', 'speaker'):
-        selected[kind] = [name for name in devices[kind] if 'Nuroum C20' in name]
+        selected[kind] = [name for name in devices[kind] if supported_name(name)]
     return selected
 
 
@@ -48,7 +49,7 @@ def settings(devices):
     missing = [kind for kind in ('camera', 'microphone', 'speaker') if not selected[kind]]
     if missing:
         # Never fall back to HDMI audio or a different webcam silently.
-        raise MediaNotReady('Nuroum C20 unavailable: ' + ', '.join(missing))
+        raise MediaNotReady('Nuroum C10/C20 unavailable: ' + ', '.join(missing))
     return {kind: names[0] for kind, names in selected.items()}
 
 
@@ -80,7 +81,7 @@ def refresh_usb_devices(self):
     self.apply_settings(self.config.get('terminal_settings', {}))
     from zmala_terminal.linux.c20_volume import reapply
     reapply()
-    logging.info('C20 devices refreshed after USB wake')
+    logging.info('C10/C20 devices refreshed after USB wake')
 
 
 CODECS = {'H264'}
@@ -107,12 +108,12 @@ def bind_call_audio(engine):
         for device in owned:
             name = engine.audio_device_get_id(device) or b''
             capabilities = engine.audio_device_get_capabilities(device)
-            if b'Nuroum C20' in name:
+            if supported_name(name):
                 for direction, capability in (('input', 1), ('output', 2)):
                     if capabilities & capability:
                         selected.setdefault(direction, device)
         if len(selected) != 2:
-            raise MediaNotReady('Nuroum C20 audio is still waking')
+            raise MediaNotReady('Nuroum C10/C20 audio is still waking')
         for direction, device in selected.items():
             getattr(engine, 'core_set_default_' + direction + '_audio_device')(engine.core, device)
             targets = [('core_get_default_', engine.core)]
@@ -123,9 +124,9 @@ def bind_call_audio(engine):
                 effective = getattr(engine, prefix + direction + '_audio_device')(target)
                 name = engine.audio_device_get_id(effective) if effective else None
                 if name != engine.audio_device_get_id(device):
-                    raise MediaNotReady('Nuroum C20 ' + direction + ' route is not ready')
+                    raise MediaNotReady('Nuroum C10/C20 ' + direction + ' route is not ready')
             if engine.call:
-                logging.info('C20 call %s route: %s', direction, name.decode(errors='replace'))
+                logging.info('C10/C20 call %s route: %s', direction, name.decode(errors='replace'))
     finally:
         # The list owns one reference per entry; getters above return borrowed pointers.
         for device in owned:

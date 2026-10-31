@@ -32,15 +32,20 @@ class CallControl:
             if not self.model.incoming(user, domain):
                 self.engine.call_decline(call, 6 if self.model.state != State.HOME else 2)
                 return
-            # @llr LLR-TERM-POWER-014
+            # @llr LLR-TERM-POWER-014, LLR-TERM-POWER-016
             if getattr(self, 'usb_power', None):
                 self.usb_power.require(urgent=True)
             if getattr(self, 'settings_hold', None):
                 self.settings_hold.clear()
                 self.settings_open = False
             self.engine.hold_call(call)
+            # A short missed call may end before the first ringing render.
+            # Do not let an earlier carousel animation override its selection.
+            self.carousel_motion = None
             if getattr(self, 'tv_control', None):
-                self.tv_control.wake()
+                # @llr LLR-TERM-TV-034
+                self.tv_control.wake(ringing=lambda: bool(self.engine and
+                    self.engine.call == call and self.model.state == State.RINGING))
             self.root.after_idle(lambda: self.root.lift())
             self.notice = ''
         elif state in (3, 4, 5, 6) and self.model.state == State.HOME:
@@ -64,7 +69,8 @@ class CallControl:
             self.engine.hold_call(None)
             self.notice = 'unavailable' if failed else ''
             if getattr(self, 'tv_control', None):
-                self.tv_control.cancel()
+                # @llr LLR-TERM-TV-028
+                self.tv_control.cancel(defer=True)
         self.root.after_idle(self.render)
 
     # @llr LLR-TERM-HISTORY-021
@@ -175,16 +181,16 @@ class CallControl:
                 self.answer_when_ready()
             elif action in ('end', 'decline'):
                 self.dial_serial += 1
-                # Rejection ends the TV interruption immediately, even if the
-                # SIP end callback arrives late. Answering retains the baseline.
+                # Stop late wake commands on rejection, but retain the picture
+                # until the shared inactivity countdown restores the TV.
                 if action == 'decline' and getattr(self, 'tv_control', None):
-                    self.tv_control.cancel()
+                    self.tv_control.cancel(defer=True)
                 self.engine.end(decline=action == 'decline')
                 if not self.engine.call:
                     self.finish_call()
                     self.outgoing_deadline = None
                     if action != 'decline' and getattr(self, 'tv_control', None):
-                        self.tv_control.cancel()
+                        self.tv_control.cancel(defer=True)
         except Exception:
             logging.exception('Call action failed')
             if self.engine and self.engine.call:
@@ -192,7 +198,7 @@ class CallControl:
             self.finish_call()
             self.notice = 'unavailable'
             if getattr(self, 'tv_control', None):
-                self.tv_control.cancel()
+                self.tv_control.cancel(defer=True)
 
     # @llr LLR-TERM-NAV-005
     def contact_online(self, contact):

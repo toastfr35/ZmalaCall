@@ -1,7 +1,7 @@
 # @test T-LLT-013
 # @requirements LLR-TERM-TV-026, LLR-TERM-TV-029, LLR-TERM-TV-030
 # @environment portable
-# @plan Advance a controlled clock and inject physical input, TV visibility, calls and pending writes; assert countdown reset, ten-second bar delay, inhibition and one expiry without saving a draft. Record bottom progress-bar placement, proportional width, repaint caching, resize and hidden states.
+# @plan Advance a controlled clock and inject physical input, TV visibility, calls and pending writes; assert full post-call intervals even for a missed call between ticks, countdown reset, ten-second bar delay, inhibition and one expiry without saving a draft. Record bottom progress-bar placement, proportional width, repaint caching, resize and hidden states.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 from pathlib import Path
@@ -112,8 +112,39 @@ class IdleTests(unittest.TestCase):
         app.settings_draft, app.settings_hold = SettingsDraft(), SettingsHold()
         app.idle_countdown = IdleCountdown()
         app.render, app.draw_tv_idle, app.tv_control = Mock(), Mock(), Mock()
-        app.tv_control.browsing_session.return_value = object()
+        app.tv_control.browsing_session.return_value = {'off': True}
         return app
+
+    def test_post_call_lease_gets_full_countdown_even_without_a_ringing_tick(self):
+        app = self.app()
+        app.tv_control.browsing_session.return_value = None
+        app.tick_tv_idle(0)
+        # Even a very short unanswered call must not inherit an old idle anchor.
+        session = {'off': True, 'idle_started': 100}
+        app.tv_control.browsing_session.return_value = session
+        app.tick_tv_idle(100)
+        app.draw_tv_idle.assert_called_with(None)
+        app.tick_tv_idle(109)
+        app.draw_tv_idle.assert_called_with(None)
+        app.tick_tv_idle(110)
+        self.assertAlmostEqual(app.draw_tv_idle.call_args.args[0], 2/3)
+        app.tick_tv_idle(129)
+        app.tv_control.restore_browsing.assert_not_called()
+        app.tick_tv_idle(130)
+        app.tv_control.restore_browsing.assert_called_once_with(session)
+
+    def test_post_call_never_and_input_reset(self):
+        app = self.app()
+        app.tv_control.browsing_session.return_value = {'off': False, 'idle_started': 100}
+        app.tick_tv_idle(100)
+        app.last_button = 125
+        app.tick_tv_idle(125)
+        app.tick_tv_idle(154)
+        app.tv_control.restore_browsing.assert_not_called()
+        app.model.config['tv_idle_seconds'] = 0
+        app.tick_tv_idle(1000)
+        app.tv_control.restore_browsing.assert_not_called()
+        app.draw_tv_idle.assert_called_with(None)
 
     def test_calls_setup_writes_and_held_buttons_pause_then_restart(self):
         for state in State:

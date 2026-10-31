@@ -34,6 +34,11 @@ def fixture_wav():
 
 
 class SoundLevelsTests(unittest.TestCase):
+    def setUp(self):
+        route = patch('zmala_terminal.linux.action_sounds.playback_device', return_value="default:C20")
+        route.start()
+        self.addCleanup(route.stop)
+
     def pcm(self,data):
         with wave.open(io.BytesIO(data),'rb') as source:
             return array.array('h',source.readframes(source.getnframes()))

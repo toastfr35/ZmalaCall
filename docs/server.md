@@ -444,7 +444,7 @@ Pi receives the catalog and caches its selection; Nokia stays bundled, so public
 installers and source releases contain no privately imported music.
 
 The Pi terminal settings page has no alternative camera, microphone or speaker
-selectors. All three are supplied by the Nuroum C20. Legacy API selector strings
+selectors. All three are supplied by the Nuroum C10/C20. Legacy API selector strings
 remain validated for compatibility, but the Pi ignores them and browser saves
 clear them. A waking C20 is retried automatically; TV audio is never a substitute.
 

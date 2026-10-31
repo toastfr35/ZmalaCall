@@ -136,6 +136,8 @@ class LinuxPackageTests(unittest.TestCase):
             required = ('build_tools/linux/tv-plugin-self-test.py',
                         'build_tools/linux/tv_plugin_self_test.py',
                         'build_tools/linux/tv_test_card.py',
+                        'build_tools/linux/tv_test_camera.py',
+                        'build_tools/linux/tv_test_processes.py',
                         'build_tools/linux/tv-plugin-self-test.sh',
                         'zmala_terminal/linux/tv_plugins/__init__.py')
             with tarfile.open(release) as archive:
@@ -143,7 +145,7 @@ class LinuxPackageTests(unittest.TestCase):
                     target = extracted / name
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(archive.extractfile(name).read())
-                self.assertEqual(archive.getmember(required[3]).mode, 0o755)
+                self.assertEqual(archive.getmember('build_tools/linux/tv-plugin-self-test.sh').mode, 0o755)
             # Isolated mode and an unrelated cwd prevent the repository from
             # hiding missing dependencies in the actual distributable.
             result = subprocess.run([sys.executable, '-I', str(extracted / required[0]), '--help'],
@@ -152,7 +154,7 @@ class LinuxPackageTests(unittest.TestCase):
             self.assertIn('--operate-tv', result.stdout)
             self.assertIn('--pause-terminal', result.stdout)
             self.assertIn('--observation-count', result.stdout)
-            wrapper = (extracted / required[3]).read_text()
+            wrapper = (extracted / 'build_tools/linux/tv-plugin-self-test.sh').read_text()
             self.assertIn('/opt/zmalacall/current/build_tools/linux/tv-plugin-self-test.py "$@"', wrapper)
             installer = (ROOT / 'build_tools/linux/install-kiosk.sh').read_text()
             self.assertIn('"$release/build_tools/linux/tv-plugin-self-test.sh" /usr/local/sbin/zmala-tv-test', installer)

@@ -23,7 +23,7 @@ scope: Core
 text: "The terminal shall use the supported microphone and speaker for call sound. It shall\nplay call-progress\
   \ tones and stop them when their purpose ends.\n Distinct remote-button presses shall provide short audible feedback\
   \ with a separately adjustable level, including a silent choice.\n"
-verification: 'Place and receive calls using the C20. Check speech direction, tone routing and tone
+verification: 'Place and receive calls using the C10/C20. Check speech direction, tone routing and tone
 
   termination for each call outcome.
 

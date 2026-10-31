@@ -60,6 +60,7 @@ class ProvisioningFlow:
             self.start_wifi_cleanup()
             return
         ready = getattr(self, 'usb_media_ready', None)
+        # @llr LLR-TERM-POWER-016
         if ready and not ready():
             return
         self.render()

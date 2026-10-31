@@ -105,7 +105,7 @@ class ManagementPumpTests(unittest.TestCase):
 
     def test_usb_activity_and_readiness_requires_power_before_native_refresh(self):
         loop=self.loop(); order=[]
-        loop.usb_power.require.side_effect=lambda:order.append('require')
+        loop.usb_power.require.side_effect=lambda **kwargs:order.append('require')
         loop.usb_power.refresh.side_effect=lambda engine:order.append(engine)
         self.assertTrue(loop.usb_media_ready()); self.assertEqual(order,['require',loop.engine])
         loop.usb_power.ready=False; self.assertFalse(loop.usb_media_ready())

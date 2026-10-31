@@ -1534,7 +1534,7 @@ function buildMediaFields(devices, media, id) {
   // @llr LLR-SRV-CONFIG-018
   const hardware = el(
     'p',
-    'Nuroum C20 supplies the camera, microphone and speaker automatically. If it is waking up, the terminal waits and retries.',
+    'Nuroum C10/C20 supplies the camera, microphone and speaker automatically. If it is waking up, the terminal waits and retries.',
     'help terminal-media-intro',
   );
   const resolution = terminalSelect(
@@ -1574,7 +1574,7 @@ function buildMediaFields(devices, media, id) {
   framing.append(
     el(
       'small',
-      'Experimental · Pi C20 camera. Keeps people in view, up to 2× zoom. Applies during calls.',
+      'Experimental · Pi C10/C20 camera. Keeps people in view, up to 2× zoom. Applies during calls.',
     ),
   );
   // Keep help beneath the switch caption rather than as a third flex column.
@@ -1585,7 +1585,7 @@ function buildMediaFields(devices, media, id) {
     'audioProfile',
     [
       ['normal', 'Normal audio'],
-      ['speech', 'Speech · 16 kHz (Linux C20)'],
+      ['speech', 'Speech · 16 kHz (Linux C10/C20)'],
     ],
     profile.audio_profile || 'normal',
   );
@@ -1595,7 +1595,7 @@ function buildMediaFields(devices, media, id) {
     el('summary', 'About audio processing'),
     el(
       'p',
-      'Speech processing is available on Linux C20 terminals. Windows uses normal audio. Changes apply when idle.',
+      'Speech processing is available on Linux C10/C20 terminals. Windows uses normal audio. Changes apply when idle.',
       'help',
     ),
   );
@@ -1611,7 +1611,7 @@ function buildMediaFields(devices, media, id) {
   volume.append(
     el(
       'small',
-      'C20 call playback only. 5% steps. Default: 50%. Ringtone and button sounds have separate levels.',
+      'C10/C20 call playback only. 5% steps. Default: 50%. Ringtone and button sounds have separate levels.',
     ),
   );
   media.append(hardware, resolution, frameRate, framing, audio, volume, ringtoneField(devices, id));
@@ -1683,7 +1683,7 @@ async function openDeveloperAccess(id) {
   );
   const instructions = el(
     'p',
-    'Connect through the server to 127.0.0.1 port 22001, using the remote Pi’s own SSH account. Point its C20 at the TV to check the picture during plugin testing.',
+    'Connect through the server to 127.0.0.1 port 22001, using the remote Pi’s own SSH account. Point its C10/C20 at the TV to check the picture during plugin testing.',
   );
   const error = el('p', null, 'banner error');
   error.hidden = true;
@@ -1798,7 +1798,7 @@ function appendTerminalHardware(summary, status, fresh) {
   if (!fresh) {
     summary.append(
       badge('Remote: status unavailable', 'neutral'),
-      badge('C20: status unavailable', 'neutral'),
+      badge('C10/C20: status unavailable', 'neutral'),
     );
     return;
   }
@@ -1841,11 +1841,11 @@ function appendTerminalHardware(summary, status, fresh) {
       'neutral',
     ),
     badge(
-      'C20: ' + (camera[status?.camera_status || ''] || 'unknown'),
+      'C10/C20: ' + (camera[status?.camera_status || ''] || 'unknown'),
       status?.camera_status === 'connected' ? 'success' : 'neutral',
     ),
     badge(
-      'C20 power: ' +
+      'C10/C20 power: ' +
         (status?.camera_powered === true
           ? 'on'
           : status?.camera_powered === false
@@ -1886,7 +1886,7 @@ function terminalCardState(card, id) {
       active: 'Automatic framing active',
       waiting: 'Automatic framing ready for a call',
       unavailable: 'Automatic framing unavailable Ã‚Â· full view',
-      unsupported: 'Automatic framing requires a Pi C20 terminal',
+      unsupported: 'Automatic framing requires a Pi C10/C20 terminal',
     };
     features.append(
       badge(

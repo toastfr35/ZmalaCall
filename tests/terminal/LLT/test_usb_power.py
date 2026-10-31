@@ -1,7 +1,9 @@
 # @test T-LLT-037
 # @requirements LLR-TERM-POWER-012, LLR-TERM-POWER-013, LLR-TERM-POWER-014, LLR-TERM-POWER-015, LLR-TERM-POWER-016, LLR-TERM-POWER-017
 # @environment portable
-# @plan Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication. Inject applied-volume status and worker time to verify ringing only after nonzero mixer convergence, atomic power telemetry, ringer termination escalation and unconditional shutdown power restoration.
+# @plan Verify either supported USB identity may power down, but unrelated devices cannot. Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication. Inject applied-volume status and worker time to verify ringing only after nonzero mixer convergence, atomic power telemetry, ringer termination escalation and unconditional shutdown power restoration.
+# Verify successful transitions and shutdown are quiet while helper rollback errors
+# remain visible; ordinary power-on emits no helper diagnostics. No real USB is switched.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Boundary, wake-race, stale-input and cancellation tests without powering USB."""
@@ -23,6 +25,11 @@ from zmala_terminal.common.management import ManagementLoop
 
 
 class UsbPowerTests(unittest.TestCase):
+    def setUp(self):
+        route = patch('zmala_terminal.linux.usb_power.playback_device', return_value='default:C20')
+        route.start()
+        self.addCleanup(route.stop)
+
     def test_power_worker_status_and_ringer_wait_for_applied_nonzero_volume(self):
         import zmala_terminal.linux.usb_power as module
         power = self.controller()
@@ -98,6 +105,30 @@ class UsbPowerTests(unittest.TestCase):
         self.assertEqual(enabled.state, 'starting')
         thread.return_value.start.assert_called_once()
 
+    def test_successful_transitions_and_shutdown_are_quiet(self):
+        for previous in ('starting', 'off', 'error', 'on'):
+            power = self.controller(); power.state = previous
+            power.active = previous != 'on'
+            power.battery = 95; power.updated = 1000; power.last_use = 0
+            def command(action):
+                power.stopped = True
+            power.command = Mock(side_effect=command)
+            with patch('time.monotonic', return_value=1000), \
+                    patch('zmala_terminal.linux.usb_power.media_present', return_value=True), \
+                    self.assertNoLogs(level='INFO'):
+                power.run()
+            self.assertEqual(power.command.call_args_list,
+                             [unittest.mock.call('off' if previous == 'on' else 'on'), unittest.mock.call('on')])
+
+    def test_helper_rollback_output_survives_subprocess_capture(self):
+        import subprocess
+        power = self.controller()
+        with patch('zmala_terminal.linux.usb_power.subprocess.run', side_effect=
+                   subprocess.CalledProcessError(1, 'helper', stderr='USB power-off failed; restoring power')), \
+                self.assertLogs(level='WARNING') as logs:
+            with self.assertRaises(subprocess.CalledProcessError): power.command('off')
+        self.assertIn('power-off failed; restoring power', logs.output[0])
+
     def test_exact_idle_and_battery_boundaries(self):
         self.assertFalse(should_power_off(299.9, 0, False, 100))
         self.assertTrue(should_power_off(300, 0, False, 25))
@@ -152,7 +183,8 @@ class UsbPowerTests(unittest.TestCase):
         app.render = Mock()
         app.usb_power = self.controller()
         app.tv_control = Mock()
-        def check_woken():
+        def check_woken(*, ringing):
+            self.assertTrue(callable(ringing))
             self.assertEqual(app.usb_power.wake_serial, 1)
             self.assertTrue(app.usb_power.changed.is_set())
         app.tv_control.wake.side_effect = check_woken
@@ -306,8 +338,10 @@ class HelperSafetyTests(unittest.TestCase):
 
     def test_helper_on_needs_no_camera_and_off_requires_exactly_one_idle_camera(self):
         h = self.helper
-        with patch.object(h, 'validate_board'), patch.object(h, 'devices', return_value=[]), patch.object(h, 'switch') as switch:
+        with patch.object(h, 'validate_board'), patch.object(h, 'devices', return_value=[]), \
+                patch.object(h, 'switch') as switch, patch.object(h.sys, 'stderr') as stderr:
             h.power('on'); switch.assert_called_once_with('on')
+            stderr.write.assert_not_called()
             with self.assertRaisesRegex(RuntimeError, 'exactly one'):
                 h.power('off')
         with tempfile.TemporaryDirectory() as directory, patch.object(h, 'validate_board'), \
@@ -318,9 +352,10 @@ class HelperSafetyTests(unittest.TestCase):
                 self.assertEqual(action, 'off')
                 self.assertEqual((camera/'authorized').read_text(), '0')
             switch.side_effect = check_off
-            with patch.object(h, 'devices', return_value=[(camera, ('0525','a4ad'))]):
-                h.power('off')
-            switch.assert_called_once_with('off')
+            for product in ('a4ad', 'a4b0'):
+                with patch.object(h, 'devices', return_value=[(camera, ('0525',product))]):
+                    h.power('off')
+            self.assertEqual(switch.call_count, 2)
             self.assertEqual(opened.call_args.kwargs['timeout'], 5)
 
     def test_successful_command_with_unchanged_ports_is_rejected(self):

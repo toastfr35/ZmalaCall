@@ -50,13 +50,14 @@ def switch(action):
 def power(action):
     validate_board()
     if action == 'on':
+        # @llr LLR-TERM-POWER-016
         switch('on')
         return
     attached = devices()
-    if any(identity != ('0525', 'a4ad') for _, identity in attached):
+    if any(identity not in (('0525', 'a4ad'), ('0525', 'a4b0')) for _, identity in attached):
         raise RuntimeError('Other USB peripherals present; leaving power on')
     if len(attached) != 1:
-        raise RuntimeError('Expected exactly one C20 before powering down')
+        raise RuntimeError('Expected exactly one C10 or C20 before powering down')
     nodes = list(Path('/dev').glob('video*')) + list(Path('/dev/snd').glob('pcm*'))
     if nodes:
         opened = subprocess.run(['/usr/bin/fuser', *map(str, nodes)], capture_output=True, timeout=5)
@@ -68,6 +69,7 @@ def power(action):
         (camera / 'authorized').write_text('0')
         switch('off')
     except Exception:
+        print('USB power-off failed; restoring power', file=sys.stderr, flush=True)
         switch('on')
         if (camera / 'authorized').exists():
             (camera / 'authorized').write_text('1')

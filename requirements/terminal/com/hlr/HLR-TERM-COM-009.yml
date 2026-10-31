@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/HLT/relay_renewal_native.py
+  type: file
 - path: tests/terminal/HLT/test_server_exchange_ui.py
   type: file
 - path: tests/terminal/HLT/secure_network_lab.py

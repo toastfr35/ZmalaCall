@@ -1,7 +1,7 @@
 # @test T-LLT-006
 # @requirements LLR-TERM-AUDIO-004, LLR-TERM-POWER-010
 # @environment portable
-# @plan Use native lists containing HDMI and C20 devices, with an incoming call initially routed to HDMI. Apply real Pi settings and assert core defaults, pending-call input/output and ringtone all use C20. Inject absent capabilities, rejected setters and wrong readback; require retryable failure and release every owned native reference.
+# @plan Use native lists containing HDMI and C10/C20 devices, with an incoming call initially routed to HDMI. Apply real Pi settings and assert core defaults, pending-call input/output and ringtone all use C20. Inject absent capabilities, rejected setters and wrong readback; require retryable failure and release every owned native reference.
 # @pass All routing and ownership assertions pass; this does not establish acoustic quality.
 
 import ctypes as C
@@ -15,7 +15,7 @@ from tests.terminal.LLT.test_linux_media import catalog
 
 
 class AudioRoutingTests(unittest.TestCase):
-    def engine(self):
+    def engine(self, model="C20"):
         engine = Engine.__new__(Engine)
         engine.core, engine.call = 10, 20
         engine.devices = Mock(return_value=catalog('4'))
@@ -28,7 +28,7 @@ class AudioRoutingTests(unittest.TestCase):
             if i < 2:
                 node.next = C.pointer(engine.nodes[i+1])
         engine.core_get_extended_audio_devices = Mock(return_value=C.pointer(engine.nodes[0]))
-        names = {1: b'ALSA: HDMI', 2: b'ALSA: Nuroum C20 [Unknown]', 3: b'ALSA: unrelated mic'}
+        names = {1: b'ALSA: HDMI', 2: ('ALSA: Nuroum '+model+' [Unknown]').encode(), 3: b'ALSA: unrelated mic'}
         engine.audio_device_get_id = Mock(side_effect=names.get)
         engine.audio_device_get_capabilities = Mock(side_effect={1: 2, 2: 3, 3: 1}.get)
         engine.audio_device_unref, engine.bctbx = Mock(), Mock()
@@ -42,6 +42,13 @@ class AudioRoutingTests(unittest.TestCase):
                 setattr(engine, setter+direction+'_audio_device', Mock(side_effect=lambda target, device, key=key: engine.routes.update({key: device})))
                 setattr(engine, getter+direction+'_audio_device', Mock(side_effect=lambda target, key=key: engine.routes[key]))
         return engine
+
+    def test_c10_pending_call_rebinds_both_directions(self):
+        engine = self.engine('C10')
+        bind_call_audio(engine)
+        self.assertEqual(set(engine.routes.values()), {2})
+        engine.call_set_input_audio_device.assert_called_once_with(20, 2)
+        engine.call_set_output_audio_device.assert_called_once_with(20, 2)
 
     def test_waking_c20_replaces_hdmi_on_pending_call_and_future_calls(self):
         engine = self.engine()

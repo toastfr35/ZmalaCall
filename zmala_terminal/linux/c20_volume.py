@@ -2,6 +2,7 @@
 import logging
 import subprocess
 import threading
+from zmala_terminal.linux.nuroum import audio_card
 from zmala_terminal.linux.sound_levels import playback_environment
 
 _condition = threading.Condition()
@@ -88,10 +89,13 @@ def apply(percent):
         # changing the level must preserve any existing hardware mute state.
         # @llr LLR-TERM-AUDIO-010
         # A shared hardware gain would couple calls, ringtones and button sounds.
-        # Keep it fixed; Engine applies the call-only gain on its owning thread.
-        subprocess.run(['amixer', '-q', '-c', 'C20', 'sset', 'PCM', '100%'],
+        # Both C10 and C20 report a +12 dB maximum; independent stream gains still
+        # control call, ringtone and button loudness.
+        # Engine applies the call-only gain on its owning thread.
+        card = audio_card()
+        subprocess.run(['amixer', '-q', '-c', card, 'sset', 'PCM', '12dB'],
                        check=True, capture_output=True, timeout=5, env=playback_environment())
-        logging.info('C20 output ready; call volume: %s%%', percent)
+        logging.info('C10/C20 output ready; call volume: %s%%', percent)
         return True
     except (OSError, subprocess.SubprocessError) as error:
         # A missing mixer must not prevent SIP registration or end a call.

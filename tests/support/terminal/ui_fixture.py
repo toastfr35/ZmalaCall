@@ -88,6 +88,7 @@ def terminal_fixture():
         app.tv_control = Mock()
         app.tv_control.handle_button.return_value = False
         app.tv_control.ready.return_value = True
+        app.tv_control.browsing_session.return_value = None
         app.missed_calls_store = MissedCallsStore(Path(directory)/'notifications.json')
         app.apply_config(configuration())
         app.server_seen = time.monotonic()

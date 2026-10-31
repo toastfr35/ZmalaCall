@@ -143,6 +143,12 @@ PHONE = {
 # The pass is idempotent so rebuilding never duplicates instructions.
 REVISIONS = {
     'terminal_use.docx': {
+        'For an incoming call,': [
+            'For an incoming call, the screen shows a green Answer prompt with a check mark '
+            'and a red Decline prompt with a cross. Press the matching button on your remote. '
+            'If automatic answer is enabled, both prompts stay visible beside the countdown. '
+            'Press red to decline before it connects.',
+        ],
         'Choose a person with the arrow buttons,': [
             'Use this guide for everyday calls after setup. Choose a familiar face with the arrow '
             'buttons, press green to confirm, and press red to finish.',
@@ -150,7 +156,7 @@ REVISIONS = {
         'Sound and everyday help': [],
         'Press the middle button to show the call-volume overlay.': [
             'Press the middle button to show the volume bar. Press left for quieter sound or right '
-            'for louder sound. Each click changes it by 5%. Press middle again to close the bar. '
+            'for louder sound. Each click changes it by 5%. Press red or middle again to close the bar. Red closes only the bar while it is open; it does not end the call. '
             'You can do this during a call and keep seeing the other person.',
         ],
         'The call-volume overlay changes only': [
@@ -168,14 +174,20 @@ REVISIONS = {
         'To cancel your request,': [
             'To cancel a request you sent, select that person, press red, then confirm with green.',
         ],
-        'A numbered badge can mean': [
+        'A numbered badge': [
             'A numbered badge marks missed calls or message notifications. Opening that person’s '
             'call or callback confirmation clears the count, even if you go back without calling.',
+            'After a missed call, the caller’s portrait is selected automatically so you can easily '
+            'call them back. Their missed-call badge stays unread until you open their confirmation.',
         ],
-        'After ten seconds without a button press,': [
-            'A thin blue bar at the bottom shows the countdown to returning to TV. A button press '
-            'restarts the countdown, and calls pause it. Your helper chooses the delay. This works '
-            'only when automatic TV control passed setup; otherwise use the TV remote.',
+        'A thin blue bar at the bottom': [
+            'A thin blue bar at the bottom appears after ten seconds without a button press and shows '
+            'the countdown to returning to TV. A button press '
+            'restarts the countdown. After any incoming call ends, answered or not, a fresh countdown '
+            'starts. When it finishes, the TV switches off if it was off before the call, or returns '
+            'to what you were watching if it was on. Your helper chooses the delay; Never disables '
+            'automatic return. This works only when automatic TV control passed setup; otherwise '
+            'use the TV remote.',
         ],
         'Webcam icon (if shown):': [
             'If a webcam symbol is shown, mint means power is on, a grey slash means off, and a '
@@ -228,17 +240,23 @@ REVISIONS = {
         ],
         'The terminal serial is shown at the bottom': [
             'The terminal ID appears at the bottom of Settings; give it to your helper if they need '
-            'to find this device on the server. The C20 provides the camera, microphone and speaker automatically.',
-            'If the C20 is waking, wait a few seconds. Zmala retries without switching sound to the '
+            'to find this device on the server. The C10/C20 provides the camera, microphone and speaker automatically.',
+            'If the C10/C20 is waking, wait a few seconds. Zmala retries without switching sound to the '
             'TV. Press red if you want to cancel the call. Your administrator can adjust video quality '
             'and the starting call volume on the server.',
         ],
         'To choose a ringtone,': [
             'Open Ringtone with green. Press left or right to browse and hear each choice after a '
             'short pause. The list wraps at both ends. Press green to save or red to keep the previous tone.',
-            'Use Ringtone volume to change its loudness; 0% is silent. Button sounds volume is '
+            'Ringtone volume controls incoming ringing, previews and the tone while waiting for someone to answer; 0% is silent. Button sounds volume is '
             'separate. Use middle and left/right to change the sound heard during calls. A call stops '
             'any ringtone preview.',
+        ],
+        'End the call with red.': [
+            'End the call with red. Then wait without pressing a button: the blue countdown bar should appear '
+            'after ten seconds. After the Return to TV delay, check that the TV returns to standby '
+            'if it was off, or the previous input if it was on. Repeat with an unanswered call. '
+            'Automatic return is disabled when the delay is set to Never.',
         ],
     },
     'server_prep.docx': {
@@ -263,7 +281,7 @@ REVISIONS = {
         'In Terminals, choose native-language labels': [
             'Open Terminals, choose the device by its account name and change its preferences. '
             'Call volume, Ringtone volume and Button sounds volume are separate and use 5% steps. '
-            'Remote & camera shows the remote’s battery and charger, and the C20’s connection and '
+            'Remote & camera shows the remote’s battery and charger, and the C10/C20’s connection and '
             'power when known. The Save changes bar stays visible as you scroll. Unsaved settings '
             'means your changes have not been applied; select Save changes to apply them.',
             'Open Setup to download its Wi-Fi and server QR documents. Give both privately to the '
@@ -351,7 +369,7 @@ def improve_readability(root):
                     'the same subnet as the server and use your normal server and Pi SSH logins.',
                     'For a terminal on another network, forward TCP port 2222 on the server router '
                     'to TCP 2222 on the server Pi. This separate port accepts only the tunnel '
-                    'account. Never forward ordinary SSH port 22. Point the C20 at the TV so '
+                    'account. Never forward ordinary SSH port 22. Point the C10/C20 at the TV so '
                     'the developer can check the displayed picture while testing.',
                 ):
                     doc.add_paragraph(text).paragraph_format.keep_together = True
@@ -397,7 +415,7 @@ def improve_readability(root):
             if paragraph.text.startswith('These ports are an example'):
                 paragraph.paragraph_format.keep_together = True
             if paragraph.text.startswith('No sound:'):
-                paragraph.text = 'No sound: increase the volume and check that the C20 is connected.'
+                paragraph.text = 'No sound: increase the volume and check that the C10/C20 is connected.'
             if paragraph.text.startswith('Remote does not respond:') and 'lightning bolt' not in paragraph.text:
                 paragraph.add_run(' The lightning bolt beside its battery means the charger is connected.')
             if paragraph.text[:1].isdigit() and '  ' in paragraph.text[:5]:

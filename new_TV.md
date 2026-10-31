@@ -283,3 +283,21 @@ This document describes investigation using the existing API and requirements;
 it introduces no runtime behaviour or new product requirement. Existing code trace
 comments and end-user guides remain accurate. The actual driver implementation is
 a later change with its own impact review and physical verification evidence.
+
+
+### Failure recovery and review boundaries
+
+If the camera fails after the initial photograph, the runner stops the remaining
+experimental commands, retains collected observations and attempts to restore
+the original TV state. Restoration may have no photograph; inspect the report
+rather than assuming it succeeded. Helper termination has deadlines, and cleanup
+attempts to restart a previously active terminal even if a helper fails to exit
+or the earlier stop command timed out. Cleanup failures produce a nonzero exit.
+A terminal that was already stopped remains stopped.
+
+The command runner, continuous camera child, process cleanup and HTML/ZIP report
+have separate modules under `build_tools/linux/`. Development regressions use
+fake processes and stateful TV fixtures in `tests/adhoc/test_tv_plugin_self_test.py`;
+installer tests verify that every helper ships and `--help` runs from the package.
+None of those local checks establish physical TV reliability. Preserve failed
+hardware results and repeat the in-situ matrix separately when authorized.

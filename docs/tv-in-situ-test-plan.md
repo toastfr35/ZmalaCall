@@ -32,16 +32,18 @@ Run each baseline scenario twice if the first run completes; preserve failures.
 
 | Case | Initial state | Action | Expected visible behaviour | End state |
 | --- | --- | --- | --- | --- |
-| OFF-1/2 | Confirmed standby | term1 calls; term2 answers | TV wakes, terminal incoming/call UI becomes visible; received C20 video confirms the physical TV picture | Caller hangs up; TV returns to standby |
-| TV-1/2 | Live broadcast picture | term1 calls; term2 answers | TV changes to terminal HDMI and shows the call | Caller hangs up; live TV picture returns |
-| CANCEL | Live TV | term1 cancels while ringing, before answer | Call UI clears; no delayed source switch after cancellation | Live TV remains/restores |
-| PHONE | Live TV | OnePlus calls term2, then hangs up | Same terminal routing and restoration with Android caller | Live TV returns |
+| OFF-1/2 | Confirmed standby | term1 calls; term2 answers | TV wakes, terminal incoming/call UI becomes visible; received C20 video confirms the physical TV picture | Caller hangs up; inactivity bar appears, then TV returns to standby after the configured delay |
+| TV-1/2 | Live broadcast picture | term1 calls; term2 answers | TV changes to terminal HDMI and shows the call | Caller hangs up; inactivity bar appears, then live TV returns after the configured delay |
+| CANCEL | Live TV | term1 cancels while ringing, before answer | Call UI clears; no delayed source switch after cancellation | Terminal remains visible until the fresh inactivity delay expires; then live TV returns |
+| PHONE | Live TV | OnePlus calls term2, then hangs up | Same terminal routing and restoration with Android caller | Live TV returns after the inactivity delay |
 
 For each case record monotonic times for dial, connected, first decoded frame,
 hang-up and observed restoration; record sampling uncertainty. Save before,
 in-call and after pictures, state getter answers, relevant journal events and
-actual result. Allow up to 30 seconds for routing/restoration, recording the
-actual latency rather than calling a long delay acceptable automatically.
+actual result. Record the configured Return to TV delay and wait for it to expire without
+input; the blue bar should appear after ten seconds. Allow up to 30 additional
+seconds for routing/restoration, recording actual latency. Repeat with a button
+press resetting the countdown, and with Never disabling automatic return.
 Confirm the physical screen, not just CEC acknowledgement or setter success.
 Record missing pictures, media failure, timeout or unavailable phone as failures
 or not-run, never as passes. Abort on an unrelated family call.
@@ -56,7 +58,10 @@ settings and prior term1 launch state, verify term2 remains registered, stop
 verbose diagnostics and disable developer access. Produce a local HTML/photo
 report and record the measured outcome below.
 
-## Results — 30 October 2026
+## Historical results — 30 October 2026
+
+These runs predate the post-call inactivity policy. Their immediate-restoration
+timings describe that older build, not acceptance of the current test matrix.
 
 The test used the deployed Samsung driver with the existing, unchanged call
 controller. OnePlus/Antoine replaced term1 as the principal caller after the
@@ -116,7 +121,7 @@ The requirements validator/report builder passed (invoked directly after the
 local `make.exe` failed to start). Existing implementation requirements, trace
 comments and user workflows are unchanged. The technical guide now explains the
 setup gates and the remaining call-worker wake limitation. No unresolved result
-above is presented as passed, and the feature PR remains unqualified for merge.
+above is presented as passed; these historical results do not fully qualify the TV.
 
 
 ## Normal-call follow-up — 30 October 2026
@@ -162,4 +167,19 @@ Python lint and the requirements report builder passed. The helper guide source
 and Word document were updated and the generated eight-page release PDF visually
 reviewed. Native Word rendering was unavailable because LibreOffice is absent.
 Private photos, timestamps and journals remain under `build_tools/tmp/tv-real-calls/`.
-The PR remains draft: do not merge or claim this TV fully fixed from these results.
+These results do not establish that this TV is fully fixed. Repeat physical
+qualification before claiming reliable wake and picture restoration.
+
+
+## Offline maintenance review — 31 October 2026
+
+The self-test branch was reconciled with the current terminal call/idle policy.
+Camera capture and bounded process cleanup are separate helpers. Camera loss
+stops further experimental commands while preserving observations and attempting
+restoration; child cleanup failures and a timed-out service stop still trigger
+terminal restart. Local regression fixtures exercise these failures without a TV.
+The tool remains opt-in and never marks setup checks passed automatically.
+
+No term2 access, deployment, calls or TV tests were performed during this cleanup.
+The intermittent wake/picture findings above remain unresolved hardware findings;
+passing local tests or merging the tool is not a new physical qualification.

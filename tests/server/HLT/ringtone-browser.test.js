@@ -69,7 +69,7 @@ test(
     await page.locator('select[name="c20SpeakerVolume"]').selectOption('75');
     await page.getByText('Remote battery: 75%', { exact: true }).waitFor();
     await page.getByText('Remote charger: connected', { exact: true }).waitFor();
-    await page.getByText('C20: connected', { exact: true }).waitFor();
+    await page.getByText('C10/C20: connected', { exact: true }).waitFor();
     await report({
       ...hardware,
       remote_battery: 31,
@@ -80,7 +80,7 @@ test(
     });
     await page.getByText('Remote battery: 31%', { exact: true }).waitFor();
     await page.getByText('Remote charger: not connected', { exact: true }).waitFor();
-    await page.getByText('C20: powered off', { exact: true }).waitFor();
+    await page.getByText('C10/C20: powered off', { exact: true }).waitFor();
     assert.equal(await page.locator('select[name="c20SpeakerVolume"]').inputValue(), '75');
 
     assert.deepEqual(
@@ -138,7 +138,7 @@ test(
       Date.now = () => now + 21000;
     });
     await page.getByText('Remote: status unavailable', { exact: true }).waitFor();
-    await page.getByText('C20: status unavailable', { exact: true }).waitFor();
+    await page.getByText('C10/C20: status unavailable', { exact: true }).waitFor();
     assert.deepEqual(errors, []);
   },
 );

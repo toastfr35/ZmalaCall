@@ -47,6 +47,17 @@ class TVSelfTestTests(unittest.TestCase):
                          [None, 'set_power_off', 'set_power_on', 'set_power_on'])
         self.assertEqual([step['delay_seconds'] for step in report['steps'][1:4]], [5, 5, 5])
 
+    def test_camera_failure_aborts_further_experiments_but_restores_baseline(self):
+        def photo(index):
+            if index == 2:
+                raise OSError('Camera disconnected')
+        report = run_sequence(self.invoke, photo, ['other'], sleep=lambda _: None)
+        self.assertEqual(report['sequence_status'], 'Interrupted: RuntimeError')
+        self.assertEqual(report['steps'][1]['observations'][0]['photo_error'], 'OSError')
+        self.assertFalse(any(m == 'set_current_input' and args == ['other'] for m, args in self.calls))
+        self.assertFalse(self.power)
+        self.assertEqual(self.source, 'original')
+
     def test_unknown_power_runs_observation_only(self):
         self.power = None
         report = run_sequence(self.invoke, lambda _: None, ['other'], sleep=lambda _: None)
@@ -192,3 +203,54 @@ class TVSelfTestTests(unittest.TestCase):
             cv.imwrite.assert_called_once_with(str(folder / 'photo-01.jpg'), 31)
             cv.VideoCapture.assert_called_once()
             camera.release.assert_called_once()
+
+
+class TVProcessCleanupTests(unittest.TestCase):
+    def test_forced_termination_has_a_second_deadline(self):
+        import subprocess
+        from unittest.mock import Mock
+        from build_tools.linux.tv_test_processes import stop_process
+        process = Mock()
+        process.poll.return_value = None
+        process.wait.side_effect = [subprocess.TimeoutExpired('camera', 5), None]
+        stop_process(process)
+        process.terminate.assert_called_once()
+        process.kill.assert_called_once()
+        self.assertEqual([c.kwargs for c in process.wait.call_args_list], [{'timeout': 5}, {'timeout': 5}])
+
+    def test_cleanup_attempts_card_and_restart_even_if_camera_will_not_exit(self):
+        import subprocess
+        from unittest.mock import Mock, patch
+        from build_tools.linux import tv_test_processes as processes
+        camera, card = Mock(), Mock()
+        with patch.object(processes, 'stop_process', side_effect=[subprocess.TimeoutExpired('private-camera', 5), None]) as stop, \
+                patch.object(processes.subprocess, 'run') as run:
+            with self.assertRaisesRegex(RuntimeError, 'camera: TimeoutExpired') as raised:
+                processes.cleanup(camera, card, True)
+            self.assertEqual([c.args[0] for c in stop.call_args_list], [camera, card])
+            run.assert_called_once_with(['sudo', '-n', 'systemctl', 'start', 'zmalacall-terminal'], check=True, timeout=30)
+            self.assertNotIn('private-camera', str(raised.exception))
+
+    def test_inactive_terminal_is_not_started_by_cleanup(self):
+        from unittest.mock import patch
+        from build_tools.linux import tv_test_processes as processes
+        with patch.object(processes.subprocess, 'run') as run:
+            processes.cleanup(None, None, False)
+            run.assert_not_called()
+
+    def test_partial_service_stop_still_restarts_terminal(self):
+        import subprocess
+        from unittest.mock import patch
+        spec = importlib.util.spec_from_file_location('tv_cli_stop', 'build_tools/linux/tv-plugin-self-test.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.object(module.sys, 'argv', ['tv-test', '--operate-tv', '--pause-terminal', '--output', str(Path(directory)/'result.zip')]), \
+                patch.object(module.os, 'umask'), \
+                patch.object(module.subprocess, 'run', side_effect=[
+                    subprocess.CompletedProcess([], 0), subprocess.TimeoutExpired('stop', 30),
+                    subprocess.CompletedProcess([], 0)]) as run:
+            with self.assertRaises(subprocess.TimeoutExpired):
+                module.main()
+            self.assertEqual(run.call_args_list[-1].args[0], ['sudo', '-n', 'systemctl', 'start', 'zmalacall-terminal'])
+            self.assertEqual(run.call_count, 3)
