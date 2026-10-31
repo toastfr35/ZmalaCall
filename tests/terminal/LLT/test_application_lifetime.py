@@ -1,7 +1,7 @@
 # @test T-LLT-062
 # @requirements LLR-TERM-START-003, LLR-TERM-START-005, LLR-TERM-SETUP-031, LLR-TERM-SETUP-032
 # @environment portable
-# @plan Execute terminal composition with temporary profile storage and mocked OS/native/UI boundaries. Verify constructor dependency order, saved-language/bootstrap recovery, reset scope, cached/offline startup scheduling, factory argument ownership and idempotent cancellation-before-window-destruction. Exercise CLI validation and normal/failed run cleanup through the real entry function without launching hardware or services.
+# @plan Verify platform factory adapter ownership and root forwarding with mocked devices. Execute terminal composition with temporary profile storage and mocked OS/native/UI boundaries. Verify constructor dependency order, saved-language/bootstrap recovery, reset scope, cached/offline startup scheduling, factory argument ownership and idempotent cancellation-before-window-destruction. Exercise CLI validation and normal/failed run cleanup through the real entry function without launching hardware or services.
 # @pass Resources close in ownership order and only the selected profile is reset; startup errors propagate with diagnostics and no worker invokes a real device.
 import io
 from pathlib import Path
@@ -18,8 +18,29 @@ class ApplicationLifetimeTests(unittest.TestCase):
         folder=tempfile.TemporaryDirectory(); self.addCleanup(folder.cleanup)
         self.root=Path(folder.name); (self.root/'data').mkdir()
         self.patches=[patch.object(main,'ROOT',self.root),patch.object(main.tkfont,'families',return_value=['Sans'])]
-        self.patches += [patch.object(main,name) for name in ('ArgonFan','UsbPower','TVControl','TextRenderer','IconRenderer')]
+        self.patches += [patch.object(main,name) for name in ('create_platform_services','TextRenderer','IconRenderer')]
         for item in self.patches: item.start(); self.addCleanup(item.stop)
+
+    def test_platform_factory_uses_selected_root_and_preserves_adapter_ownership(self):
+        t = self.terminal()
+        main.create_platform_services.assert_called_once_with(self.root)
+        services = main.create_platform_services.return_value
+        self.assertIs(t.case_fan, services.fan)
+        self.assertIs(t.usb_power, services.usb_power)
+        self.assertIs(t.tv_control, services.television)
+
+    def test_real_platform_factory_constructs_existing_adapters(self):
+        from zmala_terminal.common.platform_services import create_platform_services
+        with patch('zmala_terminal.linux.argon_fan.ArgonFan') as fan, \
+             patch('zmala_terminal.linux.usb_power.UsbPower') as usb, \
+             patch('zmala_terminal.linux.tv_control.TVControl') as tv:
+            services = create_platform_services(self.root)
+            fan.assert_called_once_with()
+            usb.assert_called_once_with(self.root)
+            tv.assert_called_once_with()
+            self.assertIs(services.fan, fan.return_value)
+            self.assertIs(services.usb_power, usb.return_value)
+            self.assertIs(services.television, tv.return_value)
 
     def terminal(self,profile='terminal'):
         t=main.Terminal.__new__(main.Terminal); t.root=Mock(); t.initialize_state(profile,'connect')

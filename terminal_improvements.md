@@ -95,3 +95,11 @@ Reviewed on 31 October 2026 using the local Floorplan and selected owning source
 files. The map is a navigation aid, not proof of runtime behaviour or a security
 audit. Maps remain ignored local artifacts; these plans are the durable record.
 No runtime implementation or hardware qualification is included in this change.
+
+
+## Implementation progress
+
+Stage 1 started: a replaceable factory now constructs fan, USB-power and TV-control
+services. Existing implementations and shutdown ownership remain. Explicit platform
+contracts, Windows substitutes and remaining device construction are still planned.
+Stages 2–6 are not implemented. No hardware qualification is claimed for this slice.

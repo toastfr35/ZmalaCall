@@ -1413,3 +1413,12 @@ steps are evenly spaced in dB; legacy positive integer defaults below 5% use
 -16.8 dB. The existing saved percentage remains unchanged, so most intermediate
 settings sound louder after updating. C10/C20 hardware remains at +12 dB.
 Ringtone, outgoing ringback and button feedback keep their independent old curve.
+
+
+### Hardware construction boundary
+
+`common/platform_services.py` constructs the fan, USB-power and TV-control adapters
+for `Terminal.make_platform_services()`. The application still owns shutdown
+ordering. This first step retains existing adapters and their disabled Windows
+behaviour; explicit Windows substitutes remain planned. Tests replace the factory
+without patching hardware classes in the UI module.

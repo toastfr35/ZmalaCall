@@ -22,9 +22,7 @@ from zmala_terminal.common.text_renderer import TextRenderer
 from zmala_terminal.common.icons import IconRenderer
 from zmala_terminal.common.portrait_animation import PortraitAnimation
 from zmala_terminal.common.missed_calls import MissedCallsStore
-from zmala_terminal.linux.tv_control import TVControl
-from zmala_terminal.linux.argon_fan import ArgonFan
-from zmala_terminal.linux.usb_power import UsbPower
+from zmala_terminal.common.platform_services import create_platform_services
 
 from zmala_terminal.common.theme import BG
 from zmala_terminal.common.ui.display import TerminalDisplay
@@ -65,8 +63,10 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
         self.key_release_jobs = {}
         self.pointer_serial = 0
         self.engine = None
-        self.case_fan = ArgonFan()
-        self.usb_power = UsbPower(ROOT)
+        services = self.make_platform_services()
+        self.case_fan = services.fan
+        self.usb_power = services.usb_power
+        self.tv_control = services.television
         self.pending_config = None
         self.engine_retry_at = 0
         self.current_settings = {}
@@ -105,7 +105,6 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
         self.setup_continue_at = None
         self.setup_confirmation_seconds = None
         self.last_qr = ('', 0)
-        self.tv_control = TVControl()
         self.keys_down = set()
         self.configuration = None
         self.maintenance = None
@@ -155,6 +154,9 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
 
     # Keep dependency creation here so real hardware and isolated test engines
     # use the same controllers without importing one another's test substitutes.
+    def make_platform_services(self):
+        return create_platform_services(ROOT)
+
     def make_configuration(self, bootstrap):
         return Configuration(bootstrap=bootstrap, cache=self.cache_path)
 
