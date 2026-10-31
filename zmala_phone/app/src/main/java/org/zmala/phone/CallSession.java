@@ -20,6 +20,7 @@ final class CallSession {
   static CallSession peek() { return instance; }
 
   final CallEngine engine;
+  final CallPhotoShare photos;
   JSONObject configuration;
   String status = "Connecting…";
   boolean muted, reconnecting, visible, serviceRequested;
@@ -36,6 +37,9 @@ final class CallSession {
   private CallSession(Context context) {
     this.context = context;
     engine = new CallEngine(this::changed);
+    photos = new CallPhotoShare(context, this::callId, () -> {
+      MainActivity activity = screen.get(); if (activity != null) activity.photoChanged();
+    });
   }
 
   boolean ongoing() { return engine.call != null && engine.call.getState() != Call.State.IncomingReceived; }
@@ -75,6 +79,7 @@ final class CallSession {
 
   private void changed(String value) {
     status = value;
+    photos.reconcile();
     if (engine.call == null) {
       closeService(); releaseAudio();
       // Native callbacks must finish before a stopped screen releases the core.
@@ -109,6 +114,7 @@ final class CallSession {
 
   void stop() {
     epoch++; main.removeCallbacks(poll);
+    photos.stop();
     engine.stop(); configuration = null; closeService(); releaseAudio();
   }
 

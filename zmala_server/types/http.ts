@@ -33,7 +33,14 @@ export interface SipApi {
   appCalls?: InstanceType<typeof import('../app-calls').AppCalls>;
   maintenance?: boolean;
   registrations: Map<string, Registration>;
-  dialogs: Map<string, { peers: { user: string }[] }>;
+  dialogs: Map<
+    string,
+    {
+      peers: { user: string }[];
+      connected?: boolean;
+      photoShare?: import('./contracts').PhotoShare;
+    }
+  >;
   cancelProbe?(id: string): void;
   status(): SipStatus;
 }

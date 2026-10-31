@@ -84,6 +84,7 @@ class Store extends AccountStore {
       schema_version: 1,
       configuration_version: v.configuration_version,
       account_type: 'app',
+      call_photo_sharing: true,
       device_id: user.device_id,
       display_name: user.name,
       call_auth_key: user.device_token,
@@ -97,7 +98,7 @@ class Store extends AccountStore {
       contacts: this.directory
         .contacts(id)
         .filter((c) => c.can_call || c.can_receive)
-        .map((c) => ({ ...c, sip_uri: `sip:${c.id}@${v.host}` })),
+        .map((c) => ({ ...c, account_type: v.users[c.id].type, sip_uri: `sip:${c.id}@${v.host}` })),
     };
   }
   /** @param {string | undefined} token */
@@ -167,6 +168,7 @@ class Store extends AccountStore {
       configuration_version: v.configuration_version,
       device_id: u.device_id,
       account_type: 'terminal',
+      call_photo_sharing: true,
       display_name: p.display_name,
       language: p.language || 'en',
       command_shell: p.command_shell || 'powershell',

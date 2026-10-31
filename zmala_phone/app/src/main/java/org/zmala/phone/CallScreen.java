@@ -30,11 +30,15 @@ final class CallScreen extends FrameLayout {
     void camera();
 
     void end();
+
+    default void photo() {}
   }
 
   final TextureView remote;
   final CaptureTextureView preview;
   final LinearLayout controls;
+  final ImageView sharedPhoto;
+  final Button sharePhoto;
   private final LinearLayout progress;
   private final TextView progressLabel;
   private final ObjectAnimator pulse;
@@ -169,6 +173,13 @@ final class CallScreen extends FrameLayout {
     preview.setOnTouchListener(volumeGesture);
     addView(preview, new LayoutParams(dp(96), dp(128), Gravity.BOTTOM | Gravity.RIGHT));
 
+    sharedPhoto = new ImageView(context);
+    sharedPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
+    sharedPhoto.setBackgroundColor(Color.BLACK);
+    sharedPhoto.setContentDescription(context.getString(R.string.shared_photo));
+    sharedPhoto.setOnClickListener(v -> showControls()); sharedPhoto.setOnTouchListener(volumeGesture);
+    addView(sharedPhoto, new LayoutParams(-1,-1)); sharedPhoto.setVisibility(GONE);
+
     controls = new LinearLayout(context);
     controls.setGravity(Gravity.CENTER);
     controls.setContentDescription(getContext().getString(R.string.controls_description));
@@ -246,6 +257,12 @@ final class CallScreen extends FrameLayout {
     LayoutParams connectionSlot = new LayoutParams(-1, -2, Gravity.TOP);
     connectionSlot.setMargins(dp(12), dp(54), dp(12), 0); addView(connectionStatus, connectionSlot);
     connectionStatus.setVisibility(GONE);
+    sharePhoto = new Button(context);
+    sharePhoto.setTextColor(MainActivity.FG); sharePhoto.setBackgroundTintList(ColorStateList.valueOf(MainActivity.PANEL));
+    sharePhoto.setOnClickListener(v -> actions.photo());
+    LayoutParams photoSlot = new LayoutParams(-2,-2,Gravity.TOP | Gravity.RIGHT);
+    photoSlot.setMargins(dp(12),dp(104),dp(12),0); addView(sharePhoto, photoSlot);
+    sharePhoto.setVisibility(GONE);
     setOnApplyWindowInsetsListener(
         (v, insets) -> {
           setPadding(
@@ -257,6 +274,13 @@ final class CallScreen extends FrameLayout {
           return insets;
         });
     positionOverlays();
+  }
+
+  // @llr LLR-AND-CALL-007
+  void photo(boolean allowed, Bitmap image, boolean busy) {
+    sharedPhoto.setImageBitmap(image); sharedPhoto.setVisibility(image == null ? GONE : VISIBLE);
+    sharePhoto.setText(busy ? R.string.cancel_photo_share : image == null ? R.string.share_photo : R.string.stop_photo_share);
+    sharePhoto.setVisibility(allowed || busy || image != null ? VISIBLE : GONE);
   }
 
   private Kind outputKind() {

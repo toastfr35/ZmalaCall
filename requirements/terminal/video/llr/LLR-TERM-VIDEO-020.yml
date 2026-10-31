@@ -1,0 +1,27 @@
+active: true
+derived: false
+header: Private in-call photo sharing
+level: 99
+links:
+- HLR-TERM-VIDEO-001: null
+normative: true
+ref: ''
+reviewed: null
+area: In-call photo sharing
+scope: Core
+text: During a connected call, when the server advertises photo sharing, the terminal shall fetch current-call
+  photo state and JPEG bytes using its enrollment authorization off the UI thread. It shall display the
+  image with preserved proportions over both video views without terminating or renegotiating media. Stop,
+  call change/end or sender-lease expiry shall remove the layer and reveal the retained video surfaces.
+  Late results for another call shall be discarded, and failed requests shall not extend the display lease.
+  Images shall be bounded to 2 MiB and 1600 pixels per side.
+references:
+- path: zmala_terminal/common/call_photo.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: tests/terminal/LLT/test_call_photo.py
+  type: file
+verification: Inject current and stale call results, expired and failed leases, stop/end transitions and
+  malformed/oversized images. Assert layer removal and no media termination. Exercise resize and native
+  surface retention in the display HLT; qualify actual speech separately.

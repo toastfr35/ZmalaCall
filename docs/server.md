@@ -1,3 +1,24 @@
+## Temporary call photos
+
+`call-photo.js` handles `/api/call/photo?call_id=…` through the existing enrolled-device
+route. Only peers of a connected App/Terminal SIP dialog can read it; only the app
+can upload (`PUT`), stop (`DELETE`) or renew (`POST` with `revision`). `GET` returns
+revision and lease status; `GET` with `image=1&revision=…` returns a private,
+non-cacheable JPEG. Configurations advertise `call_photo_sharing`; app contacts
+include `account_type` so the control is shown only for terminal calls.
+
+Uploads are capped at 2 MiB and decoded outside the Node event loop by
+`call_photo.py` (Pillow, already installed for portrait conversion). JPEG/PNG
+input is limited to 16 million pixels, oriented, reduced to 1600 pixels per side
+and stripped of metadata. A single dialog permits one decode; the server permits
+two concurrently. Temporary decode files are removed in `finally`.
+
+The dialog owns the normalized bytes, outside portrait storage and backups.
+Stop increments a revision to invalidate late uploads; completion rechecks both
+enrollments and dialog identity. A 12-second sender lease bounds stale display;
+status/image access expires it, and dialog closure releases all photo state.
+No SIP or audio/video negotiation changes are made by photo operations.
+
 # ZmalaCall server implementation
 
 This guide describes the Linux server's deployment, request boundaries, identities,

@@ -77,7 +77,7 @@ def build_phone(filenames=None):
         doc.add_paragraph(intro)
         for heading, paragraphs in sections:
             paragraph = doc.add_heading(heading, 1)
-            if heading in ('3 Allow incoming alerts', 'Missed calls and callbacks', 'Get help'):
+            if heading in ('3 Allow incoming alerts', 'Get help'):
                 paragraph.paragraph_format.page_break_before = True
             for text in paragraphs:
                 paragraph = doc.add_paragraph()

@@ -2,7 +2,8 @@
 
 Feature request: https://github.com/toastfr35/ZmalaCall/issues/67
 
-Status: proposed implementation; no photo-sharing runtime code yet. This is a
+Status: implemented on the feature branch. Local checks and emulator call tests pass;
+physical phone/terminal qualification is in progress. This is a
 work checklist, not a substitute for normative requirements under requirements/.
 
 ## Intended experience
@@ -52,3 +53,18 @@ The initial scope is one photo at a time in App-to-Terminal calls.
 
 Do not reuse portrait storage, publish photos, change account pictures, or
 claim a hardware call test passed from fixture-only evidence.
+
+## Validation record
+
+- Server suite: 234 passed, 5 skipped; new private-call route and normalization tests pass.
+- Terminal LLTs: 562 passed, 11 skipped. Four focused photo/layout tests pass under Linux Xvfb.
+- Android JVM tests, lint and signed release build pass. Both new device tests pass on the
+  disposable Android emulator, including a native SIP call and visible photo layer.
+- Requirements report rebuild passes with reciprocal LLT/HLT plans and implementation traces.
+- Phone/terminal editable guides updated; release PDFs regenerated and visually inspected.
+  Native Word rendering was unavailable locally because LibreOffice is not installed.
+- Test version 0.3.38 (47) installed on the connected phone without clearing enrollment;
+  targeted server and terminal source updates deployed with rollback backups.
+- Physical system-picker selection, two-screen display and audible speech still need a
+  real call. The phone remained locked; fixture results are not hardware qualification.
+  Terminal automatic-answer settings were restored while waiting for the user.

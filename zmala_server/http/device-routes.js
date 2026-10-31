@@ -1,6 +1,7 @@
 // @ts-check
 'use strict';
 // Device API routes use the bearer token identity, not a terminal ID supplied by the request.
+const { callPhotoRoute } = require('../call-photo');
 const developerAccess = require('../developer-access');
 const { terminalStatus } = require('../terminal-status');
 const { contactPresence } = require('../registrations');
@@ -30,6 +31,7 @@ async function liveConfiguration(id, { store, sipServer, callbacks }) {
  * @param {import('node:http').ServerResponse} res @param {URL} url
  * @param {import('../types/http').DeviceContext} context */
 async function deviceRoutes(req, res, url, context) {
+  if (await callPhotoRoute(req, res, url, context)) return true;
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses } = context;
   let { deviceId } = context;
   // @llr LLR-SRV-CALLBACK-016, LLR-SRV-APP-003

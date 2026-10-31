@@ -717,3 +717,21 @@ refreshes; changing enrollment clears the cache. View tickets reject obsolete
 results before they reach either the cache or a view. Disposal clears memory and
 stops queued work; no portrait disk cache is introduced. `CallService` similarly
 owns exactly one renewable wake lock, even if Android delivers repeated starts.
+
+## Sharing a photo during a terminal call
+
+`CallPhotoShare` belongs to `CallSession`, so rotating the Activity or opening the
+system image picker keeps the share and the native call. `MainActivity` offers
+Share photo only for connected Terminal contacts when the server advertises
+`call_photo_sharing`. `ACTION_OPEN_DOCUMENT` selects one image without requesting
+broad library permission. Picker cancellation leaves the call unchanged.
+
+`CallPhotoImage` bounds source data to 20 MiB/64 million pixels, uses ImageDecoder
+orientation and downsampling, and uploads a JPEG up to 1600 pixels per side/2 MiB.
+`CallPhotoHttp` uses the enrollment origin and bearer token with redirects disabled.
+The image overlays both video views with FIT_CENTER; microphone, listening volume
+and hangup remain usable. Cameras/media surfaces are retained beneath the layer.
+Stop clears it immediately and requests deletion; renewals every three seconds
+maintain the server's 12-second lease. Call identity plus `PhotoShareEpoch` reject
+late results after stop or a new call. Network failure ends sharing with a message;
+it does not end the voice call. This is not a photo album or app-to-app transfer.

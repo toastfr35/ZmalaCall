@@ -1,0 +1,33 @@
+active: true
+derived: false
+header: Private in-call photo sharing
+level: 99
+links:
+- HLR-SRV-MEDIA-008: null
+normative: true
+ref: ''
+reviewed: null
+area: In-call photo sharing
+scope: Core
+text: The server shall expose temporary call photos only to authenticated enrolled peers of a connected
+  App/Terminal dialog. Only the App peer may upload, renew or stop sharing. Uploads shall be limited to
+  2 MiB and JPEG/PNG with at most 16 million decoded pixels, normalized to an oriented metadata-free JPEG
+  of at most 1600 pixels per side. At most two uploads may decode concurrently and one per dialog. Stop
+  and expired sender leases shall invalidate the image revision; call closure shall release dialog-owned
+  bytes. Asynchronous upload completion shall recheck dialog identity, enrollment and revision. Photo
+  operations shall not change voice/media negotiation. Configuration shall advertise support and app contact
+  device types.
+references:
+- path: zmala_server/call-photo.js
+  type: file
+- path: zmala_server/call_photo.py
+  type: file
+- path: zmala_server/store.js
+  type: file
+- path: tests/server/LLT/call-photo.test.js
+  type: file
+- path: tests/server/LLT/test_call_photo.py
+  type: file
+verification: Exercise exact participant and role authorization, connected-state gating, upload bounds,
+  normalization/orientation, lease expiry and stop/end/enrollment races with delayed decoding. Verify
+  configuration capability and contact types. Inspect dialog-owned storage separately from public portraits.

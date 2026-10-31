@@ -94,6 +94,18 @@ PHONE = {
                 'Video can take a few seconds after answer. Connecting video appears for up to fifteen '
                 'seconds; a later message does not end the call. You can keep talking while waiting.',
             ]),
+            ('Show a photo during a call', [
+                'While talking to someone using a TV terminal, tap Share photo and choose a picture '
+                'on your phone. You can keep talking while the picture picker is open. Cancel the '
+                'picker if you do not want to share.',
+                'The picture appears on both screens, keeping its proportions. It covers both video '
+                'views, but sound and call controls still work. Tap Stop sharing to return to video. '
+                'To show another picture, stop sharing and choose again.',
+                'This needs updated software on the phone, terminal and server. It is not available '
+                'for phone-to-phone calls. The photo is temporary: it is not saved to the other '
+                'person’s album or used as a portrait. If sharing loses its connection, video returns '
+                'after a short delay. Ending the call also clears the picture.',
+            ]),
             ('Missed calls and callbacks', [
                 'A missed-call count appears beside the contact. Open their page to call back or choose '
                 'Clear missed calls. A connected call also clears that person’s count.',
@@ -162,6 +174,9 @@ REVISIONS = {
         'The call-volume overlay changes only': [
             'This changes the sound you hear during calls. It does not change your microphone, '
             'ringtone or button sounds. Ask your helper to adjust those separate sound settings if needed.',
+            'During a call, someone using ZmalaPhone can show you a photo. It fills your screen '
+            'instead of the video, but you can keep talking and change the volume. They tap Stop '
+            'sharing on their phone to return to video. Ending the call also clears the photo.',
         ],
         'Select an offline contact, press green and confirm': [
             'If a person is Offline, select their portrait and press green. Press green again '
@@ -312,6 +327,9 @@ REVISIONS['server_prep.docx']['Open Terminals, choose the device'] = (
 
 REVISIONS['server_prep.docx']['Open Callbacks to see Pending requests first.'] = [
     REVISIONS['server_prep.docx']['Open Terminals, choose the device'][2]]
+
+REVISIONS['terminal_use.docx']['This changes the sound you hear during calls.'] = (
+    REVISIONS['terminal_use.docx']['The call-volume overlay changes only'])
 
 def improve_readability(root):
     from docx import Document

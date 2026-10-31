@@ -112,6 +112,7 @@ export interface TerminalContact {
   presence?: 'available' | 'push' | 'offline';
 }
 export interface TerminalConfiguration {
+  call_photo_sharing?: boolean;
   developer_access?: JsonObject | null;
   ringtone?: string;
   ringtones?: RingtoneChoice[];
@@ -262,7 +263,14 @@ export interface DialogPeer {
   contact: import('sip').Address;
   tag?: string | number | null;
 }
+export interface PhotoShare {
+  revision: number;
+  bytes: Buffer | null;
+  expires: number;
+  uploading: boolean;
+}
 export interface Dialog {
+  photoShare?: PhotoShare;
   ringing_timeout?: number;
   mediaUpdate?: MediaUpdate;
   peers: [DialogPeer, DialogPeer];

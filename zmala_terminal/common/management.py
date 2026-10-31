@@ -230,6 +230,8 @@ class ManagementLoop:
             if self.engine:
                 self.engine.iterate()
             self.update_video_message()
+            if getattr(self, 'shared_photo', None):
+                self.shared_photo.tick(self)
             self.iterate_scanner()
             self.drain_messages()
             self.tick_ringtone(time.monotonic())
