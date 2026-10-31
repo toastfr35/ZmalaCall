@@ -1,3 +1,18 @@
+## Photos during calls
+
+When server configuration advertises `call_photo_sharing`, `common/call_photo.py`
+polls the authenticated current SIP Call-ID while IN_CALL. Network and JPEG decode
+run off Tk; Tk owns the full-window, aspect-preserving black-backed image layer.
+It covers received video and self-view while retaining both native surfaces and
+the voice call. Remote volume/hangup controls remain available. The app sender
+stops sharing; call end/change and expired leases also remove the layer.
+
+The receiver accepts only bounded JPEGs (2 MiB, 1600 pixels per side), checks
+revision and owner identity, and never extends its local deadline after a failed
+request. Old servers without the capability flag are not polled. Display-fixture
+tests cover resizing and retained surfaces; physical audio/video continuity must
+be qualified separately on the deployed Pi.
+
 # ZmalaCall terminal implementation
 
 This technical guide covers the shared Python terminal and its Linux/Pi and

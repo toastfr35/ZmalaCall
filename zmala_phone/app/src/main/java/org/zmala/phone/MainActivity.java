@@ -79,6 +79,7 @@ public final class MainActivity extends Activity {
   private String message = "";
   private static java.lang.ref.WeakReference<MainActivity> foreground =
       new java.lang.ref.WeakReference<>(null);
+  private String photoPickerCall;
   private String answerCallId;
   private long answerExpires;
   private boolean pushReady, pushPreparing;
@@ -94,6 +95,7 @@ public final class MainActivity extends Activity {
     super.onCreate(state);
     session = CallSession.get(this); engine = session.engine;
     config = session.configuration;
+    photoPickerCall = state == null ? null : state.getString("photo_picker_call");
     selectedContact = state == null ? null : state.getString("selected_contact");
     callbackContact = state == null ? null : state.getString("callback_contact");
     message = getString(R.string.welcome);
@@ -241,6 +243,12 @@ public final class MainActivity extends Activity {
   @Override
   protected void onActivityResult(int request, int result, Intent data) {
     super.onActivityResult(request, result, data);
+    if (request == 10) {
+      String call = photoPickerCall; photoPickerCall = null;
+      if (result == RESULT_OK && data != null && data.getData() != null)
+        session.photos.choose(data.getData(), call);
+      return;
+    }
     if (request == 9) {
       if (result != RESULT_OK || data == null || data.getData() == null) return;
       android.net.Uri uri = data.getData();
@@ -674,6 +682,15 @@ public final class MainActivity extends Activity {
                 engine.flipCamera();
               }
 
+              public void photo() {
+                if (session.photos.active()) { session.photos.stop(); return; }
+                if (!canSharePhoto() || session.photos.receiving) return;
+                photoPickerCall = session.callId();
+                try { startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("image/*")
+                    .addCategory(Intent.CATEGORY_OPENABLE), 10); }
+                catch (android.content.ActivityNotFoundException missing) { showError(getString(R.string.photo_share_failed)); }
+              }
+
               public void end() {
                 engine.hangup();
               }
@@ -693,6 +710,7 @@ public final class MainActivity extends Activity {
   // @llr LLR-AND-UI-002
   private void updateCallProgress() {
     if (callScreen == null || engine.call == null) return;
+    photoChanged();
     switch (engine.call.getState()) {
       case OutgoingInit:
       case OutgoingProgress:
@@ -714,6 +732,27 @@ public final class MainActivity extends Activity {
       default:
         callScreen.progress(CallScreen.Progress.NONE);
         break;
+    }
+  }
+
+  // @llr LLR-AND-CALL-007
+  private boolean canSharePhoto() {
+    if (engine.call == null || config == null || !config.optBoolean("call_photo_sharing")) return false;
+    Call.State state=engine.call.getState();
+    if (state != Call.State.StreamsRunning && state != Call.State.Connected
+        && state != Call.State.Updating && state != Call.State.UpdatedByRemote) return false;
+    JSONObject peer=findContact(engine.call.getRemoteAddress().getUsername());
+    return peer != null && java.util.Set.of("terminal", "app").contains(peer.optString("account_type"));
+  }
+
+  // @llr LLR-AND-CALL-007
+  void photoChanged() {
+    if (callScreen == null) return;
+    session.photos.reconcile();
+    callScreen.photo(canSharePhoto(), session.photos.image, session.photos.busy);
+    if (session.photos.receiving) callScreen.sharePhoto.setVisibility(android.view.View.GONE);
+    if (session.photos.error != 0) {
+      Toast.makeText(this, session.photos.error, Toast.LENGTH_LONG).show(); session.photos.error=0;
     }
   }
 
@@ -826,6 +865,7 @@ public final class MainActivity extends Activity {
 
   @Override protected void onSaveInstanceState(Bundle state) {
     super.onSaveInstanceState(state);
+    state.putString("photo_picker_call", photoPickerCall);
     state.putString("selected_contact", selectedContact);
     state.putString("callback_contact", callbackContact);
   }

@@ -141,4 +141,9 @@
     <string name="checking_callbacks">Vérification des demandes de rappel</string>
     <string name="callback_notifications_help">Une personne souhaite que vous la rappeliez.</string>
     <string name="callback_notification_body">%1$s souhaite que vous rappeliez.</string>
+    <string name="share_photo">Partager une photo</string>
+    <string name="stop_photo_share">Arrêter le partage</string>
+    <string name="cancel_photo_share">Annuler le partage</string>
+    <string name="shared_photo">Photo partagée</string>
+    <string name="photo_share_failed">Le partage de photo a été interrompu. Votre appel continue. Réessayez.</string>
 </resources>

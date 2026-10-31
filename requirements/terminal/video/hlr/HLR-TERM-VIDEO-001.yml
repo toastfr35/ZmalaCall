@@ -1,11 +1,12 @@
 active: true
 area: Video
 derived: false
-header: |
-  Video exchange and local preview
+header: 'Video exchange and local preview
+
+  '
 level: 22.0
 links:
-- PROD005: D83vsypma40MeePYaBrxITwprTMTY8ifSX4vFKHf7d8=
+- PROD005: null
 normative: true
 ref: ''
 references:
@@ -19,11 +20,16 @@ references:
   type: file
 - path: tests/terminal/HLT/video_settings_native.py
   type: file
+- path: tests/terminal/HLT/test_call_photo_ui.py
+  type: file
 reviewed: null
 scope: Core
-text: |
-  The terminal shall send camera video and display received video. It shall show a
-  local preview and apply the configured video targets.
-verification: |
-  Place a two-way call at each supported target. Measure capture and decoded frames
-  and inspect the local preview.
+text: 'The terminal shall send camera video and display received video. It shall show a
+
+  local preview and apply the configured video targets. While the App peer shares a still photo, the terminal
+  shall instead display that photo over both video views with voice continuing; stopping sharing or ending
+  the call shall clear it.'
+verification: 'Place a two-way call at each supported target. Measure capture and decoded frames
+
+  and inspect the local preview. Exercise photo upload, display and stop with a connected-call fixture;
+  distinguish fixture evidence from physical media qualification.'

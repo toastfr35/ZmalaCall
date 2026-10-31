@@ -5,7 +5,7 @@ header: |
   Missing received video
 level: 79.0
 links:
-- HLR-TERM-VIDEO-001: zbWy8C5TtS0N-sUV1-bRZ0USwx1A9MbmT0v2_pHAY18=
+- HLR-TERM-VIDEO-001: null
 normative: true
 ref: ''
 references:
@@ -34,7 +34,7 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Before the first decoded remote frame, the terminal call view shall show a
+  When no shared call photo is covering the video views, before the first decoded remote frame, the terminal call view shall show a
   neutral video-starting message and an unslashed camera icon for up to eight
   seconds. If no frame arrives by that deadline, it shall show missing-video
   feedback. Once a frame has appeared, four seconds without a decoded remote

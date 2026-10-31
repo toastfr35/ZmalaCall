@@ -53,6 +53,8 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
             label.image = image
 
     def build_ui(self):
+        from zmala_terminal.common.call_photo import CallPhoto
+        self.shared_photo = CallPhoto(self.root)
         self.top = tk.Frame(self.root, bg=BG)
         self.top.pack(fill='x', padx=18, pady=(12, 0))
         # Equal side columns keep the call name centered between the status icons.

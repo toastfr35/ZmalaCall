@@ -201,6 +201,11 @@ class Engine(LinphoneAPI):
         logging.info('Registration %s: %s', state, message.decode(errors='replace') if message else '')
         self.on_registration(self.registered)
 
+    # @llr LLR-TERM-VIDEO-020
+    def call_id(self):
+        log = self.call_get_call_log(self.call) if self.call else None
+        return (self.call_log_get_call_id(log) or b'').decode() if log else None
+
     # @llr LLR-TERM-CALL-011
     def _call_event(self, core, call, state, message):
         try:

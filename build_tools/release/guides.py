@@ -73,9 +73,6 @@ def source_blocks(filename, mode, styles):
                 continue
             if filename.startswith('phone_') and p.paragraph_format.page_break_before:
                 yield PageBreak()
-            if filename == 'terminal_use.docx' and p.text == 'If something is not working':
-                # Keep the quick troubleshooting checklist together in print.
-                yield PageBreak()
             markup = paragraph_markup(p)
             if markup:
                 key = 'h1' if style == 'Heading 1' else 'h2' if style == 'Heading 2' else 'body'

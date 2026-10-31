@@ -140,4 +140,9 @@
     <string name="checking_callbacks">Checking callback requests</string>
     <string name="callback_notifications_help">Someone would like you to call them back.</string>
     <string name="callback_notification_body">%1$s would like you to call back.</string>
+    <string name="share_photo">Share a photo</string>
+    <string name="stop_photo_share">Stop sharing</string>
+    <string name="cancel_photo_share">Cancel sharing</string>
+    <string name="shared_photo">Shared photo</string>
+    <string name="photo_share_failed">Photo sharing stopped. Your call continues. Please try again.</string>
 </resources>
