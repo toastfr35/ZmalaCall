@@ -611,6 +611,16 @@ The lease's `idle_started` timestamp prevents a short missed call from inheritin
 an expired idle anchor. Shutdown still uses immediate cancellation. Volume/mute
 are not changed by CEC. Unknown previous input is not guessed.
 
+If an incoming call needed to reveal the terminal, source selection is retried
+up to three times after the initial wake/selection sequence, waiting five seconds
+before each attempt. The retries use the paired driver's verified HDMI input,
+with CEC Active Source as fallback, and never repeat a power toggle.
+The initial readiness/auto-answer gate does not wait for this retry sequence.
+Each attempt and the driver's post-authentication send require the same native
+call still to be ringing; answer, cancellation, replacement or shutdown stops
+further requests. A power-On report or accepted command alone cannot establish
+that HDMI is visible. Logs identify each ringing input retry and its transport.
+
 ### Remote developer access
 
 The server administrator can enable one terminal through **Terminals → Developer

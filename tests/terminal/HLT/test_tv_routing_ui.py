@@ -3,6 +3,7 @@
 # @environment display
 # @plan Run the real Tk input/idle controllers and asynchronous TVControl workers against a stateful CEC transport fixture. Begin on another input and in standby, press a button, use the visible UI and expire the idle countdown. Then answer, decline, cancel and fail incoming calls; verify a fresh countdown, delayed bar and deferred restoration for each outcome. Inspect source/power transitions, first-press consumption and all emitted commands.
 # @pass The first hidden-view press reveals the terminal without selecting a contact; idle expiry restores the captured input/power; all call endings keep the terminal visible until that countdown expires, without volume/mute commands. Real worker delays run; TV firmware, Samsung network pairing and physical HDMI switching are not qualified by this fixture.
+# Ignore the initial driver request and CEC input announcements while reporting power On. Require a delayed driver retry to select HDMI during ringing, readiness before retries, and no further selection after answer.
 
 import json
 import os
@@ -19,6 +20,50 @@ from zmala_terminal.linux.tv_control import TVControl
 
 @unittest.skipUnless(sys.platform == 'linux' and os.environ.get('DISPLAY'), 'Linux Tk display required')
 class TVRoutingUITests(unittest.TestCase):
+    def test_ignored_live_tv_switch_is_retried_only_while_ringing(self):
+        with terminal_fixture() as (app, directory):
+            device = directory/'cec'
+            device.touch()
+            tv = TVControl(device=str(device), state_file=directory/'unused')
+            tv.command = 'fixture-cec'
+            app.tv_control = tv
+            state = {'off': False, 'active_source': '0.0.0.0'}
+            attempts = []
+            def transport(*arguments):
+                if arguments == ('--physical-address',): return '1.0.0.0'
+                if arguments == ('--logical-address',): return '4'
+                if '--give-device-power-status' in arguments: return 'pwr-state: on (0)'
+                return ''  # TV ignores initial CEC announcements.
+            def driver(method, address, is_current):
+                self.assertEqual(method, 'set_current_input')
+                if not is_current(): return False
+                attempts.append(time.monotonic())
+                if len(attempts) > 1:
+                    state['active_source'] = address
+                return True  # First accepted request does not actually switch.
+            tv._run = transport
+            tv._driver_call = driver
+            tv._observed_state = lambda: dict(state)
+            try:
+                app.call_event(88, 1, 'alice', 'family.test')
+                pump(app, lambda: tv._ready.is_set(), timeout=8)
+                ready_at = time.monotonic()
+                self.assertEqual(len(attempts), 1)
+                self.assertEqual(state['active_source'], '0.0.0.0')
+                pump(app, lambda: state['active_source'] == '1.0.0.0', timeout=7)
+                self.assertGreaterEqual(attempts[-1]-ready_at, 4.8)
+                app.call_event(88, 8, 'alice', 'family.test')
+                stop = time.monotonic()+5.5
+                pump(app, lambda: time.monotonic() >= stop, timeout=7)
+                self.assertEqual(len(attempts), 2, 'No further input requests after answer')
+            finally:
+                # End this fixture without restoring through its intentionally
+                # input-only driver stub; no real TV has been controlled.
+                tv._previous = None
+                tv.close()
+                with tv._lock:
+                    pass
+
     def test_button_idle_and_call_restore_from_input_and_standby(self):
         for standby in (False, True):
             with self.subTest(standby=standby), terminal_fixture() as (app, directory):

@@ -43,7 +43,9 @@ class CallControl:
             # Do not let an earlier carousel animation override its selection.
             self.carousel_motion = None
             if getattr(self, 'tv_control', None):
-                self.tv_control.wake()
+                # @llr LLR-TERM-TV-034
+                self.tv_control.wake(ringing=lambda: bool(self.engine and
+                    self.engine.call == call and self.model.state == State.RINGING))
             self.root.after_idle(lambda: self.root.lift())
             self.notice = ''
         elif state in (3, 4, 5, 6) and self.model.state == State.HOME:

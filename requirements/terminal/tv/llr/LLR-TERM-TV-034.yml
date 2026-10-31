@@ -1,0 +1,36 @@
+active: true
+area: TV control
+derived: false
+header: |
+  Ringing input selection retries
+level: 110.0
+links:
+- HLR-TERM-TV-018: ZYWJZfxPFY-U2Faag_owNyuH0jhoHw1LvN3GtcRGSgo=
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: tests/terminal/LLT/test_tv_control.py
+  type: file
+- path: tests/terminal/LLT/test_call_orchestration.py
+  type: file
+reviewed: null
+scope: Core
+text: |
+  When an incoming call interrupts another TV input or standby and source control
+  is qualified, the terminal shall make up to three further input-selection
+  attempts while the same call is ringing. Each attempt shall follow a five-second
+  interruptible delay after initial settling or the previous attempt. The retries
+  shall use the connector-bound driver input, falling back to CEC source selection
+  if unavailable, without repeating power commands or delaying automatic answer.
+  Answer, end, cancellation, replacement, controller shutdown or disabled source
+  control shall invalidate further requests, including after network authentication.
+  Power On and command acceptance shall not be treated as proof of visible HDMI.
+verification: |
+  Ignore the first input request while reporting power On. Assert three bounded
+  five-second retry intervals and driver/CEC selection without power commands.
+  Change call state or controller ownership during waits and driver I/O; assert
+  no subsequent sends. Check ready is published before the retry worker starts.

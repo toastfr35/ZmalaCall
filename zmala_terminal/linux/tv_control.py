@@ -122,7 +122,7 @@ class TVControl:
         # skipped. Unknown power cannot authorize an unqualified power-on.
         return self.source_enabled if off is False else self.power_enabled
 
-    def wake(self, restore=True, initial=None):
+    def wake(self, restore=True, initial=None, ringing=None):
         self._refresh_device()
         if self._closed or not self.command or not Path(self.device).exists():
             return
@@ -147,7 +147,7 @@ class TVControl:
         self._ready.clear()
         self._started = time.monotonic()
         cancel = self._cancel = threading.Event()
-        threading.Thread(target=self._worker, args=(cancel, restore, initial), daemon=True,
+        threading.Thread(target=self._worker, args=(cancel, restore, initial, ringing), daemon=True,
                          name='zmala-cec').start()
 
     # @llr LLR-TERM-TV-028
@@ -250,11 +250,12 @@ class TVControl:
         self._address = None
         return None
 
-    def _worker(self, cancel, restore=True, initial=None):
+    def _worker(self, cancel, restore=True, initial=None, ringing=None):
         """Serialize CEC sequences; the per-call cancellation event prevents late source changes."""
         with self._lock:
             if cancel.is_set():
                 return
+            address = None
             try:
                 address = self._physical_address()
                 if not address:
@@ -345,6 +346,41 @@ class TVControl:
             finally:
                 if cancel is self._cancel:
                     self._ready.set()
+                    # Further attempts must not hold up automatic answering.
+                    if (ringing and address and self._changed and self.source_enabled
+                            and not cancel.is_set() and ringing()):
+                        threading.Thread(target=self._retry_ringing_input,
+                                         args=(cancel, address, ringing), daemon=True,
+                                         name='zmala-cec-ringing-input').start()
+
+    # @llr LLR-TERM-TV-034
+    def _retry_ringing_input(self, cancel, address, ringing):
+        """Repeat explicit input selection, never power toggles, during ringing.
+
+        Samsung can acknowledge CEC while still showing its tuner. Neither On
+        nor command acceptance proves that the terminal picture is visible.
+        The call predicate also fences the driver's post-authentication send.
+        """
+        def current():
+            return (cancel is self._cancel and not cancel.is_set() and not self._closed
+                    and self.source_enabled and ringing())
+
+        for attempt in range(1, 4):
+            if cancel.wait(5) or not current():
+                return
+            with self._lock:
+                if not current():
+                    return
+                try:
+                    sent = self._driver_call('set_current_input', address, is_current=current)
+                    if not current():
+                        return
+                    if not sent:
+                        self._run('--active-source', 'phys-addr=' + address)
+                    logging.info('CEC: ringing input retry %s/3 requested (%s, %s)',
+                                 attempt, address, 'driver' if sent else 'CEC')
+                except (OSError, subprocess.SubprocessError, RuntimeError):
+                    logging.warning('CEC: ringing input retry %s/3 failed', attempt, exc_info=True)
 
     def _observed_state(self):
         """An expired/dead observer cannot supply a remembered TV state."""

@@ -213,7 +213,8 @@ class UsbPowerTests(unittest.TestCase):
         app.render = Mock()
         app.usb_power = self.controller()
         app.tv_control = Mock()
-        def check_woken():
+        def check_woken(*, ringing):
+            self.assertTrue(callable(ringing))
             self.assertEqual(app.usb_power.wake_serial, 1)
             self.assertTrue(app.usb_power.changed.is_set())
         app.tv_control.wake.side_effect = check_woken

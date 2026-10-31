@@ -1,7 +1,8 @@
 # @test T-LLT-036
-# @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032
+# @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032, LLR-TERM-TV-034
 # @environment portable
 # @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, call endings defer restoration to a fresh idle lease, consecutive calls preserve the original state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
+# Ringing-only input retries: control waits and call predicates, require three five-second delays, verified input requests/CEC fallback, readiness before retries, stop after answer/end/replacement/setup disable, and no power/volume commands.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 # With power-only qualification, wake is sent but no active-source or Samsung input command is sent.
 
@@ -330,6 +331,72 @@ class TVControlTests(unittest.TestCase):
         tv._previous = {'off': False, 'source': '3.0.0.0', 'address': '3.0.0.0'}
         tv._defer_restore(tv._cancel)
         self.assertIsNone(tv._browse_previous, 'An already visible TV needs no new return target')
+
+    def test_ringing_retries_are_bounded_spaced_and_use_driver_or_cec(self):
+        for accepted in (True, False):
+            tv = self.controller()
+            tv._cancel.wait = Mock(return_value=False)
+            tv._driver_call.return_value = accepted
+            tv._retry_ringing_input(tv._cancel, '2.0.0.0', lambda: True)
+            self.assertEqual(tv._cancel.wait.call_args_list, [unittest.mock.call(5)] * 3)
+            self.assertEqual(tv._driver_call.call_count, 3)
+            for call in tv._driver_call.call_args_list:
+                self.assertEqual(call.args, ('set_current_input', '2.0.0.0'))
+                self.assertTrue(call.kwargs['is_current']())
+            self.assertEqual(tv._run.call_args_list,
+                             [] if accepted else [unittest.mock.call('--active-source', 'phys-addr=2.0.0.0')] * 3)
+
+    def test_ringing_retry_stops_on_answer_cancel_new_call_close_or_disabled_source(self):
+        for stop in ('answer', 'cancel', 'new-call', 'close', 'disabled'):
+            tv = self.controller()
+            tv._cancel.wait = Mock(return_value=False)
+            ringing = Mock(return_value=True)
+            def send(*args, **kwargs):
+                if stop == 'answer': ringing.return_value = False
+                elif stop == 'cancel': tv._cancel.set()
+                elif stop == 'new-call': tv._cancel = threading.Event()
+                elif stop == 'close': tv._closed = True
+                else: tv.source_enabled = False
+                self.assertFalse(kwargs['is_current'](), stop)
+                return False
+            tv._driver_call.side_effect = send
+            tv._retry_ringing_input(tv._cancel, '2.0.0.0', ringing)
+            self.assertEqual(tv._driver_call.call_count, 1, stop)
+            tv._run.assert_not_called()
+        tv = self.controller()
+        tv._cancel.set()
+        tv._retry_ringing_input(tv._cancel, '2.0.0.0', lambda: True)
+        tv._driver_call.assert_not_called()
+
+    def test_ringing_retry_does_not_start_commands_after_answer_during_delay(self):
+        tv = self.controller()
+        tv._cancel.wait = Mock(return_value=False)
+        tv._retry_ringing_input(tv._cancel, '2.0.0.0', lambda: False)
+        tv._driver_call.assert_not_called()
+        tv._run.assert_not_called()
+
+    def test_ringing_retries_can_recover_from_transport_failure(self):
+        tv = self.controller()
+        tv._cancel.wait = Mock(return_value=False)
+        tv._driver_call.side_effect = [OSError('temporary network failure'), True, True]
+        with patch('logging.warning'):
+            tv._retry_ringing_input(tv._cancel, '2.0.0.0', lambda: True)
+        self.assertEqual(tv._driver_call.call_count, 3)
+
+    def test_initial_wake_is_ready_before_retry_thread_and_never_retries_browsing(self):
+        for ringing, source_enabled in ((lambda: True, True), (None, True), (lambda: True, False)):
+            tv = self.controller()
+            tv._cancel.wait = Mock(return_value=False)
+            tv._previous_power = Mock(return_value=False)
+            tv._previous_source = Mock(return_value='0.0.0.0')
+            tv.source_enabled = source_enabled
+            tv._ready.clear()
+            with patch('threading.Thread') as thread:
+                tv._worker(tv._cancel, ringing=ringing)
+                self.assertTrue(tv._ready.is_set())
+                self.assertEqual(thread.call_count, int(ringing is not None and source_enabled))
+                if thread.called:
+                    self.assertEqual(thread.call_args.kwargs['target'], tv._retry_ringing_input)
 
     def test_manual_tv_change_releases_browsing_lease_without_restoration(self):
         for state in ({'off': True}, {'off': False, 'active_source': '0.0.0.0'}):
