@@ -1419,6 +1419,12 @@ Ringtone, outgoing ringback and button feedback keep their independent old curve
 
 `common/platform_services.py` constructs the fan, USB-power and TV-control adapters
 for `Terminal.make_platform_services()`. The application still owns shutdown
-ordering. This first step retains existing adapters and their disabled Windows
-behaviour; explicit Windows substitutes remain planned. Tests replace the factory
+ordering. Windows now receives explicit desktop substitutes for these Pi-only services;
+they perform no hardware I/O and leave ringing to the Windows call engine.
+The desktop also skips Pi-only TV setup even if a pairing environment variable
+is inherited. Other device construction remains to be migrated. Tests replace the factory
 without patching hardware classes in the UI module.
+
+If platform construction fails, the factory closes already-created services in
+reverse order before propagating the startup error. Normal shutdown remains owned
+by the application.

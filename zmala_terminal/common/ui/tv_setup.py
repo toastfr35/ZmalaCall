@@ -25,7 +25,8 @@ class TVSetupView:
         if self.tv_setup_checked:
             return False
         self.tv_setup_checked = True
-        if not os.environ.get('ZMALA_PAIRING_STATUS'):
+        if (not getattr(self.tv_control, 'supports_setup', True)
+                or not os.environ.get('ZMALA_PAIRING_STATUS')):
             return False
         if self.maintenance:
             self.maintenance.stop()

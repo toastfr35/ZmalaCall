@@ -94,12 +94,19 @@ general-purpose event buses or extra processes just to implement this plan.
 Reviewed on 31 October 2026 using the local Floorplan and selected owning source
 files. The map is a navigation aid, not proof of runtime behaviour or a security
 audit. Maps remain ignored local artifacts; these plans are the durable record.
-No runtime implementation or hardware qualification is included in this change.
+The original review did not include runtime changes. Subsequent implementation
+and verification are recorded below; no hardware qualification is implied.
 
 
 ## Implementation progress
 
 Stage 1 started: a replaceable factory now constructs fan, USB-power and TV-control
-services. Existing implementations and shutdown ownership remain. Explicit platform
-contracts, Windows substitutes and remaining device construction are still planned.
+services. Pi implementations and shutdown ownership remain. Explicit Windows substitutes
+now avoid importing Pi fan, USB-power and TV-control modules through the factory.
+Remaining device construction and stronger platform contracts are still planned.
 Stages 2–6 are not implemented. No hardware qualification is claimed for this slice.
+
+Validation of the platform increment: 31 focused tests passed; 95 additional
+USB/TV/Windows regression tests passed and one was skipped. Hardware behaviour
+has not yet been qualified on term2. Failed construction now releases already
+created services before propagating its original error.

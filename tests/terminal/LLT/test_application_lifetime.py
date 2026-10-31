@@ -1,7 +1,7 @@
 # @test T-LLT-062
 # @requirements LLR-TERM-START-003, LLR-TERM-START-005, LLR-TERM-SETUP-031, LLR-TERM-SETUP-032
 # @environment portable
-# @plan Verify platform factory adapter ownership and root forwarding with mocked devices. Execute terminal composition with temporary profile storage and mocked OS/native/UI boundaries. Verify constructor dependency order, saved-language/bootstrap recovery, reset scope, cached/offline startup scheduling, factory argument ownership and idempotent cancellation-before-window-destruction. Exercise CLI validation and normal/failed run cleanup through the real entry function without launching hardware or services.
+# @plan Verify platform factory adapter ownership, root forwarding and reverse cleanup after partial construction with mocked devices. Execute terminal composition with temporary profile storage and mocked OS/native/UI boundaries. Verify constructor dependency order, saved-language/bootstrap recovery, reset scope, cached/offline startup scheduling, factory argument ownership and idempotent cancellation-before-window-destruction. Exercise CLI validation and normal/failed run cleanup through the real entry function without launching hardware or services.
 # @pass Resources close in ownership order and only the selected profile is reset; startup errors propagate with diagnostics and no worker invokes a real device.
 import io
 from pathlib import Path
@@ -31,7 +31,8 @@ class ApplicationLifetimeTests(unittest.TestCase):
 
     def test_real_platform_factory_constructs_existing_adapters(self):
         from zmala_terminal.common.platform_services import create_platform_services
-        with patch('zmala_terminal.linux.argon_fan.ArgonFan') as fan, \
+        with patch('zmala_terminal.common.platform_services.sys.platform', 'linux'), \
+             patch('zmala_terminal.linux.argon_fan.ArgonFan') as fan, \
              patch('zmala_terminal.linux.usb_power.UsbPower') as usb, \
              patch('zmala_terminal.linux.tv_control.TVControl') as tv:
             services = create_platform_services(self.root)
@@ -41,6 +42,22 @@ class ApplicationLifetimeTests(unittest.TestCase):
             self.assertIs(services.fan, fan.return_value)
             self.assertIs(services.usb_power, usb.return_value)
             self.assertIs(services.television, tv.return_value)
+
+    def test_platform_factory_unwinds_partial_construction(self):
+        from zmala_terminal.common.platform_services import create_platform_services
+        for failure in ('power', 'tv'):
+            events = []
+            with patch('zmala_terminal.common.platform_services.sys.platform', 'linux'), \
+                 patch('zmala_terminal.linux.argon_fan.ArgonFan') as fan, \
+                 patch('zmala_terminal.linux.usb_power.UsbPower') as power, \
+                 patch('zmala_terminal.linux.tv_control.TVControl') as tv:
+                fan.return_value.close.side_effect = lambda: events.append('fan')
+                power.return_value.close.side_effect = lambda: events.append('power')
+                (power if failure == 'power' else tv).side_effect = RuntimeError('startup fixture')
+                with self.assertRaisesRegex(RuntimeError, 'startup fixture'):
+                    create_platform_services(self.root)
+                self.assertEqual(events, ['fan'] if failure == 'power' else ['power', 'fan'])
+                tv.return_value.close.assert_not_called()
 
     def terminal(self,profile='terminal'):
         t=main.Terminal.__new__(main.Terminal); t.root=Mock(); t.initialize_state(profile,'connect')
