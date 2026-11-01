@@ -34,3 +34,5 @@ text: |
 verification: |
   Remove CEC and return unknown routing and power reports. Check normal input and
   absence of invented restore targets.
+  Exercise ambiguous power replies with stale cached standby and fresh driver
+  on/off/unknown/failure results; unknown power must not authorize standby.

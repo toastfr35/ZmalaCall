@@ -382,12 +382,20 @@ class TVControl:
         match = re.search(r'pwr-state:\s*(on|standby|to-on|to-standby)\s*\(', output)
         if match and match[1] in ('on', 'standby'):
             return match[1] == 'standby'
-        # Samsung can report to-on while physically off. A remembered Standby
-        # or settled power report is stronger evidence than a transition reply.
-        observed = self._observed_state().get('off')
-        if isinstance(observed, bool):
-            return observed
-        return match[1] == 'to-standby' if match else None
+        # The observer heartbeat is not the age of its last power report.
+        # A remembered standby (or a sent command) must not authorize shutting
+        # down a TV whose current CEC reply is ambiguous. Query paired metadata
+        # without read_power, avoiding both cached evidence and CEC recursion.
+        if self._network_enabled:
+            try:
+                driver = load_driver(self._driver_name, {'config_file': self._driver_config_file})
+                if 'get_power_status' in driver.get_capabilities():
+                    power = driver.get_power_status()
+                    if isinstance(power, bool):
+                        return not power
+            except Exception as error:
+                logging.warning('TV: baseline power query failed (%s)', type(error).__name__)
+        return None
 
     def _previous_source(self, observed=None):
         """Only a live observer may supply remembered routing; never guess HDMI 1."""

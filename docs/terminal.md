@@ -1470,3 +1470,5 @@ Unknown power/input remain unknown: a command acknowledgement cannot establish
 visibility. Manual source/off observations discard the browsing lease, and
 consecutive calls inherit the original baseline. Setup resets session policy via
 an explicit transport method rather than changing its individual state fields.
+
+Ambiguous CEC power replies require a fresh paired-driver query before saving the pre-call baseline. The observer heartbeat does not date its remembered power report. Unknown fresh power cannot authorize standby during restoration. Settled direct CEC replies remain usable.
