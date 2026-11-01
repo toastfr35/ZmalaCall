@@ -8,7 +8,7 @@ alone does not achieve this: ownership and dependency direction must improve.
 
 ## Findings
 
-The terminal Floorplan covers 112 code files. Its shared UI, call, setup, Pi and
+The refreshed terminal Floorplan covers 119 code files. Its shared UI, call, setup, Pi and
 Windows groups are useful, but `common/main.py` combines eight controller mixins
 into `Terminal`. Those controllers share many mutable fields. `common/ui/display.py`
 also composes views through inheritance. Imports alone understate this coupling.
@@ -69,9 +69,9 @@ Removing third-party packages is not justified by this review alone.
 
 ## Delivery and verification
 
-This is a proposed development plan, not a new product requirement or a claim that
-changes have been implemented. Preserve current behaviour unless a separate
-feature request explicitly changes it. Each numbered stage is a separate issue,
+This plan is not a new product requirement. Implementation and qualification
+status are recorded below. Preserve current behaviour unless a separate feature
+request explicitly changes it. Each numbered stage is a separate issue,
 feature branch and PR; merge only after required Verify checks pass. Follow the
 repository Android version-bump policy and rebase competing version changes.
 
@@ -108,9 +108,9 @@ closes already-created services in reverse order. Native media selection remains
 lazy and is addressed in stage 5.
 
 Portable verification covers constructor arguments, failed construction, shutdown,
-Windows import isolation, input dispatch, setup and settings. Physical startup and
-shutdown qualification on term2 is still pending; no hardware pass is claimed.
-Stages 2–6 continue below as they are implemented.
+Windows import isolation, input dispatch, setup and settings. Term2 has received the combined changes and passed a supervised service restart:
+the native H.264 core initialized with no restart loop. This is a startup smoke
+check, not physical call or TV qualification.
 
 Stage 2: callback ownership extracted into `CallbackController`. Request submission,
 acknowledgements, poll reconciliation and once-only availability selection use
@@ -141,3 +141,28 @@ retains observation freshness, commands, locks and cancellation. The driver API
 and retry timings are unchanged. Portable TV scenarios cover unknown states,
 standby/live-input restoration and superseded workers; term2 visual qualification
 remains outstanding.
+
+## Verification and handover — 1 November 2026
+
+- Stage PRs: #74 platform, #80 callbacks, #82 polling, #84 configuration,
+  #86 media ownership, #88 TV policy. Stages 1–4 merged after all Verify checks.
+- Linux display integration: 22 passed, three explicit hardware/privilege skips.
+  Framing concurrency, server exchange, incoming-call TV transitions and delayed
+  input retries ran under Xvfb. Fixtures do not prove actual television behavior.
+- Windows portable terminal LLT and host compatibility checks pass. Tooling checks
+  requiring Windows shell/junction access pass outside the restricted sandbox.
+- Requirements references and trace comments validate with no unmapped HLR/LLR.
+  User workflows are unchanged, so user guides require no corresponding edit.
+- Refreshed ignored Floorplan: 119 files, all assigned/described, 214 links.
+- Term2 deployment backed up all affected installed files before replacement;
+  startup reported H.264, 1080p/20 fps, active service and zero automatic restarts.
+- The user explicitly deferred physical call testing. Still qualify real C10/C20
+  recovery, both call directions, first video, preview proportions and TV behavior
+  from standby/live TV (answered, missed, cancelled, retry and idle restoration).
+  No physical call/TV pass is claimed.
+
+The callback extraction is the first owned controller; the remaining call and view
+mixins still share application state. Further migration of those controllers is
+follow-on work, not evidence that every target-architecture responsibility has
+already been isolated. Native routing helpers likewise still consume the engine's
+SDK operations, while native resource ownership is now explicit.

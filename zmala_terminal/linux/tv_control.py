@@ -162,7 +162,7 @@ class TVControl:
 
     def browsing_session(self):
         """Return the saved browsing lease only once HDMI switching has settled."""
-        if not self._ready.is_set() or self._restore_pending is not None:
+        if not self._ready.is_set() or self._restore_pending is not None or self.session.browsing is None:
             return None
         return self.session.observe_browsing(self._observed_state())
 
