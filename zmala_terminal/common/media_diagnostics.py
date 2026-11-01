@@ -10,7 +10,7 @@ def media_stats(engine, backend, windows):
     result = {}
     if engine.call:
         if not windows:
-            result['codecs'] = backend.codec_stats(engine)
+            result['codecs'] = backend.codec_stats()
         for kind, getter in [('audio', engine.call_get_audio_stats), ('video', engine.call_get_video_stats)]:
             stats = getter(engine.call)
             if stats:

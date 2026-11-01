@@ -6,6 +6,8 @@
 
 """Decoded video, negotiated direction and stalled-stream detection."""
 from pathlib import Path
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.common.engine import media_backend
 import sys
 import unittest
 import ctypes as C
@@ -17,7 +19,7 @@ from zmala_terminal.common.engine import Engine, OglContext
 
 class VideoFeedbackTests(unittest.TestCase):
     def test_preview_uses_distinct_persistent_native_context(self):
-        e = Engine.__new__(Engine)
+        e = Engine.__new__(Engine); e.media = MediaAdapter(media_backend())
         e.core = 1
         e.core_set_video_display_filter = Mock()
         e.core_set_native_video_window_id = Mock()
@@ -36,7 +38,7 @@ class VideoFeedbackTests(unittest.TestCase):
         e.core_set_native_preview_window_id.assert_called_with(1, None)
 
     def engine(self):
-        engine = Engine.__new__(Engine)
+        engine = Engine.__new__(Engine); engine.media = MediaAdapter(media_backend())
         engine.call = 10
         engine._last_video_frame = None
         engine.call_get_current_params = lambda call: 20

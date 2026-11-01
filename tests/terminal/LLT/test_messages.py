@@ -5,6 +5,8 @@
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Only authenticated text notifications can create contact badges."""
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.common.engine import media_backend
 import hashlib
 import hmac
 from pathlib import Path
@@ -17,7 +19,7 @@ from zmala_terminal.common.engine import Engine
 
 class MessageTests(unittest.TestCase):
     def engine(self):
-        engine = Engine.__new__(Engine)
+        engine = Engine.__new__(Engine); engine.media = MediaAdapter(media_backend())
         engine.config = {'sip': {'domain': 'family.test'}, 'account_type': 'terminal',
                          'call_auth_key': 'terminal-secret',
                          'contacts': [{'id': 'alice', 'can_receive': True}]}
