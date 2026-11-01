@@ -16,6 +16,7 @@ import sys
 import threading
 import time
 
+from zmala_terminal.common.tv_session import ViewingSession
 from zmala_terminal.linux.tv_plugins import load_driver
 from zmala_terminal.linux.cec_device import select_device
 
@@ -32,14 +33,12 @@ class TVControl:
         self._ready = threading.Event()
         self._ready.set()
         self._started = None
-        self._previous = None
-        self._changed = False
+        self.session = ViewingSession()
         self._driver_name = driver
         self._driver_config_file = Path(__file__).resolve().parents[1] / 'data/tv-remote.json'
         self._network_enabled = True
         self._address = None
         self._input_pending = False
-        self._browse_previous = None
         self._restore_pending = None
         self.power_enabled = True
         self.source_enabled = True
@@ -115,33 +114,16 @@ class TVControl:
 
     # @llr LLR-TERM-TV-026
     def _control_allowed(self, off):
-        if off is True:
-            return self.power_enabled
-        # After a restart the passive observer may know neither power nor input.
-        # Qualified one-touch wake must still work when source switching was
-        # skipped. Unknown power cannot authorize an unqualified power-on.
-        return self.source_enabled if off is False else self.power_enabled
+        return self.session.control_allowed(off, self.power_enabled, self.source_enabled)
 
     def wake(self, restore=True, initial=None, ringing=None):
         self._refresh_device()
         if self._closed or not self.command or not Path(self.device).exists():
             return
-        if restore and self._browse_previous and self._restore_pending is None:
+        if restore and self.session.browsing and self._restore_pending is None:
             # A manual TV change just before a call may precede the next UI tick.
             self.browsing_session()
-        # A new call supersedes queued restoration, but inherits the original
-        # baseline if the previous call ended before its worker could restore it.
-        if restore and self._browse_previous:
-            # Consecutive calls keep the original TV baseline, even while the
-            # previous call's inactivity countdown is still running.
-            self._previous, self._browse_previous = self._browse_previous, None
-            self._changed = True
-        elif not restore and self._restore_pending is not None and self._browse_previous:
-            # New identity restarts the countdown even if wake finishes between Tk ticks.
-            self._browse_previous = dict(self._browse_previous)
-        elif not restore:
-            # A new reveal after the user changed TV input replaces the old lease.
-            self._browse_previous = None
+        self.session.begin_wake(restore, self._restore_pending is not None)
         self._restore_pending = None
         self._cancel.set()
         self._ready.clear()
@@ -174,33 +156,26 @@ class TVControl:
         with self._lock:
             if cancel is not self._cancel or self._closed:
                 return
-            if self._previous and self._changed and (
-                    self._previous['off'] is True or self._previous['source'] is not None):
-                self._browse_previous = dict(self._previous, idle_started=time.monotonic())
-                logging.info('CEC: call ended; TV restoration deferred to inactivity timeout')
-            self._previous = None
-            self._changed = False
+            self.session.defer(time.monotonic())
             self._started = None
             self._ready.set()
 
     def browsing_session(self):
         """Return the saved browsing lease only once HDMI switching has settled."""
-        if not self._ready.is_set() or self._restore_pending is not None:
+        if not self._ready.is_set() or self._restore_pending is not None or self.session.browsing is None:
             return None
-        previous = self._browse_previous
-        if previous:
-            state = self._observed_state()
-            source = state.get('active_source')
-            if state.get('off') is True or (source is not None and source != previous['address']):
-                # The user selected another source/off themselves. Do not undo it.
-                self._browse_previous = None
-                return None
-        return previous
+        return self.session.observe_browsing(self._observed_state())
+
+    def reset_viewing_session(self):
+        """Setup calls this only after acquiring the transport lock."""
+        self.session.reset()
+        self._restore_pending = None
+        self._ready.set()
 
     # @llr LLR-TERM-TV-028
     def restore_browsing(self, session):
         """End an idle browsing lease outside Tk; a new wake cancels stale commands."""
-        if self._closed or session is None or session is not self._browse_previous:
+        if self._closed or session is None or session is not self.session.browsing:
             return
         self._cancel.set()
         cancel = self._cancel = threading.Event()
@@ -230,7 +205,7 @@ class TVControl:
 
     def _refresh_device(self):
         # Never redirect a saved TV restoration to another HDMI connector.
-        if self._automatic_device and self.command and self._previous is None and self._browse_previous is None and self._ready.is_set():
+        if self._automatic_device and self.command and self.session.previous is None and self.session.browsing is None and self._ready.is_set():
             if not self._lock.acquire(blocking=False):
                 return
             try:
@@ -263,9 +238,9 @@ class TVControl:
                     return
                 if not restore:
                     # Browsing has its own lease, independent of call hang-up.
-                    self._previous = None
-                    self._changed = False
-                previous = self._previous or (initial if initial and initial['address'] == address else None)
+                    self.session.previous = None
+                    self.session.changed = False
+                previous = self.session.previous or (initial if initial and initial['address'] == address else None)
                 if previous is None:
                     # Capture before configuring Playback: some TVs react to
                     # registration announcements by beginning to wake up.
@@ -278,7 +253,7 @@ class TVControl:
                 if not self._control_allowed(previous['off']):
                     return
                 if restore:
-                    self._previous = previous
+                    self.session.previous = previous
                     logging.info('CEC: saved TV state off=%s, source=%s',
                                  previous['off'], previous['source'])
                 # Already watching this terminal: leave the TV as it is,
@@ -289,13 +264,10 @@ class TVControl:
                     return
                 # Remember manual entry separately: hang-up must not expire its
                 # idle timer. Unknown input/power cannot safely be restored.
-                if not restore and self._browse_previous is None and (
-                        previous['off'] is True or previous['source'] is not None):
-                    self._browse_previous = previous
-                    logging.info('CEC: saved browsing TV state off=%s, source=%s',
-                                 previous['off'], previous['source'])
+                if not restore:
+                    self.session.capture_browsing(previous)
                 # A command may take effect even if its reply times out.
-                self._changed = restore
+                self.session.changed = restore
                 # Reconfiguring a registered adapter can itself wake a TV.
                 # Keep its logical identity and mark any first configuration as
                 # a change that must be restored if cancellation races setup.
@@ -357,7 +329,7 @@ class TVControl:
                 if cancel is self._cancel:
                     self._ready.set()
                     # Further attempts must not hold up automatic answering.
-                    if (ringing and address and self._changed and self.source_enabled
+                    if (ringing and address and self.session.changed and self.source_enabled
                             and not cancel.is_set() and ringing()):
                         threading.Thread(target=self._retry_ringing_input,
                                          args=(cancel, address, ringing), daemon=True,
@@ -430,13 +402,14 @@ class TVControl:
         with self._lock:
             if cancel is not self._cancel:
                 return
-            previous = self._browse_previous if browsing else self._previous
+            previous = self.session.browsing if browsing else self.session.previous
             if not previous:
                 return
             try:
-                if not browsing and not self._changed:
+                if not browsing and not self.session.changed:
                     return
-                if self.source_enabled and previous['source'] != previous['address']:
+                plan = self.session.restore_plan(previous, self.power_enabled, self.source_enabled)
+                if plan.release_source:
                     self._run('--to', '0', '--inactive-source', 'phys-addr=' + previous['address'])
                     if cancel is not self._cancel:
                         return
@@ -466,7 +439,7 @@ class TVControl:
                         logging.warning('CEC: previous input unknown; requested TV-native restoration')
                 if cancel is not self._cancel:
                     return
-                if self.power_enabled and previous['off'] is True:
+                if plan.power_off:
                     # Restore the remembered input before standby too, so the
                     # TV next powers on to the same source as before the call.
                     if previous['source'] and previous['source'] != previous['address']:
@@ -494,12 +467,12 @@ class TVControl:
             finally:
                 if cancel is self._cancel:
                     if browsing:
-                        self._browse_previous = None
+                        self.session.browsing = None
                         self._restore_pending = None
                         self._ready.set()
                     else:
-                        self._previous = None
-                        self._changed = False
+                        self.session.previous = None
+                        self.session.changed = False
 
     # @llr LLR-TERM-TV-033
     def _driver_call(self, method, *args, is_current, trial_source=None):

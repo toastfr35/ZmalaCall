@@ -10,6 +10,7 @@
 
 """Check CEC routing, cancellation and failures without changing a real TV."""
 from pathlib import Path
+from zmala_terminal.common.tv_session import ViewingSession
 from zmala_terminal.common.callbacks import CallbackController
 import json
 import subprocess
@@ -31,6 +32,22 @@ from zmala_terminal.linux.cec_observer import RoutingState
 
 
 class TVControlTests(unittest.TestCase):
+    def test_pure_policy_preserves_unknown_state_and_discards_manual_changes(self):
+        policy = ViewingSession()
+        policy.previous = {'off': None, 'source': None, 'address': '2.0.0.0'}
+        policy.changed = True  # A sent command is not evidence of a baseline.
+        policy.defer(10)
+        self.assertIsNone(policy.browsing)
+        policy.previous = {'off': False, 'source': '0.0.0.0', 'address': '2.0.0.0'}
+        policy.changed = True
+        policy.defer(20)
+        baseline = policy.browsing
+        self.assertIs(policy.observe_browsing({}), baseline)
+        plan = policy.restore_plan(baseline, True, True)
+        self.assertTrue(plan.release_source)
+        self.assertFalse(plan.power_off)
+        self.assertIsNone(policy.observe_browsing({'active_source': '3.0.0.0'}))
+
     def test_observer_assembles_reports_publishes_atomic_heartbeat_and_closes_dead_monitor(self):
         import zmala_terminal.linux.cec_observer as observer
         process = Mock()
@@ -158,7 +175,7 @@ class TVControlTests(unittest.TestCase):
         tv._cancel.wait = Mock(return_value=False)
         tv._worker(tv._cancel, restore=False, initial=initial)
         self.assertTrue(woke)
-        self.assertIsNone(tv._browse_previous, 'Unknown power must not become a standby restoration baseline')
+        self.assertIsNone(tv.session.browsing, 'Unknown power must not become a standby restoration baseline')
         self.assertFalse(any(c.args[0] == 'set_current_input' for c in tv._driver_call.call_args_list))
 
         tv.power_enabled = False
@@ -193,8 +210,8 @@ class TVControlTests(unittest.TestCase):
         tv._observed_state.return_value = {'off': False, 'active_source': '3.0.0.0'}
         tv._cancel.wait = Mock(return_value=False)
         tv._worker(tv._cancel, restore=False, initial=initial)
-        self.assertTrue(tv._browse_previous['off'])
-        self.assertEqual(tv._browse_previous['source'], '0.0.0.0')
+        self.assertTrue(tv.session.browsing['off'])
+        self.assertEqual(tv.session.browsing['source'], '0.0.0.0')
 
     def test_first_visible_press_after_restart_dispatches_its_action(self):
         tv = self.controller()
@@ -222,8 +239,8 @@ class TVControlTests(unittest.TestCase):
         tv._previous_source = Mock(return_value='0.0.0.0')
         tv._cancel.wait = Mock(return_value=False)
         tv._worker(tv._cancel, restore=False)
-        self.assertIsNone(tv._previous)
-        self.assertFalse(tv._changed)
+        self.assertIsNone(tv.session.previous)
+        self.assertFalse(tv.session.changed)
         tv._run.reset_mock()
         tv._restore(tv._cancel)
         tv._run.assert_not_called()
@@ -236,7 +253,7 @@ class TVControlTests(unittest.TestCase):
             tv._cancel.wait = Mock(return_value=False)
             tv._restore_wait = Mock(return_value=True)
             tv._worker(tv._cancel, restore=False)
-            session = tv._browse_previous
+            session = tv.session.browsing
             self.assertEqual(session['source'], source)
             # A call while browsing sees UI already visible; hang-up leaves the browsing lease.
             tv._previous_power.return_value = False
@@ -245,7 +262,7 @@ class TVControlTests(unittest.TestCase):
             tv._run.reset_mock()
             tv._restore(tv._cancel)
             tv._run.assert_not_called()
-            self.assertIs(tv._browse_previous, session)
+            self.assertIs(tv.session.browsing, session)
             tv._restore(tv._cancel, browsing=True)
             if off:
                 tv._run.assert_any_call('--to', '0', '--standby')
@@ -254,61 +271,61 @@ class TVControlTests(unittest.TestCase):
                                      for c in tv._driver_call.call_args_list), 1)
             else:
                 tv._run.assert_any_call('--set-stream-path', 'phys-addr=' + source)
-            self.assertIsNone(tv._browse_previous)
+            self.assertIsNone(tv.session.browsing)
 
     def test_call_end_hands_original_state_to_idle_without_tv_commands(self):
         for off in (False, True):
             tv = self.controller()
-            original = tv._previous = {'off': off, 'source': '0.0.0.0', 'address': '3.0.0.0'}
-            tv._changed = True
+            original = tv.session.previous = {'off': off, 'source': '0.0.0.0', 'address': '3.0.0.0'}
+            tv.session.changed = True
             with patch('threading.Thread') as thread:
                 tv.cancel(defer=True)
                 thread.assert_called_once()
                 self.assertFalse(tv._ready.is_set())
             with patch('zmala_terminal.linux.tv_control.time.monotonic', return_value=100):
                 tv._defer_restore(tv._cancel)
-            self.assertEqual(tv._browse_previous, dict(original, idle_started=100))
-            self.assertIsNone(tv._previous)
+            self.assertEqual(tv.session.browsing, dict(original, idle_started=100))
+            self.assertIsNone(tv.session.previous)
             self.assertTrue(tv._ready.is_set())
             tv._run.assert_not_called()
             # A duplicate native end event must not reset the timer again.
-            session = tv._browse_previous
+            session = tv.session.browsing
             tv._defer_restore(tv._cancel)
-            self.assertIs(tv._browse_previous, session)
+            self.assertIs(tv.session.browsing, session)
 
     def test_new_call_inherits_idle_baseline_and_fences_old_handoff(self):
         tv = self.controller()
-        baseline = tv._browse_previous = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0', 'idle_started': 10}
+        baseline = tv.session.browsing = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0', 'idle_started': 10}
         old = tv._cancel
         with patch('threading.Thread'), patch.object(Path, 'exists', return_value=True):
             tv.wake()
-        self.assertIs(tv._previous, baseline)
-        self.assertTrue(tv._changed)
-        self.assertIsNone(tv._browse_previous)
+        self.assertIs(tv.session.previous, baseline)
+        self.assertTrue(tv.session.changed)
+        self.assertIsNone(tv.session.browsing)
         tv._defer_restore(old)
-        self.assertIs(tv._previous, baseline)
+        self.assertIs(tv.session.previous, baseline)
         self.assertFalse(tv._ready.is_set())
         tv._defer_restore(tv._cancel)
-        self.assertEqual(tv._browse_previous['off'], True)
-        self.assertGreater(tv._browse_previous['idle_started'], 10)
+        self.assertEqual(tv.session.browsing['off'], True)
+        self.assertGreater(tv.session.browsing['idle_started'], 10)
         tv._run.assert_not_called()
 
     def test_call_handoff_does_not_invent_an_unknown_baseline(self):
         tv = self.controller()
-        tv._previous = {'off': None, 'source': None, 'address': '3.0.0.0'}
-        tv._changed = True
+        tv.session.previous = {'off': None, 'source': None, 'address': '3.0.0.0'}
+        tv.session.changed = True
         tv._defer_restore(tv._cancel)
-        self.assertIsNone(tv._browse_previous)
+        self.assertIsNone(tv.session.browsing)
         tv._run.assert_not_called()
 
     def test_call_after_manual_source_change_discards_old_idle_target(self):
         tv = self.controller()
-        tv._browse_previous = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0'}
+        tv.session.browsing = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0'}
         tv._observed_state = Mock(return_value={'off': False, 'active_source': '1.0.0.0'})
         with patch('threading.Thread'), patch.object(Path, 'exists', return_value=True):
             tv.wake()
-        self.assertIsNone(tv._previous, 'The wake worker must capture the new input')
-        self.assertIsNone(tv._browse_previous)
+        self.assertIsNone(tv.session.previous, 'The wake worker must capture the new input')
+        self.assertIsNone(tv.session.browsing)
 
     def test_cancelled_wake_handoff_waits_for_baseline_without_blocking_caller(self):
         tv = self.controller()
@@ -323,17 +340,17 @@ class TVControlTests(unittest.TestCase):
             thread.start()
             self.assertTrue(started.wait(1))
             self.assertFalse(finished.is_set())
-            tv._previous = {'off': True, 'source': None, 'address': '3.0.0.0'}
-            tv._changed = True
+            tv.session.previous = {'off': True, 'source': None, 'address': '3.0.0.0'}
+            tv.session.changed = True
         thread.join(2)
         self.assertFalse(thread.is_alive())
-        self.assertTrue(tv._browse_previous['off'])
+        self.assertTrue(tv.session.browsing['off'])
         tv._run.assert_not_called()
 
         tv = self.controller()
-        tv._previous = {'off': False, 'source': '3.0.0.0', 'address': '3.0.0.0'}
+        tv.session.previous = {'off': False, 'source': '3.0.0.0', 'address': '3.0.0.0'}
         tv._defer_restore(tv._cancel)
-        self.assertIsNone(tv._browse_previous, 'An already visible TV needs no new return target')
+        self.assertIsNone(tv.session.browsing, 'An already visible TV needs no new return target')
 
     def test_ringing_retries_are_bounded_spaced_and_use_driver_or_cec(self):
         for accepted in (True, False):
@@ -404,7 +421,7 @@ class TVControlTests(unittest.TestCase):
     def test_manual_tv_change_releases_browsing_lease_without_restoration(self):
         for state in ({'off': True}, {'off': False, 'active_source': '0.0.0.0'}):
             tv = self.controller()
-            session = tv._browse_previous = {'off': False, 'source': '0.0.0.0', 'address': '3.0.0.0'}
+            session = tv.session.browsing = {'off': False, 'source': '0.0.0.0', 'address': '3.0.0.0'}
             tv._observed_state = Mock(return_value=state)
             self.assertIsNone(tv.browsing_session())
             with patch('threading.Thread') as thread:
@@ -414,19 +431,19 @@ class TVControlTests(unittest.TestCase):
     def test_idle_restore_is_superseded_by_button_or_incoming_call(self):
         for incoming in (False, True):
             tv = self.controller()
-            baseline = tv._browse_previous = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0'}
+            baseline = tv.session.browsing = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0'}
             with patch('threading.Thread'), patch.object(Path, 'exists', return_value=True):
                 tv.restore_browsing(baseline)
                 old = tv._cancel
                 self.assertIsNone(tv.browsing_session())
                 if incoming:
                     tv.wake()
-                    self.assertIs(tv._previous, baseline)
-                    self.assertIsNone(tv._browse_previous)
+                    self.assertIs(tv.session.previous, baseline)
+                    self.assertIsNone(tv.session.browsing)
                 else:
                     self.assertTrue(tv.handle_button(Mock()))
-                    self.assertEqual(tv._browse_previous, baseline)
-                    self.assertIsNot(tv._browse_previous, baseline)
+                    self.assertEqual(tv.session.browsing, baseline)
+                    self.assertIsNot(tv.session.browsing, baseline)
                 tv._run.reset_mock()
                 tv._restore(old, browsing=True)
                 tv._run.assert_not_called()
@@ -545,7 +562,7 @@ class TVControlTests(unittest.TestCase):
         tv._previous_power = Mock(return_value=False)
         tv._previous_source = Mock(return_value='3.0.0.0')
         tv._worker(tv._cancel)
-        self.assertFalse(tv._changed)
+        self.assertFalse(tv.session.changed)
         tv._run.assert_has_calls([
             unittest.mock.call('--physical-address'),
             unittest.mock.call('--to', '0', '--give-device-power-status')])
@@ -678,8 +695,8 @@ class TVControlTests(unittest.TestCase):
 
     def remembered(self, off=False, source='1.0.0.0'):
         tv = self.controller()
-        tv._previous = {'off': off, 'source': source, 'address': '2.0.0.0'}
-        tv._changed = True
+        tv.session.previous = {'off': off, 'source': source, 'address': '2.0.0.0'}
+        tv.session.changed = True
         tv._restore_wait = Mock(return_value=True)
         return tv
 
@@ -743,7 +760,7 @@ class TVControlTests(unittest.TestCase):
         tv._driver_call.side_effect = incoming
         tv._restore(tv._cancel)
         self.assertFalse(any('--standby' in call.args for call in tv._run.call_args_list))
-        self.assertIsNotNone(tv._previous)
+        self.assertIsNotNone(tv.session.previous)
 
     def test_network_standby_fallback_delegates_ambiguous_cec_to_guarded_driver(self):
         for power, expected in (('on', True), ('standby', False),
@@ -761,11 +778,11 @@ class TVControlTests(unittest.TestCase):
         tv._cancel = threading.Event()
         tv._restore(old)
         tv._run.assert_not_called()
-        self.assertTrue(tv._previous['off'])
+        self.assertTrue(tv.session.previous['off'])
 
     def test_cancelled_wake_before_any_change_sends_no_restore(self):
         tv = self.remembered(off=True)
-        tv._changed = False
+        tv.session.changed = False
         tv._restore(tv._cancel)
         tv._run.assert_not_called()
 
@@ -780,7 +797,7 @@ class TVControlTests(unittest.TestCase):
         tv._run.side_effect = subprocess.TimeoutExpired('cec-ctl', 4)
         with self.assertLogs(level='WARNING'):
             tv._restore(tv._cancel)
-        self.assertIsNone(tv._previous)
+        self.assertIsNone(tv.session.previous)
 
     def test_live_routing_cache_only(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -836,7 +853,7 @@ class TVControlTests(unittest.TestCase):
         tv._run.side_effect = run
         tv._restore_wait = Mock(return_value=True)
         tv._worker(tv._cancel)
-        self.assertTrue(tv._changed)
+        self.assertTrue(tv.session.changed)
         tv._restore(tv._cancel)
         tv._run.assert_any_call('--to', '0', '--standby')
 

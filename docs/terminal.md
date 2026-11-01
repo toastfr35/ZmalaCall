@@ -1462,3 +1462,11 @@ no longer writes resource fields into Engine. Device routing helpers still use
 native engine operations on the core thread. Shutdown stops framing first, then
 ends calls/stops/unrefs the core, then releases the plugin reference. If native
 teardown fails the plugin stays retained, preventing dangling callback pointers.
+
+`common/tv_session.py` owns saved call/browsing baselines and restoration policy.
+It consumes observations and explicit time values without doing I/O. TVControl
+owns CEC/network execution, fresh observations, locks and cancellation tokens.
+Unknown power/input remain unknown: a command acknowledgement cannot establish
+visibility. Manual source/off observations discard the browsing lease, and
+consecutive calls inherit the original baseline. Setup resets session policy via
+an explicit transport method rather than changing its individual state fields.
