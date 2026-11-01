@@ -3,6 +3,7 @@
 # @environment portable
 # @plan Validate complete, expired and malformed secure profiles with a fixed clock, including default 443 and separate 5061/5349 endpoints and invalid port bounds. Substitute only native ABI functions and local CA discovery; verify TLS TURN, ICE, forced relay, certificate/hostname checks and mandatory SRTP. Inject allocation failure and verify owned policy release. Deliver changed relay credentials through polling at an unchanged revision; exercise real idle configuration application with native ABI stubs. Assert no USB preparation, engine replacement, SIP refresh or device probes; defer active calls and retry failed allocation without losing the registered core. Inject policy-application failure and verify credential rollback/reference release. Replace changed TURN identities without removing unchanged/SIP credentials. Check outgoing call encryption in the existing Engine adapter tests.
 # @pass Invalid profiles fail before native configuration; credentials expiring on a running core block both dial and answer before media opens. Valid profiles request the stated secure policy and release references. Real handshakes and decoded media are verified by the network HLT.
+from zmala_terminal.common.callbacks import CallbackController
 import copy
 import unittest
 from unittest.mock import Mock, patch
@@ -37,7 +38,7 @@ class SecureCallTests(unittest.TestCase):
         from zmala_terminal.common.management import ManagementLoop
         from zmala_terminal.common.model import State
         from tests.terminal.LLT.test_terminal import config as full_config
-        loop = ManagementLoop()
+        loop = ManagementLoop(); loop.callbacks = CallbackController()
         previous = full_config() | config()
         loop.model = Mock(config=previous, state=State.HOME)
         loop.apply_config = Mock()
@@ -67,7 +68,7 @@ class SecureCallTests(unittest.TestCase):
         Engine.dial(e, 'sip:b@example.org')
         e.call_params_set_media_encryption.assert_called_once_with(20, 1)
         desired = config()
-        app = ConfigurationControl()
+        app = ConfigurationControl(); app.callbacks = CallbackController()
         app.engine = Mock(config=copy.deepcopy(desired), audio_profile='normal',
                           video_settings=VideoSettings.for_config(desired))
         original = app.engine
@@ -133,7 +134,7 @@ class SecureCallTests(unittest.TestCase):
         previous = full_config()
         previous['sip']['proxy'] = config()['sip']['proxy']
         previous['secure_calls'] = config()['secure_calls']
-        app = ConfigurationControl(); app.model = TerminalModel(); app.model.configure(previous)
+        app = ConfigurationControl(); app.callbacks = CallbackController(); app.model = TerminalModel(); app.model.configure(previous)
         app.engine = Mock(config=copy.deepcopy(previous), call=None, core=123, auto_framing=None)
         app.engine.dll.linphone_core_create_nat_policy.return_value = 456
         app.engine.dll.linphone_core_find_auth_info.return_value = 800

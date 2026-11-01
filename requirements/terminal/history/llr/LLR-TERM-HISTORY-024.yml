@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/callbacks.py
+  type: file
 - path: tests/terminal/LLT/test_call_orchestration.py
   type: file
 - path: tests/terminal/LLT/test_runtime_contracts.py

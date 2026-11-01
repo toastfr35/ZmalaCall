@@ -4,6 +4,7 @@
 # @plan Drive real call orchestration and the configured model with fake native SIP, HTTP preflight, scheduling and USB boundaries. Verify incoming permissions, call-handle ownership, persisted notifications, timeout validation, stale/cancelled USB retries, end/error cleanup and callback target/response validation. For unanswered outgoing attempts, inject remote rejection/end, delayed/immediate caller cancellation, synchronous end callbacks, prior connection, incoming decline, permission removal and existing pending requests; verify one callback offer, both choices and late-event fencing. Check callback-availability prompts do not interrupt active settings or calls.
 # @pass Native operations and persisted results match assertions; no actual call, media, TV or network side effects occur.
 # The TV retry predicate remains true only for the same still-ringing native call; answer, replacement, end and engine teardown invalidate it.
+from zmala_terminal.common.callbacks import CallbackController
 import json
 import queue
 import unittest
@@ -29,13 +30,13 @@ class CallOrchestrationTests(unittest.TestCase):
         self.assertFalse(ringing())
 
     def controller(self):
-        c=call_control.CallControl(); c.model=TerminalModel(); c.model.configure(config())
+        c=call_control.CallControl(); c.callbacks = CallbackController(); c.model=TerminalModel(); c.model.configure(config())
         c.root=Mock(); c.render=Mock(); c.missed_calls_store=Mock(); c.engine=Mock(call=41,registered=True)
         c.engine.hold_call.side_effect=lambda handle:setattr(c.engine,'call',handle)
         c.usb_power=Mock(); c.tv_control=Mock(); c.settings_hold=Mock(started=None); c.settings_open=False
         c.configuration=Mock(); c.messages=queue.Queue(); c.setup_stage=None; c.closed=False; c.notice=''; c.carousel_motion=None
-        c.generation=1; c.dial_serial=2; c.callback_serial=3; c.outgoing_deadline=None; c.server_seen=100
-        c.callback_requests=[]; c.callback_seen=set(); c.callback_alert=None; c.last_button=0
+        c.generation=1; c.dial_serial=2; c.callbacks.serial=3; c.outgoing_deadline=None; c.server_seen=100
+        c.callbacks.requests=[]; c.callbacks.seen=set(); c.callback_alert=None; c.last_button=0
         return c
 
     def test_notifications_require_matching_domain_and_contact_permission(self):
@@ -176,12 +177,12 @@ class CallOrchestrationTests(unittest.TestCase):
             self.assertEqual(result[3],payload==({'ok':True} if cancel else request)); self.assertEqual(result[-1],request['id'] if cancel else None)
 
     def test_ready_callback_prompt_waits_for_idle_and_only_targets_online_contact_once(self):
-        c=self.controller(); c.callback_requests=[{'id':'1','from':'terminal','to':'alice','ready':True}]
+        c=self.controller(); c.callbacks.requests=[{'id':'1','from':'terminal','to':'alice','ready':True}]
         with patch.object(call_control.time,'monotonic',return_value=101):
             c.settings_open=True; c.show_callback_available(101); self.assertIsNone(c.callback_alert)
             c.settings_open=False; c.show_callback_available(101); self.assertEqual(c.callback_alert,('Alice',111))
             c.callback_alert=None; c.show_callback_available(102); self.assertIsNone(c.callback_alert)
-        self.assertEqual(c.callback_seen,{'1'}); c.render.assert_called_once()
+        self.assertEqual(c.callbacks.seen,{'1'}); c.render.assert_called_once()
 
 
 if __name__=='__main__': unittest.main()

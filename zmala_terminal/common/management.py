@@ -4,6 +4,7 @@ import math
 import queue
 import threading
 import time
+from zmala_terminal.common.callbacks import CallbackResult
 from zmala_terminal.common.model import State
 from zmala_terminal.common.peripherals import collect_peripheral_status
 from zmala_terminal.common.connectivity import wifi_link_available
@@ -71,7 +72,7 @@ class ManagementLoop:
             return
         self.worker_busy = True
         configuration, generation = self.configuration, self.generation
-        callback_revision = getattr(self, 'callback_revision', 0)
+        callback_revision = self.callbacks.revision
         status = dict(self.diagnostics) | self.peripheral_status() | {
             'state': self.model.state.value,
             'configuration_version': self.model.config['configuration_version'] if self.model.config else 0,
@@ -126,10 +127,8 @@ class ManagementLoop:
             if generation != self.generation:
                 return
             if kind == 'poll-config' and not self.setup_stage:
-                if revisions and revisions[0] != getattr(self, 'callback_revision', 0):
-                    # A poll begun before a successful mutation cannot undo
-                    # its tag change. The next fresh poll is authoritative.
-                    value = dict(value, callbacks=self.callback_requests)
+                if revisions:
+                    value = self.callbacks.reconcile_poll(value, revisions[0])
                 self.apply_poll_config(value)
             elif kind == 'poll-network':
                 self.network_connected = value
@@ -137,15 +136,11 @@ class ManagementLoop:
 
     # @llr LLR-TERM-HISTORY-023
     def callback_result(self, generation, serial, target, success, reply, request_id):
-        if generation != self.generation or serial != self.callback_serial:
+        result = CallbackResult(generation, serial, target, success, reply, request_id)
+        if not self.callbacks.acknowledge(self.generation, result):
             return
         if success:
-            self.callback_revision = getattr(self, 'callback_revision', 0) + 1
-            removed = request_id or reply['id']
-            self.callback_requests = [r for r in self.callback_requests if r['id'] != removed]
-            if not request_id:
-                self.callback_requests.append(reply)
-            self.model.config['callbacks'] = list(self.callback_requests)
+            self.model.config['callbacks'] = list(self.callbacks.requests)
             if request_id:
                 self.callback_alert = None
         if (self.model.state == State.REQUESTING_CALLBACK and self.model.contact
@@ -162,8 +157,8 @@ class ManagementLoop:
         if self.model.config and config['configuration_version'] < self.model.config['configuration_version']:
             return
         self.server_seen = time.monotonic()
-        changed = getattr(self, 'callback_requests', []) != config.get('callbacks', [])
-        self.callback_requests = config.get('callbacks', [])
+        changed = self.callbacks.requests != config.get('callbacks', [])
+        self.callbacks.requests = config.get('callbacks', [])
         # @llr LLR-TERM-COM-010
         # Hourly relay credentials change without an administrator's revision bump.
         # Apply them at idle; credential-only changes preserve the core and USB sleep.
@@ -173,7 +168,7 @@ class ManagementLoop:
             return
         # Reachability changes independently of the persisted configuration version.
         availability = {c['id']: c for c in config['contacts']}
-        self.model.config['callbacks'] = list(self.callback_requests)
+        self.model.config['callbacks'] = list(self.callbacks.requests)
         for contact in self.model.config['contacts']:
             live = availability.get(contact['id'], {})
             online = live.get('online') is True

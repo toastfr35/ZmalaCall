@@ -104,10 +104,8 @@ class ProvisioningFlow:
         self.model = TerminalModel()
         self.pending_config = None
         self.engine_retry_at = 0
-        self.callback_requests = []
-        self.callback_seen.clear()
+        self.callbacks.reset()
         self.callback_alert = None
-        self.callback_serial += 1
         self.current_settings = {}
         self.server_seen = 0
         self.last_registration = False

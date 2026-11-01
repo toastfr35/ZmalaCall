@@ -15,7 +15,7 @@ class ConfigurationControl:
         if not getattr(self, 'tv_setup_checked', True) and self.begin_tv_setup(config):
             self.render()
             return
-        self.callback_requests = config.get('callbacks', [])
+        self.callbacks.requests = config.get('callbacks', [])
         # Framing only changes crop coordinates, not the SIP/media graph.
         if self.engine and getattr(self.engine, 'auto_framing', None):
             self.engine.auto_framing.configure(config.get('auto_framing', False))
