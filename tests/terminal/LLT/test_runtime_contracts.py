@@ -77,7 +77,7 @@ class RuntimeContractTests(unittest.TestCase):
         v.poll_wifi = Mock(); v.worker_busy = False; v.generation = 3; v.setup_stage = None
         v.configuration = Mock(cancelled=False); v.messages = queue.Queue()
         v.diagnostics = {'registered':True, 'devices':{'camera':['C20']}, 'camera':'C20'}
-        with patch('zmala_terminal.common.management.threading.Thread') as thread:
+        with patch('zmala_terminal.common.management.server_sync.threading.Thread') as thread:
             v.poll()
             v.diagnostics = {'registered':False}
             thread.call_args.kwargs['target']()

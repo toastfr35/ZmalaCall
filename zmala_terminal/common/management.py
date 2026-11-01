@@ -2,8 +2,8 @@
 import logging
 import math
 import queue
-import threading
 import time
+from zmala_terminal.common import server_sync
 from zmala_terminal.common.callbacks import CallbackResult
 from zmala_terminal.common.model import State
 from zmala_terminal.common.peripherals import collect_peripheral_status
@@ -49,16 +49,7 @@ class ManagementLoop:
         if self.network_worker_busy:
             return
         self.network_worker_busy = True
-        generation = self.generation
-
-        def worker():
-            try:
-                available = wifi_link_available()
-            except Exception:
-                available = None
-            self.messages.put(('poll-network', (generation, available)))
-            self.messages.put(('network-done', None))
-        threading.Thread(target=worker, daemon=True).start()
+        server_sync.poll_network(self.messages, self.generation, wifi_link_available)
 
     def peripheral_status(self):
         return collect_peripheral_status(getattr(self, 'presenter_input', None),
@@ -78,17 +69,7 @@ class ManagementLoop:
             'configuration_version': self.model.config['configuration_version'] if self.model.config else 0,
         }
 
-        def worker():
-            try:
-                self.messages.put(('poll-config', (generation, configuration.fetch(), callback_revision)))
-                if not configuration.cancelled:
-                    # @llr LLR-TERM-MAINT-018
-                    configuration.report(status)
-            except Exception as error:
-                logging.warning('Management connection: %s', error)
-            finally:
-                self.messages.put(('poll-done', generation))
-        threading.Thread(target=worker, daemon=True).start()
+        server_sync.poll_configuration(self.messages, configuration, generation, callback_revision, status)
 
     def drain_messages(self):
         while True:
@@ -121,18 +102,18 @@ class ManagementLoop:
                 self.worker_busy = False
         elif kind == 'network-done':
             self.network_worker_busy = False
-        elif kind in ('poll-config', 'poll-network'):
-            generation, value, *revisions = value
-            # Reset/re-enrollment invalidates every result from the old worker.
-            if generation != self.generation:
+        elif kind == 'poll-config':
+            result = server_sync.ConfigurationResult(*value)
+            if result.generation != self.generation or self.setup_stage:
                 return
-            if kind == 'poll-config' and not self.setup_stage:
-                if revisions:
-                    value = self.callbacks.reconcile_poll(value, revisions[0])
-                self.apply_poll_config(value)
-            elif kind == 'poll-network':
-                self.network_connected = value
-                self.draw_connectivity(bool(self.engine and self.engine.registered))
+            config = self.callbacks.reconcile_poll(result.config, result.callback_revision)
+            self.apply_poll_config(config)
+        elif kind == 'poll-network':
+            result = server_sync.NetworkResult(*value)
+            if result.generation != self.generation:
+                return
+            self.network_connected = result.available
+            self.draw_connectivity(bool(self.engine and self.engine.registered))
 
     # @llr LLR-TERM-HISTORY-023
     def callback_result(self, generation, serial, target, success, reply, request_id):
