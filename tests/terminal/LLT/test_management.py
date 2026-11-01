@@ -32,7 +32,7 @@ class ManagementTests(unittest.TestCase):
         loop.draw_connectivity = Mock()
         def run_inline(**kwargs):
             return Mock(start=kwargs['target'])
-        with patch('zmala_terminal.common.management.threading.Thread', side_effect=run_inline), patch('zmala_terminal.common.management.wifi_link_available') as wifi:
+        with patch('zmala_terminal.common.management.server_sync.threading.Thread', side_effect=run_inline), patch('zmala_terminal.common.management.wifi_link_available') as wifi:
             for connected in (True, False, None):
                 wifi.return_value = connected
                 loop.poll()
@@ -51,7 +51,7 @@ class ManagementTests(unittest.TestCase):
         loop.draw_connectivity = Mock()
         loop.apply_poll_config = Mock()
         loop.handle_worker_message('poll-network', (1, True))
-        loop.handle_worker_message('poll-config', (1, config()))
+        loop.handle_worker_message('poll-config', (1, config(), 0))
         loop.handle_worker_message('poll-done', 1)
         self.assertFalse(loop.network_connected)
         self.assertTrue(loop.worker_busy)

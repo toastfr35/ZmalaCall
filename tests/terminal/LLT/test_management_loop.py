@@ -15,6 +15,18 @@ from tests.terminal.LLT.test_terminal import config
 
 
 class ManagementPumpTests(unittest.TestCase):
+    def test_queued_report_is_detached_from_nested_diagnostics(self):
+        loop = self.loop()
+        loop.diagnostics = {'video': {'frames': 12}}
+        tasks = []
+        with patch.object(management.server_sync.threading, 'Thread',
+                          side_effect=lambda **kw: Mock(start=lambda: tasks.append(kw['target']))):
+            loop.poll()
+        loop.diagnostics['video']['frames'] = 99
+        # Wi-Fi has its own worker; execute only the server worker here.
+        tasks[1]()
+        self.assertEqual(loop.configuration.report.call_args.args[0]['video'], {'frames': 12})
+
     def loop(self):
         loop=management.ManagementLoop(); loop.callbacks = CallbackController(); loop.model=TerminalModel(); loop.model.configure(config())
         loop.messages=queue.Queue(); loop.generation=3; loop.callbacks.revision=4; loop.closed=False
@@ -37,7 +49,7 @@ class ManagementPumpTests(unittest.TestCase):
         loop=self.loop(); tasks=[]
         def thread(**kwargs): return Mock(start=lambda:tasks.append(kwargs['target']))
         loop.configuration.fetch.return_value=config()
-        with patch.object(management.threading,'Thread',side_effect=thread), patch.object(management,'wifi_link_available',return_value=True):
+        with patch.object(management.server_sync.threading,'Thread',side_effect=thread), patch.object(management,'wifi_link_available',return_value=True):
             loop.poll(); loop.poll(); self.assertEqual(len(tasks),2)
             # Mutation after launch must not leak into the captured report.
             loop.generation=8; loop.diagnostics['camera']='changed'; loop.callbacks.revision=9
@@ -73,7 +85,7 @@ class ManagementPumpTests(unittest.TestCase):
             loop=self.loop(); loop.configuration.cancelled=cancelled
             loop.configuration.fetch.return_value=config()
             if failure: loop.configuration.fetch.side_effect=OSError('offline')
-            with patch.object(management.threading,'Thread',side_effect=lambda **kw:Mock(start=kw['target'])), \
+            with patch.object(management.server_sync.threading,'Thread',side_effect=lambda **kw:Mock(start=kw['target'])), \
                     patch.object(management,'wifi_link_available',side_effect=OSError('wifi unavailable')):
                 loop.poll()
             loop.configuration.report.assert_not_called(); loop.drain_messages()

@@ -117,3 +117,8 @@ acknowledgements, poll reconciliation and once-only availability selection use
 explicit arguments instead of reaching through Terminal. Remaining call and view
 mixins are deliberately retained until their boundaries can be migrated safely.
 No user workflow changes; user guides remain accurate.
+
+Stage 3 implementation: background polling now lives in `server_sync.py` and uses
+named generation-bearing result types. ManagementLoop keeps UI dispatch and
+scheduling; workers receive captured inputs and detached diagnostic snapshots.
+The existing stale-enrollment and callback-revision guards remain at dispatch.

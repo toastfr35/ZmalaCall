@@ -1440,3 +1440,10 @@ queue references, never the terminal UI. Named results return to the UI thread;
 the owner rejects obsolete generations/serials and prevents older polls undoing
 an acknowledgement. Call/screen controllers retain navigation and rendering only.
 Factory reset invalidates callback work before a new enrollment is applied.
+
+`common/server_sync.py` performs background Wi-Fi and configuration polling from
+captured inputs and emits named configuration/network results. ManagementLoop
+retains scheduling, busy flags and UI dispatch. Enrollment generations invalidate
+results; callback revisions prevent stale poll resurrection. Reports deep-copy the
+captured status so later UI mutations cannot alter queued diagnostics. Workers
+have no reference to the terminal, widgets or hardware controllers.

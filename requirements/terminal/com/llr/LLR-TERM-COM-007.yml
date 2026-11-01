@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/server_sync.py
+  type: file
 - path: tests/terminal/LLT/test_management_loop.py
   type: file
 - path: tests/terminal/LLT/test_performance.py
