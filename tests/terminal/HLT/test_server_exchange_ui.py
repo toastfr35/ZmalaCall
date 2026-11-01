@@ -145,6 +145,6 @@ class ServerExchangeTests(unittest.TestCase):
             self.assertIs(app.engine, engine)
             self.assertEqual(app.engine.call, 123)
             engine.close.assert_not_called(); engine.end.assert_not_called()
-            engine.auto_framing.configure.assert_called_with(True)
+            engine.media.configure_framing.assert_called_with(True)
             self.assertEqual(app.language, 'fr')
             self.assertEqual(app.pending_config['video_resolution'], '1080p')

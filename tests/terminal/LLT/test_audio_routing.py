@@ -4,6 +4,8 @@
 # @plan Use native lists containing HDMI and C10/C20 devices, with an incoming call initially routed to HDMI. Apply real Pi settings and assert core defaults, pending-call input/output and ringtone all use C20. Inject absent capabilities, rejected setters and wrong readback; require retryable failure and release every owned native reference.
 # @pass All routing and ownership assertions pass; this does not establish acoustic quality.
 
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.linux import media as linux_media
 import ctypes as C
 import unittest
 from unittest.mock import Mock, call, patch
@@ -16,7 +18,7 @@ from tests.terminal.LLT.test_linux_media import catalog
 
 class AudioRoutingTests(unittest.TestCase):
     def engine(self, model="C20"):
-        engine = Engine.__new__(Engine)
+        engine = Engine.__new__(Engine); engine.media = MediaAdapter(linux_media)
         engine.core, engine.call = 10, 20
         engine.devices = Mock(return_value=catalog('4'))
         for name in ('core_set_video_device', 'core_set_capture_device', 'core_set_playback_device', 'core_set_ringer_device'):

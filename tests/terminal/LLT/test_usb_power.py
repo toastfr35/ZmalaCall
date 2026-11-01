@@ -8,6 +8,8 @@
 
 """Boundary, wake-race, stale-input and cancellation tests without powering USB."""
 from zmala_terminal.common.callbacks import CallbackController
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.linux import media as linux_media
 import importlib.util
 from pathlib import Path
 import sys
@@ -296,7 +298,7 @@ class UsbPowerTests(unittest.TestCase):
         self.assertTrue(power.require())
 
     def test_zero_volume_mutes_and_remote_increase_unmutes(self):
-        engine = Engine.__new__(Engine)
+        engine = Engine.__new__(Engine); engine.media = MediaAdapter(linux_media)
         engine.core = 123
         engine.core_set_playback_gain_db = Mock()
         with patch('zmala_terminal.common.engine.WINDOWS', False), patch('zmala_terminal.linux.c20_volume.status',

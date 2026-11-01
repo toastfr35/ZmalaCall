@@ -94,17 +94,19 @@ class LinuxMediaAdapterTests(unittest.TestCase):
     def test_plugin_registration_order_rate_errors_and_framing_configuration(self):
         from zmala_terminal.linux import media
         e = SimpleNamespace(core=1, dll=Mock(), video_settings=SimpleNamespace(fps=20), config={'auto_framing':True})
+        from zmala_terminal.common.media_adapter import MediaAdapter
+        resources = MediaAdapter(media)
         with tempfile.TemporaryDirectory() as directory, patch.object(media, 'ROOT', Path(directory)), \
                 patch.object(media.C, 'CDLL') as load, patch('zmala_terminal.linux.auto_framing.AutoFraming') as framing:
             with self.assertRaisesRegex(RuntimeError, 'plugin is missing'):
-                media.configure(e)
+                resources.configure(e.dll, e.core, e.video_settings.fps, True)
             load.assert_not_called()
             path = Path(directory)/'linux/media/video/libzmala_video.so'
             path.parent.mkdir(parents=True); path.touch()
             plugin = load.return_value
             plugin.zmala_video_set_framerate.return_value = 1
             with self.assertRaisesRegex(RuntimeError, 'frame rate'):
-                media.configure(e)
+                resources.configure(e.dll, e.core, e.video_settings.fps, True)
             plugin.zmala_video_set_framerate.return_value = 0
             names = ('zmala_video_register', 'zmala_mjpeg_register', 'zmala_preview_register', 'zmala_framing_register')
             for name in names:
@@ -113,15 +115,15 @@ class LinuxMediaAdapterTests(unittest.TestCase):
             for name in names:
                 getattr(plugin, name).return_value = -1
                 with self.assertRaisesRegex(RuntimeError, name):
-                    media.configure(e)
+                    resources.configure(e.dll, e.core, e.video_settings.fps, True)
                 getattr(plugin, name).return_value = 0
             plugin.reset_mock()
-            media.configure(e)
+            resources.configure(e.dll, e.core, e.video_settings.fps, True)
             self.assertEqual([c[0] for c in plugin.mock_calls], ['zmala_video_set_framerate', *names])
             self.assertTrue(all(getattr(plugin, name).call_args.args == (42,) for name in names))
             e.dll.linphone_core_reload_video_devices.assert_called_once_with(1)
             framing.return_value.configure.assert_called_once_with(True)
-            self.assertIs(e.auto_framing, framing.return_value)
+            self.assertIs(resources.auto_framing, framing.return_value)
 
     def test_usb_refresh_preserves_live_streams_then_reloads_devices_and_volume(self):
         from zmala_terminal.linux import media
@@ -147,10 +149,32 @@ class LinuxMediaAdapterTests(unittest.TestCase):
         self.assertTrue(media.received_frame(e, 5))
         e.call_params_get_received_framerate.return_value = 0
         self.assertFalse(media.received_frame(e, 5))
-        self.assertIsNone(media.poll_video(e, 10))
+        self.assertEqual(media.poll_video(e, 10), 0)
 
 
 class EngineAdapterTests(unittest.TestCase):
+    def test_plugin_survives_core_shutdown_and_is_retained_if_unref_fails(self):
+        for fail in (False, True):
+            e = self.build()
+            plugin = object()
+            e.media.video_plugin = plugin
+            e.media.auto_framing = framing = Mock()
+            def unref(core):
+                framing.close.assert_called_once()
+                self.assertIs(e.media.video_plugin, plugin)
+                if fail:
+                    raise RuntimeError('fixture teardown failure')
+            e.core_unref.side_effect = unref
+            if fail:
+                with self.assertRaisesRegex(RuntimeError, 'teardown failure'):
+                    e.close()
+                self.assertIs(e.media.video_plugin, plugin)
+                e.core_unref.side_effect = None
+                e.close()
+            else:
+                e.close()
+            self.assertIsNone(e.media.video_plugin)
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(); self.addCleanup(temporary.cleanup)
         sdk = Path(temporary.name)/'sdk'
@@ -281,7 +305,7 @@ class EngineAdapterTests(unittest.TestCase):
         self.assertEqual(e.devices(), {'camera':[], 'microphone':['C20'], 'speaker':['C20','output\ufffd']})
         self.assertEqual(e.audio_device_unref.call_count, 3)
         e.core_get_extended_audio_devices.return_value = 0
-        e.applied_audio_profile = 'speech'; e.audio_profile = 'speech'; e.auto_framing = Mock(status='tracking')
+        e.applied_audio_profile = 'speech'; e.audio_profile = 'speech'; e.media.auto_framing = Mock(status='tracking')
         self.assertEqual(e.diagnostics()['auto_framing_status'], 'tracking')
         self.assertEqual(e.media_stats(), {})
         e.call = 42; e._video_callbacks = 10
@@ -303,8 +327,8 @@ class EngineAdapterTests(unittest.TestCase):
         self.assertNotIn('round_trip_seconds', unavailable)
         self.assertNotIn('received_fps', unavailable)
         with patch.object(engine.time, 'monotonic', return_value=55): e.iterate()
-        e.core_iterate.assert_called_once_with(2); self.media.poll_video.assert_called_once_with(e,55)
-        self.media.sync_speaker_mute.assert_called_once_with(e)
+        e.core_iterate.assert_called_once_with(2); self.media.poll_video.assert_called_once_with(e,55,0)
+        self.media.sync_speaker_mute.assert_called_once_with(e, None)
         e.refresh_usb_devices(); self.media.refresh_usb_devices.assert_called_once_with(e)
 
     def test_failed_statistics_read_releases_native_snapshot(self):

@@ -15,6 +15,7 @@ from unittest.mock import Mock, patch
 
 from tests.support.terminal.ui_fixture import terminal_fixture, pump
 from zmala_terminal.linux.auto_framing import AutoFraming, WIDE
+from zmala_terminal.common.media_adapter import MediaAdapter
 
 
 @unittest.skipUnless(sys.platform == 'linux' and os.environ.get('DISPLAY'), 'Linux Tk display required')
@@ -55,7 +56,8 @@ class FramingUITests(unittest.TestCase):
         with terminal_fixture() as (app, directory), \
                 patch('zmala_terminal.linux.auto_framing.PersonDetector', return_value=detector):
             framing = AutoFraming(plugin, directory)
-            app.engine.auto_framing = framing
+            app.engine.media = MediaAdapter(Mock())
+            app.engine.media.auto_framing = framing
 
             def configure(enabled):
                 config = copy.deepcopy(app.model.config)

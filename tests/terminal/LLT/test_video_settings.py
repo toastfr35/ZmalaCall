@@ -6,6 +6,8 @@
 
 """Server presets are authoritative on both platforms; no hidden local knobs."""
 from pathlib import Path
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.common.engine import media_backend
 import sys
 import unittest
 from unittest.mock import Mock
@@ -48,7 +50,7 @@ class VideoSettingsTests(unittest.TestCase):
                 VideoSettings.for_config({'video_fps': fps})
 
     def test_native_size_must_match_before_enabling_packet_repair(self):
-        engine = Engine.__new__(Engine)
+        engine = Engine.__new__(Engine); engine.media = MediaAdapter(media_backend())
         engine.core = 1
         engine.video_settings = VideoSettings.for_config({'video_resolution': '480p'})
         engine.core_set_preferred_video_size = Mock()

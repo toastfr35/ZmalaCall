@@ -1454,3 +1454,11 @@ credential-only renewal decision; MediaSnapshot compares applied SIP, transport,
 resolution, frame rate and audio profile before rebuilding. ConfigurationControl
 still owns idle deferral, retry deadlines and committing the applied revision only
 after success. Revocation during ringing remains immediate.
+
+The engine creates one `MediaAdapter` for its lifetime. The adapter owns the native
+plugin, framing worker, applied speaker-level cache and decoded-frame probe timer.
+Plugin configuration receives only DLL/core handles, FPS and framing policy; it
+no longer writes resource fields into Engine. Device routing helpers still use
+native engine operations on the core thread. Shutdown stops framing first, then
+ends calls/stops/unrefs the core, then releases the plugin reference. If native
+teardown fails the plugin stays retained, preventing dangling callback pointers.

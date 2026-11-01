@@ -10,29 +10,29 @@ from zmala_terminal.common.native_runtime import ROOT
 from zmala_terminal.common.media_errors import MediaNotReady
 
 
-def configure(engine):
+def configure(resources, dll, core, fps, framing):
     path = ROOT / 'linux/media/video/libzmala_video.so'
     if not path.is_file():
         raise RuntimeError('C20 media plugin is missing; run build_tools/linux/build-media.sh')
     # SDK callbacks retain pointers into this library until the core closes.
-    engine.video_plugin = C.CDLL(str(path))
-    frame_rate = engine.video_plugin.zmala_video_set_framerate
+    resources.video_plugin = C.CDLL(str(path))
+    frame_rate = resources.video_plugin.zmala_video_set_framerate
     frame_rate.argtypes, frame_rate.restype = [C.c_int], C.c_int
-    if frame_rate(engine.video_settings.fps):
+    if frame_rate(fps):
         raise RuntimeError('Could not set C20 video frame rate')
-    factory = engine.dll.linphone_core_get_ms_factory
+    factory = dll.linphone_core_get_ms_factory
     factory.argtypes, factory.restype = [C.c_void_p], C.c_void_p
     for name in ('zmala_video_register', 'zmala_mjpeg_register', 'zmala_preview_register', 'zmala_framing_register'):
-        register = getattr(engine.video_plugin, name)
+        register = getattr(resources.video_plugin, name)
         register.argtypes, register.restype = [C.c_void_p], C.c_int
-        if register(factory(engine.core)):
+        if register(factory(core)):
             raise RuntimeError('Could not initialize C20 media: ' + name)
-    reload_devices = engine.dll.linphone_core_reload_video_devices
+    reload_devices = dll.linphone_core_reload_video_devices
     reload_devices.argtypes, reload_devices.restype = [C.c_void_p], None
-    reload_devices(engine.core)
+    reload_devices(core)
     from zmala_terminal.linux.auto_framing import AutoFraming
-    engine.auto_framing = AutoFraming(engine.video_plugin, ROOT)
-    engine.auto_framing.configure(engine.config.get('auto_framing', False))
+    resources.auto_framing = AutoFraming(resources.video_plugin, ROOT)
+    resources.auto_framing.configure(framing)
 
 
 # @llr LLR-TERM-POWER-010
@@ -60,15 +60,15 @@ def apply_speaker_volume(self):
     self.sync_speaker_mute()
 
 
-def sync_speaker_mute(self):
+def sync_speaker_mute(self, previous=None):
     from zmala_terminal.linux.c20_volume import status
     from zmala_terminal.linux.sound_levels import call_gain_db
     desired, _, _ = status()
     # @llr LLR-TERM-AUDIO-010
     # Only the core owner touches this native call gain; other sounds bypass it.
-    if desired is not None and getattr(self, '_speaker_percent', None) != desired:
+    if desired is not None and previous != desired:
         self.core_set_playback_gain_db(self.core, call_gain_db(desired))
-        self._speaker_percent = desired
+    return desired if desired is not None else previous
 
 
 def refresh_usb_devices(self):
@@ -139,8 +139,8 @@ def received_frame(engine, params):
     return engine.call_params_get_received_framerate(params) > 0
 
 
-def poll_video(engine, now):
-    pass
+def poll_video(engine, now, next_probe=0):
+    return next_probe
 
 
 # @llr LLR-TERM-MAINT-018

@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/media_adapter.py
+  type: file
 - path: tests/terminal/LLT/test_audio_routing.py
   type: file
 - path: tests/terminal/LLT/test_engine_adapter.py

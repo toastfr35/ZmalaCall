@@ -20,8 +20,8 @@ class ConfigurationControl:
             self.model.contact['id'] if self.model.contact else None)
         self.callbacks.requests = config.get('callbacks', [])
         # Framing only changes crop coordinates, not the SIP/media graph.
-        if self.engine and getattr(self.engine, 'auto_framing', None):
-            self.engine.auto_framing.configure(update.auto_framing)
+        if self.engine:
+            self.engine.media.configure_framing(update.auto_framing)
         # Language changes apply even while a call is active; device changes wait.
         # @llr LLR-TERM-UI-025
         self.language = update.language

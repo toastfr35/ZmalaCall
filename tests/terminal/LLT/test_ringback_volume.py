@@ -7,6 +7,8 @@
 # Reject wrong format/oversized input; verify the generated WAV has a finite header.
 # @pass The SDK gets independently scaled PCM before invitation, without playback-gain
 # writes; zero is silent, active files survive calls and cleanup follows core shutdown.
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.common.engine import media_backend
 import array
 import io
 from pathlib import Path
@@ -44,7 +46,7 @@ class RingbackVolumeTests(unittest.TestCase):
         self.source.parent.mkdir(parents=True); self.source.write_bytes(ringback_wav())
         for item in (patch.object(engine, 'SDK', self.sdk), patch.object(engine, 'WINDOWS', False)):
             item.start(); self.addCleanup(item.stop)
-        self.e = engine.Engine.__new__(engine.Engine)
+        self.e = engine.Engine.__new__(engine.Engine); self.e.media = MediaAdapter(media_backend())
         self.e.config = {'ringtone_volume': 30, 'c20_speaker_volume': 100}
         self.e.call = None; self.e.core = 1; self.e.ringback_levels = None
         self.e.core_set_ringback = Mock(); self.e.core_set_playback_gain_db = Mock()

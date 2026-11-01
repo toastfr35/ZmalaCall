@@ -127,3 +127,10 @@ Stage 4 implementation: pure configuration and media-snapshot decisions replace
 inline classification. Existing UI-thread application, permission revocation,
 credential renewal, retry and applied-revision behavior are preserved. Full
 terminal LLT run: 569 passed, 11 skipped; hardware qualification is not implied.
+
+Stage 5 implementation: MediaAdapter owns plugin/framing lifetime, speaker-level
+cache and frame-probe timer, with configure/refresh/volume/shutdown entry points.
+Configuration uses explicit native handles rather than mutating Engine. Existing
+routing helpers remain native-core operations. Portable adapter/lifetime tests
+pass; C10/C20 calls and recovery still require physical qualification before this
+stage can be considered fully qualified.
