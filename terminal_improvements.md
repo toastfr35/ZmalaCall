@@ -134,3 +134,10 @@ Configuration uses explicit native handles rather than mutating Engine. Existing
 routing helpers remain native-core operations. Portable adapter/lifetime tests
 pass; C10/C20 calls and recovery still require physical qualification before this
 stage can be considered fully qualified.
+
+Stage 6 implementation: ViewingSession owns call/browsing baselines, consecutive
+call inheritance, manual-source invalidation and restoration decisions. TVControl
+retains observation freshness, commands, locks and cancellation. The driver API
+and retry timings are unchanged. Portable TV scenarios cover unknown states,
+standby/live-input restoration and superseded workers; term2 visual qualification
+remains outstanding.
