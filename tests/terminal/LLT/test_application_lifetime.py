@@ -1,7 +1,7 @@
 # @test T-LLT-062
 # @requirements LLR-TERM-START-003, LLR-TERM-START-005, LLR-TERM-SETUP-031, LLR-TERM-SETUP-032
 # @environment portable
-# @plan Execute terminal composition with temporary profile storage and mocked OS/native/UI boundaries. Verify constructor dependency order, saved-language/bootstrap recovery, reset scope, cached/offline startup scheduling, factory argument ownership and idempotent cancellation-before-window-destruction. Exercise CLI validation and normal/failed run cleanup through the real entry function without launching hardware or services.
+# @plan Verify platform factory adapter ownership, root forwarding and reverse cleanup after partial construction with mocked devices. Execute terminal composition with temporary profile storage and mocked OS/native/UI boundaries. Verify constructor dependency order, saved-language/bootstrap recovery, reset scope, cached/offline startup scheduling, factory argument ownership and idempotent cancellation-before-window-destruction. Exercise CLI validation and normal/failed run cleanup through the real entry function without launching hardware or services.
 # @pass Resources close in ownership order and only the selected profile is reset; startup errors propagate with diagnostics and no worker invokes a real device.
 import io
 from pathlib import Path
@@ -14,12 +14,68 @@ from zmala_terminal.common import main
 
 
 class ApplicationLifetimeTests(unittest.TestCase):
+    def test_pi_auxiliary_factories_forward_collaborators_without_replacing_owners(self):
+        from zmala_terminal.common import platform_services as services
+        root, press, release, pointer, motion, observe = (Mock() for _ in range(6))
+        with patch.object(services.sys, 'platform', 'linux'), \
+                patch('zmala_terminal.linux.presenter_input.PresenterInput') as remote, \
+                patch('zmala_terminal.linux.action_sounds.ActionSounds') as sounds, \
+                patch('zmala_terminal.linux.pairing_status.PairingStatus') as pairing, \
+                patch('zmala_terminal.linux.c20_status.C20Status') as camera, \
+                patch('zmala_terminal.linux.tv_check.CheckTransport') as transport:
+            self.assertIs(services.create_remote(root, press, release, pointer, motion, observe), remote.return_value)
+            remote.assert_called_once_with(root, press, release, pointer, motion, observe)
+            self.assertIs(services.create_action_sounds(), sounds.return_value)
+            self.assertIs(services.create_pairing_status(), pairing.return_value)
+            self.assertIs(services.create_camera_status(), camera.return_value)
+            television = Mock()
+            self.assertIs(services.create_tv_check_transport(television), transport.return_value)
+            transport.assert_called_once_with(television)
+
     def setUp(self):
         folder=tempfile.TemporaryDirectory(); self.addCleanup(folder.cleanup)
         self.root=Path(folder.name); (self.root/'data').mkdir()
         self.patches=[patch.object(main,'ROOT',self.root),patch.object(main.tkfont,'families',return_value=['Sans'])]
-        self.patches += [patch.object(main,name) for name in ('ArgonFan','UsbPower','TVControl','TextRenderer','IconRenderer')]
+        self.patches += [patch.object(main,name) for name in ('create_platform_services','TextRenderer','IconRenderer')]
         for item in self.patches: item.start(); self.addCleanup(item.stop)
+
+    def test_platform_factory_uses_selected_root_and_preserves_adapter_ownership(self):
+        t = self.terminal()
+        main.create_platform_services.assert_called_once_with(self.root)
+        services = main.create_platform_services.return_value
+        self.assertIs(t.case_fan, services.fan)
+        self.assertIs(t.usb_power, services.usb_power)
+        self.assertIs(t.tv_control, services.television)
+
+    def test_real_platform_factory_constructs_existing_adapters(self):
+        from zmala_terminal.common.platform_services import create_platform_services
+        with patch('zmala_terminal.common.platform_services.sys.platform', 'linux'), \
+             patch('zmala_terminal.linux.argon_fan.ArgonFan') as fan, \
+             patch('zmala_terminal.linux.usb_power.UsbPower') as usb, \
+             patch('zmala_terminal.linux.tv_control.TVControl') as tv:
+            services = create_platform_services(self.root)
+            fan.assert_called_once_with()
+            usb.assert_called_once_with(self.root)
+            tv.assert_called_once_with()
+            self.assertIs(services.fan, fan.return_value)
+            self.assertIs(services.usb_power, usb.return_value)
+            self.assertIs(services.television, tv.return_value)
+
+    def test_platform_factory_unwinds_partial_construction(self):
+        from zmala_terminal.common.platform_services import create_platform_services
+        for failure in ('power', 'tv'):
+            events = []
+            with patch('zmala_terminal.common.platform_services.sys.platform', 'linux'), \
+                 patch('zmala_terminal.linux.argon_fan.ArgonFan') as fan, \
+                 patch('zmala_terminal.linux.usb_power.UsbPower') as power, \
+                 patch('zmala_terminal.linux.tv_control.TVControl') as tv:
+                fan.return_value.close.side_effect = lambda: events.append('fan')
+                power.return_value.close.side_effect = lambda: events.append('power')
+                (power if failure == 'power' else tv).side_effect = RuntimeError('startup fixture')
+                with self.assertRaisesRegex(RuntimeError, 'startup fixture'):
+                    create_platform_services(self.root)
+                self.assertEqual(events, ['fan'] if failure == 'power' else ['power', 'fan'])
+                tv.return_value.close.assert_not_called()
 
     def terminal(self,profile='terminal'):
         t=main.Terminal.__new__(main.Terminal); t.root=Mock(); t.initialize_state(profile,'connect')

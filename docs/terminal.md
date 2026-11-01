@@ -1413,3 +1413,23 @@ steps are evenly spaced in dB; legacy positive integer defaults below 5% use
 -16.8 dB. The existing saved percentage remains unchanged, so most intermediate
 settings sound louder after updating. C10/C20 hardware remains at +12 dB.
 Ringtone, outgoing ringback and button feedback keep their independent old curve.
+
+
+### Hardware construction boundary
+
+`common/platform_services.py` constructs the fan, USB-power and TV-control adapters
+for `Terminal.make_platform_services()`. The application still owns shutdown
+ordering. Windows now receives explicit desktop substitutes for these Pi-only services;
+they perform no hardware I/O and leave ringing to the Windows call engine.
+The desktop also skips Pi-only TV setup even if a pairing environment variable
+is inherited. Other device construction remains to be migrated. Tests replace the factory
+without patching hardware classes in the UI module.
+
+If platform construction fails, the factory closes already-created services in
+reverse order before propagating the startup error. Normal shutdown remains owned
+by the application.
+
+The same platform boundary selects remote input, feedback audio, pairing/camera
+status and TV-check transport. Windows uses explicit inactive substitutes; these
+factories do not import Pi adapters on the desktop. Fan, USB-power and television
+interfaces are structural protocols, while the application retains shutdown ownership.

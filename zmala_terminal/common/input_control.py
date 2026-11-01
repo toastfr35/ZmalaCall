@@ -3,7 +3,7 @@ import time
 import logging
 from zmala_terminal.common.carousel import CarouselMotion
 from zmala_terminal.common.model import State
-from zmala_terminal.linux.presenter_input import PresenterInput
+from zmala_terminal.common.platform_services import create_remote as PresenterInput
 from zmala_terminal.common.volume_control import VolumeControl
 
 
@@ -17,7 +17,7 @@ class InputControl:
             power.require(urgent=True)
 
     def bind_inputs(self):
-        from zmala_terminal.linux.action_sounds import ActionSounds
+        from zmala_terminal.common.platform_services import create_action_sounds as ActionSounds
         self.action_sounds = ActionSounds()
         self.root.bind('<Configure>', self.resize)
         for key, button in [('Left', 'left'), ('Prior', 'left'), ('Right', 'right'), ('Next', 'right'), ('Return', 'green'), ('Escape', 'red')]:
