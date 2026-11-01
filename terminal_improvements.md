@@ -122,3 +122,8 @@ Stage 3 implementation: background polling now lives in `server_sync.py` and use
 named generation-bearing result types. ManagementLoop keeps UI dispatch and
 scheduling; workers receive captured inputs and detached diagnostic snapshots.
 The existing stale-enrollment and callback-revision guards remain at dispatch.
+
+Stage 4 implementation: pure configuration and media-snapshot decisions replace
+inline classification. Existing UI-thread application, permission revocation,
+credential renewal, retry and applied-revision behavior are preserved. Full
+terminal LLT run: 569 passed, 11 skipped; hardware qualification is not implied.

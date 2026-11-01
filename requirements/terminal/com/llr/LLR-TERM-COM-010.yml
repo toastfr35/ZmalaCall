@@ -8,6 +8,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/config_changes.py
+  type: file
 - path: zmala_terminal/common/configuration_control.py
   type: file
 - path: zmala_terminal/linux/native/turn-socket-errors.patch

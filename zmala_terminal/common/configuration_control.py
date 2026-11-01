@@ -4,6 +4,7 @@ import time
 from zmala_terminal.common.localization import font_family
 from zmala_terminal.common.model import State
 from zmala_terminal.common.media_errors import MediaNotReady
+from zmala_terminal.common.config_changes import classify_update, MediaSnapshot
 
 
 class ConfigurationControl:
@@ -15,23 +16,24 @@ class ConfigurationControl:
         if not getattr(self, 'tv_setup_checked', True) and self.begin_tv_setup(config):
             self.render()
             return
+        update = classify_update(self.engine.config if self.engine else None, config,
+            self.model.contact['id'] if self.model.contact else None)
         self.callbacks.requests = config.get('callbacks', [])
         # Framing only changes crop coordinates, not the SIP/media graph.
         if self.engine and getattr(self.engine, 'auto_framing', None):
-            self.engine.auto_framing.configure(config.get('auto_framing', False))
+            self.engine.auto_framing.configure(update.auto_framing)
         # Language changes apply even while a call is active; device changes wait.
         # @llr LLR-TERM-UI-025
-        self.language = config.get('language', 'en')
+        self.language = update.language
         self.font_family = font_family(self.language, self.available_fonts)
         self.root.title(f"ZmalaCall · ← → {self.text('select')} · Enter {self.text('call')}/{self.text('answer')} · Esc {self.text('end')}")
         if self.model.state != State.HOME:
             self.pending_config = config
             # Permission revocation cancels a pending auto-answer immediately.
             if self.model.state == State.RINGING:
-                c = next((c for c in config['contacts'] if c['id'] == self.model.contact['id']), None)
-                if not c or not c['can_receive']:
+                if not update.incoming_allowed:
                     self.press('red')
-                elif not config.get('auto_answer', c.get('auto_answer', False)):
+                elif not update.auto_answer_allowed:
                     self.model.deadline = None
             self.render()
             return
@@ -40,9 +42,9 @@ class ConfigurationControl:
             self.pending_config = config
             return
         old_sip = self.model.config.get('sip') if self.model.config else None
-        from zmala_terminal.common.secure_calls import credentials_only, refresh_credentials
+        from zmala_terminal.common.secure_calls import refresh_credentials
         # @llr LLR-TERM-COM-010
-        renewal = self.engine and credentials_only(self.engine.config, config)
+        renewal = self.engine and update.renew_credentials
         if renewal:
             try:
                 refresh_credentials(self.engine, config)
@@ -93,11 +95,10 @@ class ConfigurationControl:
 
     # @llr LLR-TERM-CONFIG-023
     def configure_engine(self, config, old_sip, audio_profile):
-        if (not self.engine or old_sip != config['sip'] or
-                getattr(self.engine, 'config', {}).get('secure_calls') != config.get('secure_calls') or
-                ('video_resolution' in config and self.engine.video_settings.resolution != config['video_resolution']) or
-                getattr(self.engine.video_settings, 'fps', 15) != config.get('video_fps', 15) or
-                getattr(self.engine, 'audio_profile', 'normal') != audio_profile):
+        running = MediaSnapshot(old_sip, getattr(self.engine, 'config', {}).get('secure_calls'),
+            self.engine.video_settings.resolution, getattr(self.engine.video_settings, 'fps', 15),
+            getattr(self.engine, 'audio_profile', 'normal')) if self.engine else None
+        if running is None or running.needs_rebuild(config, audio_profile):
             # @llr LLR-TERM-AUDIO-010
             # ALSA enumeration opens playback to probe it. The idle feedback
             # stream must release the exclusive C20 PCM before a new core probes.

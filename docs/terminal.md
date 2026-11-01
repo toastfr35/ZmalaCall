@@ -1447,3 +1447,10 @@ retains scheduling, busy flags and UI dispatch. Enrollment generations invalidat
 results; callback revisions prevent stale poll resurrection. Reports deep-copy the
 captured status so later UI mutations cannot alter queued diagnostics. Workers
 have no reference to the terminal, widgets or hardware controllers.
+
+`common/config_changes.py` classifies validated snapshots without side effects.
+ConfigurationUpdate carries live language/framing and caller permissions plus the
+credential-only renewal decision; MediaSnapshot compares applied SIP, transport,
+resolution, frame rate and audio profile before rebuilding. ConfigurationControl
+still owns idle deferral, retry deadlines and committing the applied revision only
+after success. Revocation during ringing remains immediate.
