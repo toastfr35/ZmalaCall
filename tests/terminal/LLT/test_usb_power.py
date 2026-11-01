@@ -7,6 +7,7 @@
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Boundary, wake-race, stale-input and cancellation tests without powering USB."""
+from zmala_terminal.common.callbacks import CallbackController
 import importlib.util
 from pathlib import Path
 import sys
@@ -166,7 +167,7 @@ class UsbPowerTests(unittest.TestCase):
         self.assertEqual(power.last_use, 1000)
 
     def test_held_button_inhibits_power_off(self):
-        app = ManagementLoop()
+        app = ManagementLoop(); app.callbacks = CallbackController()
         app.usb_power = Mock(enabled=True)
         app.setup_stage = app.scanner = app.engine = None
         app.model = Mock(state=State.HOME)
@@ -177,7 +178,7 @@ class UsbPowerTests(unittest.TestCase):
         app.usb_power.update.assert_called_once_with(True, 95, False)
 
     def test_incoming_call_wakes_before_tv_work(self):
-        app = CallControl()
+        app = CallControl(); app.callbacks = CallbackController()
         app.setup_stage = None
         app.model, app.engine, app.root = Mock(), Mock(), Mock()
         app.render = Mock()
@@ -273,7 +274,7 @@ class UsbPowerTests(unittest.TestCase):
         self.assertEqual(set(actions), {'on'})
 
     def test_cancelled_answer_does_not_run_after_wake(self):
-        app = CallControl()
+        app = CallControl(); app.callbacks = CallbackController()
         app.engine, app.root, app.model = Mock(), Mock(), Mock()
         app.usb_media_ready, app.action = Mock(return_value=False), Mock()
         app.engine.call = 123

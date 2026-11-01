@@ -26,7 +26,7 @@ class EnrollmentLifecycleTests(unittest.TestCase):
             f.enrollment.path=Path(directory)/'enrollment.json'; check=Path(directory)/'tv-check.json'; check.write_text('{}')
             untouched=Path(directory)/'other-profile.json'; untouched.write_text('keep')
             f.model=TerminalModel(); f.maintenance=Mock(); f.configuration=Mock(); f.engine=Mock(); f.tv_check=Mock(); f.remote_test=Mock()
-            f.missed_calls_store=Mock(); f.settings_hold=Mock(); f.settings_open=True; f.callback_seen={'old'}; f.callback_serial=5; f.language='fr'
+            f.missed_calls_store=Mock(); f.settings_hold=Mock(); f.settings_open=True; f.callbacks.seen={'old'}; f.callbacks.serial=5; f.language='fr'
             f.enrollment.value={'wifi':{'linux_uuid':'owned'}}; cancelled=f.setup_cancelled
             resources=[f.maintenance,f.configuration,f.engine,f.scanner,f.tv_check]; events=[]
             def closed(label):
@@ -39,7 +39,7 @@ class EnrollmentLifecycleTests(unittest.TestCase):
             self.assertEqual(events,['maintenance','configuration','engine','scanner','tv-check'])
             resources[1].deactivate.assert_called_once_with(erase=True); f.enrollment.reset.assert_called_once_with({'linux_uuid':'owned'},language='fr')
             self.assertFalse(f.setup_cancelled.is_set()); self.assertEqual(f.model.state,State.HOME); self.assertIsNone(f.model.config)
-            self.assertEqual(f.callback_serial,6); self.assertFalse(f.callback_seen); self.assertEqual(f.current_settings,{})
+            self.assertEqual(f.callbacks.serial,6); self.assertFalse(f.callbacks.seen); self.assertEqual(f.current_settings,{})
             self.assertFalse(check.exists()); self.assertEqual(untouched.read_text(),'keep'); self.assertEqual(f.setup_stage,'wifi')
             f.remote_test.reset.assert_called_once(); f.start_scanner.assert_called_once(); f.missed_calls_store.clear.assert_called_once()
             f.model.state=State.IN_CALL; f.factory_reset(); self.assertEqual(f.generation,2)

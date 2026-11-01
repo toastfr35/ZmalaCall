@@ -111,3 +111,9 @@ Portable verification covers constructor arguments, failed construction, shutdow
 Windows import isolation, input dispatch, setup and settings. Physical startup and
 shutdown qualification on term2 is still pending; no hardware pass is claimed.
 Stages 2–6 continue below as they are implemented.
+
+Stage 2: callback ownership extracted into `CallbackController`. Request submission,
+acknowledgements, poll reconciliation and once-only availability selection use
+explicit arguments instead of reaching through Terminal. Remaining call and view
+mixins are deliberately retained until their boundaries can be migrated safely.
+No user workflow changes; user guides remain accurate.

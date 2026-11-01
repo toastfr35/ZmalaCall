@@ -6,6 +6,7 @@
 
 """C20-specific presence and the installation-only camera gate."""
 from pathlib import Path
+from zmala_terminal.common.callbacks import CallbackController
 import sys
 import tempfile
 import unittest
@@ -64,7 +65,7 @@ class UsbSetupTests(unittest.TestCase):
         self.assertFalse(view.needs_c20())
 
     def test_missing_camera_blocks_scanner_before_pairing(self):
-        flow = ProvisioningFlow()
+        flow = ProvisioningFlow(); flow.callbacks = CallbackController()
         flow.closed, flow.setup_stage, flow.scanner = False, 'wifi', None
         flow.needs_c20 = Mock(return_value=True)
         flow.needs_pairing = Mock(return_value=False)

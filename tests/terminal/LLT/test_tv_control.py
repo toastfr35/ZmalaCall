@@ -10,6 +10,7 @@
 
 """Check CEC routing, cancellation and failures without changing a real TV."""
 from pathlib import Path
+from zmala_terminal.common.callbacks import CallbackController
 import json
 import subprocess
 import sys
@@ -508,7 +509,7 @@ class TVControlTests(unittest.TestCase):
         model.configure(config())
         engine = Mock(call='call')
         engine.hold_call.side_effect = lambda call: setattr(engine, 'call', call)
-        app = CallControl()
+        app = CallControl(); app.callbacks = CallbackController()
         app.model, app.engine, app.tv_control = model, engine, Mock()
         app.setup_stage, app.root, app.render = None, Mock(), Mock()
         app.missed_calls_store, app.dial_serial = Mock(), 0

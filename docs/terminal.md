@@ -1433,3 +1433,10 @@ The same platform boundary selects remote input, feedback audio, pairing/camera
 status and TV-check transport. Windows uses explicit inactive substitutes; these
 factories do not import Pi adapters on the desktop. Fan, USB-power and television
 interfaces are structural protocols, while the application retains shutdown ownership.
+
+Callback request state belongs to `common/callbacks.py`: it owns the request list,
+seen alerts, mutation serial and revision. HTTP workers capture configuration and
+queue references, never the terminal UI. Named results return to the UI thread;
+the owner rejects obsolete generations/serials and prevents older polls undoing
+an acknowledgement. Call/screen controllers retain navigation and rendering only.
+Factory reset invalidates callback work before a new enrollment is applied.

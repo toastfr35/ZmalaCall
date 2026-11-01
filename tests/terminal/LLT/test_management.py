@@ -6,6 +6,7 @@
 
 """Late network responses must not affect a reset/re-enrolled terminal."""
 from pathlib import Path
+from zmala_terminal.common.callbacks import CallbackController
 import sys
 import unittest
 from unittest.mock import Mock, patch
@@ -21,7 +22,7 @@ import tempfile
 
 class ManagementTests(unittest.TestCase):
     def test_wifi_refreshes_during_setup_without_a_server(self):
-        loop = ManagementLoop()
+        loop = ManagementLoop(); loop.callbacks = CallbackController()
         loop.network_worker_busy = loop.worker_busy = False
         loop.generation = 1
         loop.configuration = None
@@ -41,7 +42,7 @@ class ManagementTests(unittest.TestCase):
             self.assertEqual(wifi.call_count, 3)
 
     def test_old_worker_results_do_not_change_new_enrollment(self):
-        loop = ManagementLoop()
+        loop = ManagementLoop(); loop.callbacks = CallbackController()
         loop.generation = 2
         loop.worker_busy = True
         loop.network_connected = False

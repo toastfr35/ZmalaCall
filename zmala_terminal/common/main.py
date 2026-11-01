@@ -13,6 +13,7 @@ from zmala_terminal.common.engine import Engine, QRScanner
 from zmala_terminal.common.provisioning import Enrollment
 from zmala_terminal.common.maintenance import MaintenanceAgent
 from zmala_terminal.common.wifi import forget_wifi
+from zmala_terminal.common.callbacks import CallbackController
 from zmala_terminal.common.model import TerminalModel
 from zmala_terminal.common.localization import LANGUAGES, font_family
 from zmala_terminal.common.local_settings import SettingsHold, SettingsDraft
@@ -111,11 +112,9 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
         self.notice = ''
         self.last_registration = False
         self.outgoing_deadline = None
-        self.callback_requests = []
-        self.callback_seen = set()
+        self.callbacks = CallbackController()
         self.callback_alert = None
         self.last_button = 0
-        self.callback_serial = 0
         self.callback_notice_until = 0
         self.last_key = {}
         self.portrait_animation_target = None

@@ -4,6 +4,7 @@
 # @plan Drive timed red holds, setting drafts, incoming calls and delayed server acknowledgements with fake controllers; assert access timing, cancel/accept behavior, allowed values including every 5-percent volume step, clamped endpoints and nearest-step display for an existing saved value, revision ownership and deferred media changes.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
+from zmala_terminal.common.callbacks import CallbackController
 import json
 from pathlib import Path
 import sys
@@ -132,7 +133,7 @@ class LocalSettingsTests(unittest.TestCase):
             cfg.request = Mock(return_value=json.dumps(reply).encode())
             self.assertEqual(cfg.update_settings({'language': 'fr'}, {'language': 'en'}), reply)
             self.assertEqual(cfg.cached()['language'], 'fr')
-            loop = ManagementLoop(); loop.model = TerminalModel(); loop.model.configure(reply)
+            loop = ManagementLoop(); loop.callbacks = CallbackController(); loop.model = TerminalModel(); loop.model.configure(reply)
             loop.apply_config = Mock()
             loop.apply_poll_config(config() | {'configuration_version': 4, 'language': 'en'})
             loop.apply_config.assert_not_called()
@@ -177,7 +178,7 @@ class LocalSettingsTests(unittest.TestCase):
 
     def test_only_accepted_incoming_call_interrupts_settings(self):
         from zmala_terminal.common.call_control import CallControl
-        app = CallControl()
+        app = CallControl(); app.callbacks = CallbackController()
         app.settings_open, app.settings_hold = True, SettingsHold()
         app.setup_stage = None
         app.model = TerminalModel(); app.model.configure(config())
