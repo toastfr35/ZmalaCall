@@ -78,8 +78,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
   private static java.lang.ref.WeakReference<MainActivity> foreground =
       new java.lang.ref.WeakReference<>(null);
   private String photoPickerCall;
-  private String answerCallId;
-  private long answerExpires;
+  private final PushAnswer notificationAnswer = new PushAnswer();
   private boolean pushReady, pushPreparing;
   private boolean restartRequested;
   // @llr LLR-AND-HISTORY-002
@@ -588,10 +587,10 @@ public final class MainActivity extends Activity implements CallSession.Observer
       // @llr LLR-AND-CALL-004
       String callId = engine.call.getCallLog().getCallId();
       PushAlerts.dismiss(this, callId);
-      if (callId.equals(answerCallId) && answerExpires > System.currentTimeMillis()) {
+      PushAnswer.Pending answer = notificationAnswer.consume(callId, System.currentTimeMillis());
+      if (answer != null) {
         Call pending = engine.call;
-        long expires = answerExpires;
-        answerCallId = null;
+        long expires = answer.expires;
         // Accept on the next main-loop turn, after Liblinphone finishes its
         // IncomingReceived transition and ICE setup. Recheck after cancellation.
         PushAnswer.enqueue(task -> main.post(task), System::currentTimeMillis, expires,
@@ -919,8 +918,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
     setShowWhenLocked(true);
     setTurnScreenOn(true);
     if (intent.getBooleanExtra(PushAlerts.ANSWER, false)) {
-      answerCallId = push.callId;
-      answerExpires = push.expires;
+      notificationAnswer.remember(push.callId, push.expires);
     }
     PushAlerts.dismiss(this, push.callId);
   }

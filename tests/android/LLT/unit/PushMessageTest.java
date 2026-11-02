@@ -2,6 +2,7 @@
 // @requirements LLR-AND-CALL-004, LLR-AND-HISTORY-003
 // @environment portable
 // @plan Sign a fixed canonical push payload independently, mutate each authenticated field, and check valid ring/cancel, missing identity/proof, expired and excessively distant deadlines. Queue notification acceptance with a fake main loop and clock; change eligibility or expire authorization before draining it.
+// Match native call identity, reject expired/replaced pending answers and consume an eligible answer once.
 // @pass Only a correctly signed, current message for this enrollment is accepted. Media acceptance is deferred beyond the incoming callback and is suppressed when eligibility or authorization expires before execution.
 package org.zmala.phone;
 
@@ -14,6 +15,18 @@ import javax.crypto.spec.SecretKeySpec;
 import org.junit.Test;
 
 public class PushMessageTest {
+  @Test public void answerHandoverMatchesIdentityAndConsumesOnce() {
+    PushAnswer answer = new PushAnswer();
+    answer.remember("first", 200);
+    assertNull(answer.consume("other",100));
+    PushAnswer.Pending pending = answer.consume("first",100);
+    assertEquals("first",pending.callId); assertEquals(200,pending.expires);
+    assertNull(answer.consume("first",100));
+    answer.remember("first",200); answer.remember("replacement",300);
+    assertNull(answer.consume("first",100));
+    assertNull(answer.consume("replacement",300));
+    assertNull(answer.consume("replacement",200));
+  }
   @Test
   public void notificationAnswerLeavesCallbackAndRechecksEligibility() {
     List<Runnable> queue = new ArrayList<>();
