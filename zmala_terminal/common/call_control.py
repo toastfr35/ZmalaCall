@@ -86,43 +86,16 @@ class CallControl:
         holding = getattr(self, 'settings_hold', None)
         if getattr(self, 'settings_open', False) or holding and holding.started is not None or self.setup_stage or self.model.state != State.HOME or now-self.last_button < 5 or self.callback_alert or self.notice or self.carousel_motion:
             return
-        for request in reversed(self.callback_requests):
-            if request['id'] in self.callback_seen or not request.get('ready'):
-                continue
-            own_id = self.model.config['sip']['username']
-            person = request['to'] if request['from'] == own_id else request['from']
-            index = next((i for i, c in enumerate(self.model.contacts) if c['id'] == person and self.contact_online(c)), None)
-            if index is not None:
-                self.callback_seen.add(request['id'])
-                self.model.index = index
-                self.callback_alert = (self.model.selected['name'], now+10)
-                self.render()
-                break
+        index = self.callbacks.available(self.model.config['sip']['username'], self.model.contacts, self.contact_online)
+        if index is not None:
+            self.model.index = index
+            self.callback_alert = (self.model.selected['name'], now+10)
+            self.render()
 
-    # @llr LLR-TERM-HISTORY-021
     def begin_callback(self, cancel=False):
-        """Submit a request once; generation and serial checks guard its asynchronous result."""
-        self.callback_serial += 1
-        serial, generation = self.callback_serial, self.generation
-        configuration, target = self.configuration, self.model.contact['id']
-        request_id = self.model.callback_request['id'] if cancel else None
-        own = self.model.config['sip']['username']
-        def request_callback():
-            reply = None
-            try:
-                if request_id:
-                    reply = json.loads(configuration.request('/api/callbacks/' + request_id + '/cancel', {}))
-                    success = reply.get('ok') is True
-                else:
-                    from zmala_terminal.common.config_validation import validate_callbacks
-                    reply = json.loads(configuration.request('/api/callbacks', {'to': target}))
-                    validate_callbacks([reply], own)
-                    success = reply.get('to') == target and reply.get('from') == own
-            except Exception:
-                logging.warning('Callback request could not be confirmed')
-                success = False
-            self.messages.put(('callback-result', (generation, serial, target, success, reply, request_id)))
-        threading.Thread(target=request_callback, daemon=True).start()
+        self.callbacks.submit(self.configuration, self.messages, self.generation,
+            self.model.contact['id'], self.model.config['sip']['username'],
+            self.model.callback_request['id'] if cancel else None)
 
     def begin_dial(self):
         """Check current permission and presence before opening a native call."""

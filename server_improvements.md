@@ -1,0 +1,126 @@
+# Server architecture improvement plan
+
+## Objective
+
+Clarify configuration ownership, request boundaries and background delivery without
+splitting this small Pi server into multiple services or replacing its storage.
+
+## Findings
+
+The local Floorplan maps 81 non-generated code files across administration,
+authenticated requests, calls, family records, notifications and persistence.
+`main.js` already provides a useful composition root and test injection points.
+`Store extends AccountStore` combines persistence, account mutation, derived views,
+password ownership, secure-call configuration and other settings. Request handlers
+receive a broad collection of collaborators. The current map does not recognise
+custom HTTP routing; its zero endpoint count is a scanner limitation.
+
+## Ordered implementation stages
+
+1. **Document and type request dependencies.** Review `http/handler.js` and each
+   route module; supply only the services it needs through narrow typed contracts.
+   Keep authentication, local-network admin restrictions, body limits and persistence
+   failure checks at a common boundary. Create a reviewed route/access inventory
+   from code before using map coverage as evidence. Test admin/device separation,
+   unknown routes, invalid payloads and denied operations.
+2. **Separate state storage from account operations.** Refactor `store.js`,
+   `accounts.js` and `contact-directory.js` incrementally toward composition.
+   Keep one authoritative state owner and explicit mutation methods, rather than
+   handing writable records to more callers. Preserve revision checks and the
+   existing persisted format. Test concurrent edits, enrolment identity, contact
+   permissions and persistence failures before changing ownership further.
+3. **Make durable mutations explicit.** Clarify the contract between SnapshotFile,
+   configuration commits and bootstrap publication in `main.js`. An acknowledged
+   mutation must have the required durable writes completed. Keep startup migration
+   separate from normal request operations. Verify failure ordering, restart,
+   restore and dependent bootstrap writes. Do not introduce a database just to
+   simplify class names; first establish whether current semantics need one.
+4. **Decouple notification delivery from call routing.** `main.js` currently wires
+   callbacks to SIP and obtains push delivery through `sipServer.appCalls?.push`,
+   then assigns callbacks back onto the SIP server. Inject narrow notification and
+   call-status interfaces instead of navigating another service's internals.
+   Preserve existing retry and duplicate-suppression behaviour. Test push unavailable,
+   SMTP failure, cancelled callbacks and multiple delivery channels independently.
+5. **Clarify call and photo lifetimes.** Review `sip-dialogs.js`, `app-calls.js`,
+   `call-photo.js` and shutdown ownership. Keep call identity and permission checks
+   explicit at photo access boundaries. Avoid duplicating active-call state in more
+   services. Verify late messages, cancelled calls, expired photos, concurrent
+   sharing attempts and cleanup after disconnect.
+6. **Keep admin UI modules feature-owned.** Work on `web/admin-*.js` sources,
+   not generated `admin.js` or `admin.css`. Reduce access to global UI state where
+   a feature can own its draft and rendering lifecycle. Preserve unsaved edits,
+   revision-conflict handling and accessibility. Test account edits, terminal
+   settings, setup downloads and navigation before and after extraction.
+
+## Preserve and defer
+
+Keep the composition root, route separation, validation modules, bounded history,
+atomic snapshots and dedicated notification helpers. Do not add microservices,
+a generic repository framework or a new UI framework for this cleanup.
+
+The map's two high-severity secret warnings refer to `autocomplete` labels
+`new-password` and `current-password` in `web/admin-auth.js` and its generated
+bundle. They were checked as false positives, not evidence of leaked credentials.
+This does not constitute an audit of all authentication or secret handling.
+
+## Delivery and verification
+
+This is a proposed development plan, not a new product requirement or a claim that
+changes have been implemented. Preserve current behaviour unless a separate
+feature request explicitly changes it. Each numbered stage is a separate issue,
+feature branch and PR; merge only after required Verify checks pass. Follow the
+repository Android version-bump policy and rebase competing version changes.
+
+Before each stage, identify affected Doorstop HLR/LLR items and existing LLT/HLT
+plans from the implementation's `@llr` comments. Keep their references and tests
+synchronized as code moves; update the component technical guide in `docs/`.
+Run `make requirements` (or `python build_tools/requirements.py`) when traceability
+changes. Add regression assertions for the boundary being changed, not tests that
+merely mirror a new class structure. Record skipped and hardware checks honestly.
+User guides need edits only if user-visible behaviour changes.
+
+Review the diff for unintended behaviour changes, refresh the local Floorplan,
+and compare cross-component dependencies before and after. Completion means the
+new boundary has an explicit owner, callers no longer reach through it, old paths
+are removed, and relevant verification passes. Avoid introducing frameworks,
+general-purpose event buses or extra processes just to implement this plan.
+
+## Review basis and limits
+
+Reviewed on 31 October 2026 using the local Floorplan and selected owning source
+files. The map is a navigation aid, not proof of runtime behaviour or a security
+audit. Maps remain ignored local artifacts; these plans are the durable record.
+Runtime implementation and automated verification are recorded below. No physical hardware qualification is implied.
+
+## Implementation progress — 2 November 2026
+
+Stage 1 implemented: route service contracts now distinguish authentication, backup,
+device and administration dependencies. The common handler constructs explicit
+route contexts instead of spreading all application dependencies into device
+requests. Central authentication, LAN restrictions, payload validation and durable
+write ordering are retained. `docs/server.md` records the reviewed access-family
+inventory. Existing HTTP policy regression tests and strict TypeScript checks pass.
+The Store and SIP collaborators remain shared domain services; routes receive only
+the service set they use. Individual method-level facades remain optional follow-on work.
+
+Stage 2 implemented: AccountStore is an owned collaborator with an injected commit callback. Store retains one authoritative state and explicit public account operations. Existing account, enrollment, permissions and disk-failure tests pass; no persisted format change.
+
+Stage 3 implemented: BootstrapPublisher owns configuration-first publication and dependent writer readiness/flush. Existing startup, failure propagation and independent-writer regression scenarios exercise the real owner with file doubles.
+
+Stage 4 implemented: the composition root obtains the callback push capability and binds lifecycle through explicit SIP methods. Email/push retain independent queues, retries and persistence. Existing notification failure/cancellation tests and HTTP push integration qualify unchanged behavior.
+
+Stage 5 implemented: reviewed dialog ownership, upload identity/permission guards, lease expiry, sender conflict and shutdown paths. Explicit close invalidation releases photo bytes before native cleanup, including cleanup failure. Regression tests retain closed references and assert revocation; existing late-upload/revocation scenarios remain in place.
+
+Stage 6 implemented: account draft/photo/filter state moved into its feature module, removed from the shared shell contract, and admin assets regenerated. Workflow tests inspect visible editor identity rather than removed global implementation fields. Remaining shared navigation/model state is intentional; no new framework introduced.
+
+## Completion evidence
+
+All six implementation stages have a separate issue/branch/PR: #76, #92, #94,
+#96, #98 and #100. Final combined local server LLT/HLT: 238 passed, five explicit
+skips; strict server/admin TypeScript and requirements validation pass. Existing
+browser scenarios cover navigation, account/terminal edits, setup downloads and
+revision conflicts. No user workflow change requires a Word guide update.
+Runtime deployment and physical qualification have not been performed for these
+server refactors. CI and merge status must be checked in GitHub, not inferred from
+this implementation record. Existing shared domain services and the shared UI
+model remain; the plan does not require rewriting every Store method or page.

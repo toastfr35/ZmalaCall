@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/tv_session.py
+  type: file
 - path: tests/terminal/LLT/test_tv_control.py
   type: file
 - path: zmala_terminal/common/idle_return.py
@@ -32,3 +34,5 @@ text: |
 verification: |
   Remove CEC and return unknown routing and power reports. Check normal input and
   absence of invented restore targets.
+  Exercise ambiguous power replies with stale cached standby and fresh driver
+  on/off/unknown/failure results; unknown power must not authorize standby.

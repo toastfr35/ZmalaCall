@@ -2,8 +2,9 @@
 import logging
 import math
 import queue
-import threading
 import time
+from zmala_terminal.common import server_sync
+from zmala_terminal.common.callbacks import CallbackResult
 from zmala_terminal.common.model import State
 from zmala_terminal.common.peripherals import collect_peripheral_status
 from zmala_terminal.common.connectivity import wifi_link_available
@@ -48,16 +49,7 @@ class ManagementLoop:
         if self.network_worker_busy:
             return
         self.network_worker_busy = True
-        generation = self.generation
-
-        def worker():
-            try:
-                available = wifi_link_available()
-            except Exception:
-                available = None
-            self.messages.put(('poll-network', (generation, available)))
-            self.messages.put(('network-done', None))
-        threading.Thread(target=worker, daemon=True).start()
+        server_sync.poll_network(self.messages, self.generation, wifi_link_available)
 
     def peripheral_status(self):
         return collect_peripheral_status(getattr(self, 'presenter_input', None),
@@ -71,23 +63,13 @@ class ManagementLoop:
             return
         self.worker_busy = True
         configuration, generation = self.configuration, self.generation
-        callback_revision = getattr(self, 'callback_revision', 0)
+        callback_revision = self.callbacks.revision
         status = dict(self.diagnostics) | self.peripheral_status() | {
             'state': self.model.state.value,
             'configuration_version': self.model.config['configuration_version'] if self.model.config else 0,
         }
 
-        def worker():
-            try:
-                self.messages.put(('poll-config', (generation, configuration.fetch(), callback_revision)))
-                if not configuration.cancelled:
-                    # @llr LLR-TERM-MAINT-018
-                    configuration.report(status)
-            except Exception as error:
-                logging.warning('Management connection: %s', error)
-            finally:
-                self.messages.put(('poll-done', generation))
-        threading.Thread(target=worker, daemon=True).start()
+        server_sync.poll_configuration(self.messages, configuration, generation, callback_revision, status)
 
     def drain_messages(self):
         while True:
@@ -120,32 +102,26 @@ class ManagementLoop:
                 self.worker_busy = False
         elif kind == 'network-done':
             self.network_worker_busy = False
-        elif kind in ('poll-config', 'poll-network'):
-            generation, value, *revisions = value
-            # Reset/re-enrollment invalidates every result from the old worker.
-            if generation != self.generation:
+        elif kind == 'poll-config':
+            result = server_sync.ConfigurationResult(*value)
+            if result.generation != self.generation or self.setup_stage:
                 return
-            if kind == 'poll-config' and not self.setup_stage:
-                if revisions and revisions[0] != getattr(self, 'callback_revision', 0):
-                    # A poll begun before a successful mutation cannot undo
-                    # its tag change. The next fresh poll is authoritative.
-                    value = dict(value, callbacks=self.callback_requests)
-                self.apply_poll_config(value)
-            elif kind == 'poll-network':
-                self.network_connected = value
-                self.draw_connectivity(bool(self.engine and self.engine.registered))
+            config = self.callbacks.reconcile_poll(result.config, result.callback_revision)
+            self.apply_poll_config(config)
+        elif kind == 'poll-network':
+            result = server_sync.NetworkResult(*value)
+            if result.generation != self.generation:
+                return
+            self.network_connected = result.available
+            self.draw_connectivity(bool(self.engine and self.engine.registered))
 
     # @llr LLR-TERM-HISTORY-023
     def callback_result(self, generation, serial, target, success, reply, request_id):
-        if generation != self.generation or serial != self.callback_serial:
+        result = CallbackResult(generation, serial, target, success, reply, request_id)
+        if not self.callbacks.acknowledge(self.generation, result):
             return
         if success:
-            self.callback_revision = getattr(self, 'callback_revision', 0) + 1
-            removed = request_id or reply['id']
-            self.callback_requests = [r for r in self.callback_requests if r['id'] != removed]
-            if not request_id:
-                self.callback_requests.append(reply)
-            self.model.config['callbacks'] = list(self.callback_requests)
+            self.model.config['callbacks'] = list(self.callbacks.requests)
             if request_id:
                 self.callback_alert = None
         if (self.model.state == State.REQUESTING_CALLBACK and self.model.contact
@@ -162,8 +138,8 @@ class ManagementLoop:
         if self.model.config and config['configuration_version'] < self.model.config['configuration_version']:
             return
         self.server_seen = time.monotonic()
-        changed = getattr(self, 'callback_requests', []) != config.get('callbacks', [])
-        self.callback_requests = config.get('callbacks', [])
+        changed = self.callbacks.requests != config.get('callbacks', [])
+        self.callbacks.requests = config.get('callbacks', [])
         # @llr LLR-TERM-COM-010
         # Hourly relay credentials change without an administrator's revision bump.
         # Apply them at idle; credential-only changes preserve the core and USB sleep.
@@ -173,7 +149,7 @@ class ManagementLoop:
             return
         # Reachability changes independently of the persisted configuration version.
         availability = {c['id']: c for c in config['contacts']}
-        self.model.config['callbacks'] = list(self.callback_requests)
+        self.model.config['callbacks'] = list(self.callbacks.requests)
         for contact in self.model.config['contacts']:
             live = availability.get(contact['id'], {})
             online = live.get('online') is True

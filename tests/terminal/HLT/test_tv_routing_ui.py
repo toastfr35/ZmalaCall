@@ -65,7 +65,7 @@ class TVRoutingUITests(unittest.TestCase):
             finally:
                 # End this fixture without restoring through its intentionally
                 # input-only driver stub; no real TV has been controlled.
-                tv._previous = None
+                tv.session.previous = None
                 tv.close()
                 with tv._lock:
                     pass
@@ -137,7 +137,7 @@ class TVRoutingUITests(unittest.TestCase):
                             elif ending == 'declined':
                                 app.action(app.model.button('red'))
                             app.call_event(88, 13 if ending == 'failed' else 14, 'alice', 'family.test')
-                            pump(app, lambda: tv._previous is None and tv._ready.is_set(), timeout=5)
+                            pump(app, lambda: tv.session.previous is None and tv._ready.is_set(), timeout=5)
                             self.assertEqual(state, {'off': False, 'active_source': '1.0.0.0'}, ending)
                             self.assertIsNotNone(tv.browsing_session())
                             start = time.monotonic()

@@ -6,6 +6,8 @@
 
 """C20 routing follows identity and never silently switches to other hardware."""
 from pathlib import Path
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.linux import media as linux_media
 import sys
 import tempfile
 from zmala_terminal.linux.nuroum import audio_card, supported_name
@@ -58,7 +60,7 @@ class C20MediaTests(unittest.TestCase):
                 settings(devices)
 
     def test_linux_ignores_stale_server_hardware_and_routes_ringer_to_c20(self):
-        engine = Engine.__new__(Engine)
+        engine = Engine.__new__(Engine); engine.media = MediaAdapter(linux_media)
         engine.core = 'core'
         engine.devices = Mock(return_value=catalog('4'))
         for name in ('core_set_video_device', 'core_set_capture_device', 'core_set_playback_device', 'core_set_ringer_device'):

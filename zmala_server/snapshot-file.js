@@ -64,4 +64,26 @@ class SnapshotFile {
     return this.pending;
   }
 }
-module.exports = { SnapshotFile };
+/** Dependent public snapshots are acknowledged only after configuration commits.
+ * Startup publication remains synchronous in the composition root. */
+class BootstrapPublisher {
+  /** @param {{flush(): Promise<void>, bootstrap(): unknown}} store
+   * @param {string[]} files */
+  constructor(store, files) {
+    this.store = store;
+    this.writers = files.map((file) => new SnapshotFile(file));
+  }
+  // @llr LLR-SRV-DATA-015
+  async publish() {
+    const bytes = JSON.stringify(this.store.bootstrap(), null, 2);
+    await this.store.flush();
+    await Promise.all(this.writers.map((writer) => writer.write(bytes)));
+  }
+  async flush() {
+    await Promise.all(this.writers.map((writer) => writer.flush()));
+  }
+  ready() {
+    return this.writers.every((writer) => !writer.failed);
+  }
+}
+module.exports = { SnapshotFile, BootstrapPublisher };

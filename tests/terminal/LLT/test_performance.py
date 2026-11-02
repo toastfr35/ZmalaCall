@@ -5,6 +5,7 @@
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Regression checks for live configuration, bounded caches and incremental ringing."""
+from zmala_terminal.common.callbacks import CallbackController
 import copy
 import json
 from pathlib import Path
@@ -117,7 +118,7 @@ class PerformanceTests(unittest.TestCase):
             self.assertEqual(view.draw_card.call_count, 2)
 
     def test_unchanged_presence_does_not_rebuild_home(self):
-        loop = ManagementLoop()
+        loop = ManagementLoop(); loop.callbacks = CallbackController()
         loop.model = Mock(config=config(), state=State.HOME)
         loop.render = Mock()
         loop.apply_poll_config(config())

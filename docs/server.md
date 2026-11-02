@@ -440,8 +440,12 @@ A sticky Save changes bar shows Unsaved settings for a modified settings form;
 association changes remain a separate submission. **Setup** downloads
 Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
 are runtime provisioning documents, separate from project documentation. App setup
-sheets include a clickable latest-release APK link, installation instructions and
-the private enrollment QR. Display the QR on another screen, print it, or use the
+sheets have two numbered sections: an APK-download QR with a clickable latest-release
+link, then the private enrollment QR with installation and scan instructions. Terminal
+account sheets contain one enrollment QR and first explain Android Wi-Fi sharing
+(Settings > connected Wi-Fi network > Share/QR code); Ethernet users skip that step.
+Both are single-page A4 layouts with black-on-white vector QR codes, four-module
+quiet borders and high-contrast text suitable for grayscale printing. Display the QR on another screen, print it, or use the
 app's QR-image import.
 Settings include auto-answer, fixed C20 hardware information, resolution, FPS, framing,
 volume, ringtone, language, portrait count and TV return. See the
@@ -1004,3 +1008,41 @@ terminal readers within one configuration revision. Returned rows are detached;
 presence and callbacks are enriched at the HTTP boundary. Configuration mutations
 invalidate all derivations together. Identity-changing administration also rejects
 accounts participating in push-wake calls, before those calls own SIP dialogs.
+
+### HTTP route access and dependency inventory
+
+Reviewed against `http/handler.js` and its route modules on 2 November 2026.
+Host, Origin, HTTPS policy and restore-in-progress checks run before dispatch.
+Cookie-authenticated writes require same-origin evidence. Route handlers retain
+payload limits, account-type/ownership validation and durable write barriers.
+
+| Routes | Access | Owner |
+| --- | --- | --- |
+| `/health`, `/ready` | Public after common transport checks | Central handler; readiness checks persistence |
+| `/api/app/*`, `/api/config`, `/api/device/settings`, `/api/status`, `/api/contacts/*`, device callback/console operations | Enrolled bearer identity; route-specific app/terminal checks | Device routes |
+| `/api/call/photo` | Enrolled participant in the identified active dialog | Call-photo handler via device routes |
+| `/photos/<hash>`, `/api/ringtones/<id>.wav` | Device or LAN administrator; ringtones require a terminal device | Central handler |
+| `/api/auth/*` | Server LAN; password/session rules vary by operation | Authentication routes |
+| Admin HTML, JS, CSS, icon and `/permissions` redirect | Server LAN; API mutations still require an administrator | Central handler |
+| `/api/server/backup*` | Server LAN and administrator | Backup routes |
+| `/api/server/ssh`, `/api/developer-access`, `/api/admin*`, `/api/setup/*`, admin console/callback routes, `/api/callback-settings`, `/api/smtp-settings*`, `/api/groups*`, `/api/settings`, `/api/users*`, `/api/terminal-association`, `/api/local-terminal`, `/api/terminal-bootstrap`, portrait/ringtone uploads | Server LAN and administrator | Admin routes or central upload handler |
+
+Unknown routes retain the central LAN/authentication gates before returning 404.
+This inventory describes access families, not automatic endpoint discovery.
+Authentication routes receive only store/session services; backup routes receive
+store/backup services. Device and admin routes receive their explicit service
+sets, with bearer identity added per request. Neither receives browser sessions,
+transport policy or the backup coordinator. Their TypeScript contracts enforce
+these boundaries; the composition root remains the single service owner.
+
+Store owns AccountStore through composition. Account operations share its state object and invoke Store.changed for versioned persistence; persisted schemas and the public Store mutation methods remain stable.
+
+BootstrapPublisher owns dependent runtime publication: it captures bootstrap bytes, awaits the Store commit, then awaits all public writers. Its flush and readiness join shutdown and health barriers. Synchronous startup publication remains separate.
+
+SIP publishes callback push transport and binds callback lifecycle through explicit methods; the composition root no longer traverses appCalls internals. Delivery retry/deduplication remain owned by CallbackPush and CallbackEmails.
+
+Closing a SIP dialog revokes connected status and shared-photo revision/bytes before relay cleanup. Even failed relay teardown cannot leave photos reachable through retained dialog references. Active call identity remains owned by the dialog map; async upload completion still revalidates identity and enrollment tokens.
+
+Account editing, photo preview URLs and account search/filter state are private to admin-accounts.js. Shared admin-state retains the loaded model and cross-feature navigation/refresh hooks. Existing generation guards fence late upload/save results; closing the editor revokes temporary URLs.
+
+Pi installer payloads exclude local Floorplan, cache and VCS directories. Archive regression checks cover the current runtime modules; installer checks remain separate from product runtime requirements. Installation builds generated assets before root-owned deployment and preserves persistent device/account data.

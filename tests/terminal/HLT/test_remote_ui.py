@@ -121,7 +121,7 @@ class RemoteUITests(unittest.TestCase):
                 report('043e010000000000')
                 report('043e000000000000')
                 self.assertEqual(app.model.state, State.HOME)
-                self.assertEqual(app.callback_requests, [])
+                self.assertEqual(app.callbacks.requests, [])
 
                 c20_volume.request(50)
                 pump(app, lambda: c20_volume.status()[1] == 50 and c20_volume._worker is None)

@@ -6,13 +6,11 @@ const { randomUUID } = require('node:crypto');
 const { own, accountId, accountFields, validateEmails } = require('./validation');
 /** Account mutations validate before changing state; Store supplies persistence and group queries. */
 class AccountStore {
-  /** @param {import('./types/contracts').ServerState} value */
-  constructor(value) {
+  /** @param {import('./types/contracts').ServerState} value
+   * @param {() => void} changed */
+  constructor(value, changed) {
     this.value = value;
-  }
-  /** Subclasses supply the persistence/version boundary. @abstract */
-  changed() {
-    throw Error('AccountStore requires a persistence implementation.');
+    this.changed = changed;
   }
   /** @param {unknown} id */
   terminal(id) {

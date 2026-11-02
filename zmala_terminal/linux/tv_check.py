@@ -28,9 +28,7 @@ class CheckTransport:
     def probe(self, cancel):
         # Wait for any cancelled normal worker before dropping its TV lease.
         with self.tv._lock:
-            self.tv._previous = self.tv._browse_previous = self.tv._restore_pending = None
-            self.tv._changed = False
-            self.tv._ready.set()
+            self.tv.reset_viewing_session()
         self.tv._refresh_device()
         if not self.tv.command or not Path(self.tv.device).exists():
             return None

@@ -18,6 +18,8 @@ text: The server shall expose temporary call photos only to authenticated enroll
   operations shall not change voice/media negotiation. Configuration shall advertise support and app contact
   device types.
 references:
+- path: zmala_server/sip-server.js
+  type: file
 - path: zmala_server/call-photo.js
   type: file
 - path: zmala_server/call_photo.py

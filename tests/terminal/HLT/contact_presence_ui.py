@@ -158,7 +158,7 @@ try:
     fresh['contacts'][0]['online'] = True
     fresh['contacts'][1]['online'] = True
     fresh['contacts'][1]['presence'] = 'available'
-    app.messages.put(('poll-config', (app.generation, fresh)))
+    app.messages.put(('poll-config', (app.generation, fresh, app.callbacks.revision)))
     app.tick()
     assert len(app.avatar.find_withtag('contact-online')) == 3
     app.configuration.request = lambda *args: json.dumps({'id': app.model.contact['id'], 'online': True, 'can_call': True}).encode()

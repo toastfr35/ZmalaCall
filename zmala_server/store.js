@@ -19,11 +19,12 @@ const LANGUAGES = require('../zmala_terminal/common/shared/terminal-languages.js
 const { ringtoneList, validateSound, MAX_LIBRARY } = require('./ringtones');
 
 /** Authoritative configuration and derived views. Mutations commit one versioned snapshot. */
-class Store extends AccountStore {
+class Store {
   constructor(dataDir = DATA) {
     fs.mkdirSync(dataDir, { recursive: true });
     const file = path.join(dataDir, 'server.json');
-    super(readJson(file, defaultState));
+    this.value = readJson(file, defaultState);
+    this.accounts = new AccountStore(this.value, () => this.changed());
     this.secureCalls = loadSecureCalls();
     /** @type {InstanceType<typeof import('./snapshot-file').SnapshotFile> | undefined} */
     this.persistence = undefined;
@@ -38,6 +39,24 @@ class Store extends AccountStore {
     delete this.value.admin_password_hash;
     migrate(this.value);
     this.save();
+  }
+
+  /** Account operations mutate the same state and commit through this owner.
+   * @param {unknown} id */
+  terminal(id) {
+    return this.accounts.terminal(id);
+  }
+  /** @param {import('./types/contracts').JsonObject} update */
+  createAccount(update) {
+    return this.accounts.createAccount(update);
+  }
+  /** @param {string} id @param {import('./types/contracts').JsonObject} update */
+  updateAccount(id, update) {
+    return this.accounts.updateAccount(id, update);
+  }
+  /** @param {string} id */
+  deleteAccount(id) {
+    return this.accounts.deleteAccount(id);
   }
 
   save() {

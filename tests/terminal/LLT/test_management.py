@@ -6,6 +6,7 @@
 
 """Late network responses must not affect a reset/re-enrolled terminal."""
 from pathlib import Path
+from zmala_terminal.common.callbacks import CallbackController
 import sys
 import unittest
 from unittest.mock import Mock, patch
@@ -21,7 +22,7 @@ import tempfile
 
 class ManagementTests(unittest.TestCase):
     def test_wifi_refreshes_during_setup_without_a_server(self):
-        loop = ManagementLoop()
+        loop = ManagementLoop(); loop.callbacks = CallbackController()
         loop.network_worker_busy = loop.worker_busy = False
         loop.generation = 1
         loop.configuration = None
@@ -31,7 +32,7 @@ class ManagementTests(unittest.TestCase):
         loop.draw_connectivity = Mock()
         def run_inline(**kwargs):
             return Mock(start=kwargs['target'])
-        with patch('zmala_terminal.common.management.threading.Thread', side_effect=run_inline), patch('zmala_terminal.common.management.wifi_link_available') as wifi:
+        with patch('zmala_terminal.common.management.server_sync.threading.Thread', side_effect=run_inline), patch('zmala_terminal.common.management.wifi_link_available') as wifi:
             for connected in (True, False, None):
                 wifi.return_value = connected
                 loop.poll()
@@ -41,7 +42,7 @@ class ManagementTests(unittest.TestCase):
             self.assertEqual(wifi.call_count, 3)
 
     def test_old_worker_results_do_not_change_new_enrollment(self):
-        loop = ManagementLoop()
+        loop = ManagementLoop(); loop.callbacks = CallbackController()
         loop.generation = 2
         loop.worker_busy = True
         loop.network_connected = False
@@ -50,7 +51,7 @@ class ManagementTests(unittest.TestCase):
         loop.draw_connectivity = Mock()
         loop.apply_poll_config = Mock()
         loop.handle_worker_message('poll-network', (1, True))
-        loop.handle_worker_message('poll-config', (1, config()))
+        loop.handle_worker_message('poll-config', (1, config(), 0))
         loop.handle_worker_message('poll-done', 1)
         self.assertFalse(loop.network_connected)
         self.assertTrue(loop.worker_busy)

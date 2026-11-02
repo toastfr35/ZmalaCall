@@ -5,7 +5,7 @@ const { MAX_BACKUP, PHOTO, decodeBackup } = require('../backup-format');
 // @llr LLR-SRV-BACKUP-012
 /** Reached only after the common administrator/session/origin checks.
  * @param {import('node:http').IncomingMessage} req @param {import('node:http').ServerResponse} res
- * @param {URL} url @param {import('../types/http').HttpContext} context */
+ * @param {URL} url @param {import('../types/http').BackupContext} context */
 async function backupRoutes(req, res, url, context) {
   if (!url.pathname.startsWith('/api/server/backup')) return false;
   const service = context.backups;

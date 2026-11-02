@@ -49,15 +49,10 @@ const state = {
   },
   busy: false,
   initialized: false,
-  editingId: '',
   detailsId: '',
   terminalId: '',
   editingGroupId: '',
   groupVersion: undefined,
-  accountPhoto: '',
-  accountPreviewUrl: undefined,
-  accountSearch: '',
-  accountFilter: 'all',
   photoUrls: new Map(),
   renderedVersion: undefined,
   renderedLive: '',
@@ -641,6 +636,14 @@ async function writeClipboard(value, owner) {
 
 // admin-accounts.js
 // Account list, editing and connection details. Device configuration belongs on the Terminals page.
+// Account drafts and preview URLs belong to this feature, not the shared shell.
+const accountState = {
+  editingId: '',
+  accountPhoto: '',
+  accountPreviewUrl: /** @type {string | undefined} */ (undefined),
+  accountSearch: '',
+  accountFilter: 'all',
+};
 let accountVersion = 0;
 let accountGeneration = 0;
 function accountRows() {
@@ -649,8 +652,8 @@ function accountRows() {
   tbody.replaceChildren();
   const entries = Object.entries(state.model.users).filter(
     ([id, u]) =>
-      (state.accountFilter === 'all' || u.type === state.accountFilter) &&
-      `${id} ${u.name}`.toLowerCase().includes(state.accountSearch.toLowerCase()),
+      (accountState.accountFilter === 'all' || u.type === accountState.accountFilter) &&
+      `${id} ${u.name}`.toLowerCase().includes(accountState.accountSearch.toLowerCase()),
   );
   $('account-count').textContent =
     `${entries.length} ${entries.length === 1 ? 'account' : 'accounts'}`;
@@ -718,9 +721,9 @@ function renderAccounts() {
   input.type = 'search';
   input.placeholder = 'Search accounts…';
   input.setAttribute('aria-label', 'Search accounts');
-  input.value = state.accountSearch;
+  input.value = accountState.accountSearch;
   input.oninput = () => {
-    state.accountSearch = input.value;
+    accountState.accountSearch = input.value;
     accountRows();
   };
   search.append(icon('search'), input);
@@ -735,9 +738,9 @@ function renderAccounts() {
     o.value = value;
     filter.append(o);
   }
-  filter.value = state.accountFilter;
+  filter.value = accountState.accountFilter;
   filter.onchange = () => {
-    state.accountFilter = filter.value;
+    accountState.accountFilter = filter.value;
     accountRows();
   };
   const count = el('span', '', 'muted');
@@ -779,12 +782,12 @@ function renderAccounts() {
 function openAccount(id = '') {
   accountVersion = state.model.configuration_version;
   accountGeneration++;
-  state.editingId = id;
+  accountState.editingId = id;
   const u = state.model.users[id];
   $('account-form').reset();
-  state.accountPhoto = u?.photo || '';
+  accountState.accountPhoto = u?.photo || '';
   $('account-picture-preview').replaceChildren(avatar(u || { name: '?', type: 'app' }));
-  $('edit-remove-photo').disabled = !state.accountPhoto;
+  $('edit-remove-photo').disabled = !accountState.accountPhoto;
   message('account-error', '');
   $('account-title').textContent = u ? 'Edit account' : 'New account';
   $('account-save').textContent = u ? 'Save changes' : 'Create account';
@@ -800,7 +803,8 @@ function openAccount(id = '') {
   $('account-dialog').showModal();
 }
 $('edit-id').oninput = () => {
-  $('rename-help').hidden = !state.editingId || $('edit-id').value === state.editingId;
+  $('rename-help').hidden =
+    !accountState.editingId || $('edit-id').value === accountState.editingId;
 };
 $('edit-photo').onchange = async () => {
   const file = $('edit-photo').files?.[0];
@@ -815,24 +819,24 @@ $('edit-photo').onchange = async () => {
   }
   if (generation !== accountGeneration || $('edit-photo').files?.[0] !== file) return;
   message('account-error', '');
-  if (state.accountPreviewUrl) URL.revokeObjectURL(state.accountPreviewUrl);
-  state.accountPreviewUrl = URL.createObjectURL(file);
+  if (accountState.accountPreviewUrl) URL.revokeObjectURL(accountState.accountPreviewUrl);
+  accountState.accountPreviewUrl = URL.createObjectURL(file);
   const image = el('img');
-  image.src = state.accountPreviewUrl;
+  image.src = accountState.accountPreviewUrl;
   image.alt = 'New account picture preview';
   $('account-picture-preview').replaceChildren(image);
 };
 $('account-dialog').addEventListener('close', () => {
   accountGeneration++;
-  if (state.accountPreviewUrl) URL.revokeObjectURL(state.accountPreviewUrl);
-  state.accountPreviewUrl = undefined;
+  if (accountState.accountPreviewUrl) URL.revokeObjectURL(accountState.accountPreviewUrl);
+  accountState.accountPreviewUrl = undefined;
 });
 $('account-form').onsubmit = (e) => {
   e.preventDefault();
   return submit(
     $('account-form'),
     async () => {
-      const id = state.editingId,
+      const id = accountState.editingId,
         generation = accountGeneration;
       const update = {
         configuration_version: accountVersion,
@@ -841,12 +845,12 @@ $('account-form').onsubmit = (e) => {
         emails: emailAddresses($('edit-emails').value),
         type: $('edit-type').value,
         password: $('edit-password').value,
-        photo: $('edit-remove-photo').checked ? '' : state.accountPhoto,
+        photo: $('edit-remove-photo').checked ? '' : accountState.accountPhoto,
       };
       try {
         update.photo = await accountPicture(
           $('edit-photo').files?.[0],
-          state.accountPhoto,
+          accountState.accountPhoto,
           $('edit-remove-photo').checked,
         );
         if (generation !== accountGeneration) return;

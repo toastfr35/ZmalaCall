@@ -84,7 +84,10 @@ function createHandler(context) {
         const persistence = context.persistenceReady?.() ?? true;
         return send(res, persistence ? 200 : 503, { ok: persistence, persistence });
       }
-      const identity = { ...context, deviceId };
+      // Pass only route-owned collaborators; credentials and backup lifecycle
+      // remain at this common authentication boundary.
+      const { sipServer, callbacks, consoleJobs, terminalStatuses, writeBootstrap } = context;
+      const identity = { store, sipServer, callbacks, consoleJobs, terminalStatuses, deviceId };
       if (await deviceRoutes(req, res, url, identity)) return;
       // @llr LLR-SRV-CONFIG-024
       const sound = url.pathname.match(/^\/api\/ringtones\/(nokia|[a-f0-9]{64})\.wav$/);
@@ -133,12 +136,18 @@ function createHandler(context) {
           error: 'Administration is only available on the server local network.',
         });
       if (
-        await authRoutes(req, res, url, context, {
-          local,
-          admin,
-          secure,
-          token: cookie || token,
-        })
+        await authRoutes(
+          req,
+          res,
+          url,
+          { store, adminSessions: context.adminSessions },
+          {
+            local,
+            admin,
+            secure,
+            token: cookie || token,
+          },
+        )
       )
         return;
       if (req.method === 'GET' && url.pathname === '/permissions') {
@@ -170,8 +179,18 @@ function createHandler(context) {
           await store.uploadRingtone(url.searchParams.get('name'), bytes, version),
         );
       }
-      if (await backupRoutes(req, res, url, context)) return;
-      if (await adminRoutes(req, res, url, context)) return;
+      if (await backupRoutes(req, res, url, { store, backups })) return;
+      if (
+        await adminRoutes(req, res, url, {
+          store,
+          sipServer,
+          callbacks,
+          consoleJobs,
+          terminalStatuses,
+          writeBootstrap,
+        })
+      )
+        return;
       if (url.pathname === '/api/photos' && req.method === 'POST')
         return send(res, 201, { photo: await photos.upload(req) });
       send(res, 404, { error: 'Not found.' });
