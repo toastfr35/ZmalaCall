@@ -91,3 +91,5 @@ Stage 1 implementation: removed duplicated live audio/reconnection fields from M
 Stage 2 implemented: session callbacks target an explicit observer contract. Weak attachment and identity-checked detach preserve screen replacement behavior. MainActivity implements presentation notifications; the session has no concrete Activity reference.
 
 Stage 3 implemented: extracted setup persistence, permission policy and lifecycle generation ownership into SetupCoordinator. Contact/configuration results and imported QR callbacks use its tickets; MainActivity retains view/dialog orchestration. Enrollment regressions cover persistence, invalidation and SDK-specific denial; existing QR and directory scenarios remain the workflow coverage.
+
+Stage 4 implemented: pending notification answers now have one explicit immutable identity/expiry, once-only consumption and replacement/expiry regression coverage. Signed intent verification, native admission and queued eligibility checks remain at their existing trust boundaries. Emulator lifecycle scenarios and physical vendor/Doze checks are recorded separately.
