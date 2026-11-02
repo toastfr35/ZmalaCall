@@ -737,3 +737,5 @@ late results after stop or a new call. Network failure ends sharing with a messa
 it does not end the voice call. A receiving phone polls the same authenticated endpoint, preserving the last lease deadline through failed requests. It hides sender-only actions and clears the image on stop, expiry or call change. Only one caller shares at a time; either app can claim the next idle share. This is not a photo album.
 
 CallSession owns microphone mute, selected output and reconnection state. MainActivity consumes an immutable session snapshot and sends explicit mute/output actions; recreation does not copy live audio state into a second owner.
+
+CallSession attaches a weak Observer interface, never a concrete MainActivity. Detach only releases the matching observer; replacing a screen cannot let an old stop callback detach the new screen. Call media and foreground-service ownership remain application scoped.

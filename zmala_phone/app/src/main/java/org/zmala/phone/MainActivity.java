@@ -31,7 +31,7 @@ import org.json.JSONObject;
 import org.linphone.core.Call;
 
 // @llr LLR-AND-UI-002
-public final class MainActivity extends Activity {
+public final class MainActivity extends Activity implements CallSession.Observer {
   static final int BG = Color.rgb(13, 18, 28),
       FG = Color.rgb(237, 241, 251),
       MUTED = Color.rgb(144, 160, 185),
@@ -568,7 +568,7 @@ public final class MainActivity extends Activity {
   }
 
   // @llr LLR-AND-CALL-002, LLR-AND-UI-002
-  void callChanged(String text) {
+  @Override public void callChanged(String text) {
     // @llr LLR-AND-UPDATE-002
     AppUpdates.get(this).callChanged();
     // @llr LLR-AND-HISTORY-002
@@ -741,7 +741,7 @@ public final class MainActivity extends Activity {
   }
 
   // @llr LLR-AND-CALL-007
-  void photoChanged() {
+  @Override public void photoChanged() {
     if (callScreen == null) return;
     session.photos.reconcile();
     callScreen.photo(canSharePhoto(), session.photos.image, session.photos.busy);
@@ -872,7 +872,7 @@ public final class MainActivity extends Activity {
     }
   }
 
-  void callServiceUnavailable() {
+  @Override public void callServiceUnavailable() {
     if (visible) { directory(); showError(getString(R.string.start_call_failed)); }
   }
 

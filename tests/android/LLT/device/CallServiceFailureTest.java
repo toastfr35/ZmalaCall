@@ -3,6 +3,7 @@
 // @environment native-sdk
 // @plan Use an application-context double that rejects foreground service startup. Attempt preparation
 // from hidden and visible states with an idle call session, and inspect ownership after denial.
+// Replace the observer, detach the old observer, then fail preparation; only the current observer is notified.
 // Repeatedly acquire service wake ownership, then release it; check the same Android lock is reused.
 // @pass Hidden preparation never starts a service; denied visible startup fails without retained
 // foreground ownership, call, registration or configuration. No actual Android service is started.
@@ -28,6 +29,27 @@ public class CallServiceFailureTest {
         assertFalse(session.engine.registered); assertNull(session.configuration);
       } catch (ReflectiveOperationException error) { throw new AssertionError(error); }
     });
+  }
+  @Test public void staleDetachCannotDisconnectReplacementObserver() {
+    PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+      CallSession session = CallSession.get(PhoneFixture.INSTRUMENTATION.getTargetContext());
+      int[] first = {0}, second = {0};
+      CallSession.Observer old = observer(first), current = observer(second);
+      try {
+        session.attach(old); session.attach(current); session.detach(old, false);
+        assertTrue(session.visible);
+        session.serviceFailed();
+        assertEquals(0, first[0]); assertEquals(1, second[0]);
+        session.detach(current, false); assertFalse(session.visible);
+      } finally { session.stop(); }
+    });
+  }
+  private static CallSession.Observer observer(int[] failures) {
+    return new CallSession.Observer() {
+      public void callChanged(String status) {}
+      public void photoChanged() {}
+      public void callServiceUnavailable() { failures[0]++; }
+    };
   }
   @Test public void repeatedStartsReleaseTheOnlyWakeLock() {
     PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
