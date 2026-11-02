@@ -6,7 +6,7 @@ const { hashPassword, verifyPassword } = require('../admin-sessions');
  * Initial setup works from the server LAN once; changing a password requires the current one.
  * @param {import('node:http').IncomingMessage} req
  * @param {import('node:http').ServerResponse} res
- * @param {URL} url @param {import('../types/http').HttpContext} context
+ * @param {URL} url @param {import('../types/http').AuthContext} context
  * @param {{local: boolean, admin: boolean, secure: boolean, token?: string}} identity */
 async function authRoutes(req, res, url, context, identity) {
   if (!url.pathname.startsWith('/api/auth/')) return false;

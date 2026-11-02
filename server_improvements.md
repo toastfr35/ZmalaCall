@@ -91,3 +91,14 @@ Reviewed on 31 October 2026 using the local Floorplan and selected owning source
 files. The map is a navigation aid, not proof of runtime behaviour or a security
 audit. Maps remain ignored local artifacts; these plans are the durable record.
 No runtime implementation or hardware qualification is included in this change.
+
+## Implementation progress — 2 November 2026
+
+Stage 1 started: route service contracts now distinguish authentication, backup,
+device and administration dependencies. The common handler constructs explicit
+route contexts instead of spreading all application dependencies into device
+requests. Central authentication, LAN restrictions, payload validation and durable
+write ordering are retained. `docs/server.md` records the reviewed access-family
+inventory. Existing HTTP policy regression tests and strict TypeScript checks pass.
+The Store and SIP collaborators remain broad objects; narrowing their individual
+operations and the remaining stages are still outstanding.

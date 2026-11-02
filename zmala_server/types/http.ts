@@ -56,6 +56,9 @@ export interface HttpContext {
   terminalStatuses: Record<string, TerminalStatus>;
   writeBootstrap(): Promise<void>;
 }
-export interface DeviceContext extends HttpContext {
+export type AuthContext = Pick<HttpContext, 'store' | 'adminSessions'>;
+export type BackupContext = Pick<HttpContext, 'store' | 'backups'>;
+export type AdminContext = Pick<HttpContext, 'store' | 'sipServer' | 'callbacks' | 'consoleJobs' | 'terminalStatuses' | 'writeBootstrap'>;
+export interface DeviceContext extends Pick<HttpContext, 'store' | 'sipServer' | 'callbacks' | 'consoleJobs' | 'terminalStatuses'> {
   deviceId?: string;
 }

@@ -8,7 +8,7 @@ const { sshStatus, setSsh } = require('../server-ssh');
 /** Called only after the central handler has verified administration credentials.
  * @param {import('node:http').IncomingMessage} req
  * @param {import('node:http').ServerResponse} res @param {URL} url
- * @param {import('../types/http').HttpContext} context */
+ * @param {import('../types/http').AdminContext} context */
 async function adminRoutes(req, res, url, context) {
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses, writeBootstrap } = context;
   const v = store.value;
