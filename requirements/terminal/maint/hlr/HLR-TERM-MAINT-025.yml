@@ -1,0 +1,22 @@
+active: true
+area: Application updates
+derived: false
+header: Bounded supervised update trials
+level: 25.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_supervision.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The terminal shall activate a prepared application only after exclusive maintenance
+  admission, keep update progress available independently of the replaced process,
+  and confirm only after a bounded period of stable application readiness. Candidate
+  failure shall restore the confirmed application; failed recovery shall retain an
+  actionable recovery state rather than confirming a broken candidate.
+verification: Supervise disposable child applications through successful and crashing
+  trials. Inspect durable selected release, maintenance ordering and rollback; physical
+  systemd/display/device qualification remains separate.

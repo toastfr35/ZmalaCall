@@ -1,0 +1,25 @@
+active: true
+area: Application updates
+derived: false
+header: Independent bounded trial supervisor
+level: 26.0
+links:
+- HLR-TERM-MAINT-025: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/update_supervisor.py
+  type: file
+- path: tests/terminal/LLT/test_update_supervisor.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The stable supervisor shall require an exclusive maintenance lease before stopping
+  the running app, show progress before replacement, and confirm only after stable
+  readiness from the same process/generation within a deadline. A restart, explicit
+  failure or timeout shall restore the confirmed application. Failed recovery shall
+  retain an error state; a confirmation I/O failure shall be left for durable boot
+  recovery rather than treated as an unconfirmed candidate failure.
+verification: Use deterministic operation doubles for ordering, no-lease, readiness,
+  restart, timeout, rollback and disk failure; assert confirmation and maintenance
+  release only on the appropriate successful path.

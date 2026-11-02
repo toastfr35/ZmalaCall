@@ -1485,3 +1485,5 @@ metadata fails closed. No installed updater service uses this foundation yet; se
 `docs/terminal-update-plan.md` for integration and qualification still outstanding.
 
 The not-yet-enabled updater staging layer in `linux/update_package.py` authenticates canonical Ed25519 manifests, checks compatibility/newer sequence and exact package size/digest, and admits only bounded regular files into approved application paths. Root hooks, symlinks and private runtime data are rejected. Signing credentials are not part of this code.
+
+`linux/update_supervisor.py` orchestrates the updater trial through a narrow operations contract. It stops the old process before selection, rejects restarts/timeouts and keeps recovery failure distinct from successful rollback. Durable confirmation errors are replayed by boot recovery rather than misclassified as candidate failure. This foundation is not yet installed as an active service.
