@@ -1008,3 +1008,29 @@ terminal readers within one configuration revision. Returned rows are detached;
 presence and callbacks are enriched at the HTTP boundary. Configuration mutations
 invalidate all derivations together. Identity-changing administration also rejects
 accounts participating in push-wake calls, before those calls own SIP dialogs.
+
+### HTTP route access and dependency inventory
+
+Reviewed against `http/handler.js` and its route modules on 2 November 2026.
+Host, Origin, HTTPS policy and restore-in-progress checks run before dispatch.
+Cookie-authenticated writes require same-origin evidence. Route handlers retain
+payload limits, account-type/ownership validation and durable write barriers.
+
+| Routes | Access | Owner |
+| --- | --- | --- |
+| `/health`, `/ready` | Public after common transport checks | Central handler; readiness checks persistence |
+| `/api/app/*`, `/api/config`, `/api/device/settings`, `/api/status`, `/api/contacts/*`, device callback/console operations | Enrolled bearer identity; route-specific app/terminal checks | Device routes |
+| `/api/call/photo` | Enrolled participant in the identified active dialog | Call-photo handler via device routes |
+| `/photos/<hash>`, `/api/ringtones/<id>.wav` | Device or LAN administrator; ringtones require a terminal device | Central handler |
+| `/api/auth/*` | Server LAN; password/session rules vary by operation | Authentication routes |
+| Admin HTML, JS, CSS, icon and `/permissions` redirect | Server LAN; API mutations still require an administrator | Central handler |
+| `/api/server/backup*` | Server LAN and administrator | Backup routes |
+| `/api/server/ssh`, `/api/developer-access`, `/api/admin*`, `/api/setup/*`, admin console/callback routes, `/api/callback-settings`, `/api/smtp-settings*`, `/api/groups*`, `/api/settings`, `/api/users*`, `/api/terminal-association`, `/api/local-terminal`, `/api/terminal-bootstrap`, portrait/ringtone uploads | Server LAN and administrator | Admin routes or central upload handler |
+
+Unknown routes retain the central LAN/authentication gates before returning 404.
+This inventory describes access families, not automatic endpoint discovery.
+Authentication routes receive only store/session services; backup routes receive
+store/backup services. Device and admin routes receive their explicit service
+sets, with bearer identity added per request. Neither receives browser sessions,
+transport policy or the backup coordinator. Their TypeScript contracts enforce
+these boundaries; the composition root remains the single service owner.
