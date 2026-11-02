@@ -1,0 +1,22 @@
+active: true
+area: Application updates
+derived: false
+header: Verified compatible application payloads
+level: 23.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_staging.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The terminal shall accept an application candidate only when its manifest is
+  authenticated by an installed release key, its sequence is newer, its host/data/updater
+  compatibility matches and its bounded payload matches the signed digest. Staging
+  shall reject unsafe archive entries without executing package-controlled hooks or
+  modifying the confirmed release or shared data.
+verification: Stage a signed compatible fixture and reject altered bytes, untrusted
+  signatures, incompatible/old releases and unsafe archives. Verify confirmed/shared
+  fixtures remain unchanged; no OS dependency installation occurs.

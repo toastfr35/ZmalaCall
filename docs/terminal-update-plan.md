@@ -145,3 +145,5 @@ Four Linux tests pass, including SIGKILL at every transaction checkpoint. This i
 process-interruption evidence, not physical power-loss qualification. Signature/staging,
 boot supervisor, maintenance/display, feed/release integration and physical tests remain. Existing terminals need one installer/deployment update to acquire
 the stable updater and launcher before they can receive application-only updates.
+
+Verified staging foundation: Ed25519 canonical manifests, compatibility/sequence/digest bounds and safe regular-file extraction are implemented. Four additional Linux unit/integration scenarios pass. Downloader, stable boot supervisor, localized display/admission, server reporting, release signing and Pi qualification remain to implement.

@@ -1,0 +1,26 @@
+active: true
+area: Application updates
+derived: false
+header: Signed manifest and bounded extraction
+level: 24.0
+links:
+- HLR-TERM-MAINT-023: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/update_package.py
+  type: file
+- path: tests/terminal/LLT/test_update_package.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The updater shall verify an Ed25519 signature over canonical manifest bytes
+  using an installed public key, reject duplicate JSON fields, incompatible or non-newer
+  versions and invalid bounded package metadata, and verify exact package size and
+  SHA-256 before extraction. Extraction shall admit only bounded regular files in
+  approved application paths, reject duplicate/traversal/hidden/data/link/special
+  entries, and flush staged files and directory entries without executing package
+  hooks.
+verification: Generate ephemeral signing keys; mutate signed metadata, trust and archive
+  bytes; exercise unsafe archive entry classes and inspect safe extraction and fsync
+  boundaries. No production signing credentials are used.
