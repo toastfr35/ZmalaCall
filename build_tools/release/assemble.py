@@ -1,4 +1,4 @@
-"""Collect exactly the nine user downloads; keep private QA/source files outside."""
+"""Collect nine user downloads plus two signed machine-update assets."""
 import argparse
 from pathlib import Path
 import shutil
@@ -9,6 +9,7 @@ ASSETS = (
     'ZmalaTerminal-Pi4-setup.exe', 'ZmalaServer-Installation.pdf',
     'ZmalaServer-Guide.pdf', 'ZmalaServer-Pi4-setup.exe',
     'ZmalaPhone-Installation.pdf', 'ZmalaPhone-Guide.pdf', 'ZmalaPhone.apk',
+    'ZmalaTerminal-Update.tar.gz', 'ZmalaTerminal-Update.json',
 )
 
 
@@ -26,7 +27,8 @@ def collect(dist, apk, output):
         if not source.is_file() or source.stat().st_size == 0:
             raise ValueError('Missing release input: ' + name)
         signature = source.read_bytes()[:4]
-        expected = b'%PDF' if name.endswith('.pdf') else b'MZ' if name.endswith('.exe') else b'PK'
+        expected = (b'%PDF' if name.endswith('.pdf') else b'MZ' if name.endswith('.exe') else
+                    b'\x1f\x8b' if name.endswith('.tar.gz') else b'{' if name.endswith('.json') else b'PK')
         if not signature.startswith(expected):
             raise ValueError('Invalid release input: ' + name)
     output.mkdir(parents=True)

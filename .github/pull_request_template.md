@@ -12,4 +12,4 @@ Record the checks actually run and any remaining hardware qualification.
 - [ ] Android versionName and versionCode are higher than main, including for documentation changes.
 - [ ] No credentials, account QR codes or personal deployment data are included.
 
-Merging into main automatically builds and publishes the nine release downloads.
+Merging into main publishes nine user downloads and two signed terminal machine-update assets.
