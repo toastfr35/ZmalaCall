@@ -3,7 +3,7 @@
 // @environment native-display
 // @plan On a disposable emulator, answer a signed SIP fixture call, move the activity behind Home,
 // inspect the ongoing service notification and paused native camera, reject a stale hangup intent,
-// return, recreate the activity, lock/wake the screen and hang up from the notification while hidden.
+// retain session-owned mute/output across return/recreation, lock/wake the screen and hang up from the notification while hidden.
 // @pass The same core/call survives Home, recreation and screen-off. Camera pauses/restores, no
 // replacement INVITE is sent, and hidden hangup clears service, registration, notification and audio focus.
 // This verifies SDK/Android lifecycle behavior, not real microphone quality, vendor power policy or Doze.
@@ -42,6 +42,11 @@ public class CallContinuityTest {
       Object core = field.get(session.engine);
       PhoneFixture.waitFor(() -> ongoing(context) != null);
       assertTrue(call.isCameraEnabled());
+      PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> {
+        session.mute(true); session.selectOutput(CallEngine.Output.MUTED);
+      });
+      CallSession.Snapshot captured = session.snapshot();
+      assertTrue(captured.muted); assertEquals(CallEngine.Output.MUTED, captured.output);
       PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> screen.moveTaskToBack(true));
       PhoneFixture.waitFor(() -> !session.visible && !call.isCameraEnabled());
       assertSame(call, session.engine.call); assertSame(core, field.get(session.engine));
@@ -56,6 +61,11 @@ public class CallContinuityTest {
       PhoneFixture.INSTRUMENTATION.runOnMainSync(screen::recreate);
       PhoneFixture.waitFor(() -> session.visible && resumed() != screen);
       MainActivity replacement = resumed(); assertNotNull(replacement);
+      assertTrue(session.snapshot().muted);
+      assertEquals(CallEngine.Output.MUTED, session.snapshot().output);
+      PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> { session.mute(false); session.selectOutput(CallEngine.Output.SPEAKER); });
+      assertTrue("Previously captured snapshots must remain immutable", captured.muted);
+      assertEquals(CallEngine.Output.MUTED, captured.output);
       assertSame(call, session.engine.call); assertSame(core, field.get(session.engine));
       PhoneFixture.waitFor(() -> call.isCameraEnabled());
       shell("input keyevent KEYCODE_SLEEP");

@@ -85,3 +85,5 @@ Reviewed on 31 October 2026 using the local Floorplan and selected owning source
 files. The map is a navigation aid, not proof of runtime behaviour or a security
 audit. Maps remain ignored local artifacts; these plans are the durable record.
 No runtime implementation or hardware qualification is included in this change.
+
+Stage 1 implementation: removed duplicated live audio/reconnection fields from MainActivity. CallSession exposes immutable presentation values and explicit audio actions; the continuity HLT asserts state survival across recreation and snapshot stability. Build, emulator and physical results are recorded separately; no unrun hardware pass is implied.
