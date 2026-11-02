@@ -1,0 +1,21 @@
+active: true
+area: Application updates
+derived: false
+header: Preserve settings across rejected trials
+level: 33.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_snapshot_recovery.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The terminal shall checkpoint persistent enrollment and settings before a trial
+  and restore their confirmed contents before restarting the old application after
+  a rejected or interrupted trial. Restoration shall be replayable without a missing
+  live-data directory.
+verification: Kill the restore process at atomic exchange and subsequent durable journal
+  boundaries, then replay recovery twice and inspect confirmed settings and slot.
+  Physical power interruption remains a separate qualification.

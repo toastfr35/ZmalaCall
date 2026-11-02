@@ -1,0 +1,22 @@
+active: true
+area: Application updates
+derived: false
+header: Independent automatic updater service
+level: 29.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_runtime.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The terminal shall use an independent privileged supervisor to stage verified
+  application releases with installed host dependencies, admit activation through
+  the terminal maintenance lease, and recover interrupted trials before normal application
+  startup. It shall not run operating-system installers or package managers during
+  automatic updates.
+verification: Exercise durable slots and file IPC with a controlled service adapter;
+  inspect lease, confirmation and interrupted recovery ordering. Native sandbox and
+  hardware qualification are separate deployment checks.

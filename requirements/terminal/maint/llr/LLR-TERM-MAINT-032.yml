@@ -1,0 +1,23 @@
+active: true
+area: Application updates
+derived: false
+header: Atomic private data checkpoint
+level: 32.0
+links:
+- HLR-TERM-MAINT-031: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/update_snapshot.py
+  type: file
+- path: tests/terminal/LLT/test_update_snapshot.py
+  type: file
+reviewed: null
+scope: Experimental
+text: After the application stops, the updater shall make a durable private same-filesystem
+  copy preserving data ownership, modes and symlinks without following external targets.
+  Passive trials shall not change persistent data. Rollback shall atomically exchange
+  the live directory and checkpoint and use a durable transaction marker to prevent
+  repeated exchanges; a committed confirmation shall prevent restoration.
+verification: Check original bytes, nested files, symlink preservation, mutation rejection,
+  repeated restoration, committed confirmation and unsafe checkpoint directory rejection.

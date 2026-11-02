@@ -49,15 +49,24 @@ class TrialSupervisor:
         try:
             self.operations.display('updating')
             self.operations.stop()
+            checkpoint = getattr(self.operations, 'checkpoint_data', None)
+            if checkpoint:
+                checkpoint()
             ticket = self.transactions.trial()
             self.operations.display('checking')
             self.operations.start()
             if not self.healthy():
                 raise RecoveryError('Candidate did not become stable')
+            validate = getattr(self.operations, 'validate_data', None)
+            if validate:
+                validate()
         except Exception:
             self.operations.display('rollback')
             self.operations.stop()
             self.transactions.recover()
+            restore = getattr(self.operations, 'restore_data', None)
+            if restore:
+                restore()
             pending = self.transactions.read('pending')
             if pending and pending.get('state') == 'ready':
                 pending['state'] = 'quarantined'

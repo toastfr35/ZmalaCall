@@ -34,7 +34,7 @@ class UpdateClient:
             descriptor = os.open(self.request, os.O_RDONLY | os.O_NOFOLLOW)
             with os.fdopen(descriptor, 'r', encoding='utf-8') as stream:
                 info = os.fstat(stream.fileno())
-                if not stat.S_ISREG(info.st_mode) or info.st_uid != self.root_uid or info.st_size > 8192:
+                if not stat.S_ISREG(info.st_mode) or info.st_uid != self.root_uid or info.st_mode & 0o022 or info.st_size > 8192:
                     return None
                 request = json.loads(stream.read(8193))
             age = self.clock() - request['heartbeat']
@@ -91,6 +91,8 @@ def tick_terminal(app, now):
     idle = (app.model.state == State.HOME and not (app.engine and app.engine.call)
             and not app.setup_stage and not app.settings_open and not app.setup_busy
             and not app.settings_draft.busy and not app.keys_down
+            and not getattr(app, 'worker_busy', False)
+            and not getattr(app, 'network_worker_busy', False)
             and now - app.last_button >= 120)
     client.tick(idle, app.language, not app.closed,
                 bool(power and power.enabled and power.powered is False))
