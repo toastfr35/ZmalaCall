@@ -1,0 +1,24 @@
+active: true
+area: Application updates
+derived: false
+header: Durable release transaction
+level: 22.0
+links:
+- HLR-TERM-MAINT-021: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/update_transaction.py
+  type: file
+- path: tests/terminal/LLT/test_update_transaction.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The updater shall flush record files before atomic rename and flush their containing
+  directory. It shall record a trial before selecting its candidate and commit confirmation
+  before changing the confirmed selection. Boot recovery shall select the confirmed
+  slot, quarantine interrupted unconfirmed trials, reject stale confirmations and
+  reject invalid or symlink release paths.
+verification: Inject interruption at each file, rename and directory-flush checkpoint;
+  reopen the owner and assert confirmed selection, quarantine and path/confirmation
+  rejection. Physical power-cut behavior requires separate hardware evidence.

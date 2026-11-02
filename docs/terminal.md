@@ -1474,3 +1474,12 @@ an explicit transport method rather than changing its individual state fields.
 Ambiguous CEC power replies require a fresh paired-driver query before saving the pre-call baseline. The observer heartbeat does not date its remembered power report. Unknown fresh power cannot authorize standby during restoration. Settled direct CEC replies remain usable.
 
 Pi installer payloads exclude local Floorplan, cache and VCS directories. Archive regression checks cover the current runtime modules; installer checks remain separate from product runtime requirements. Installation builds generated assets before root-owned deployment and preserves persistent device/account data.
+
+### Application updater transaction foundation (not yet enabled)
+
+`linux/update_transaction.py` keeps separate confirmed and pending records, fsyncs
+files and parent directories around replacement, records trials before selecting
+a slot and commits confirmation before selection. Recovery quarantines an
+interrupted unconfirmed trial and selects the confirmed release. Invalid confirmed
+metadata fails closed. No installed updater service uses this foundation yet; see
+`docs/terminal-update-plan.md` for integration and qualification still outstanding.
