@@ -551,13 +551,19 @@ checksums detect transfer corruption, not an untrusted publisher.
 
 ### Release download layout
 
-Upload exactly these nine files as release assets:
+Upload these nine user downloads, plus the two machine-update assets listed below:
 
 | Component | Installation | User guide | Installer |
 | --- | --- | --- | --- |
 | Terminal | `ZmalaTerminal-Installation.pdf` | `ZmalaTerminal-Guide.pdf` | `ZmalaTerminal-Pi4-setup.exe` |
 | Server | `ZmalaServer-Installation.pdf` | `ZmalaServer-Guide.pdf` | `ZmalaServer-Pi4-setup.exe` |
 | Phone | `ZmalaPhone-Installation.pdf` | `ZmalaPhone-Guide.pdf` | `ZmalaPhone.apk` |
+
+`ZmalaTerminal-Update.tar.gz` and `ZmalaTerminal-Update.json` support automatic Pi
+application updates. The archive contains the installed application source/assets
+and pinned native build inputs; it is not a general repository source package or
+an OS image. The manifest authenticates its digest, version, sequence, commit and
+host compatibility using Ed25519. These two files are not manual user installers.
 
 Build both Windows installers from the intended committed source, then render
 the guides using `python build_tools/release/guides.py` with dependencies from
@@ -595,7 +601,10 @@ a pull request; each change, including documentation, carries a version bump.
 `main`. The tag comes from the committed Android version. Manual dispatch on
 `main` remains available for recovery, with an optional matching tag check.
 Windows builds both Pi installers and all PDFs; Linux builds and verifies the
-signed APK. The publication job waits for both, collects the nine named files,
+signed APK. A separate Linux job builds the application update and signs its
+manifest using `ZMALA_TERMINAL_UPDATE_KEY`, available only in the release workflow.
+The publication job waits for all three, verifies the machine payload's signature
+and exact source identity, then collects the eleven named files,
 creates a draft, uploads and checks its assets, then publishes it by the draft ID
 returned by `gh release view`. It verifies the draft's tag and target commit before
 publication; the REST lookup by tag cannot resolve an unpublished draft. GitHub selects
@@ -603,6 +612,15 @@ Latest using its semantic-version policy, so an older overlapping build does not
 explicitly replace a newer release. Concurrency is scoped to the source commit;
 separate merged commits are not cancelled. The old standalone installer workflows
 are removed; their packaging checks are retained in Verify and the release build.
+
+The terminal updater trust registry is `build_tools/linux/update-keys.json`.
+Never place the private key in Git, application packages, installers or ordinary
+Verify jobs. Key replacement/revocation requires a trusted manual installer update
+to replace the root-owned registry under `/etc/zmalacall`; this initial protocol
+does not accept a new key merely because an update advertises it. Keep a protected
+backup of the signing key and use a new key ID when rotating. Revoking a compromised
+key on deployed terminals requires that manual trust update before resuming
+automatic updates. Application updates do not replace their privileged supervisor.
 The Android artifact may retain its version directory. The collector accepts that
 artifact root and requires exactly one `ZmalaPhone.apk`; ambiguous APK inputs fail.
 Existing releases are never overwritten. A failed upload leaves a draft for review.

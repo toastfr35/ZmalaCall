@@ -19,11 +19,12 @@ class ReleaseAssetTests(unittest.TestCase):
         for name in ASSETS:
             path = apk if name.endswith('.apk') else (
                 dist / 'guides' / name if name.endswith('.pdf') else dist / name)
-            header = b'%PDF' if name.endswith('.pdf') else b'MZ' if name.endswith('.exe') else b'PK'
+            header = (b'%PDF' if name.endswith('.pdf') else b'MZ' if name.endswith('.exe') else
+                      b'\x1f\x8b' if name.endswith('.tar.gz') else b'{' if name.endswith('.json') else b'PK')
             path.write_bytes(header + b'fixture')
         return dist, apk
 
-    def test_only_nine_named_assets_even_with_private_and_source_files_nearby(self):
+    def test_only_approved_assets_even_with_private_and_source_files_nearby(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             dist, apk = self.fixtures(root)
@@ -32,7 +33,7 @@ class ReleaseAssetTests(unittest.TestCase):
             result = root / 'release'
             collect(dist, apk, result)
             self.assertEqual({p.name for p in result.iterdir()}, set(ASSETS))
-            self.assertEqual(len(ASSETS), 9)
+            self.assertEqual(len(ASSETS), 11)
 
     def test_missing_guide_fails_before_creating_partial_release(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -104,7 +105,7 @@ class ReleaseAssetTests(unittest.TestCase):
             for name in ASSETS:
                 (root / name).write_bytes(b'fixture')
             (root / 'source.zip').write_bytes(b'must not publish')
-            with self.assertRaisesRegex(ValueError, 'exactly the nine'):
+            with self.assertRaisesRegex(ValueError, 'exactly the eleven'):
                 github_release.checked_assets(root)
 
 

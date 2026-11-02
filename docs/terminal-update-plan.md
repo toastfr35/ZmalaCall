@@ -154,3 +154,6 @@ Maintenance/display integration implemented but not provisioned: root-owned loca
 
 
 Stable runtime implementation in progress: bounded public transport, isolated native preparation, service/cgroup heartbeat admission and private data checkpoints are implemented. Linux tests cover atomic data-exchange replay after SIGKILL and maintenance trial/recovery integration. Installer units, release signing/distribution, server reporting and Pi deployment remain outstanding; automatic updates are not enabled on term2.
+
+
+Release integration now builds an application-only archive with pinned offline TURN sources and an Ed25519 manifest. Publication verifies the signature and exact commit/version before adding the two machine assets beside the nine user downloads. Unit checks use disposable keys; production signing is restricted to the release workflow. The signing key is provisioned as an encrypted GitHub Actions secret; production signing has not yet run. Server reporting and Pi qualification remain outstanding.

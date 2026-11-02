@@ -110,8 +110,31 @@ jobs:
         if: always()
         run: python3 build_tools/release/github_release.py cleanup-signing
 
+  terminal-update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install cryptography==50.0.2
+      - name: Build and authenticate the application-only update
+        env:
+          ZMALA_TERMINAL_UPDATE_KEY: ${{ secrets.ZMALA_TERMINAL_UPDATE_KEY }}
+        run: python build_tools/release/terminal_update.py build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-terminal-update
+          path: |
+            build_tools/dist/ZmalaTerminal-Update.tar.gz
+            build_tools/dist/ZmalaTerminal-Update.json
+          if-no-files-found: error
+          retention-days: 7
+
   publish:
-    needs: [windows, android]
+    needs: [windows, android, terminal-update]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -126,10 +149,16 @@ jobs:
         with:
           name: release-android
           path: build_tools/dist/android
-      - name: Collect exactly nine downloads and write release notes
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-terminal-update
+          path: build_tools/dist
+      - run: python3 -m pip install cryptography==50.0.2
+      - name: Verify machine updates and collect nine user downloads plus two machine assets
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
+          python3 build_tools/release/terminal_update.py verify
           python3 build_tools/release/assemble.py --apk build_tools/dist/android --output build_tools/dist/release-downloads
           python3 build_tools/release/github_release.py notes --assets build_tools/dist/release-downloads --output build_tools/dist/release-notes.md
       - name: Upload and publish the GitHub Release

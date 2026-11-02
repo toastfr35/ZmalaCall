@@ -1,4 +1,4 @@
-"""Private CI inputs, public release notes and fail-closed nine-asset publication."""
+"""Private CI inputs, public notes and fail-closed allowlisted publication."""
 import argparse
 import base64
 import hashlib
@@ -84,7 +84,7 @@ def prepare_signing():
 
 def checked_assets(folder):
     if {p.name for p in folder.iterdir()} != set(ASSETS):
-        raise ValueError('Release directory must contain exactly the nine approved assets')
+        raise ValueError('Release directory must contain exactly the eleven approved assets')
     paths = [folder / name for name in ASSETS]
     if any(p.is_symlink() or not p.is_file() or not p.stat().st_size for p in paths):
         raise ValueError('Invalid release asset')
@@ -100,6 +100,7 @@ def notes(folder, output):
 Download the **Installation.pdf**, **Guide.pdf** and installer for the product you need below.
 The two `.exe` files run on a Windows PC and install onto the Pi over wired Ethernet.
 The APK installs directly on Android 9 or newer (64-bit ARM phones).
+The two `ZmalaTerminal-Update` files are signed machine-update assets, downloaded automatically by supported Pi terminals; users do not install these manually.
 
 - Pi OS: Raspberry Pi OS Lite 64-bit, Debian 13 Trixie. Terminal: Pi 4 Model B; server: Pi 3 B/B+ or Pi 4 B.
 - ZmalaPhone: scan the private App QR supplied by your administrator. Allow notifications for incoming alerts.
