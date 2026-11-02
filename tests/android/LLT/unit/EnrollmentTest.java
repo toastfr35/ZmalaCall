@@ -6,6 +6,7 @@
 // Reject null/non-object contacts, missing or invalid identity/name and duplicate contact identities.
 // Serve redirects from a local HTTP fixture and verify no credentials reach the redirect target.
 // Download a GIF larger than the static cap, reject the same oversized JPEG and invalid photo paths.
+// Test setup storage round trips, invalidation of old work and SDK-specific denied permission policy.
 // @pass All parser, identity, transport and redirect boundary assertions pass.
 package org.zmala.phone;
 
@@ -19,6 +20,19 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 public class EnrollmentTest {
+  @Test public void setupOwnerFencesWorkAndPersistsEnrollment() throws Exception {
+    File file = File.createTempFile("zmala-setup", ".json");
+    try {
+      SetupCoordinator setup = new SetupCoordinator(file);
+      int ticket = setup.ticket(); setup.fetching(true); setup.invalidate();
+      assertFalse(setup.current(ticket)); assertFalse(setup.fetching());
+      Enrollment enrollment = new Enrollment(qr().toString()); setup.remember(enrollment);
+      assertEquals(enrollment.serialized(), setup.load().serialized());
+      assertTrue(SetupCoordinator.granted(36, permission -> !permission.endsWith("ACCESS_LOCAL_NETWORK")));
+      assertFalse(SetupCoordinator.granted(37, permission -> !permission.endsWith("ACCESS_LOCAL_NETWORK")));
+      assertFalse(SetupCoordinator.granted(36, permission -> !permission.endsWith("CAMERA")));
+    } finally { file.delete(); }
+  }
   static final String TOKEN = "abcdefghijklmnopqrstuvwx";
 
   static JSONObject qr() throws Exception {
