@@ -8,6 +8,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: build_tools/linux/zmalacall-update-recover.service
+  type: file
+- path: build_tools/linux/zmalacall-updater.service
+  type: file
 - path: zmala_terminal/linux/update_download.py
   type: file
 - path: zmala_terminal/linux/update_runtime.py

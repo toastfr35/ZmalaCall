@@ -27,7 +27,7 @@ def freeze(root):
             if path.is_symlink():
                 continue
             os.chown(path, 0, 0)
-            path.chmod(0o755 if path.suffix == '.sh' else 0o644)
+            path.chmod(0o755 if path.suffix == '.sh' or path.stat().st_mode & 0o111 else 0o644)
             with path.open('rb') as stream:
                 os.fsync(stream.fileno())
         os.chown(directory, 0, 0)
@@ -64,7 +64,7 @@ def prepare_release(transactions, manifest, package, config, run=subprocess.run)
         transactions.prepare(identity)
         return identity
     runtime_size = sum(path.stat().st_size for name in ('framing-runtime', 'models')
-                       for path in (working/'zmala_terminal/linux'/name).rglob('*')
+                       for path in (working/'zmala_terminal/linux/media'/name).rglob('*')
                        if path.is_file() and not path.is_symlink())
     if shutil.disk_usage(transactions.root).free < MAX_EXPANDED + runtime_size + 512*1024*1024:
         raise StorageUnavailable('Insufficient update storage')
@@ -78,9 +78,9 @@ def prepare_release(transactions, manifest, package, config, run=subprocess.run)
             if not (helpers/name).exists() and source.is_file():
                 shutil.copy2(source, helpers/name)
         for name in ('framing-runtime', 'models'):
-            source = working/'zmala_terminal/linux'/name
+            source = working/'zmala_terminal/linux/media'/name
             if source.is_dir():
-                shutil.copytree(source, stage/'zmala_terminal/linux'/name, symlinks=False)
+                shutil.copytree(source, stage/'zmala_terminal/linux/media'/name, symlinks=False)
         if not (helpers/'kiosk-session.py').is_file() or not (helpers/'launcher.py').is_file():
             raise RecoveryError('Missing application launcher')
         builder = pwd.getpwnam(config.get('builder', 'zmalaupdate'))

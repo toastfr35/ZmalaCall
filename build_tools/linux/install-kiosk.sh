@@ -104,6 +104,10 @@ fi
 if [ -n "$data_from" ] && [ ! -d "$data_from" ]; then
     echo 'Migration data directory does not exist' >&2; exit 1
 fi
+# A manual installer owns deployment until its completed release is healthy.
+if [ "$(systemctl show --value -p LoadState zmalacall-updater.service)" != not-found ]; then
+    systemctl stop zmalacall-updater.service
+fi
 task_step 'Downloading and installing dependencies (Internet required)'
 apt-get -o APT::Update::Error-Mode=any update
 xargs apt-get install -y --no-install-recommends < "$task_root/build_tools/linux/dependencies.txt"
@@ -275,6 +279,8 @@ for task_service in ssh zmalacall-ssh-guard nftables bluetooth NetworkManager; d
     fi
 done
 nft list table inet zmala_ssh >/dev/null
+task_step 'Installing automatic application updates'
+python3 "$task_root/build_tools/linux/install-updater.py" --source "$task_root" --user "$task_user"
 printf '\nInstalled. ZmalaCall starts automatically at boot.\n'
 printf 'Status: sudo systemctl status zmalacall-terminal\n'
 printf 'Reboot to test the boot logo. Pair the remote, then scan the Wi-Fi and server QR codes.\n'

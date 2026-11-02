@@ -1,0 +1,23 @@
+[Unit]
+Description=Independent localized ZmalaCall update display
+After=zmalacall-display.service
+PartOf=zmalacall-display.service
+StartLimitIntervalSec=0
+
+[Service]
+# @llr LLR-TERM-UI-028
+Type=simple
+User=@USER@
+WorkingDirectory=/usr/local/lib/zmalacall-updater/current
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/run/zmalacall-display/Xauthority
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 -m zmala_terminal.linux.update_screen
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=yes
+PrivateTmp=no
+ProtectSystem=strict
+ProtectHome=yes
+MemoryMax=256M
+UMask=0077
