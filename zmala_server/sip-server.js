@@ -311,14 +311,29 @@ class SipServer extends SipMessages {
   forwardDialog(rq, remote, dialog, side) {
     return forwardDialog(this, rq, remote, dialog, side);
   }
-  // @llr LLR-SRV-CALL-009
+  // @llr LLR-SRV-CALL-009, LLR-SRV-MEDIA-016
   /** @param {string} id */
   closeDialog(id) {
-    const update = this.dialogs.get(id)?.mediaUpdate;
-    if (update) this.media.discard(update);
-    this.media.close(id);
+    const dialog = this.dialogs.get(id);
+    // Revoke access before native teardown: async decoders may retain dialog
+    // references, and a failed relay close must not retain shared image bytes.
+    if (dialog) {
+      dialog.connected = false;
+      if (dialog.photoShare) {
+        dialog.photoShare.revision++;
+        dialog.photoShare.bytes = null;
+        dialog.photoShare.sender = null;
+        dialog.photoShare.expires = 0;
+      }
+    }
     this.dialogs.delete(id);
+    try {
+      if (dialog?.mediaUpdate) this.media.discard(dialog.mediaUpdate);
+    } finally {
+      this.media.close(id);
+    }
   }
+
   status() {
     return {
       registrations: [...this.registrations]

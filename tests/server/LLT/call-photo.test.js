@@ -1,7 +1,7 @@
 // @test S-LLT-066
 // @requirements LLR-SRV-MEDIA-016
 // @environment portable
-// @plan Exercise the live-call route with bounded streams and delayed decoding. Check participants, account kinds, connected state, sender-only mutations, image revision, expiry, stop/end/revocation races and failure recovery.
+// @plan Exercise the live-call route with bounded streams and delayed decoding. Check participants, account kinds, connected state, sender-only mutations, image revision, expiry, stop/end/revocation races and failure recovery. Retain a dialog across close and a failing relay teardown; assert access revocation and photo release.
 // @pass Only current authorized participants retrieve photos; stop, expiry and late work cannot resurrect a share or affect another call. No media operation is invoked.
 'use strict';
 const test = require('node:test');
@@ -141,4 +141,31 @@ test('competing app upload cannot claim pending decoding', async () => {
   finish(Buffer.from('image'));
   await assert.rejects(pending, { status: 409 });
   assert.equal((await f.invoke('PUT', 'term')).json().sender, 'term');
+});
+
+test('dialog close revokes retained photos even when media cleanup throws', () => {
+  const { SipServer } = require('../../../zmala_server/sip-server');
+  for (const fail of [false, true]) {
+    const dialog = {
+      connected: true,
+      photoShare: { revision: 4, bytes: Buffer.from('private'), sender: 'app', expires: 999 },
+    };
+    const owner = {
+      dialogs: new Map([['call', dialog]]),
+      media: {
+        close() {
+          if (fail) throw Error('media failed');
+        },
+      },
+    };
+    if (fail)
+      assert.throws(() => SipServer.prototype.closeDialog.call(owner, 'call'), /media failed/);
+    else SipServer.prototype.closeDialog.call(owner, 'call');
+    assert.equal(owner.dialogs.size, 0);
+    assert.equal(dialog.connected, false);
+    assert.equal(dialog.photoShare.bytes, null);
+    assert.equal(dialog.photoShare.revision, 5);
+    assert.equal(dialog.photoShare.sender, null);
+    assert.equal(dialog.photoShare.expires, 0);
+  }
 });

@@ -108,3 +108,5 @@ Stage 2 implemented: AccountStore is an owned collaborator with an injected comm
 Stage 3 implemented: BootstrapPublisher owns configuration-first publication and dependent writer readiness/flush. Existing startup, failure propagation and independent-writer regression scenarios exercise the real owner with file doubles.
 
 Stage 4 implemented: the composition root obtains the callback push capability and binds lifecycle through explicit SIP methods. Email/push retain independent queues, retries and persistence. Existing notification failure/cancellation tests and HTTP push integration qualify unchanged behavior.
+
+Stage 5 implemented: reviewed dialog ownership, upload identity/permission guards, lease expiry, sender conflict and shutdown paths. Explicit close invalidation releases photo bytes before native cleanup, including cleanup failure. Regression tests retain closed references and assert revocation; existing late-upload/revocation scenarios remain in place.

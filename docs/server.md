@@ -1040,3 +1040,5 @@ Store owns AccountStore through composition. Account operations share its state 
 BootstrapPublisher owns dependent runtime publication: it captures bootstrap bytes, awaits the Store commit, then awaits all public writers. Its flush and readiness join shutdown and health barriers. Synchronous startup publication remains separate.
 
 SIP publishes callback push transport and binds callback lifecycle through explicit methods; the composition root no longer traverses appCalls internals. Delivery retry/deduplication remain owned by CallbackPush and CallbackEmails.
+
+Closing a SIP dialog revokes connected status and shared-photo revision/bytes before relay cleanup. Even failed relay teardown cannot leave photos reachable through retained dialog references. Active call identity remains owned by the dialog map; async upload completion still revalidates identity and enrollment tokens.
