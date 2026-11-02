@@ -35,6 +35,14 @@ class SipServer extends SipMessages {
       ? new IceMedia(store.value.host)
       : new MediaRelay(store.value.host);
   }
+  /** Expose delivery capability without exposing the incoming-call controller. */
+  callbackPushTransport() {
+    return this.appCalls.push;
+  }
+  /** @param {import('./types/contracts').CallbackInstance} callbacks */
+  bindCallbacks(callbacks) {
+    this.callbacks = callbacks;
+  }
   // @llr LLR-SRV-MAINT-020
   /** @param {string} message */
   log(message) {

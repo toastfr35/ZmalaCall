@@ -1038,3 +1038,5 @@ these boundaries; the composition root remains the single service owner.
 Store owns AccountStore through composition. Account operations share its state object and invoke Store.changed for versioned persistence; persisted schemas and the public Store mutation methods remain stable.
 
 BootstrapPublisher owns dependent runtime publication: it captures bootstrap bytes, awaits the Store commit, then awaits all public writers. Its flush and readiness join shutdown and health barriers. Synchronous startup publication remains separate.
+
+SIP publishes callback push transport and binds callback lifecycle through explicit methods; the composition root no longer traverses appCalls internals. Delivery retry/deduplication remain owned by CallbackPush and CallbackEmails.
