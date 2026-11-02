@@ -8,9 +8,14 @@ from zmala_terminal.common.volume_control import VolumeControl
 
 
 class InputControl:
-    # @llr LLR-TERM-POWER-014, LLR-TERM-POWER-016
+    # @llr LLR-TERM-POWER-014, LLR-TERM-POWER-016, LLR-TERM-MAINT-028
     def input_activity(self):
         """Wake USB before any TV routing, debounce or setup consumption."""
+        client = getattr(self, "update_client", None)
+        if client:
+            if client.locked:
+                return
+            client.activity()
         self.last_button = time.monotonic()
         power = getattr(self, 'usb_power', None)
         if power:
@@ -37,6 +42,8 @@ class InputControl:
 
     def pointer_button(self, held):
         """Pointer follows the same wake-only first press as the other buttons."""
+        if getattr(self, "update_client", None) and self.update_client.locked:
+            return
         self.input_activity()
         if self.setup_stage == 'tv' or self.remote_setup_blocked():
             return
@@ -112,8 +119,10 @@ class InputControl:
             self.root.attributes('-fullscreen', not self.root.attributes('-fullscreen'))
         return 'break'
 
-    # @llr LLR-TERM-TV-026, LLR-TERM-NAV-004
+    # @llr LLR-TERM-TV-026, LLR-TERM-NAV-004, LLR-TERM-MAINT-028
     def keypress(self, button, event_time=None):
+        if getattr(self, "update_client", None) and self.update_client.locked:
+            return "break"
         self.input_activity()
         if self.remote_setup_blocked():
             return 'break'  # Keyboard/X11 copies must not pass the physical test.

@@ -27,7 +27,9 @@ def media_backend():
 
 
 class Engine(LinphoneAPI):
-    def __init__(self, config, on_call, on_registration, video_window=0, profile='terminal', on_message=None, preview_window=0):
+    # @llr LLR-TERM-MAINT-028
+    def __init__(self, config, on_call, on_registration, video_window=0, profile='terminal', on_message=None, preview_window=0, defer_media=False):
+        self.defer_media = defer_media
         self.config, self.on_call, self.on_registration = config, on_call, on_registration
         self.on_message = on_message
         self._seen_messages = set()
@@ -343,6 +345,7 @@ class Engine(LinphoneAPI):
         # Reject only a new dial/answer; established media keeps its own lifetime.
         validate(self.config)
         if not WINDOWS:
+            self.defer_media = False
             self.refresh_usb_devices()
 
     def configure_call_audio(self, params):
@@ -363,7 +366,10 @@ class Engine(LinphoneAPI):
             else:
                 self.call_terminate(self.call)
 
+    # @llr LLR-TERM-MAINT-028
     def apply_settings(self, settings):
+        if getattr(self, "defer_media", False):
+            return
         from zmala_terminal.common.media_errors import MediaNotReady
         settings = self.media.backend.select_settings(self, settings)
         for key, setter in [('camera', self.core_set_video_device), ('microphone', self.core_set_capture_device),
@@ -392,7 +398,10 @@ class Engine(LinphoneAPI):
         delay = self.config.get('auto_answer_seconds', 10) if self.config.get('auto_answer') else 0
         self.core_set_inc_timeout(self.core, max(60, delay+30))
 
+    # @llr LLR-TERM-MAINT-028
     def apply_speaker_volume(self):
+        if getattr(self, "defer_media", False):
+            return
         return self.media.apply_volume(self)
 
     def sync_speaker_mute(self):

@@ -1,0 +1,22 @@
+active: true
+area: Application updates
+derived: false
+header: Persistent localized application update progress
+level: 27.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_screen.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The terminal shall display clear activation, checking and rollback progress
+  in its selected supported language through application restart. The update display
+  shall not wake the TV or select its input, and background download/preparation shall
+  remain quiet. Recovery errors shall provide a localized request for help.
+verification: Render all supported language/state combinations within screen bounds
+  and run the independent display process while a disposable app exits; verify idle
+  hides progress. Inspect representative RTL/CJK/Indic images; real TV power/source
+  qualification is separate.

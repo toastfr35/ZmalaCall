@@ -1,0 +1,21 @@
+active: true
+area: Application updates
+derived: false
+header: Safe application maintenance admission
+level: 27.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_admission.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The terminal shall defer automatic activation until safe inactivity with no
+  call, setup, settings write or held input. It shall fence new call/input actions
+  before acknowledging maintenance, and preserve sleeping USB media during updater-controlled
+  restarts until genuine user or call activity.
+verification: Exercise app lease/status integration with file IPC and call/input owners;
+  assert busy states cannot grant a lease and acknowledged maintenance blocks calls
+  before any USB/TV wake. Physical peripheral sleep is qualified separately.

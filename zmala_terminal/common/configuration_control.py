@@ -8,9 +8,12 @@ from zmala_terminal.common.config_changes import classify_update, MediaSnapshot
 
 
 class ConfigurationControl:
-    # @llr LLR-TERM-CONFIG-024
+    # @llr LLR-TERM-CONFIG-024, LLR-TERM-MAINT-028
     def apply_config(self, config):
         """Apply UI changes now; defer native graph/credential changes until the terminal is idle."""
+        if getattr(self, "update_client", None) and self.update_client.locked:
+            self.pending_config = config
+            return
         if self.setup_stage:
             return
         if not getattr(self, 'tv_setup_checked', True) and self.begin_tv_setup(config):

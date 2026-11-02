@@ -1,0 +1,36 @@
+active: true
+area: Application updates
+derived: false
+header: Maintenance lease and passive restart
+level: 28.0
+links:
+- HLR-TERM-MAINT-027: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/common/update_client.py
+  type: file
+- path: zmala_terminal/common/main.py
+  type: file
+- path: zmala_terminal/common/management.py
+  type: file
+- path: zmala_terminal/common/configuration_control.py
+  type: file
+- path: zmala_terminal/common/input_control.py
+  type: file
+- path: zmala_terminal/common/call_control.py
+  type: file
+- path: zmala_terminal/common/engine.py
+  type: file
+- path: tests/terminal/LLT/test_update_client.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The application shall acknowledge only a fresh root-owned bounded maintenance
+  request after safe inactivity and shall fence call/input actions before acknowledgement.
+  Trial/recovery fencing shall survive stale producer heartbeats; an expired pre-activation
+  request may release its fence. Updater-controlled sleeping-media restarts shall
+  defer device settings and volume until genuine input/call activity.
+verification: Use bounded local file fixtures and direct call/input/native-owner assertions.
+  Verify eligibility, freshness, stale request/trial distinction, symlink rejection
+  and passive media guards; physical sleep remains a hardware qualification.

@@ -57,6 +57,8 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
     def initialize_state(self, profile, wifi_mode):
         """Initialize owned state before creating controllers or starting workers."""
         self.model = TerminalModel()
+        from zmala_terminal.common.update_client import UpdateClient
+        self.update_client = UpdateClient()
         self.settings_open = False
         self.idle_countdown = IdleCountdown()
         self.settings_draft = SettingsDraft()
@@ -140,12 +142,16 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
                 self.enrollment.reset()
                 self.setup_stage = 'wifi'
 
+    # @llr LLR-TERM-MAINT-028
     def start_services(self):
         cached = self.configuration.cached() if self.configuration else None
-        if cached and not self.begin_tv_setup(cached):
+        if cached and self.update_client.locked:
+            self.pending_config = cached
+            self.language = cached.get("language", "en")
+        elif cached and not self.begin_tv_setup(cached):
             self.apply_config(cached)
         self.render()
-        if self.setup_stage:
+        if self.setup_stage and not self.update_client.locked:
             self.root.after(100, self.start_scanner)
         elif self.configuration:
             self.maintenance = self.make_maintenance(self.configuration)
@@ -159,9 +165,11 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
     def make_configuration(self, bootstrap):
         return Configuration(bootstrap=bootstrap, cache=self.cache_path)
 
+    # @llr LLR-TERM-MAINT-028
     def make_engine(self, config):
+        options = {"defer_media": True} if getattr(self, "update_client", None) and self.update_client.passive else {}
         return Engine(config, self.call_event, self.registration_event, self.video_window,
-                      profile=self.profile, on_message=self.message_event, preview_window=self.preview_window)
+                      profile=self.profile, on_message=self.message_event, preview_window=self.preview_window, **options)
 
     def make_scanner(self):
         return QRScanner(self.qr_found, self.video_window, self.profile)
