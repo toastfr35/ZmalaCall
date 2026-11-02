@@ -1042,3 +1042,5 @@ BootstrapPublisher owns dependent runtime publication: it captures bootstrap byt
 SIP publishes callback push transport and binds callback lifecycle through explicit methods; the composition root no longer traverses appCalls internals. Delivery retry/deduplication remain owned by CallbackPush and CallbackEmails.
 
 Closing a SIP dialog revokes connected status and shared-photo revision/bytes before relay cleanup. Even failed relay teardown cannot leave photos reachable through retained dialog references. Active call identity remains owned by the dialog map; async upload completion still revalidates identity and enrollment tokens.
+
+Account editing, photo preview URLs and account search/filter state are private to admin-accounts.js. Shared admin-state retains the loaded model and cross-feature navigation/refresh hooks. Existing generation guards fence late upload/save results; closing the editor revokes temporary URLs.
