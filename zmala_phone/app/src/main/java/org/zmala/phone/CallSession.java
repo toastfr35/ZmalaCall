@@ -66,6 +66,22 @@ final class CallSession {
       default: return null;
     }
   }
+  // @llr LLR-AND-CALL-007
+  String shareableCallId() {
+    String id = photoCallId();
+    if (id == null) return null;
+    String user = engine.call.getRemoteAddress().getUsername();
+    org.json.JSONArray contacts = configuration.optJSONArray("contacts");
+    if (contacts != null) for (int i = 0; i < contacts.length(); i++) {
+      JSONObject peer = contacts.optJSONObject(i);
+      if (peer != null && user.equals(peer.optString("id"))
+          && java.util.Set.of("terminal", "app").contains(peer.optString("account_type"))) return id;
+    }
+    return null;
+  }
+  void choosePhoto(android.net.Uri uri, String call) {
+    if (call != null && call.equals(shareableCallId())) photos.choose(uri, call);
+  }
   String callId() { return engine.call == null ? null : engine.call.getCallLog().getCallId(); }
 
   void attach(Observer activity) {
@@ -100,7 +116,9 @@ final class CallSession {
     }
   }
 
+  // @llr LLR-AND-UPDATE-002
   private void changed(String value) {
+    AppUpdates.get(context).callChanged();
     status = value;
     photos.reconcile();
     if (engine.call == null) {

@@ -223,7 +223,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
     if (request == 10) {
       String call = photoPickerCall; photoPickerCall = null;
       if (result == RESULT_OK && data != null && data.getData() != null)
-        session.photos.choose(data.getData(), call);
+        session.choosePhoto(data.getData(), call);
       return;
     }
     if (request == 9) {
@@ -548,7 +548,6 @@ public final class MainActivity extends Activity implements CallSession.Observer
   // @llr LLR-AND-CALL-002, LLR-AND-UI-002
   @Override public void callChanged(String text) {
     // @llr LLR-AND-UPDATE-002
-    AppUpdates.get(this).callChanged();
     // @llr LLR-AND-HISTORY-002
     if (engine.call != null && contactDialog != null) { contactDialog.dismiss(); contactDialog = null; }
     if (!visible) return;
@@ -658,7 +657,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
               public void photo() {
                 if (session.photos.active()) { session.photos.stop(); return; }
                 if (!canSharePhoto() || session.photos.receiving) return;
-                photoPickerCall = session.callId();
+                photoPickerCall = session.shareableCallId();
                 try { startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("image/*")
                     .addCategory(Intent.CATEGORY_OPENABLE), 10); }
                 catch (android.content.ActivityNotFoundException missing) { showError(getString(R.string.photo_share_failed)); }
@@ -709,14 +708,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
   }
 
   // @llr LLR-AND-CALL-007
-  private boolean canSharePhoto() {
-    if (engine.call == null || config == null || !config.optBoolean("call_photo_sharing")) return false;
-    Call.State state=engine.call.getState();
-    if (state != Call.State.StreamsRunning && state != Call.State.Connected
-        && state != Call.State.Updating && state != Call.State.UpdatedByRemote) return false;
-    JSONObject peer=findContact(engine.call.getRemoteAddress().getUsername());
-    return peer != null && java.util.Set.of("terminal", "app").contains(peer.optString("account_type"));
-  }
+  private boolean canSharePhoto() { return session.shareableCallId() != null; }
 
   // @llr LLR-AND-CALL-007
   @Override public void photoChanged() {

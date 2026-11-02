@@ -33,6 +33,8 @@ verification: Unit-test metadata, origins, archive identity and signature matchi
 links:
 - HLR-AND-UPDATE-001: null
 references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallSession.java
+  type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/HttpPolicy.java
   type: file
 - path: tests/android/LLT/device/CallbackAlertsTest.java
