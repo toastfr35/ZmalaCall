@@ -61,9 +61,7 @@ public final class ServerApi {
       throws Exception {
     HttpURLConnection connection =
         (HttpURLConnection) enrollment.server.resolve(path).toURL().openConnection();
-    connection.setConnectTimeout(6000);
-    connection.setReadTimeout(6000);
-    connection.setInstanceFollowRedirects(false);
+    HttpPolicy.configure(connection, 6000, 6000);
     connection.setRequestProperty("Authorization", "Bearer " + enrollment.token);
     try {
       connection.setRequestMethod(method);
@@ -79,16 +77,9 @@ public final class ServerApi {
       int status = connection.getResponseCode();
       if (status == 401 || status == 403) throw new AccessRevoked();
       if (status != 200) throw new java.io.IOException("Server is unavailable (" + status + ").");
-      try (InputStream stream = connection.getInputStream();
-          ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-        byte[] buffer = new byte[8192];
-        int size;
-        while ((size = stream.read(buffer)) != -1) {
-          if (output.size() + size > limit)
-            throw new IllegalStateException("Server response is too large.");
-          output.write(buffer, 0, size);
-        }
-        return output.toByteArray();
+      try (InputStream stream = connection.getInputStream()) {
+        try { return HttpPolicy.read(stream, limit, "Server response is too large."); }
+        catch (HttpPolicy.LimitExceeded oversized) { throw new IllegalStateException(oversized.getMessage()); }
       }
     } finally {
       connection.disconnect();
