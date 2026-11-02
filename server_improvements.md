@@ -90,18 +90,18 @@ general-purpose event buses or extra processes just to implement this plan.
 Reviewed on 31 October 2026 using the local Floorplan and selected owning source
 files. The map is a navigation aid, not proof of runtime behaviour or a security
 audit. Maps remain ignored local artifacts; these plans are the durable record.
-No runtime implementation or hardware qualification is included in this change.
+Runtime implementation and automated verification are recorded below. No physical hardware qualification is implied.
 
 ## Implementation progress — 2 November 2026
 
-Stage 1 started: route service contracts now distinguish authentication, backup,
+Stage 1 implemented: route service contracts now distinguish authentication, backup,
 device and administration dependencies. The common handler constructs explicit
 route contexts instead of spreading all application dependencies into device
 requests. Central authentication, LAN restrictions, payload validation and durable
 write ordering are retained. `docs/server.md` records the reviewed access-family
 inventory. Existing HTTP policy regression tests and strict TypeScript checks pass.
-The Store and SIP collaborators remain broad objects; narrowing their individual
-operations and the remaining stages are still outstanding.
+The Store and SIP collaborators remain shared domain services; routes receive only
+the service set they use. Individual method-level facades remain optional follow-on work.
 
 Stage 2 implemented: AccountStore is an owned collaborator with an injected commit callback. Store retains one authoritative state and explicit public account operations. Existing account, enrollment, permissions and disk-failure tests pass; no persisted format change.
 
@@ -112,3 +112,15 @@ Stage 4 implemented: the composition root obtains the callback push capability a
 Stage 5 implemented: reviewed dialog ownership, upload identity/permission guards, lease expiry, sender conflict and shutdown paths. Explicit close invalidation releases photo bytes before native cleanup, including cleanup failure. Regression tests retain closed references and assert revocation; existing late-upload/revocation scenarios remain in place.
 
 Stage 6 implemented: account draft/photo/filter state moved into its feature module, removed from the shared shell contract, and admin assets regenerated. Workflow tests inspect visible editor identity rather than removed global implementation fields. Remaining shared navigation/model state is intentional; no new framework introduced.
+
+## Completion evidence
+
+All six implementation stages have a separate issue/branch/PR: #76, #92, #94,
+#96, #98 and #100. Final combined local server LLT/HLT: 238 passed, five explicit
+skips; strict server/admin TypeScript and requirements validation pass. Existing
+browser scenarios cover navigation, account/terminal edits, setup downloads and
+revision conflicts. No user workflow change requires a Word guide update.
+Runtime deployment and physical qualification have not been performed for these
+server refactors. CI and merge status must be checked in GitHub, not inferred from
+this implementation record. Existing shared domain services and the shared UI
+model remain; the plan does not require rewriting every Store method or page.
