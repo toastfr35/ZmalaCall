@@ -8,6 +8,7 @@
 # Check the larger bold settled selected name and its full-card width; moving cards retain compact labels.
 # @pass Geometry, color, text and timing assertions must pass; these unit checks do not replace physical display or font-rendering acceptance.
 
+from zmala_terminal.common.callbacks import CallbackController
 import importlib.util
 from pathlib import Path
 import sys
@@ -31,8 +32,8 @@ class ViewContractTests(unittest.TestCase):
     def test_same_revision_presence_change_redraws_without_reconfiguring(self):
         import copy
         from zmala_terminal.common.management import ManagementLoop
-        loop = ManagementLoop(); loop.model = TerminalModel(); loop.model.configure(config())
-        loop.render = Mock(); loop.apply_config = Mock(); loop.callback_requests = []
+        loop = ManagementLoop(); loop.callbacks = CallbackController(); loop.model = TerminalModel(); loop.model.configure(config())
+        loop.render = Mock(); loop.apply_config = Mock(); loop.callbacks.requests = []
         original_version = loop.model.config['configuration_version']
         for state in ('push', 'available', 'offline'):
             update = copy.deepcopy(loop.model.config)
@@ -46,7 +47,7 @@ class ViewContractTests(unittest.TestCase):
     def test_three_state_presence_and_stale_snapshot(self):
         from zmala_terminal.common.call_control import CallControl
         from zmala_terminal.common.theme import GREEN, RED
-        c = CallControl(); c.server_seen = 100
+        c = CallControl(); c.callbacks = CallbackController(); c.server_seen = 100
         view = CarouselView(); view.avatar = Mock(); view.font_family = 'Sans'
         view.carousel_motion = None; view.current_text_images = []; view.text = lambda key: key
         view.text_renderer = Mock(); view.text_renderer.photo.return_value.height.return_value = 20

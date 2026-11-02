@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import time
 from zmala_terminal.common.native_runtime import WINDOWS, library, resource
+from zmala_terminal.common.media_adapter import MediaAdapter
 
 # Re-export native types used by SDK integration fixtures.
 from zmala_terminal.common.linphone_api import (LinphoneAPI, P, S, I as I, ROOT, SDK, encoded,
@@ -34,7 +35,7 @@ class Engine(LinphoneAPI):
         self.call = None
         self._video_callbacks = None
         self._last_video_frame = None
-        self._next_video_probe = 0
+        self.media = MediaAdapter(media_backend())
         self.core = None
         self.ringback_levels = None
         self.load_api()
@@ -105,8 +106,8 @@ class Engine(LinphoneAPI):
         self.core_set_download_bandwidth(self.core, self.video_settings.download_kbps)
         codecs = self.core_get_video_payload_types(self.core)
         node = codecs
-        allowed_codecs = media_backend().CODECS
-        media_backend().configure(self)
+        allowed_codecs = self.media.backend.CODECS
+        self.media.configure(self.dll, self.core, self.video_settings.fps, self.config.get('auto_framing', False))
         while node:
             mime = (self.payload_type_get_mime_type(node.contents.data) or b'').decode().upper()
             self.payload_type_enable(node.contents.data, int(mime in allowed_codecs))
@@ -144,7 +145,7 @@ class Engine(LinphoneAPI):
         self.ogl = OglContext(video_window, 960, 540, None)
         # MSOGL uses the same native-window structure on Windows and Linux,
         # choosing EGL/GLES on the Pi rather than a desktop GLX context.
-        display_filter = media_backend().DISPLAY_FILTER
+        display_filter = self.media.backend.DISPLAY_FILTER
         self.core_set_video_display_filter(self.core, display_filter)
         window = C.addressof(self.ogl) if video_window else None
         self.core_set_native_video_window_id(self.core, window)
@@ -265,7 +266,7 @@ class Engine(LinphoneAPI):
             self.call = self.call_ref(call) if call else None
             self._video_callbacks = None
             self._last_video_frame = None
-            self._next_video_probe = 0
+            self.media.next_video_probe = 0
             if self.call:
                 self._video_callbacks = self.factory_create_call_cbs(self.factory)
                 self.call_cbs_set_next_video_frame_decoded(self._video_callbacks, self.video_frame_callback)
@@ -285,7 +286,7 @@ class Engine(LinphoneAPI):
         if not params or not self.call_params_video_enabled(params) or self.call_params_get_video_direction(params) not in (2, 3):
             self._last_video_frame = None
             return False
-        if media_backend().received_frame(self, params):
+        if self.media.backend.received_frame(self, params):
             # Debian's OpenH264 plugin reports frame rate but cannot re-arm
             # next-frame callbacks. RTP/RTCP traffic alone is not proof of video.
             self._last_video_frame = time.monotonic()
@@ -364,7 +365,7 @@ class Engine(LinphoneAPI):
 
     def apply_settings(self, settings):
         from zmala_terminal.common.media_errors import MediaNotReady
-        settings = media_backend().select_settings(self, settings)
+        settings = self.media.backend.select_settings(self, settings)
         for key, setter in [('camera', self.core_set_video_device), ('microphone', self.core_set_capture_device),
                             ('speaker', self.core_set_playback_device)]:
             device = settings.get(key) or None
@@ -385,20 +386,20 @@ class Engine(LinphoneAPI):
                 raise MediaNotReady('Nuroum C20 ringtone route is not ready')
             logging.warning('Requested ringtone device is unavailable: %s', speaker)
         if not WINDOWS:
-            media_backend().bind_call_audio(self)
+            self.media.backend.bind_call_audio(self)
 
     def apply_call_timeout(self):
         delay = self.config.get('auto_answer_seconds', 10) if self.config.get('auto_answer') else 0
         self.core_set_inc_timeout(self.core, max(60, delay+30))
 
     def apply_speaker_volume(self):
-        return media_backend().apply_speaker_volume(self)
+        return self.media.apply_volume(self)
 
     def sync_speaker_mute(self):
-        return media_backend().sync_speaker_mute(self)
+        return self.media.sync_volume(self)
 
     def refresh_usb_devices(self):
-        return media_backend().refresh_usb_devices(self)
+        return self.media.refresh(self)
 
     def devices(self):
         def strings(pointer):
@@ -420,7 +421,7 @@ class Engine(LinphoneAPI):
             self.audio_device_unref(device)
             node = node.contents.next
         self.bctbx.bctbx_list_free(devices)
-        return media_backend().filter_devices(result)
+        return self.media.backend.filter_devices(result)
 
     def diagnostics(self):
         return {key: (getter(self.core) or b'').decode(errors='replace') for key, getter in
@@ -429,29 +430,31 @@ class Engine(LinphoneAPI):
                      'registered': self.registered, 'devices': self.devices(),
                      'audio_profile': self.applied_audio_profile,
                      'requested_audio_profile': self.audio_profile,
-                     'auto_framing_status': self.auto_framing.status if getattr(self, 'auto_framing', None)
-                     else 'unsupported', 'media': self.media_stats()}
+                     'auto_framing_status': self.media.framing_status, 'media': self.media_stats()}
 
     def media_stats(self):
         from zmala_terminal.common.media_diagnostics import media_stats
-        return media_stats(self, media_backend(), WINDOWS)
+        return media_stats(self, self.media, WINDOWS)
 
     def iterate(self):
         self.sync_speaker_mute()
         self.core_iterate(self.core)
         now = time.monotonic()
-        media_backend().poll_video(self, now)
+        self.media.poll_video(self, now)
 
     def close(self):
-        if getattr(self, 'auto_framing', None):
-            self.auto_framing.close()
+        if getattr(self, 'media', None):
+            self.media.stop()
         if not self.core:
+            if getattr(self, 'media', None):
+                self.media.release()
             return
         self.end()
         self.hold_call(None)
         self.core_stop(self.core)
         self.core_unref(self.core)
         self.core = None
+        self.media.release()
         if getattr(self, 'ringback_levels', None) is not None:
             self.ringback_levels.close()
 

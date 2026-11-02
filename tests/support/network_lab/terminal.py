@@ -32,19 +32,21 @@ class SyntheticBackend:
     CODECS = {'H264'}
     DISPLAY_FILTER = b'MSGLXVideo'
     @staticmethod
-    def configure(engine):
-        media.configure(engine)
+    def configure(resources, dll, core, fps, framing):
+        media.configure(resources, dll, core, fps, framing)
         # WSL has no Pi V4L2 encoder. Keep the production decoder, but encode
         # synthetic frames with the SDK's OpenH264 software filter.
-        factory = engine.dll.linphone_core_get_ms_factory(engine.core)
+        factory = dll.linphone_core_get_ms_factory(core)
         enable = library('mediastreamer2').ms_factory_enable_filter_from_name
         enable.argtypes, enable.restype = [C.c_void_p, C.c_char_p, C.c_int], C.c_int
         enable(factory, b'ZmalaV4L2H264Enc', 0)
         enable(factory, b'MSOpenH264Enc', 1)
-    poll_video = staticmethod(lambda engine, now: None)
+    poll_video = staticmethod(lambda engine, now, next_probe=0: next_probe)
     received_frame = staticmethod(media.received_frame)
     apply_speaker_volume = staticmethod(lambda engine: None)
-    sync_speaker_mute = staticmethod(lambda engine: None)
+    sync_speaker_mute = staticmethod(lambda engine, previous=None: previous)
+    codec_stats = staticmethod(media.codec_stats)
+    refresh_usb_devices = staticmethod(lambda engine: None)
     filter_devices = staticmethod(lambda devices: devices)
     select_settings = staticmethod(lambda engine, requested: {})
 

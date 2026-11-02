@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/config_changes.py
+  type: file
 - path: tests/terminal/LLT/test_reliability.py
   type: file
 - path: tests/terminal/LLT/test_runtime_contracts.py

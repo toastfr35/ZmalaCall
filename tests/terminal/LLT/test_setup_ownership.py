@@ -4,6 +4,7 @@
 # @plan Inject QR workers, monotonic time and NetworkManager D-Bus into setup; assert camera failure feedback and five-second retry, scanner release before engine activation, ten-second successful Wi-Fi confirmation and private owned-profile cleanup on cancellation. Inject NetworkManager command and D-Bus failures, pre-cancelled work and unavailable cleanup; verify private diagnostics, owned-profile deletion and successful join metadata.
 # @pass All ownership, timing and credential-boundary assertions must pass without accessing a camera or changing network profiles.
 
+from zmala_terminal.common.callbacks import CallbackController
 import io
 import sys
 import threading
@@ -55,7 +56,7 @@ class SetupOwnershipTests(unittest.TestCase):
                 wifi._add_connection({'ssid':'unit', 'security':'nopass', 'hidden':False}, 'id', 'name')
 
     def flow(self):
-        f = ProvisioningFlow()
+        f = ProvisioningFlow(); f.callbacks = CallbackController()
         f.scanner = Mock()
         f.render = Mock()
         f.generation = 1

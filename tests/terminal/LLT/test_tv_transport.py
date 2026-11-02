@@ -35,8 +35,8 @@ class TVTransportTests(unittest.TestCase):
         with patch.object(tv_check,'connector',return_value=(1,7)), patch.object(Path,'glob',return_value=[output]):
             result=self.transport.probe(self.clock)
         self.assertEqual(result,{'address':'2.0.0.0','display':hashlib.sha256(b'television-edid').hexdigest()})
-        self.assertIsNone(self.tv._previous); self.assertIsNone(self.tv._restore_pending); self.assertFalse(self.tv._changed)
-        self.tv._ready.set.assert_called_once(); self.tv.pause_for_setup.assert_called_once()
+        self.tv.reset_viewing_session.assert_called_once()
+        self.tv.pause_for_setup.assert_called_once()
         with patch.object(tv_check,'connector',return_value=None): self.assertIsNone(self.transport.probe(self.clock)['display'])
         self.tv._physical_address.return_value=None; self.assertIsNone(self.transport.probe(self.clock))
         self.tv.command=None; self.assertIsNone(self.transport.probe(self.clock))

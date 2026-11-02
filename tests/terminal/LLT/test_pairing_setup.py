@@ -5,6 +5,7 @@
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """First-run pairing precedes camera enrollment and never interrupts a call."""
+from zmala_terminal.common.callbacks import CallbackController
 import json
 from pathlib import Path
 import sys
@@ -38,7 +39,7 @@ class PairingSetupTests(unittest.TestCase):
             self.assertEqual(status.read(), 'bluetooth_unavailable')
 
     def test_unpaired_first_run_does_not_open_camera(self):
-        flow = ProvisioningFlow()
+        flow = ProvisioningFlow(); flow.callbacks = CallbackController()
         flow.closed, flow.setup_stage, flow.scanner = False, 'wifi', None
         flow.needs_pairing = Mock(return_value=True)
         flow.needs_c20 = Mock(return_value=False)
