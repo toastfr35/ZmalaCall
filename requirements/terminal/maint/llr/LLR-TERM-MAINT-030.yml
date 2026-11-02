@@ -1,0 +1,33 @@
+active: true
+area: Application updates
+derived: false
+header: Bounded transport and stable platform adapter
+level: 30.0
+links:
+- HLR-TERM-MAINT-029: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/update_download.py
+  type: file
+- path: zmala_terminal/linux/update_runtime.py
+  type: file
+- path: zmala_terminal/linux/update_prepare.py
+  type: file
+- path: zmala_terminal/linux/update_service.py
+  type: file
+- path: build_tools/linux/update-keys.json
+  type: file
+- path: tests/terminal/LLT/test_update_runtime.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The updater shall bound unauthenticated HTTPS release downloads to approved
+  GitHub release origins, verify complete signed-size/digest packages before caching,
+  build in an unprivileged isolated service, and admit only fresh bounded heartbeats
+  owned by the terminal user from its selected service process. Failed preparations
+  and trials shall be quarantined; collection shall retain confirmed, previous and
+  pending slots.
+verification: Check transport origin/size/digest/cleanup boundaries and local heartbeat
+  nonce, freshness, mode, process cgroup and selected directory. Test preparation
+  sandbox commands, quarantine and retained slots using isolated service doubles.

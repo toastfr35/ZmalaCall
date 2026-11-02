@@ -1,6 +1,7 @@
 """Build and regression-check the pinned Trixie TURN framing correction."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import resource
 import signal
@@ -23,9 +24,13 @@ def main():
         raise RuntimeError('Requalify the TURN override for SDK version '+version)
     SOURCE.mkdir(parents=True, exist_ok=True)
     for name, expected in HASHES.items():
-        url = 'https://raw.githubusercontent.com/BelledonneCommunications/mediastreamer2/5.3.105/src/voip/'+name
-        with urllib.request.urlopen(url, timeout=30) as response:
-            data = response.read()
+        offline = Path(__file__).resolve().parents[2]/'zmala_terminal/linux/native/upstream'/name
+        if os.environ.get('ZMALA_OFFLINE_BUILD') == '1':
+            data = offline.read_bytes()
+        else:
+            url = 'https://raw.githubusercontent.com/BelledonneCommunications/mediastreamer2/5.3.105/src/voip/'+name
+            with urllib.request.urlopen(url, timeout=30) as response:
+                data = response.read()
         if hashlib.sha256(data).hexdigest() != expected:
             raise RuntimeError('Unexpected upstream source hash: '+name)
         (SOURCE/name).write_bytes(data)

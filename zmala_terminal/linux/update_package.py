@@ -84,7 +84,14 @@ def allowed_path(name):
     if any(part.startswith('.') or part in ('data', 'models', 'framing-runtime', 'turn-runtime', '__pycache__', 'floorplan') for part in path.parts):
         return False
     return (name.startswith(('zmala_terminal/common/', 'zmala_terminal/linux/'))
-            or name == 'build_tools/linux/build-media.sh')
+            or name in ('build_tools/linux/build-media.sh', 'build_tools/linux/build-turn.py',
+                        'tests/terminal/LLT/turn_parser.cpp', 'tests/terminal/LLT/turn_socket_io.cpp',
+                        'tests/support/native/turn-write-cases.h',
+                        'build_tools/linux/kiosk-session.py', 'build_tools/linux/launcher.py',
+                        'build_tools/linux/tv-plugin-self-test.py', 'build_tools/linux/tv-plugin-self-test.sh',
+                        'build_tools/linux/tv_plugin_self_test.py', 'build_tools/linux/tv_test_camera.py',
+                        'build_tools/linux/tv_test_card.py', 'build_tools/linux/tv_test_processes.py',
+                        'build_tools/linux/pair-samsung-tv.py'))
 
 
 # @llr LLR-TERM-MAINT-024

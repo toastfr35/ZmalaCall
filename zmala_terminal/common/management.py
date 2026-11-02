@@ -62,6 +62,9 @@ class ManagementLoop:
     # @llr LLR-TERM-COM-007
     def poll(self):
         """Capture an enrollment generation before worker I/O; all results return through the UI queue."""
+        client = getattr(self, 'update_client', None)
+        if client and client.locked:
+            return  # Keep persistent settings quiescent throughout an update trial.
         self.poll_wifi()
         if self.worker_busy or not self.configuration or self.setup_stage:
             return
