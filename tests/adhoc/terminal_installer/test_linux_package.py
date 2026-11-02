@@ -22,6 +22,7 @@ class LinuxPackageTests(unittest.TestCase):
             root = Path(folder)
             for name, content in {
                 'build_tools/linux/install-kiosk.sh': b'#!/bin/sh\r\nset -eu\r\n',
+                'zmala_phone/app/build.gradle': b"versionCode 78; versionName '0.3.69'\n",
                 'build_tools/linux/dependencies.txt': b'build-essential\r\npython3-pil.imagetk\r\n',
                 'build_tools/linux/terminal.service': b'[Service]\r\nExecStart=/usr/bin/true\r\n',
                 'zmala_terminal/common/floorplan/index.html': b'private developer map',
@@ -42,7 +43,7 @@ class LinuxPackageTests(unittest.TestCase):
                 file = root / name
                 file.parent.mkdir(parents=True, exist_ok=True)
                 file.write_bytes(content)
-            with patch.object(module, 'ROOT', root):
+            with patch.object(module, 'ROOT', root), patch.object(module.subprocess, 'check_output', return_value='a'*40):
                 release = module.package(root / 'terminal.tar.gz')
             with tarfile.open(release) as archive:
                 self.assertEqual(archive.extractfile('build_tools/linux/install-kiosk.sh').read(),

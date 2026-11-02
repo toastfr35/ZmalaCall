@@ -2,6 +2,9 @@
 import argparse
 import io
 import hashlib
+import json
+import re
+import subprocess
 from pathlib import Path
 import tarfile
 
@@ -47,6 +50,16 @@ def package(destination=None):
             info.size = len(content)
             archive.addfile(info, io.BytesIO(content))
             checksums.append(hashlib.sha256(content).hexdigest() + '  ' + info.name)
+        gradle = (ROOT/'zmala_phone/app/build.gradle').read_text()
+        record = {'version': re.search(r"versionName '([^']+)'", gradle)[1],
+                  'sequence': int(re.search(r'versionCode (\d+)', gradle)[1]),
+                  'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()}
+        content = json.dumps(record, sort_keys=True).encode()
+        info = tarfile.TarInfo('build_tools/linux/release-info.json')
+        info.mode = 0o644
+        info.size = len(content)
+        archive.addfile(info, io.BytesIO(content))
+        checksums.append(hashlib.sha256(content).hexdigest() + '  ' + info.name)
         for name in ('general.md', 'server.md', 'terminal.md'):
             archive.add(ROOT / 'docs' / name, arcname='docs/' + name)
             checksums.append(hashlib.sha256((ROOT / 'docs' / name).read_bytes()).hexdigest() + '  docs/' + name)
