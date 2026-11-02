@@ -147,3 +147,5 @@ boot supervisor, maintenance/display, feed/release integration and physical test
 the stable updater and launcher before they can receive application-only updates.
 
 Verified staging foundation: Ed25519 canonical manifests, compatibility/sequence/digest bounds and safe regular-file extraction are implemented. Four additional Linux unit/integration scenarios pass. Downloader, stable boot supervisor, localized display/admission, server reporting, release signing and Pi qualification remain to implement.
+
+Trial supervisor foundation implemented with injected platform operations: exclusive admission, independent progress, stable process/generation readiness, bounded deadline, rollback and failed-recovery state. Four Linux scenarios pass, including real disposable candidate processes. Stable installer/service wiring, app admission/display, feed/signing and physical qualification remain incomplete.
