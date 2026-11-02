@@ -1034,3 +1034,5 @@ store/backup services. Device and admin routes receive their explicit service
 sets, with bearer identity added per request. Neither receives browser sessions,
 transport policy or the backup coordinator. Their TypeScript contracts enforce
 these boundaries; the composition root remains the single service owner.
+
+Store owns AccountStore through composition. Account operations share its state object and invoke Store.changed for versioned persistence; persisted schemas and the public Store mutation methods remain stable.
