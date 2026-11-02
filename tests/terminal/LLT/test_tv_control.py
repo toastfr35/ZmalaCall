@@ -824,7 +824,7 @@ class TVControlTests(unittest.TestCase):
             state.consume(line)
         self.assertEqual(state.source, '3.0.0.0')
 
-    def test_transition_reply_does_not_erase_observed_standby(self):
+    def test_transition_reply_requires_fresh_power_evidence(self):
         state = RoutingState()
         state.consume('Transmitted by Playback Device 1 to TV (4 to 0): STANDBY (0x36)')
         state.consume('Received from TV to Playback Device 1 (0 to 4): REPORT_POWER_STATUS (0x90)')
@@ -832,7 +832,20 @@ class TVControlTests(unittest.TestCase):
         self.assertTrue(state.off)
         tv = self.controller()
         tv._observed_state = Mock(return_value={'off': True})
-        self.assertTrue(tv._previous_power('pwr-state: to-on (0x02)'))
+        tv._network_enabled = True
+        tv._driver_name = 'samsung'
+        tv._driver_config_file = Path('unused-private-config')
+        driver = Mock()
+        driver.get_capabilities.return_value = {'get_power_status'}
+        with patch('zmala_terminal.linux.tv_control.load_driver', return_value=driver) as load:
+            for power, expected in ((True, False), (False, True), (None, None)):
+                driver.get_power_status.return_value = power
+                self.assertIs(tv._previous_power('pwr-state: to-on (0x02)'), expected)
+            self.assertNotIn('read_power', load.call_args.args[1])
+            driver.get_power_status.side_effect = RuntimeError('unreachable')
+            self.assertIsNone(tv._previous_power('pwr-state: to-standby (0x03)'))
+        tv._network_enabled = False
+        self.assertIsNone(tv._previous_power('pwr-state: to-on (0x02)'))
 
     def test_inactive_source_clears_only_the_released_route(self):
         state = RoutingState()
