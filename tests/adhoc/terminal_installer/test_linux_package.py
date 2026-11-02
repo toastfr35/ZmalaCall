@@ -24,6 +24,8 @@ class LinuxPackageTests(unittest.TestCase):
                 'build_tools/linux/install-kiosk.sh': b'#!/bin/sh\r\nset -eu\r\n',
                 'build_tools/linux/dependencies.txt': b'build-essential\r\npython3-pil.imagetk\r\n',
                 'build_tools/linux/terminal.service': b'[Service]\r\nExecStart=/usr/bin/true\r\n',
+                'zmala_terminal/common/floorplan/index.html': b'private developer map',
+                'zmala_terminal/linux/.cache/private.txt': b'private cache',
                 'build_tools/linux/test.conf': b'[Journal]\r\nStorage=volatile\r\n',
                 'zmala_terminal/common/image.bin': b'asset\r\nbytes',
                 'tests/terminal/LLT/turn_parser.cpp': b'// regression\r\n',
@@ -72,6 +74,13 @@ class LinuxPackageTests(unittest.TestCase):
                 self.assertIn('zmala_terminal/linux/media/video/codec.c', names)
                 self.assertIn('zmala_terminal/linux/media/video/filters.c', names)
                 self.assertIn('build_tools/linux/build-media.sh', names)
+                for tool in ('tv-plugin-self-test.py', 'tv_plugin_self_test.py', 'tv_test_camera.py', 'tv_test_card.py', 'tv_test_processes.py'):
+                    self.assertIn('build_tools/linux/'+tool, names)
+                for runtime in ('common/platform_services.py', 'common/callbacks.py', 'common/server_sync.py',
+                                'common/config_changes.py', 'common/media_adapter.py', 'common/tv_session.py',
+                                'linux/tv_plugins/samsung/driver.py'):
+                    self.assertIn('zmala_terminal/'+runtime, names)
+                self.assertFalse(any(set(Path(name).parts) & {'floorplan', '.cache', '.git', '.pytest_cache'} for name in names))
                 self.assertIn('zmala_terminal/common/native/turn-write.h', names)
                 self.assertIn('tests/support/native/turn-write-cases.h', names)
                 self.assertIn('tests/terminal/LLT/turn_socket_io.cpp', names)

@@ -1044,3 +1044,5 @@ SIP publishes callback push transport and binds callback lifecycle through expli
 Closing a SIP dialog revokes connected status and shared-photo revision/bytes before relay cleanup. Even failed relay teardown cannot leave photos reachable through retained dialog references. Active call identity remains owned by the dialog map; async upload completion still revalidates identity and enrollment tokens.
 
 Account editing, photo preview URLs and account search/filter state are private to admin-accounts.js. Shared admin-state retains the loaded model and cross-feature navigation/refresh hooks. Existing generation guards fence late upload/save results; closing the editor revokes temporary URLs.
+
+Pi installer payloads exclude local Floorplan, cache and VCS directories. Archive regression checks cover the current runtime modules; installer checks remain separate from product runtime requirements. Installation builds generated assets before root-owned deployment and preserves persistent device/account data.
