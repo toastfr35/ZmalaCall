@@ -19,6 +19,11 @@ final class CallSession {
   }
   static CallSession peek() { return instance; }
 
+  interface Observer {
+    void callChanged(String status);
+    void photoChanged();
+    void callServiceUnavailable();
+  }
   final CallEngine engine;
   final CallPhotoShare photos;
   JSONObject configuration;
@@ -39,7 +44,7 @@ final class CallSession {
   private final Context context;
   private final Handler main = new Handler(Looper.getMainLooper());
   private final java.util.concurrent.ExecutorService network = Executors.newSingleThreadExecutor();
-  private WeakReference<MainActivity> screen = new WeakReference<>(null);
+  private WeakReference<Observer> screen = new WeakReference<>(null);
   private AudioFocusRequest audioFocus;
   private long epoch, focusEpoch;
   private boolean fetching;
@@ -49,7 +54,7 @@ final class CallSession {
     this.context = context;
     engine = new CallEngine(this::changed);
     photos = new CallPhotoShare(context, this::photoCallId, () -> {
-      MainActivity activity = screen.get(); if (activity != null) activity.photoChanged();
+      Observer activity = screen.get(); if (activity != null) activity.photoChanged();
     });
   }
 
@@ -63,13 +68,13 @@ final class CallSession {
   }
   String callId() { return engine.call == null ? null : engine.call.getCallLog().getCallId(); }
 
-  void attach(MainActivity activity) {
+  void attach(Observer activity) {
     screen = new WeakReference<>(activity); visible = true; epoch++;
     main.removeCallbacks(poll);
     engine.background(false);
   }
 
-  void detach(MainActivity activity, boolean recreating) {
+  void detach(Observer activity, boolean recreating) {
     if (screen.get() != activity) return;
     screen.clear(); visible = false; epoch++;
     if (ongoing() && serviceRequested) {
@@ -103,7 +108,7 @@ final class CallSession {
       // Native callbacks must finish before a stopped screen releases the core.
       if (!visible) main.post(() -> { if (!visible && engine.call == null) { engine.stop(); configuration = null; } });
     } else if (!visible && ongoing()) engine.background(true);
-    MainActivity activity = screen.get();
+    Observer activity = screen.get();
     if (activity != null) activity.callChanged(value);
     CallService.refresh();
   }
@@ -143,7 +148,7 @@ final class CallSession {
 
   void serviceFailed() {
     stop();
-    MainActivity activity = screen.get();
+    Observer activity = screen.get();
     if (activity != null) activity.callServiceUnavailable();
   }
 

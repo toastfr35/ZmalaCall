@@ -87,3 +87,5 @@ audit. Maps remain ignored local artifacts; these plans are the durable record.
 No runtime implementation or hardware qualification is included in this change.
 
 Stage 1 implementation: removed duplicated live audio/reconnection fields from MainActivity. CallSession exposes immutable presentation values and explicit audio actions; the continuity HLT asserts state survival across recreation and snapshot stability. Build, emulator and physical results are recorded separately; no unrun hardware pass is implied.
+
+Stage 2 implemented: session callbacks target an explicit observer contract. Weak attachment and identity-checked detach preserve screen replacement behavior. MainActivity implements presentation notifications; the session has no concrete Activity reference.
