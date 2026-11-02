@@ -143,6 +143,32 @@ class ServerInstallerTests(unittest.TestCase):
 
 
 class ServerPackageTests(unittest.TestCase):
+    def test_release_omits_nested_local_development_artifacts(self):
+        spec = importlib.util.spec_from_file_location('package_server', ROOT/'build_tools/linux/package-server.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            required = ['zmala_server/main.js', 'build_tools/build-admin.cjs', 'build_tools/convert-photo.py',
+                        'zmala_terminal/common/shared/terminal-languages.json',
+                        'zmala_terminal/common/assets/gentle-chime.wav',
+                        'zmala_terminal/common/assets/presenter-pairing.png',
+                        'build_tools/assets/installation-connections.png']
+            required += ['build_tools/linux/'+name for name in module.SCRIPTS]
+            required += ['docs/'+name for name in ('general.md','server.md','terminal.md')]
+            excluded = ['zmala_server/'+folder+'/private.txt' for folder in
+                        ('floorplan','.cache','.git','.pytest_cache','data','node_modules')]
+            for name in required + excluded:
+                path = root/name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b'fixture')
+            with patch.object(module, 'ROOT', root):
+                output = module.package(root/'release.tar.gz')
+            with tarfile.open(output) as archive:
+                self.assertIn('zmala_server/main.js', archive.getnames())
+                for name in excluded:
+                    self.assertNotIn(name, archive.getnames())
+
     def test_release_excludes_private_state_and_includes_runtime(self):
         spec = importlib.util.spec_from_file_location('package_server', ROOT/'build_tools/linux/package-server.py')
         module = importlib.util.module_from_spec(spec)
@@ -152,6 +178,9 @@ class ServerPackageTests(unittest.TestCase):
             with tarfile.open(output) as archive:
                 names = archive.getnames()
                 self.assertIn('zmala_server/vendor/sip/sip.js', names)
+                for runtime in ('accounts.js', 'snapshot-file.js', 'types/http.ts', 'web/admin-accounts.js'):
+                    self.assertIn('zmala_server/'+runtime, names)
+                self.assertFalse(any(set(Path(name).parts) & {'floorplan', '.cache', '.git', '.pytest_cache'} for name in names))
                 self.assertIn('build_tools/linux/server-ssh.py', names)
                 self.assertIn('zmala_terminal/common/shared/terminal-languages.json', names)
                 self.assertEqual([p for p in names if p.endswith('.wav')], ['zmala_terminal/common/assets/gentle-chime.wav'])

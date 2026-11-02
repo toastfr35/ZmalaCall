@@ -16,7 +16,7 @@ def package(destination=None):
     destination = Path(destination or ROOT / 'build_tools/dist/ZmalaCall-Server-rpi.tar.gz')
     destination.parent.mkdir(parents=True, exist_ok=True)
     paths = [p for p in (ROOT / 'zmala_server').rglob('*') if p.is_file()
-             and not any(part in ('data', 'node_modules', 'tests', '__pycache__')
+             and not any(part in ('data', 'node_modules', 'tests', '__pycache__', 'floorplan', '.cache', '.git', '.pytest_cache')
                          for part in p.relative_to(ROOT / 'zmala_server').parts)]
     paths += [ROOT / 'build_tools/linux' / name for name in SCRIPTS]
     paths += [ROOT / 'build_tools' / name for name in ('build-admin.cjs', 'convert-photo.py')]

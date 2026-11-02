@@ -1472,3 +1472,5 @@ consecutive calls inherit the original baseline. Setup resets session policy via
 an explicit transport method rather than changing its individual state fields.
 
 Ambiguous CEC power replies require a fresh paired-driver query before saving the pre-call baseline. The observer heartbeat does not date its remembered power report. Unknown fresh power cannot authorize standby during restoration. Settled direct CEC replies remain usable.
+
+Pi installer payloads exclude local Floorplan, cache and VCS directories. Archive regression checks cover the current runtime modules; installer checks remain separate from product runtime requirements. Installation builds generated assets before root-owned deployment and preserves persistent device/account data.

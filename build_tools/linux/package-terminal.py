@@ -11,14 +11,15 @@ TEXT_SUFFIXES = {'.sh', '.txt', '.conf', '.service', '.rules', '.plymouth', '.sc
 
 
 def package(destination=None):
-    """Ship one C20 release; native plugins are compiled by its Pi installer."""
+    """Ship one C10/C20 release; native plugins are compiled by its Pi installer."""
     destination = Path(destination or ROOT / 'build_tools/dist/ZmalaCall-Terminal-rpi.tar.gz')
     destination.parent.mkdir(parents=True, exist_ok=True)
     checksums = []
     with tarfile.open(destination, 'w:gz') as archive:
         for base in (ROOT / 'zmala_terminal/common', ROOT / 'zmala_terminal/linux', ROOT / 'build_tools/linux'):
             for path in sorted(base.rglob('*')):
-                if not path.is_file() or any(part in ('data', '__pycache__', 'framing-runtime', 'turn-runtime', 'models')
+                if not path.is_file() or any(part in ('data', '__pycache__', 'framing-runtime', 'turn-runtime', 'models',
+                                                        'floorplan', '.cache', '.git', '.pytest_cache')
                                              for part in path.relative_to(ROOT).parts):
                     continue
                 if path.suffix in ('.so', '.o'):
