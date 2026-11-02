@@ -5,6 +5,8 @@
 // @pass Startup must bind only the requested listeners, invalid configuration must fail, and write failures must propagate while already completed independent files remain completed.
 
 'use strict';
+const { BootstrapPublisher } = require('../../../zmala_server/snapshot-file');
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -82,7 +84,14 @@ function fixture(t, env = {}, hooks = {}) {
         return sip;
       },
     },
-    './snapshot-file': { SnapshotFile: Snapshot },
+    './snapshot-file': {
+      BootstrapPublisher: class extends BootstrapPublisher {
+        constructor(owner, files) {
+          super(owner, []);
+          this.writers = files.map((file) => new Snapshot(file));
+        }
+      },
+    },
     './callbacks': { Callbacks: Background },
     './console-jobs': { ConsoleJobs: Background },
     './backup-storage': { recoverRestore: async () => {} },
