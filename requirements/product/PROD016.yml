@@ -1,0 +1,18 @@
+active: true
+area: Application updates
+derived: false
+header: Automatic terminal application updates
+level: 16.0
+links: []
+normative: true
+ref: ''
+references: []
+reviewed: null
+scope: Experimental
+text: Pi terminals shall receive compatible Zmala application updates automatically
+  without interrupting calls, with localized progress and recovery from interrupted
+  activation. OS, firmware, system-package upgrades and destructive shared-data migrations
+  are outside this feature.
+verification: Verify automatic application delivery, maintenance admission, localized
+  progress and interrupted activation recovery. Physical power-loss runs are recorded
+  separately from simulated interruption tests.

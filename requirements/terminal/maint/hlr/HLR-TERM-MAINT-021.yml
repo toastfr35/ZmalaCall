@@ -1,0 +1,22 @@
+active: true
+area: Application updates
+derived: false
+header: Recoverable application activation
+level: 21.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_recovery.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The Pi terminal shall retain a separately confirmed application release while
+  preparing and trying a candidate. Interrupted unconfirmed trials shall select the
+  confirmed release on boot; confirmation interrupted after its durable commit shall
+  retain the confirmed candidate. Invalid recovery metadata shall not select a guessed
+  application path.
+verification: Kill a subprocess at persistent-record and selection boundaries and
+  restart recovery. Assert the selected slot corresponds to durable confirmation and
+  shared state is unchanged. Physical storage/power-loss qualification is separate.

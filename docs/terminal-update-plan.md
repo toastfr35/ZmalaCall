@@ -139,6 +139,9 @@ derived manuals/bundles. Never publish signing keys, device state or private log
 
 ## Current status
 
-Design recorded; runtime implementation, signing setup and physical qualification
-have not started. Existing terminals need one installer/deployment update to acquire
+Transaction foundation implemented: separate durable confirmed/pending records,
+trial-before-selection, confirmation-before-selection and interrupted-trial quarantine.
+Four Linux tests pass, including SIGKILL at every transaction checkpoint. This is
+process-interruption evidence, not physical power-loss qualification. Signature/staging,
+boot supervisor, maintenance/display, feed/release integration and physical tests remain. Existing terminals need one installer/deployment update to acquire
 the stable updater and launcher before they can receive application-only updates.
