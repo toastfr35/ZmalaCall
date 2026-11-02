@@ -255,7 +255,7 @@ test('late response or failure cannot close or overwrite a newly opened editor',
     finish(rejected ? Error('stale failure') : { id: 'alice' });
     await f.pending.at(-1);
     assert.equal(f.$('account-dialog').open, true);
-    assert.equal(f.state.editingId, 'bob');
+    assert.equal(f.$('edit-id').value, 'bob');
     assert.equal(f.$('edit-name').value, 'Bob');
     assert.equal(f.refreshes.length, 0);
     assert.equal(f.messages.filter((m) => m.text.includes('stale')).length, 0);
