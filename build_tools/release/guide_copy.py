@@ -18,7 +18,7 @@ PHONE = {
                 'PDF, display it on another screen or save a clear picture of the whole QR code.',
             ]),
             ('1 Download the app', [
-                'Tap Download ZmalaPhone.apk in your setup document. Alternatively, open '
+                'Scan the first QR in your setup document using the phone camera, or tap its download link. Alternatively, open '
                 'https://github.com/toastfr35/ZmalaCall/releases/latest and select ZmalaPhone.apk '
                 'under Assets. You do not need a GitHub account.',
                 'Open the downloaded file from Downloads or your file manager. If Android asks, allow '
@@ -29,7 +29,7 @@ PHONE = {
                 'ask your helper before removing anything; a development copy may need different steps.',
             ]),
             ('2 Connect your account', [
-                'Open ZmalaPhone. Tap Scan setup QR and point the camera at your code, or tap Open QR image '
+                'Open ZmalaPhone. Tap Scan setup QR and point the camera at the second (account setup) code, or tap Open QR image '
                 'and select a saved picture. Check the server address, then tap Connect.',
                 'Allow camera and microphone access when asked. On Android 17, also allow local network '
                 'access. A local HTTP address shows an unencrypted-connection warning; use it only on '
@@ -243,8 +243,11 @@ REVISIONS = {
         ],
         'For the person setting up the terminal': [
             'This part is for the helper setting up the TV terminal. Install the software first using '
-            'ZmalaTerminal-Installation.pdf. Have the Presenter remote, TV remote and Wi-Fi and server '
-            'QR documents ready. If an administrator has already supplied the codes, start at Pair the remote and connect Wi-Fi.',
+            'ZmalaTerminal-Installation.pdf. Have the Presenter remote, TV remote and server '
+            'QR document ready. For Wi-Fi, use an Android phone already connected to the network: '
+            'open Settings > Wi-Fi (or Internet), select the connected network and choose Share or QR code. '
+            'Unlock if asked and show it to the terminal camera at Scan the Wi-Fi QR code. '
+            'Menu names vary. A printed Wi-Fi QR from the server is another option; Ethernet skips Wi-Fi setup.',
         ],
         'Keep the QR documents private.': [
             'Keep both QR documents private: they grant access to the Wi-Fi and this terminal account. '
@@ -301,7 +304,8 @@ REVISIONS = {
             'Remote & camera shows the remote’s battery and charger, and the C10/C20’s connection and '
             'power when known. The Save changes bar stays visible as you scroll. Unsaved settings '
             'means your changes have not been applied; select Save changes to apply them.',
-            'Open Setup to download its Wi-Fi and server QR documents. Give both privately to the '
+            'Open Setup to download the server QR document. Its first step explains Android Wi-Fi sharing; '
+            'a separate printed Wi-Fi QR is also available. Give setup codes privately to the '
             'person setting up that TV terminal, together with ZmalaTerminal-Guide.pdf.',
             'Open Callbacks to see Pending requests first. Choose History under Show callbacks '
             'to see completed and cancelled requests. The counts show how many are in '
@@ -332,6 +336,13 @@ REVISIONS['server_prep.docx']['Open Callbacks to see Pending requests first.'] =
 
 REVISIONS['terminal_use.docx']['This changes the sound you hear during calls.'] = (
     REVISIONS['terminal_use.docx']['The call-volume overlay changes only'])
+
+# Match the current authoring copy as well as older guide revisions.
+REVISIONS['terminal_config.docx']['This part is for the helper setting up the TV terminal.'] = (
+    REVISIONS['terminal_config.docx']['For the person setting up the terminal'])
+REVISIONS['terminal_config.docx']['4  Download the two QR documents'] = ['4  Prepare the setup QR codes']
+REVISIONS['server_prep.docx']['Open Setup to download its Wi-Fi and server QR documents.'] = [
+    REVISIONS['server_prep.docx']['Open Terminals, choose the device'][1]]
 
 def improve_readability(root):
     from docx import Document
@@ -366,7 +377,8 @@ def improve_readability(root):
                 'Create an App account for each phone and add it to the family’s shared group. '
                 'Keep Terminal accounts for TV terminals. In Accounts, select the chain-link '
                 'Connection details button beside the person, then Download server QR PDF. '
-                'Give this private code to that phone user; they do not need the administration password.',
+                'The App sheet has two QR codes: download the app first, then scan the account code in ZmalaPhone. '
+                'Give this private sheet to that phone user; they do not need the administration password.',
                 'Send the signed ZmalaPhone.apk download link with ZmalaPhone-Installation.pdf '
                 'and ZmalaPhone-Guide.pdf. The installation guide covers a printed QR or a QR '
                 'picture saved on the same phone, permissions and the first test call.',

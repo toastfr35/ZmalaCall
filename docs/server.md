@@ -440,8 +440,12 @@ A sticky Save changes bar shows Unsaved settings for a modified settings form;
 association changes remain a separate submission. **Setup** downloads
 Wi-Fi/server QR PDFs; **Console** selects the maintenance shell. These QR PDFs
 are runtime provisioning documents, separate from project documentation. App setup
-sheets include a clickable latest-release APK link, installation instructions and
-the private enrollment QR. Display the QR on another screen, print it, or use the
+sheets have two numbered sections: an APK-download QR with a clickable latest-release
+link, then the private enrollment QR with installation and scan instructions. Terminal
+account sheets contain one enrollment QR and first explain Android Wi-Fi sharing
+(Settings > connected Wi-Fi network > Share/QR code); Ethernet users skip that step.
+Both are single-page A4 layouts with black-on-white vector QR codes, four-module
+quiet borders and high-contrast text suitable for grayscale printing. Display the QR on another screen, print it, or use the
 app's QR-image import.
 Settings include auto-answer, fixed C20 hardware information, resolution, FPS, framing,
 volume, ringtone, language, portrait count and TV return. See the

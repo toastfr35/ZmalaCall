@@ -2,7 +2,8 @@
 // @requirements LLR-SRV-ENROLL-002, LLR-SRV-ENROLL-003, LLR-SRV-ENROLL-004
 // @environment portable
 // @plan Generate setup payloads and PDF bytes directly; reject invalid Wi-Fi input, decode compact UTF-8 identity and inspect current setup instruction/privacy text, one A4 page and QR module geometry with its four-module quiet border.
-// App sheets also contain a clickable stable APK download, installation steps and app permissions.
+// App sheets contain two distinct QR payloads; terminal sheets contain one and explain Android Wi-Fi sharing.
+// Check long labels/URLs remain on one page and every QR retains its quiet border.
 // @pass All payload fields, validation cases and PDF structure assertions must pass; physical print readability remains a system check.
 
 'use strict';
@@ -153,4 +154,62 @@ test('enrollment contains versioned QR identity and compact Wi-Fi preserves UTF-
   assert.equal(bytes[0], 3);
   assert.equal(bytes.subarray(2, 2 + bytes[1]).toString('utf8'), input.ssid);
   assert.equal(bytes.subarray(2 + bytes[1]).toString('utf8'), input.password);
+});
+
+test('account sheets separate download and setup codes and tolerate long labels', async (t) => {
+  const original = QRCode.create;
+  const values = [];
+  t.mock.method(QRCode, 'create', function (value, options) {
+    values.push(value);
+    return original.call(this, value, options);
+  });
+  const PDFDocument = require('node:module').createRequire(
+    require.resolve('../../../zmala_server/setup-pdf'),
+  )('pdfkit');
+  const originalText = PDFDocument.prototype.text;
+  const lines = [];
+  t.mock.method(PDFDocument.prototype, 'text', function (...args) {
+    lines.push(args[0]);
+    return originalText.apply(this, args);
+  });
+  for (const app of [false, true]) {
+    values.length = 0;
+    lines.length = 0;
+    const payload = serverPayload({
+      server_url: 'https://calls.example.test',
+      device_id: 'fixture',
+      device_token: 'a'.repeat(64),
+    });
+    const pdf = await setupPdf({
+      kind: 'server',
+      app,
+      label: 'Long account name '.repeat(30),
+      payload,
+      serverUrl: 'https://example.test/' + 'path/'.repeat(100),
+    });
+    assert.deepEqual(
+      values,
+      app
+        ? [
+            'https://github.com/toastfr35/ZmalaCall/releases/latest/download/ZmalaPhone.apk',
+            payload,
+          ]
+        : [payload],
+    );
+    assert.equal((pdf.toString('latin1').match(/\/Type \/Page\b/g) || []).length, 1);
+    if (!app) {
+      for (const phrase of [
+        'Android phone already connected',
+        'Share or QR code',
+        'Unlock the phone',
+        'Scan the Wi-Fi QR code',
+        'Ethernet cable',
+        'Scan the server QR code',
+      ])
+        assert.ok(
+          lines.some((line) => line.includes(phrase)),
+          phrase,
+        );
+    }
+  }
 });
