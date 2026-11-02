@@ -15,8 +15,7 @@ final class CallPhotoHttp {
   static byte[] exchange(Enrollment enrollment, String call, String method, long revision, byte[] bytes, boolean image) throws Exception {
     String route = "/api/call/photo?call_id=" + URLEncoder.encode(call, StandardCharsets.UTF_8.name()) + "&revision=" + revision + (image ? "&image=1" : "");
     HttpURLConnection connection = (HttpURLConnection) enrollment.server.resolve(route).toURL().openConnection();
-    connection.setConnectTimeout(6000); connection.setReadTimeout(15000);
-    connection.setInstanceFollowRedirects(false);
+    HttpPolicy.configure(connection, 6000, 15000);
     connection.setRequestMethod(method);
     connection.setRequestProperty("Authorization", "Bearer " + enrollment.token);
     try {
@@ -27,13 +26,8 @@ final class CallPhotoHttp {
         try (OutputStream out = connection.getOutputStream()) { out.write(bytes); }
       }
       if (connection.getResponseCode() != 200) throw new IOException("Photo request failed");
-      try (InputStream in = connection.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-        byte[] buffer = new byte[1024]; int n;
-        while ((n = in.read(buffer)) != -1) {
-          if (out.size()+n > (image ? 2097152 : 8192)) throw new IOException("Response too large");
-          out.write(buffer, 0, n);
-        }
-        return out.toByteArray();
+      try (InputStream in = connection.getInputStream()) {
+        return HttpPolicy.read(in, image ? 2097152 : 8192, "Response too large");
       }
     } finally { connection.disconnect(); }
   }

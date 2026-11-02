@@ -26,15 +26,8 @@ final class UpdateHttp {
 
   static String metadata(Opener opener) throws IOException {
     HttpURLConnection connection = connect(URI.create(UpdatePolicy.API), false, opener);
-    try (InputStream in = connection.getInputStream();
-        ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-      byte[] buffer = new byte[8192];
-      int count;
-      while ((count = in.read(buffer)) != -1) {
-        if (out.size() + count > 1048576) throw new IOException("Metadata limit");
-        out.write(buffer, 0, count);
-      }
-      return out.toString(StandardCharsets.UTF_8.name());
+    try (InputStream in = connection.getInputStream()) {
+      return new String(HttpPolicy.read(in, 1048576, "Metadata limit"), StandardCharsets.UTF_8);
     } finally {
       connection.disconnect();
     }
@@ -54,9 +47,7 @@ final class UpdateHttp {
       HttpURLConnection connection = opener.open(uri);
       boolean handedOff = false;
       try {
-        connection.setConnectTimeout(10000);
-        connection.setReadTimeout(10000);
-        connection.setInstanceFollowRedirects(false);
+        HttpPolicy.configure(connection, 10000, 10000);
         connection.setRequestProperty("User-Agent", "ZmalaPhone-updater");
         connection.setRequestProperty("Accept", download ? "application/octet-stream" : "application/vnd.github+json");
         int code = connection.getResponseCode();

@@ -1,8 +1,9 @@
 // @test A-LLT-018
-// @requirements LLR-AND-UPDATE-002
+// @requirements LLR-AND-ENROLL-002, LLR-AND-CALL-007, LLR-AND-UPDATE-002
 // @environment portable
 // @plan Use fake HTTP connections to check fixed metadata origin, per-hop APK redirect validation,
 // redirect limits, request headers/timeouts, bounded metadata and resource cleanup on success/error.
+// Exercise shared bounded reads at the exact limit, overflow and interruption without clearing cancellation.
 // @pass No untrusted hop opens, metadata never redirects, only public headers are sent, metadata
 // stops above 1 MiB and every rejected or consumed connection is disconnected with streams closed.
 package org.zmala.phone;
@@ -42,6 +43,15 @@ public class UpdateHttpTest {
     }
   }
 
+  @Test public void sharedReadsAreBoundedAndCancellable() throws Exception {
+    assertArrayEquals(new byte[]{1,2}, HttpPolicy.read(new java.io.ByteArrayInputStream(new byte[]{1,2}),2,"limit"));
+    try { HttpPolicy.read(new java.io.ByteArrayInputStream(new byte[]{1,2,3}),2,"limit"); fail(); }
+    catch (HttpPolicy.LimitExceeded expected) { assertEquals("limit",expected.getMessage()); }
+    Thread.currentThread().interrupt();
+    try { HttpPolicy.read(new java.io.ByteArrayInputStream(new byte[]{1}),2,"limit"); fail(); }
+    catch (java.io.InterruptedIOException expected) { assertTrue(Thread.currentThread().isInterrupted()); }
+    finally { Thread.interrupted(); }
+  }
   @Test public void publicMetadataHasLimitsAndAlwaysReleasesResources() throws Exception {
     Connection ok = new Connection();
     assertEquals("{}", UpdateHttp.metadata(uri -> {
