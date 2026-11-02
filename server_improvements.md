@@ -104,3 +104,5 @@ The Store and SIP collaborators remain broad objects; narrowing their individual
 operations and the remaining stages are still outstanding.
 
 Stage 2 implemented: AccountStore is an owned collaborator with an injected commit callback. Store retains one authoritative state and explicit public account operations. Existing account, enrollment, permissions and disk-failure tests pass; no persisted format change.
+
+Stage 3 implemented: BootstrapPublisher owns configuration-first publication and dependent writer readiness/flush. Existing startup, failure propagation and independent-writer regression scenarios exercise the real owner with file doubles.

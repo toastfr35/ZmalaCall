@@ -10,7 +10,7 @@ const { SipServer } = require('./sip-server');
 const { createHandler } = require('./http/handler');
 const { ConsoleJobs } = require('./console-jobs');
 const { Callbacks } = require('./callbacks');
-const { SnapshotFile } = require('./snapshot-file');
+const { BootstrapPublisher } = require('./snapshot-file');
 const { ServerBackups } = require('./backups');
 const { recoverRestore } = require('./backup-storage');
 const { passwordFile } = require('./admin-password');
@@ -31,12 +31,8 @@ function createApplication({
   }
   // Initial setup runs before serving requests. Later bootstrap updates share
   // an ordered queue per file and are awaited before acknowledging account edits.
-  const bootstrapWriters = bootstrapFiles.map((file) => new SnapshotFile(file));
-  async function writeBootstrap() {
-    const bootstrap = JSON.stringify(store.bootstrap(), null, 2);
-    await store.flush();
-    await Promise.all(bootstrapWriters.map((writer) => writer.write(bootstrap)));
-  }
+  const publication = new BootstrapPublisher(store, bootstrapFiles);
+  const writeBootstrap = () => publication.publish();
   const bootstrap = JSON.stringify(store.bootstrap(), null, 2);
   for (const file of bootstrapFiles) fs.writeFileSync(file, bootstrap);
   const terminalStatuses = {};
@@ -49,12 +45,7 @@ function createApplication({
   callbacks.enableAsyncPersistence();
   consoleJobs.enableAsyncPersistence();
   async function flush() {
-    await Promise.all([
-      store.flush(),
-      callbacks.flush(),
-      consoleJobs.flush(),
-      ...bootstrapWriters.map((writer) => writer.flush()),
-    ]);
+    await Promise.all([store.flush(), callbacks.flush(), consoleJobs.flush(), publication.flush()]);
   }
 
   const backups = new ServerBackups(store, callbacks, consoleJobs, sipServer, flush, restart);
@@ -68,12 +59,9 @@ function createApplication({
     writeBootstrap,
     adminSessions,
     persistenceReady: () =>
-      [
-        store.persistence,
-        callbacks.persistence,
-        consoleJobs.persistence,
-        ...bootstrapWriters,
-      ].every((writer) => !writer?.failed),
+      [store.persistence, callbacks.persistence, consoleJobs.persistence].every(
+        (writer) => !writer?.failed,
+      ) && publication.ready(),
     requireSecureAdmin: !!process.env.ZMALA_TLS_CERT,
   });
   const server = http.createServer(handler);
