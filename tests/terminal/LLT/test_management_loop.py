@@ -3,6 +3,7 @@
 # @environment portable
 # @plan Exercise the real UI queue and timer pump with a configured model, virtual clock and recording UI/device boundaries. Verify captured-generation polling, diagnostics/peripheral publication with unknown values, power/wake states and detached snapshots, worker-failure recovery, rejected stale button/results, USB readiness activity, deferred auto-answer, timer-driven redraw and rescheduling after a tick exception. Verify completed carousel motion and closed terminals do not keep animating.
 # @pass Assertions pass without real threads, Tk windows, network or devices; these tests verify scheduling and boundary contracts, not hardware timing.
+from zmala_terminal.common.callbacks import CallbackController
 import copy
 import queue
 import unittest
@@ -14,14 +15,26 @@ from tests.terminal.LLT.test_terminal import config
 
 
 class ManagementPumpTests(unittest.TestCase):
+    def test_queued_report_is_detached_from_nested_diagnostics(self):
+        loop = self.loop()
+        loop.diagnostics = {'video': {'frames': 12}}
+        tasks = []
+        with patch.object(management.server_sync.threading, 'Thread',
+                          side_effect=lambda **kw: Mock(start=lambda: tasks.append(kw['target']))):
+            loop.poll()
+        loop.diagnostics['video']['frames'] = 99
+        # Wi-Fi has its own worker; execute only the server worker here.
+        tasks[1]()
+        self.assertEqual(loop.configuration.report.call_args.args[0]['video'], {'frames': 12})
+
     def loop(self):
-        loop=management.ManagementLoop(); loop.model=TerminalModel(); loop.model.configure(config())
-        loop.messages=queue.Queue(); loop.generation=3; loop.callback_revision=4; loop.closed=False
+        loop=management.ManagementLoop(); loop.callbacks = CallbackController(); loop.model=TerminalModel(); loop.model.configure(config())
+        loop.messages=queue.Queue(); loop.generation=3; loop.callbacks.revision=4; loop.closed=False
         loop.setup_stage=None; loop.scanner=None; loop.settings_open=False; loop.keys_down=set()
         loop.worker_busy=False; loop.network_worker_busy=False; loop.configuration=Mock(cancelled=False)
         loop.engine=Mock(registered=True,call=None); loop.usb_power=Mock(enabled=True,ready=True)
         loop.presenter_input=Mock(battery=75); loop.tv_control=Mock(); loop.tv_control.ready.return_value=True
-        loop.pending_config=None; loop.notice=''; loop.callback_alert=None; loop.callback_requests=[]
+        loop.pending_config=None; loop.notice=''; loop.callback_alert=None; loop.callbacks.requests=[]
         loop.server_seen=99; loop.presence_stale=False; loop.last_poll=99; loop.diagnostics={'camera':'ready'}
         loop.outgoing_deadline=None; loop.carousel_motion=None; loop.root=Mock(); loop.case_fan=Mock()
         for name in ('render','draw_connectivity','apply_config','press','action','tick_settings_access',
@@ -36,10 +49,10 @@ class ManagementPumpTests(unittest.TestCase):
         loop=self.loop(); tasks=[]
         def thread(**kwargs): return Mock(start=lambda:tasks.append(kwargs['target']))
         loop.configuration.fetch.return_value=config()
-        with patch.object(management.threading,'Thread',side_effect=thread), patch.object(management,'wifi_link_available',return_value=True):
+        with patch.object(management.server_sync.threading,'Thread',side_effect=thread), patch.object(management,'wifi_link_available',return_value=True):
             loop.poll(); loop.poll(); self.assertEqual(len(tasks),2)
             # Mutation after launch must not leak into the captured report.
-            loop.generation=8; loop.diagnostics['camera']='changed'; loop.callback_revision=9
+            loop.generation=8; loop.diagnostics['camera']='changed'; loop.callbacks.revision=9
             for task in tasks: task()
         loop.configuration.report.assert_called_once_with({'camera':'ready','state':'home','configuration_version':1, 'remote_status':'unknown','remote_battery':75,'remote_charger_connected':None,'camera_powered':None,'camera_connected':None,'camera_status':'unknown'})
         loop.drain_messages(); self.assertTrue(loop.worker_busy); self.assertFalse(loop.network_worker_busy)
@@ -72,7 +85,7 @@ class ManagementPumpTests(unittest.TestCase):
             loop=self.loop(); loop.configuration.cancelled=cancelled
             loop.configuration.fetch.return_value=config()
             if failure: loop.configuration.fetch.side_effect=OSError('offline')
-            with patch.object(management.threading,'Thread',side_effect=lambda **kw:Mock(start=kw['target'])), \
+            with patch.object(management.server_sync.threading,'Thread',side_effect=lambda **kw:Mock(start=kw['target'])), \
                     patch.object(management,'wifi_link_available',side_effect=OSError('wifi unavailable')):
                 loop.poll()
             loop.configuration.report.assert_not_called(); loop.drain_messages()
@@ -87,7 +100,7 @@ class ManagementPumpTests(unittest.TestCase):
         loop.handle_worker_message('tv-button',(3,State.RINGING,'green')); loop.press.assert_not_called()
         loop.handle_worker_message('tv-button',(3,State.HOME,'green')); loop.press.assert_called_once_with('green')
         loop.closed=True; loop.handle_worker_message('tv-button',(3,State.HOME,'red')); self.assertEqual(loop.press.call_count,1)
-        loop.apply_poll_config=Mock(); loop.callback_requests=[{'id':'new'}]
+        loop.apply_poll_config=Mock(); loop.callbacks.requests=[{'id':'new'}]
         loop.handle_worker_message('poll-config',(3,config() | {'callbacks':[]},1))
         self.assertEqual(loop.apply_poll_config.call_args.args[0]['callbacks'],[{'id':'new'}])
         loop.setup_stage='wifi'; loop.apply_poll_config.reset_mock()

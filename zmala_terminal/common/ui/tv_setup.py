@@ -4,7 +4,7 @@ import tkinter as tk
 import time
 
 from zmala_terminal.common.localization import font_family
-from zmala_terminal.linux.tv_check import CheckTransport
+from zmala_terminal.common.platform_services import create_tv_check_transport as CheckTransport
 from zmala_terminal.common.tv_check import TVCheck
 from zmala_terminal.common.tv_check_messages import MESSAGES
 from zmala_terminal.common.theme import BG, FG, MUTED, BUTTON_GREEN, BUTTON_RED
@@ -25,7 +25,8 @@ class TVSetupView:
         if self.tv_setup_checked:
             return False
         self.tv_setup_checked = True
-        if not os.environ.get('ZMALA_PAIRING_STATUS'):
+        if (not getattr(self.tv_control, 'supports_setup', True)
+                or not os.environ.get('ZMALA_PAIRING_STATUS')):
             return False
         if self.maintenance:
             self.maintenance.stop()

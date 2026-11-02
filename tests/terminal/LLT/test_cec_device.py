@@ -87,10 +87,10 @@ class CecDeviceTests(unittest.TestCase):
             automatic.command = 'cec-ctl'
             automatic.device = '/dev/cec0'
             automatic._address = '2.0.0.0'
-            automatic._previous = {'address': '2.0.0.0'}
+            automatic.session.previous = {'address': '2.0.0.0'}
             automatic._refresh_device()
             self.assertEqual(automatic.device, '/dev/cec0')
-            automatic._previous = None
+            automatic.session.previous = None
             automatic._refresh_device()
             self.assertEqual(automatic.device, '/dev/cec1')
             self.assertIsNone(automatic._address)

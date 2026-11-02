@@ -5,6 +5,7 @@
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Callback tags and cancellation retain server ownership and late-result guards."""
+from zmala_terminal.common.callbacks import CallbackController
 import copy
 import json
 from pathlib import Path
@@ -21,6 +22,18 @@ from tests.terminal.LLT.test_terminal import config
 
 
 class CallbackTests(unittest.TestCase):
+    def test_reset_invalidates_a_queued_mutation_and_clears_seen_contacts(self):
+        from zmala_terminal.common.callbacks import CallbackResult
+        controller = CallbackController()
+        controller.serial = 3
+        controller.requests = [{'id': 'old'}]
+        controller.seen.add('old')
+        controller.reset()
+        result = CallbackResult(1, 3, 'alice', True, {'id': 'late'}, None)
+        self.assertFalse(controller.acknowledge(1, result))
+        self.assertEqual(controller.requests, [])
+        self.assertEqual(controller.seen, set())
+
     def model(self):
         model = TerminalModel()
         model.configure(config())
@@ -52,11 +65,11 @@ class CallbackTests(unittest.TestCase):
         self.assertIsNone(model.incoming_callback(None))
 
     def loop(self):
-        loop = ManagementLoop()
+        loop = ManagementLoop(); loop.callbacks = CallbackController()
         loop.model = self.model()
-        loop.callback_requests = list(loop.model.config['callbacks'])
+        loop.callbacks.requests = list(loop.model.config['callbacks'])
         loop.generation = 1
-        loop.callback_serial = 3
+        loop.callbacks.serial = 3
         loop.render = Mock()
         loop.setup_stage = None
         return loop
@@ -103,7 +116,7 @@ class CallbackTests(unittest.TestCase):
         loop.model.button('red'); loop.model.button('green')
         loop.callback_result(1, 3, 'alice', True, {'ok': True}, self.request['id'])
         self.assertIsNone(loop.model.pending_callback(loop.model.selected))
-        self.assertEqual(loop.callback_requests, [])
+        self.assertEqual(loop.callbacks.requests, [])
         self.assertEqual(loop.notice, '')
 
     def test_old_poll_cannot_resurrect_cancelled_tag_but_fresh_poll_is_authoritative(self):
@@ -117,7 +130,7 @@ class CallbackTests(unittest.TestCase):
 
     def test_create_result_updates_tag_after_navigation_without_interrupting_incoming_call(self):
         loop = self.loop()
-        loop.callback_requests = []; loop.model.config['callbacks'] = []
+        loop.callbacks.requests = []; loop.model.config['callbacks'] = []
         loop.model.incoming('alice', 'family.test')
         loop.callback_result(1, 3, 'alice', True, self.request, None)
         self.assertEqual(loop.model.state, State.RINGING)
@@ -135,13 +148,13 @@ class CallbackTests(unittest.TestCase):
         loop.render.assert_called_once()
 
     def test_cancel_worker_posts_specific_request_even_without_sip_engine(self):
-        app = CallControl()
+        app = CallControl(); app.callbacks = CallbackController()
         app.model = self.model()
         app.model.button('red'); app.model.button('green')
         app.engine = None
         app.configuration = Mock()
         app.configuration.request.return_value = json.dumps({'ok': True})
-        app.callback_serial = 2; app.generation = 1; app.messages = queue.Queue()
+        app.callbacks.serial = 2; app.generation = 1; app.messages = queue.Queue()
         with patch('zmala_terminal.common.call_control.threading.Thread') as thread:
             app.action('cancel_callback')
             thread.call_args.kwargs['target']()

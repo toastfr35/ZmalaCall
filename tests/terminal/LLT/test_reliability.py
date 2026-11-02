@@ -6,6 +6,7 @@
 # Authorization rejection (401/403) drops the result without retrying or rerunning the command.
 
 """Regression coverage for unattended recovery, with no native devices or live server."""
+from zmala_terminal.common.callbacks import CallbackController
 import hashlib
 import io
 import json
@@ -64,7 +65,7 @@ class ReliabilityTests(unittest.TestCase):
 
     def test_configuration_gates_setup_media_readiness_and_revoked_autoanswer(self):
         from zmala_terminal.common.configuration_control import ConfigurationControl
-        app = ConfigurationControl()
+        app = ConfigurationControl(); app.callbacks = CallbackController()
         app.setup_stage = 'wifi'; app.render = Mock(); app.begin_tv_setup = Mock(return_value=True)
         app.apply_config(config()); app.begin_tv_setup.assert_not_called()
         app.setup_stage = None; app.tv_setup_checked = False
@@ -99,7 +100,7 @@ class ReliabilityTests(unittest.TestCase):
     def test_configuration_refresh_updates_devices_without_replacing_same_native_graph(self):
         from zmala_terminal.common.configuration_control import ConfigurationControl
         from zmala_terminal.common.video_settings import VideoSettings
-        app = ConfigurationControl(); desired = config()
+        app = ConfigurationControl(); app.callbacks = CallbackController(); desired = config()
         app.engine = Mock(audio_profile='normal', config=desired); app.engine.video_settings = VideoSettings.for_config(desired)
         app.current_settings = {}; desired['terminal_settings'] = {'camera':'selected'}
         original = app.engine
@@ -245,7 +246,7 @@ class ReliabilityTests(unittest.TestCase):
             self.assertEqual(MissedCallsStore(store.path).load_counts(config()), {})
 
     def test_failed_native_reconfiguration_preserves_applied_revision_and_retries(self):
-        terminal = Terminal.__new__(Terminal)
+        terminal = Terminal.__new__(Terminal); terminal.callbacks = CallbackController()
         terminal.model = TerminalModel(); terminal.model.configure(config())
         terminal.setup_stage = None; terminal.available_fonts = set()
         terminal.root = Mock(); terminal.render = Mock(); terminal.text = lambda key: key
@@ -274,7 +275,7 @@ class ReliabilityTests(unittest.TestCase):
 
     def test_frame_rate_change_waits_for_call_end_and_rebuilds_only_once(self):
         from zmala_terminal.common.video_settings import VideoSettings
-        terminal = Terminal.__new__(Terminal)
+        terminal = Terminal.__new__(Terminal); terminal.callbacks = CallbackController()
         terminal.model = TerminalModel(); terminal.model.configure(config())
         terminal.model.state = State.IN_CALL
         terminal.setup_stage = None; terminal.available_fonts = set()
@@ -297,7 +298,7 @@ class ReliabilityTests(unittest.TestCase):
             self.assertEqual(build.call_count, 1)
 
     def test_setup_failure_feedback_survives_retry_and_ignores_stale_results(self):
-        flow = ProvisioningFlow()
+        flow = ProvisioningFlow(); flow.callbacks = CallbackController()
         flow.generation = 2; flow.closed = False; flow.setup_busy = True
         flow.setup_stage = 'server'; flow.render = Mock()
         flow.enrollment = Mock(value={}); flow.last_qr = ('', 0)
@@ -326,7 +327,7 @@ class ReliabilityTests(unittest.TestCase):
             restored = Enrollment(directory)
             self.assertEqual(restored.stage, 'wifi')
             self.assertEqual(restored.value, {'version': 1, 'wifi_cleanup': {'linux_profile': 'ZmalaCall-test-one', 'linux_uuid': 'one'}})
-            flow = ProvisioningFlow()
+            flow = ProvisioningFlow(); flow.callbacks = CallbackController()
             flow.enrollment = restored; flow.setup_busy = False; flow.generation = 1
             flow.profile = 'test'; flow.messages = queue.Queue(); flow.closed = False
             flow.render = Mock(); flow.start_scanner = Mock(); flow.setup_stage = 'wifi'

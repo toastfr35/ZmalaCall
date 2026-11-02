@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/callbacks.py
+  type: file
 - path: zmala_terminal/common/model.py
   type: file
 - path: zmala_terminal/common/ui/confirmation.py

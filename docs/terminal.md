@@ -1413,3 +1413,62 @@ steps are evenly spaced in dB; legacy positive integer defaults below 5% use
 -16.8 dB. The existing saved percentage remains unchanged, so most intermediate
 settings sound louder after updating. C10/C20 hardware remains at +12 dB.
 Ringtone, outgoing ringback and button feedback keep their independent old curve.
+
+
+### Hardware construction boundary
+
+`common/platform_services.py` constructs the fan, USB-power and TV-control adapters
+for `Terminal.make_platform_services()`. The application still owns shutdown
+ordering. Windows now receives explicit desktop substitutes for these Pi-only services;
+they perform no hardware I/O and leave ringing to the Windows call engine.
+The desktop also skips Pi-only TV setup even if a pairing environment variable
+is inherited. Other device construction remains to be migrated. Tests replace the factory
+without patching hardware classes in the UI module.
+
+If platform construction fails, the factory closes already-created services in
+reverse order before propagating the startup error. Normal shutdown remains owned
+by the application.
+
+The same platform boundary selects remote input, feedback audio, pairing/camera
+status and TV-check transport. Windows uses explicit inactive substitutes; these
+factories do not import Pi adapters on the desktop. Fan, USB-power and television
+interfaces are structural protocols, while the application retains shutdown ownership.
+
+Callback request state belongs to `common/callbacks.py`: it owns the request list,
+seen alerts, mutation serial and revision. HTTP workers capture configuration and
+queue references, never the terminal UI. Named results return to the UI thread;
+the owner rejects obsolete generations/serials and prevents older polls undoing
+an acknowledgement. Call/screen controllers retain navigation and rendering only.
+Factory reset invalidates callback work before a new enrollment is applied.
+
+`common/server_sync.py` performs background Wi-Fi and configuration polling from
+captured inputs and emits named configuration/network results. ManagementLoop
+retains scheduling, busy flags and UI dispatch. Enrollment generations invalidate
+results; callback revisions prevent stale poll resurrection. Reports deep-copy the
+captured status so later UI mutations cannot alter queued diagnostics. Workers
+have no reference to the terminal, widgets or hardware controllers.
+
+`common/config_changes.py` classifies validated snapshots without side effects.
+ConfigurationUpdate carries live language/framing and caller permissions plus the
+credential-only renewal decision; MediaSnapshot compares applied SIP, transport,
+resolution, frame rate and audio profile before rebuilding. ConfigurationControl
+still owns idle deferral, retry deadlines and committing the applied revision only
+after success. Revocation during ringing remains immediate.
+
+The engine creates one `MediaAdapter` for its lifetime. The adapter owns the native
+plugin, framing worker, applied speaker-level cache and decoded-frame probe timer.
+Plugin configuration receives only DLL/core handles, FPS and framing policy; it
+no longer writes resource fields into Engine. Device routing helpers still use
+native engine operations on the core thread. Shutdown stops framing first, then
+ends calls/stops/unrefs the core, then releases the plugin reference. If native
+teardown fails the plugin stays retained, preventing dangling callback pointers.
+
+`common/tv_session.py` owns saved call/browsing baselines and restoration policy.
+It consumes observations and explicit time values without doing I/O. TVControl
+owns CEC/network execution, fresh observations, locks and cancellation tokens.
+Unknown power/input remain unknown: a command acknowledgement cannot establish
+visibility. Manual source/off observations discard the browsing lease, and
+consecutive calls inherit the original baseline. Setup resets session policy via
+an explicit transport method rather than changing its individual state fields.
+
+Ambiguous CEC power replies require a fresh paired-driver query before saving the pre-call baseline. The observer heartbeat does not date its remembered power report. Unknown fresh power cannot authorize standby during restoration. Settled direct CEC replies remain usable.

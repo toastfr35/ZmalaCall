@@ -4,6 +4,9 @@
 # @plan Fail C20 discovery before native call allocation, then restore it. Exercise incoming and outgoing orchestration with a retryable media error, assert a one-second retry, successful recovery and cancellation/generation guards. No receive-only or HDMI fallback is accepted.
 # @pass Calls start only after recovery; cancelled or superseded calls never resume.
 
+from zmala_terminal.common.callbacks import CallbackController
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.common.engine import media_backend
 import unittest
 from unittest.mock import Mock, patch
 from zmala_terminal.common.engine import Engine
@@ -14,7 +17,7 @@ from zmala_terminal.common.media_errors import MediaNotReady
 
 class MissingMicrophoneTests(unittest.TestCase):
     def test_missing_c20_blocks_native_answer_and_invite_before_allocation(self):
-        e = Engine.__new__(Engine)
+        e = Engine.__new__(Engine); e.media = MediaAdapter(media_backend())
         e.config = {}  # Valid LAN profile; this case isolates missing C20 readiness.
         e.call = 42
         e.refresh_usb_devices = Mock(side_effect=MediaNotReady('microphone waking'))
@@ -31,7 +34,7 @@ class MissingMicrophoneTests(unittest.TestCase):
         self.assertEqual(e.refresh_usb_devices.call_count, 3)
 
     def app(self):
-        app = CallControl()
+        app = CallControl(); app.callbacks = CallbackController()
         app.root, app.engine, app.model, app.render = Mock(), Mock(), Mock(), Mock()
         app.usb_media_ready = Mock(return_value=True)
         app.generation, app.dial_serial, app.closed, app.setup_stage = 1, 2, False, None

@@ -4,6 +4,9 @@
 # @plan Use native-call, UI and transport doubles to check retained call handles and shutdown order, live language/framing changes, idle-only callback notices and status snapshots. Inject failed JSON replacement to verify old private state survives and successful UTF-8 state is complete.
 # @pass Every transition must preserve unrelated call ownership; notifications must never dial automatically and failed persistence must preserve the prior snapshot.
 
+from zmala_terminal.common.callbacks import CallbackController
+from zmala_terminal.common.media_adapter import MediaAdapter
+from zmala_terminal.common.engine import media_backend
 import json
 from pathlib import Path
 import queue
@@ -22,7 +25,7 @@ from tests.terminal.LLT.test_terminal import config
 
 class RuntimeContractTests(unittest.TestCase):
     def test_borrowed_calls_are_retained_once_and_released_before_core(self):
-        e = Engine.__new__(Engine)
+        e = Engine.__new__(Engine); e.media = MediaAdapter(media_backend())
         e.call = None; e.core = 7; e.factory = 8; e._video_callbacks = None
         e.video_frame_callback = Mock()
         events = []
@@ -31,7 +34,7 @@ class RuntimeContractTests(unittest.TestCase):
         for name in ('call_remove_callbacks', 'call_cbs_unref', 'call_unref', 'core_stop', 'core_unref'):
             setattr(e, name, Mock(side_effect=lambda *values, name=name: events.append((name, *values))))
         e.call_cbs_set_next_video_frame_decoded = Mock(); e.call_add_callbacks = Mock(); e.end = Mock()
-        e.auto_framing = Mock(); e.auto_framing.close.side_effect = lambda: events.append(('detector-stop',))
+        e.media.auto_framing = Mock(); e.media.auto_framing.close.side_effect = lambda: events.append(('detector-stop',))
         e.hold_call(10); e.hold_call(10)
         e.call_ref.assert_called_once_with(10)
         e.hold_call(11)
@@ -43,22 +46,22 @@ class RuntimeContractTests(unittest.TestCase):
         self.assertIsNone(e.call); self.assertIsNone(e.core)
 
     def test_language_and_framing_apply_in_call_without_native_restart(self):
-        v = ConfigurationControl()
+        v = ConfigurationControl(); v.callbacks = CallbackController()
         v.model = TerminalModel(); v.model.configure(config()); v.model.state = State.IN_CALL
         v.setup_stage = None; v.root = Mock(); v.available_fonts = set()
         v.text = lambda key: key; v.render = Mock(); v.engine = Mock(); v.configure_engine = Mock()
         desired = config() | {'language':'fr', 'auto_framing':True, 'c20_speaker_volume':25}
         v.apply_config(desired)
         self.assertEqual(v.language, 'fr'); self.assertEqual(v.pending_config, desired)
-        v.engine.auto_framing.configure.assert_called_once_with(True)
+        v.engine.media.configure_framing.assert_called_once_with(True)
         v.configure_engine.assert_not_called(); v.engine.close.assert_not_called(); v.engine.end.assert_not_called()
         self.assertEqual(v.model.state, State.IN_CALL)
 
     def test_callback_notice_waits_for_idle_input_then_selects_once_without_dial(self):
-        v = CallControl(); v.model = TerminalModel(); v.model.configure(config())
+        v = CallControl(); v.callbacks = CallbackController(); v.model = TerminalModel(); v.model.configure(config())
         v.setup_stage = None; v.last_button = 100; v.callback_alert = None; v.notice = ''; v.carousel_motion = None
-        v.callback_seen = set(); v.render = Mock(); v.engine = Mock(); v.contact_online = lambda person: True
-        v.callback_requests = [{'id':'request', 'ready':True, 'from':'terminal', 'to':'alice'}]
+        v.callbacks.seen = set(); v.render = Mock(); v.engine = Mock(); v.contact_online = lambda person: True
+        v.callbacks.requests = [{'id':'request', 'ready':True, 'from':'terminal', 'to':'alice'}]
         for state in (State.IN_CALL, State.RINGING, State.CONFIRMING):
             v.model.state = state; v.show_callback_available(110)
             self.assertIsNone(v.callback_alert)
@@ -66,17 +69,17 @@ class RuntimeContractTests(unittest.TestCase):
         v.show_callback_available(104.99); self.assertIsNone(v.callback_alert)
         v.show_callback_available(105)
         self.assertEqual(v.callback_alert, (v.model.selected['name'], 115))
-        self.assertIn('request', v.callback_seen)
+        self.assertIn('request', v.callbacks.seen)
         v.engine.dial.assert_not_called()
         v.callback_alert = None; v.show_callback_available(120)
         self.assertIsNone(v.callback_alert); v.render.assert_called_once()
 
     def test_status_snapshot_uses_applied_revision_and_captured_diagnostics(self):
-        v = ManagementLoop(); v.model = TerminalModel(); v.model.configure(config())
+        v = ManagementLoop(); v.callbacks = CallbackController(); v.model = TerminalModel(); v.model.configure(config())
         v.poll_wifi = Mock(); v.worker_busy = False; v.generation = 3; v.setup_stage = None
         v.configuration = Mock(cancelled=False); v.messages = queue.Queue()
         v.diagnostics = {'registered':True, 'devices':{'camera':['C20']}, 'camera':'C20'}
-        with patch('zmala_terminal.common.management.threading.Thread') as thread:
+        with patch('zmala_terminal.common.management.server_sync.threading.Thread') as thread:
             v.poll()
             v.diagnostics = {'registered':False}
             thread.call_args.kwargs['target']()
@@ -86,7 +89,7 @@ class RuntimeContractTests(unittest.TestCase):
             'camera_powered':None,'camera_connected':None,'camera_status':'unknown'})
 
     def test_native_statistics_release_both_handles_and_preserve_units(self):
-        e = Engine.__new__(Engine); e.call = 9
+        e = Engine.__new__(Engine); e.media = MediaAdapter(media_backend()); e.call = 9
         e.call_get_audio_stats = Mock(return_value=10); e.call_get_video_stats = Mock(return_value=11)
         getters = {'download_bandwidth':123, 'upload_bandwidth':456, 'jitter_buffer_size_ms':20,
                    'round_trip_delay':.02, 'receiver_loss_rate':1, 'sender_loss_rate':2}

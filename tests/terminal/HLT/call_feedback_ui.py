@@ -248,7 +248,7 @@ try:
     app.server_seen = time.monotonic()
     app.last_button = time.monotonic()-6
     person = app.model.selected
-    app.callback_requests = [{'id':'b11aeab7-d25f-48a9-b44e-6d1a3d91d299','from':person['id'],'to':app.model.config['sip']['username'],'ready':True}]
+    app.callbacks.requests = [{'id':'b11aeab7-d25f-48a9-b44e-6d1a3d91d299','from':person['id'],'to':app.model.config['sip']['username'],'ready':True}]
     before = list(app.engine.dialed)
     app.model.state = State.CALLING
     app.show_callback_available(time.monotonic())

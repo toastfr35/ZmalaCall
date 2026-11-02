@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/media_adapter.py
+  type: file
 - path: build_tools/linux/21-zmalacall-pi4.conf
   type: file
 - path: build_tools/linux/kiosk-session.py
