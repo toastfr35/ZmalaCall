@@ -8,6 +8,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/SetupCoordinator.java
+  type: file
 - path: zmala_phone/app/src/main/res/xml/network_security_config.xml
   type: file
 - path: zmala_phone/app/src/main/AndroidManifest.xml

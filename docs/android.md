@@ -739,3 +739,5 @@ it does not end the voice call. A receiving phone polls the same authenticated e
 CallSession owns microphone mute, selected output and reconnection state. MainActivity consumes an immutable session snapshot and sends explicit mute/output actions; recreation does not copy live audio state into a second owner.
 
 CallSession attaches a weak Observer interface, never a concrete MainActivity. Detach only releases the matching observer; replacing a screen cannot let an old stop callback detach the new screen. Call media and foreground-service ownership remain application scoped.
+
+SetupCoordinator owns enrollment file operations, configuration loading entry point, required permission policy and screen-work generations. MainActivity presents Android permission/scanner dialogs; stale configuration and QR-import results are rejected using coordinator tickets after stop or enrollment replacement.

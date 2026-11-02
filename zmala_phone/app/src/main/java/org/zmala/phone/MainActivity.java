@@ -48,8 +48,8 @@ public final class MainActivity extends Activity implements CallSession.Observer
   private Enrollment enrollment;
   private JSONObject config;
   private LinearLayout page;
-  private int generation;
-  private boolean visible, fetching;
+  private SetupCoordinator setup;
+  private boolean visible;
   private TextView updateLink;
   private final Runnable videoProgress = new Runnable() {
     public void run() {
@@ -91,6 +91,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
   @Override
   public void onCreate(Bundle state) {
     super.onCreate(state);
+    setup = new SetupCoordinator(new File(getNoBackupFilesDir(), "enrollment.json"));
     session = CallSession.get(this); engine = session.engine;
     config = session.configuration;
     photoPickerCall = state == null ? null : state.getString("photo_picker_call");
@@ -104,11 +105,6 @@ public final class MainActivity extends Activity implements CallSession.Observer
     directory();
   }
 
-  // @llr LLR-AND-ENROLL-002
-  private File enrollmentFile() {
-    return new File(getNoBackupFilesDir(), "enrollment.json");
-  }
-
   @Override
   public void onStart() {
     super.onStart();
@@ -118,11 +114,10 @@ public final class MainActivity extends Activity implements CallSession.Observer
     foreground = new java.lang.ref.WeakReference<>(this);
     ((DisplayManager) getSystemService(DISPLAY_SERVICE))
         .registerDisplayListener(displayListener, main);
-    if (enrollment == null && enrollmentFile().isFile()) {
+    if (enrollment == null && setup.enrolled()) {
       try {
         enrollment =
-            new Enrollment(
-                new String(Files.readAllBytes(enrollmentFile().toPath()), StandardCharsets.UTF_8));
+            setup.load();
       } catch (Exception e) {
         message = getString(R.string.scan_new_qr);
       }
@@ -138,9 +133,9 @@ public final class MainActivity extends Activity implements CallSession.Observer
     visible = false;
     if (foreground.get() == this) foreground.clear();
     ((DisplayManager) getSystemService(DISPLAY_SERVICE)).unregisterDisplayListener(displayListener);
-    generation++;
+    setup.invalidate();
     portraits.begin();
-    fetching = false;
+    setup.fetching(false);
     main.removeCallbacks(poll);
     main.removeCallbacks(videoProgress);
     session.detach(this, isChangingConfigurations());
@@ -185,25 +180,11 @@ public final class MainActivity extends Activity implements CallSession.Observer
   }
 
   private boolean permissions() {
-    return checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-        && checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-            == PackageManager.PERMISSION_GRANTED
-        && (android.os.Build.VERSION.SDK_INT < 37
-            || checkSelfPermission("android.permission.ACCESS_LOCAL_NETWORK")
-                == PackageManager.PERMISSION_GRANTED);
+    return SetupCoordinator.granted(android.os.Build.VERSION.SDK_INT,
+        permission -> checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
   }
 
-  private void requestMedia() {
-    requestPermissions(
-        (android.os.Build.VERSION.SDK_INT >= 37
-            ? new String[] {
-              Manifest.permission.CAMERA,
-              Manifest.permission.RECORD_AUDIO,
-              "android.permission.ACCESS_LOCAL_NETWORK"
-            }
-            : new String[] {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}),
-        7);
-  }
+  private void requestMedia() { requestPermissions(SetupCoordinator.permissions(android.os.Build.VERSION.SDK_INT), 7); }
 
   @Override
   public void onRequestPermissionsResult(int request, String[] names, int[] results) {
@@ -249,13 +230,13 @@ public final class MainActivity extends Activity implements CallSession.Observer
     if (request == 9) {
       if (result != RESULT_OK || data == null || data.getData() == null) return;
       android.net.Uri uri = data.getData();
-      int ticket = generation;
+      int ticket = setup.ticket();
       network.execute(() -> {
         try {
           String text = QrImage.read(getContentResolver().openInputStream(uri));
-          main.post(() -> { if (visible && generation == ticket) confirmEnrollment(text); });
+          main.post(() -> { if (visible && setup.current(ticket)) confirmEnrollment(text); });
         } catch (Exception error) {
-          main.post(() -> { if (visible && generation == ticket)
+          main.post(() -> { if (visible && setup.current(ticket))
             showError(getString(R.string.qr_image_error)); });
         }
       });
@@ -287,7 +268,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
           .setPositiveButton(
               getString(R.string.connect),
               (dialog, which) -> {
-                generation++;
+                setup.invalidate();
                 enrollment = candidate;
                 config = null;
                 session.stop();
@@ -304,13 +285,13 @@ public final class MainActivity extends Activity implements CallSession.Observer
   private void refresh(boolean start) {
     if (!visible || enrollment == null) return;
     restartRequested |= start;
-    if (fetching) return;
+    if (setup.fetching()) return;
     if (!permissions()) {
       requestMedia();
       return;
     }
-    fetching = true;
-    int ticket = generation;
+    setup.fetching(true);
+    int ticket = setup.ticket();
     Enrollment target = enrollment;
     // @llr LLR-AND-HISTORY-003
     long callbackTicket = CallbackAlerts.beginRefresh();
@@ -321,18 +302,16 @@ public final class MainActivity extends Activity implements CallSession.Observer
     network.execute(
         () -> {
           try {
-            JSONObject next = ServerApi.configuration(target);
+            JSONObject next = setup.configuration(target);
             main.post(
                 () -> {
-                  if (!visible || ticket != generation) return;
-                  fetching = false;
+                  if (!visible || !setup.current(ticket)) return;
+                  setup.fetching(false);
                   try {
                     boolean changed = config == null || !next.toString().equals(config.toString());
                     boolean credentialsChanged = engine.requiresRestart(next);
-                    if (start || !enrollmentFile().isFile())
-                      Files.write(
-                          enrollmentFile().toPath(),
-                          target.serialized().getBytes(StandardCharsets.UTF_8));
+                    if (start || !setup.enrolled())
+                      setup.remember(target);
                     config = next;
                     if (callbackContact != null) { selectedContact = callbackContact; callbackContact = null; }
                     session.configuration = next;
@@ -361,8 +340,8 @@ public final class MainActivity extends Activity implements CallSession.Observer
           } catch (Exception e) {
             main.post(
                 () -> {
-                  if (!visible || ticket != generation) return;
-                  fetching = false;
+                  if (!visible || !setup.current(ticket)) return;
+                  setup.fetching(false);
                   boolean temporary = ServerApi.temporaryFailure(e);
                   if (e instanceof ServerApi.AccessRevoked) CallbackAlerts.revoked(this,target);
                   session.reconnecting = temporary;
@@ -382,7 +361,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
                   main.removeCallbacks(poll);
                   main.postDelayed(
                       () -> {
-                        if (ticket == generation) refresh(true);
+                        if (setup.current(ticket)) refresh(true);
                       },
                       10000);
                 });
