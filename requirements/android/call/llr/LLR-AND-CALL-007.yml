@@ -21,6 +21,8 @@ text: For a connected call to an App or Terminal contact with server photo-shari
   and bounded JPEG bytes, preserve proportions, hide sender-only actions, and clear on stop, call change
   or lease expiry even if a request is blocked. It shall not renew or delete the peer’s share.
 references:
+- path: zmala_phone/app/src/main/java/org/zmala/phone/CallSession.java
+  type: file
 - path: tests/android/LLT/unit/UpdateHttpTest.java
   type: file
 - path: zmala_phone/app/src/main/java/org/zmala/phone/HttpPolicy.java

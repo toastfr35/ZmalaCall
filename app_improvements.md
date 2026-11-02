@@ -59,8 +59,8 @@ A future Play Store build is a separate product/distribution change, not this re
 
 ## Delivery and verification
 
-This is a proposed development plan, not a new product requirement or a claim that
-changes have been implemented. Preserve current behaviour unless a separate
+This is an implementation plan, not a new product requirement. Implementation and
+verification evidence is recorded below. Preserve current behaviour unless a separate
 feature request explicitly changes it. Each numbered stage is a separate issue,
 feature branch and PR; merge only after required Verify checks pass. Follow the
 repository Android version-bump policy and rebase competing version changes.
@@ -84,7 +84,8 @@ general-purpose event buses or extra processes just to implement this plan.
 Reviewed on 31 October 2026 using the local Floorplan and selected owning source
 files. The map is a navigation aid, not proof of runtime behaviour or a security
 audit. Maps remain ignored local artifacts; these plans are the durable record.
-No runtime implementation or hardware qualification is included in this change.
+Runtime implementation and automated qualification are recorded below; no physical
+phone or vendor-power qualification is implied.
 
 Stage 1 implementation: removed duplicated live audio/reconnection fields from MainActivity. CallSession exposes immutable presentation values and explicit audio actions; the continuity HLT asserts state survival across recreation and snapshot stability. Build, emulator and physical results are recorded separately; no unrun hardware pass is implied.
 
@@ -95,3 +96,26 @@ Stage 3 implemented: extracted setup persistence, permission policy and lifecycl
 Stage 4 implemented: pending notification answers now have one explicit immutable identity/expiry, once-only consumption and replacement/expiry regression coverage. Signed intent verification, native admission and queued eligibility checks remain at their existing trust boundaries. Emulator lifecycle scenarios and physical vendor/Doze checks are recorded separately.
 
 Stage 5 implemented: shared only timeout/no-redirect mechanics and bounded interruptible response reads. Existing authenticated-server and public-updater trust/failure classifications remain separate. Exact-limit, overflow and interruption tests supplement existing redirect/oversized-photo scenarios; public APK streaming remains independently controlled.
+
+Stage 6 implemented: moved duplicated photo eligibility/picker completion validation into the session, and updater call-change notification to application-owned session changes. PhotoShareEpoch and UpdateGate remain the narrow lifetime contracts. Existing late-picker, stop/restart, background-call and ready-during-call scenarios are retained for final emulator execution; no native media ownership moved into the Activity.
+
+## Completion evidence — 2 November 2026
+
+All six stages have separate issues/branches/PRs: #78, #104, #106, #108,
+#110 and #112. Final Android build and 35 unit tests pass. Emulator execution:
+14 scenarios passed and two real updater-replacement scenarios skipped because
+no higher-version signed APK fixture was supplied. Native-call continuity was
+then rerun successfully with an explicit installation-exclusion assertion.
+Scenarios cover observer replacement, call recreation/background/lock, photo
+sharing and late picker work, setup/scanner, contacts, language and update UI.
+The no-install-during-call gate passed independently of real APK replacement.
+Signed background notification Answer/Decline and native incoming admission also passed.
+Requirements and trace references validate. The ignored Floorplan covers 44 files.
+
+No physical phone was connected. Real signed APK replacement, vendor Doze/push
+behavior and acoustic/camera quality remain physical qualification work; no skipped
+scenario is counted as passed. User workflows are unchanged, so Word user guides
+need no corresponding edits. Activity still owns view/dialog orchestration and
+configuration rendering; it no longer duplicates live audio or photo eligibility.
+The coordinator uses the existing screen executor rather than introducing a new
+background framework. Native call/media lifetime remains in CallEngine/CallSession.
