@@ -32,6 +32,7 @@ test('HTTP callbacks wake only the enrolled App destination and reconcile cancel
     dialogs: new Map(),
     registrations: new Map(),
     appCalls: { push },
+    callbackPushTransport: () => push,
     status: () => ({ registrations: [], active_calls: 0, events: [] }),
   };
   const app = createApplication({ store, sipServer: sip });
