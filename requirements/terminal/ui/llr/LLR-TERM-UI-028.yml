@@ -1,0 +1,23 @@
+active: true
+area: Application updates
+derived: false
+header: Independent localized update overlay
+level: 28.0
+links:
+- HLR-TERM-UI-027: null
+normative: true
+ref: ''
+references:
+- path: zmala_terminal/linux/update_screen.py
+  type: file
+- path: tests/terminal/LLT/test_update_messages.py
+  type: file
+reviewed: null
+scope: Experimental
+text: A separate unprivileged display process shall render activation/check/rollback/error
+  messages for every supported locale with Unicode and bidirectional shaping, use
+  English for an unknown locale, survive application-process exit, and withdraw for
+  idle/background phases. It shall issue no TV, USB or call-control operations.
+verification: Compare language coverage with the catalogue and run display integration
+  to inspect bounds and mapped state across a disposable app exit. Review representative
+  rendered language images separately.

@@ -23,9 +23,16 @@ class CallControl:
         self.root.after_idle(self.render)
 
     # @llr LLR-TERM-CALL-012
+    # @llr LLR-TERM-MAINT-028
     def call_event(self, call, state, user, domain):
         """Map Liblinphone states to the model; ignore callbacks from an old or unaccepted call."""
         if state == 1:
+            client = getattr(self, "update_client", None)
+            if client and client.locked:
+                self.engine.call_decline(call, 6)
+                return
+            if client:
+                client.activity()
             if self.setup_stage:
                 self.engine.call_decline(call, 6)
                 return
@@ -136,8 +143,10 @@ class CallControl:
                 if not self.closed and self.generation == generation and self.engine
                 and self.engine.call == call and self.model.state == State.CONNECTING else None)
 
-    # @llr LLR-TERM-CALL-014
+    # @llr LLR-TERM-CALL-014, LLR-TERM-MAINT-028
     def action(self, action):
+        if getattr(self, "update_client", None) and self.update_client.locked:
+            return
         if not action or (not self.engine and action not in ('request_callback', 'cancel_callback')):
             return
         # @llr LLR-TERM-AUDIO-010

@@ -26,7 +26,11 @@ def defer_auto_answer(model, tv, now):
 
 class ManagementLoop:
     # @llr LLR-TERM-POWER-016
+    # @llr LLR-TERM-MAINT-028
     def usb_media_ready(self):
+        client = getattr(self, "update_client", None)
+        if client and client.passive:
+            return True
         power = getattr(self, 'usb_power', None)
         if not power or not power.enabled:
             return True
@@ -197,6 +201,7 @@ class ManagementLoop:
                 self.last_countdown = countdown
                 self.render()
 
+    # @llr LLR-TERM-MAINT-028
     def tick(self):
         """Pump native callbacks and queued results on Tk's thread before scheduling the next tick."""
         if self.closed:
@@ -216,6 +221,8 @@ class ManagementLoop:
                 if self.model.state == State.HOME:
                     self.render()
             now = time.monotonic()
+            from zmala_terminal.common.update_client import tick_terminal
+            tick_terminal(self, now)
             self.update_timers(now)
             self.update_setup_display(now)
             if self.carousel_motion:
