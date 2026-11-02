@@ -735,3 +735,5 @@ Stop clears it immediately and requests deletion; renewals every three seconds
 maintain the server's 12-second lease. Call identity plus `PhotoShareEpoch` reject
 late results after stop or a new call. Network failure ends sharing with a message;
 it does not end the voice call. A receiving phone polls the same authenticated endpoint, preserving the last lease deadline through failed requests. It hides sender-only actions and clears the image on stop, expiry or call change. Only one caller shares at a time; either app can claim the next idle share. This is not a photo album.
+
+CallSession owns microphone mute, selected output and reconnection state. MainActivity consumes an immutable session snapshot and sends explicit mute/output actions; recreation does not copy live audio state into a second owner.

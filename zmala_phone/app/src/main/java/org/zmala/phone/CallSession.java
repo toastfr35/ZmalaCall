@@ -25,6 +25,17 @@ final class CallSession {
   String status = "Connecting…";
   boolean muted, reconnecting, visible, serviceRequested;
   CallEngine.Output output = CallEngine.Output.SPEAKER;
+  /** Immutable presentation values; the session owns all live audio state. */
+  static final class Snapshot {
+    final boolean muted, reconnecting;
+    final CallEngine.Output output;
+    Snapshot(boolean muted, boolean reconnecting, CallEngine.Output output) {
+      this.muted = muted; this.reconnecting = reconnecting; this.output = output;
+    }
+  }
+  Snapshot snapshot() { return new Snapshot(muted, reconnecting, output); }
+  void mute(boolean value) { engine.mute(value); muted = value; }
+  CallEngine.Output selectOutput(CallEngine.Output value) { output = engine.output(value); return output; }
   private final Context context;
   private final Handler main = new Handler(Looper.getMainLooper());
   private final java.util.concurrent.ExecutorService network = Executors.newSingleThreadExecutor();

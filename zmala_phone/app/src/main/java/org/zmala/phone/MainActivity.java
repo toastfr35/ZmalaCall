@@ -49,8 +49,7 @@ public final class MainActivity extends Activity {
   private JSONObject config;
   private LinearLayout page;
   private int generation;
-  private boolean visible, fetching, muted;
-  private boolean reconnecting;
+  private boolean visible, fetching;
   private TextView updateLink;
   private final Runnable videoProgress = new Runnable() {
     public void run() {
@@ -60,7 +59,6 @@ public final class MainActivity extends Activity {
       }
     }
   };
-  private CallEngine.Output output = CallEngine.Output.SPEAKER;
   private Call displayedCall;
   private String selectedContact;
   private String callbackContact;
@@ -116,7 +114,6 @@ public final class MainActivity extends Activity {
     super.onStart();
     visible = true;
     session.attach(this);
-    muted = session.muted; output = session.output; reconnecting = session.reconnecting;
     if (session.configuration != null) config = session.configuration;
     foreground = new java.lang.ref.WeakReference<>(this);
     ((DisplayManager) getSystemService(DISPLAY_SERVICE))
@@ -339,7 +336,7 @@ public final class MainActivity extends Activity {
                     config = next;
                     if (callbackContact != null) { selectedContact = callbackContact; callbackContact = null; }
                     session.configuration = next;
-                    reconnecting = false; session.reconnecting = false;
+                    session.reconnecting = false;
                     if (callScreen != null) callScreen.connectionNotice(null);
                     PushAlerts.remember(this, next);
                     // @llr LLR-AND-HISTORY-003
@@ -368,7 +365,7 @@ public final class MainActivity extends Activity {
                   fetching = false;
                   boolean temporary = ServerApi.temporaryFailure(e);
                   if (e instanceof ServerApi.AccessRevoked) CallbackAlerts.revoked(this,target);
-                  reconnecting = temporary; session.reconnecting = temporary;
+                  session.reconnecting = temporary;
                   // An HTTP polling outage must not tear down an established media call.
                   // Revocation or malformed security/configuration data still stop it immediately.
                   if (!temporary || engine.call == null) session.stop();
@@ -655,17 +652,15 @@ public final class MainActivity extends Activity {
     callScreen =
         new CallScreen(
             this,
-            muted,
-            output,
+            session.snapshot().muted,
+            session.snapshot().output,
             new CallScreen.Actions() {
               public void mute(boolean value) {
-                muted = value; session.muted = value;
-                engine.mute(value);
+                session.mute(value);
               }
 
               public CallEngine.Output output(CallEngine.Output value) {
-                output = engine.output(value); session.output = output;
-                return output;
+                return session.selectOutput(value);
               }
 
               public int volume(int steps) {
@@ -696,7 +691,7 @@ public final class MainActivity extends Activity {
               }
             });
     setContentView(callScreen);
-    if (reconnecting) callScreen.connectionNotice(getString(R.string.reconnecting_server));
+    if (session.snapshot().reconnecting) callScreen.connectionNotice(getString(R.string.reconnecting_server));
     main.removeCallbacks(videoProgress); main.postDelayed(videoProgress, 1000);
     if (!getSharedPreferences("ui", 0).getBoolean("call_hint_seen", false)) {
       callScreen.firstCallHint();
@@ -859,7 +854,7 @@ public final class MainActivity extends Activity {
   }
 
   private void releaseAudio() {
-    session.releaseAudio(); muted = false; output = CallEngine.Output.SPEAKER;
+    session.releaseAudio();
     setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
   }
 
