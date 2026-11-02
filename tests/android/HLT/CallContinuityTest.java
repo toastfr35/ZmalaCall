@@ -1,11 +1,12 @@
 // @test A-HLT-011
-// @requirements HLR-AND-CALL-001, HLR-AND-CALL-003, HLR-AND-UI-001
+// @requirements HLR-AND-CALL-001, HLR-AND-CALL-003, HLR-AND-UI-001, HLR-AND-UPDATE-001
 // @environment native-display
 // @plan On a disposable emulator, answer a signed SIP fixture call, move the activity behind Home,
 // inspect the ongoing service notification and paused native camera, reject a stale hangup intent,
 // retain session-owned mute/output across return/recreation, lock/wake the screen and hang up from the notification while hidden.
+// Attempt install admission while the native call is active and assert refusal.
 // @pass The same core/call survives Home, recreation and screen-off. Camera pauses/restores, no
-// replacement INVITE is sent, and hidden hangup clears service, registration, notification and audio focus.
+// replacement INVITE is sent, installation admission is refused while the native call exists, and hidden hangup clears service, registration, notification and audio focus.
 // This verifies SDK/Android lifecycle behavior, not real microphone quality, vendor power policy or Doze.
 package org.zmala.phone;
 
@@ -50,6 +51,7 @@ public class CallContinuityTest {
       PhoneFixture.INSTRUMENTATION.runOnMainSync(() -> screen.moveTaskToBack(true));
       PhoneFixture.waitFor(() -> !session.visible && !call.isCameraEnabled());
       assertSame(call, session.engine.call); assertSame(core, field.get(session.engine));
+      assertFalse("Installation must remain blocked by the live session", UpdateGate.INSTANCE.beginInstall(System.currentTimeMillis()));
       assertFalse("Backgrounding must not unregister", sip.unregistered);
       context.startService(new Intent(context, CallService.class).setAction(CallService.END).putExtra(CallService.CALL_ID, "old-call"));
       PhoneFixture.INSTRUMENTATION.waitForIdleSync(); assertSame(call, session.engine.call);
