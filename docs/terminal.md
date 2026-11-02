@@ -1483,3 +1483,5 @@ a slot and commits confirmation before selection. Recovery quarantines an
 interrupted unconfirmed trial and selects the confirmed release. Invalid confirmed
 metadata fails closed. No installed updater service uses this foundation yet; see
 `docs/terminal-update-plan.md` for integration and qualification still outstanding.
+
+The not-yet-enabled updater staging layer in `linux/update_package.py` authenticates canonical Ed25519 manifests, checks compatibility/newer sequence and exact package size/digest, and admits only bounded regular files into approved application paths. Root hooks, symlinks and private runtime data are rejected. Signing credentials are not part of this code.
