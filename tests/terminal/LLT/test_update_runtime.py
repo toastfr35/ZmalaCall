@@ -20,6 +20,7 @@ class Response(io.BytesIO):
 
 
 class DownloadTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == 'posix', 'Requires POSIX durable cache directory synchronization')
     def test_origin_limits_digest_and_partial_cleanup(self):
         url = 'https://github.com/toastfr35/ZmalaCall/releases/download/v1.0.0/ZmalaTerminal-Update.tar.gz'
         body = b'package'
