@@ -58,7 +58,13 @@ export interface HttpContext {
 }
 export type AuthContext = Pick<HttpContext, 'store' | 'adminSessions'>;
 export type BackupContext = Pick<HttpContext, 'store' | 'backups'>;
-export type AdminContext = Pick<HttpContext, 'store' | 'sipServer' | 'callbacks' | 'consoleJobs' | 'terminalStatuses' | 'writeBootstrap'>;
-export interface DeviceContext extends Pick<HttpContext, 'store' | 'sipServer' | 'callbacks' | 'consoleJobs' | 'terminalStatuses'> {
+export type AdminContext = Pick<
+  HttpContext,
+  'store' | 'sipServer' | 'callbacks' | 'consoleJobs' | 'terminalStatuses' | 'writeBootstrap'
+>;
+export interface DeviceContext extends Pick<
+  HttpContext,
+  'store' | 'sipServer' | 'callbacks' | 'consoleJobs' | 'terminalStatuses'
+> {
   deviceId?: string;
 }

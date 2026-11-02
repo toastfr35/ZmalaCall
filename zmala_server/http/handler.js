@@ -136,12 +136,18 @@ function createHandler(context) {
           error: 'Administration is only available on the server local network.',
         });
       if (
-        await authRoutes(req, res, url, { store, adminSessions: context.adminSessions }, {
-          local,
-          admin,
-          secure,
-          token: cookie || token,
-        })
+        await authRoutes(
+          req,
+          res,
+          url,
+          { store, adminSessions: context.adminSessions },
+          {
+            local,
+            admin,
+            secure,
+            token: cookie || token,
+          },
+        )
       )
         return;
       if (req.method === 'GET' && url.pathname === '/permissions') {
@@ -174,7 +180,17 @@ function createHandler(context) {
         );
       }
       if (await backupRoutes(req, res, url, { store, backups })) return;
-      if (await adminRoutes(req, res, url, { store, sipServer, callbacks, consoleJobs, terminalStatuses, writeBootstrap })) return;
+      if (
+        await adminRoutes(req, res, url, {
+          store,
+          sipServer,
+          callbacks,
+          consoleJobs,
+          terminalStatuses,
+          writeBootstrap,
+        })
+      )
+        return;
       if (url.pathname === '/api/photos' && req.method === 'POST')
         return send(res, 201, { photo: await photos.upload(req) });
       send(res, 404, { error: 'Not found.' });
