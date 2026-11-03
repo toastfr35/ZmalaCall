@@ -65,7 +65,7 @@ class CheckTransport:
         if self.run(cancel, '--physical-address').strip().lower() != self.address:
             raise RuntimeError('HDMI route changed during check')
         if self.run(cancel, '--logical-address').strip() not in ('4', '8', '11'):
-            self.run(cancel, '--playback', '--cec-version-1.4', '--osd-name', 'ZmalaCall')
+            self.run(cancel, '--playback', '--cec-version-1.4', '--osd-name', 'Zmala Terminal')
 
     # @llr LLR-TERM-TV-020
     def power(self, cancel):

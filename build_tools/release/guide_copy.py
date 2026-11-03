@@ -6,9 +6,9 @@ normative contracts and technical detail remain in requirements/ and docs/*.md.
 
 PHONE = {
     'phone_installation.docx': (
-        'Install ZmalaPhone',
+        'Install Zmala Phone',
         'Use this guide to install the Android app and connect your account. Ask the person '
-        'setting up ZmalaCall for your private setup QR code. You do not need an administrator password.',
+        'setting up Zmala for your private setup QR code. You do not need an administrator password.',
         [
             ('Before you start', [
                 'You need an Android 9 or newer phone with a supported 64-bit processor, an internet '
@@ -29,7 +29,7 @@ PHONE = {
                 'ask your helper before removing anything; a development copy may need different steps.',
             ]),
             ('2 Connect your account', [
-                'Open ZmalaPhone. Tap Scan setup QR and point the camera at the second (account setup) code, or tap Open QR image '
+                'Open Zmala Phone. Tap Scan setup QR and point the camera at the second (account setup) code, or tap Open QR image '
                 'and select a saved picture. Check the server address, then tap Connect.',
                 'Allow camera and microphone access when asked. On Android 17, also allow local network '
                 'access. A local HTTP address shows an unencrypted-connection warning; use it only on '
@@ -57,7 +57,7 @@ PHONE = {
         ],
     ),
     'phone_guide.docx': (
-        'Use ZmalaPhone',
+        'Use Zmala Phone',
         'Tap someone’s contact card, then Call. This guide explains everyday calls, callbacks and '
         'updates. If the app still asks for a setup QR, follow ZmalaPhone-Installation.pdf first.',
         [
@@ -123,7 +123,7 @@ PHONE = {
                 'The version number is at the bottom of the contact list. Tap Updates, or Update available '
                 'when shown. Choose Update to download, or Later to postpone for a day.',
                 'Wait through Checking update, Preparing installation and Installing update. Allow '
-                'installation from ZmalaPhone if Android asks, then confirm installation if required. '
+                'installation from Zmala Phone if Android asks, then confirm installation if required. '
                 'Your setup is kept. Do not uninstall for an ordinary update.',
                 'On supported Android 12 or newer phones, you can turn on Automatic updates on Wi-Fi. '
                 'It starts off. It needs installation permission, an unmetered connection and thirty '
@@ -176,7 +176,7 @@ REVISIONS = {
             'audible step and matches the former 40% setting. 100% keeps the same maximum. '
             'The steps in between are now easier to use for speech. It does not change your microphone, '
             'ringtone or button sounds. Ask your helper to adjust those separate sound settings if needed.',
-            'During a call, someone using ZmalaPhone can show you a photo. It fills your screen '
+            'During a call, someone using Zmala Phone can show you a photo. It fills your screen '
             'instead of the video, but you can keep talking and change the volume. They tap Stop '
             'sharing on their phone to return to video. Ending the call also clears the photo.',
         ],
@@ -199,11 +199,11 @@ REVISIONS = {
         ],
         'A thin blue bar at the bottom': [
             'A thin blue bar at the bottom appears after ten seconds without a button press, '
-            'while the TV confirms that ZmalaCall is displayed. A button press restarts the countdown. '
+            'while the TV confirms that Zmala is displayed. A button press restarts the countdown. '
             'After any incoming call ends, answered or not, a fresh countdown starts. Return to TV '
             'defaults to 30 minutes; an already saved delay stays unchanged. When it finishes, a TV '
             'that was off returns directly to standby; one that was on returns to its previous input.',
-            'If the TV cannot confirm its selected input, ZmalaCall leaves it alone for manual control. '
+            'If the TV cannot confirm its selected input, Zmala leaves it alone for manual control. '
             'A confirmed switch to another input cancels automatic return. Your helper can choose '
             'Never to disable it. Automatic TV control must also have passed setup.',
         ],
@@ -274,11 +274,11 @@ REVISIONS = {
             'any ringtone preview.',
         ],
         'End the call with red.': [
-            'End the call with red. When the TV confirms that ZmalaCall is displayed, a blue countdown '
+            'End the call with red. When the TV confirms that Zmala is displayed, a blue countdown '
             'bar appears after ten seconds without a button press. Return to TV defaults to 30 minutes; '
             'an already saved delay stays unchanged. After the delay, a TV that was off returns directly '
             'to standby; one that was on returns to its previous input. Repeat with an unanswered call.',
-            'If the selected input cannot be confirmed, ZmalaCall leaves the TV alone. You can use the '
+            'If the selected input cannot be confirmed, Zmala leaves the TV alone. You can use the '
             'TV remote normally. A confirmed switch to another input cancels the automatic return. '
             'Choose Never to disable the countdown.',
         ],
@@ -310,7 +310,7 @@ REVISIONS = {
             'means your changes have not been applied; select Save changes to apply them.',
             'Return to TV after inactivity defaults to 30 minutes for new terminals. Existing saved '
             'delays stay unchanged. Choose a shorter delay, 30 minutes or Never, then Save changes. '
-            'Automatic return operates only while the TV provides fresh confirmation that ZmalaCall '
+            'Automatic return operates only while the TV provides fresh confirmation that Zmala '
             'is selected. If the TV cannot confirm its input, it stays on for manual control.',
             'Open Setup to download the server QR document. Its first step explains Android Wi-Fi sharing; '
             'a separate printed Wi-Fi QR is also available. Give setup codes privately to the '
@@ -412,7 +412,7 @@ def improve_readability(root, filenames=None):
                 break
         if filename in ('server_prep.docx', 'terminal_config.docx'):
             # Keep administrator handover here; the phone guides own daily use.
-            heading = next(p for p in doc.paragraphs if p.text == 'Setting up ZmalaPhone')
+            heading = next(p for p in doc.paragraphs if p.text == 'Setting up Zmala Phone')
             following = heading._p.getnext()
             while following is not None and following.tag.endswith('}p'):
                 next_element = following.getnext()
@@ -422,7 +422,7 @@ def improve_readability(root, filenames=None):
                 'Create an App account for each phone and add it to the family’s shared group. '
                 'Keep Terminal accounts for TV terminals. In Accounts, select the chain-link '
                 'Connection details button beside the person, then Download server QR PDF. '
-                'The App sheet has two QR codes: download the app first, then scan the account code in ZmalaPhone. '
+                'The App sheet has two QR codes: download the app first, then scan the account code in Zmala Phone. '
                 'Give this private sheet to that phone user; they do not need the administration password.',
                 'Send the signed ZmalaPhone.apk download link with ZmalaPhone-Installation.pdf '
                 'and ZmalaPhone-Guide.pdf. The installation guide covers a printed QR or a QR '
@@ -490,7 +490,7 @@ def improve_readability(root, filenames=None):
                     doc.add_paragraph(text).paragraph_format.keep_together = True
         release_link_seen = False
         for paragraph in doc.paragraphs:
-            if paragraph.text == 'Published ZmalaCall releases':
+            if paragraph.text == 'Published Zmala releases':
                 if release_link_seen:
                     paragraph._p.getparent().remove(paragraph._p)
                     continue
@@ -514,6 +514,6 @@ def improve_readability(root, filenames=None):
                 for row in table.rows:
                     if row.cells[0].text.strip() == 'Return to TV':
                         row.cells[1].text = '30 seconds; 1, 2, 5, 10, 20 or 30 minutes (default); Never'
-        doc.core_properties.author = 'ZmalaCall'
+        doc.core_properties.author = 'Zmala'
         doc.core_properties.last_modified_by = ''
         doc.save(path)

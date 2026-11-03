@@ -15,5 +15,5 @@ class UpdateMessageTests(unittest.TestCase):
         self.assertEqual(set(MESSAGES),set(languages))
         for language in languages:
             for phase in STATES:
-                text=message(language,phase);self.assertTrue(text);self.assertIn('ZmalaCall',text) if phase!='checking' else None
+                text=message(language,phase);self.assertTrue(text);self.assertIn('Zmala',text) if phase!='checking' else None
         self.assertEqual(message('unknown','updating'),message('en','updating'))

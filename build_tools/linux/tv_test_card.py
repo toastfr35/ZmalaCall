@@ -10,7 +10,7 @@ def main():
     parser.add_argument('--ready', type=Path, required=True)
     args = parser.parse_args()
     root = tk.Tk()
-    root.title('ZmalaCall HDMI test card')
+    root.title('Zmala Terminal HDMI test card')
     # The Pi kiosk has no window manager to honour the fullscreen hint.
     root.overrideredirect(True)
     root.geometry(f'{root.winfo_screenwidth()}x{root.winfo_screenheight()}+0+0')
@@ -27,7 +27,7 @@ def main():
         for index, colour in enumerate(colours):
             canvas.create_rectangle(index * width / 7, 0, (index + 1) * width / 7, height, fill=colour, outline='')
         canvas.create_rectangle(width * .06, height * .18, width * .94, height * .82, fill='#101820', outline='white', width=8)
-        canvas.create_text(width / 2, height * .32, text='ZmalaCall TV TEST', fill='white', font=('Sans', max(20, int(height / 12)), 'bold'))
+        canvas.create_text(width / 2, height * .32, text='Zmala Terminal TV TEST', fill='white', font=('Sans', max(20, int(height / 12)), 'bold'))
         canvas.create_text(width / 2, height * .48, text='TERMINAL HDMI INPUT', fill='#66ff99', font=('Sans', max(16, int(height / 18)), 'bold'))
         canvas.create_text(width / 2, height * .64, text=datetime.now().strftime('%H:%M:%S'), fill='white', font=('Monospace', max(16, int(height / 16))))
         for x, y, text in [(0.08, .1, 'TOP LEFT'), (.92, .1, 'TOP RIGHT'), (.08, .9, 'BOTTOM LEFT'), (.92, .9, 'BOTTOM RIGHT')]:

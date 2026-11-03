@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="zmala_server/assets/zmala-icon.svg" alt="ZmalaCall logo" width="96" height="96">
+  <img src="zmala_server/assets/zmala-icon.svg" alt="Zmala logo" width="96" height="96">
 </p>
 
-<h1 align="center">ZmalaCall</h1>
+<h1 align="center">Zmala</h1>
 
 <p align="center"><strong>Easy family video calls, from the comfort of your sofa.</strong></p>
 
 <p align="center">
-  <img src="docs/images/zmalacall-overview.png" alt="A retired couple calling from a TV terminal and a younger person using the Android app, connected through ZmalaServer." width="1000">
+  <img src="docs/images/zmala-overview.png" alt="A retired couple calling from a TV terminal and a younger person using the Android app, connected through Zmala Server." width="1000">
 </p>
 
 <p align="center">
@@ -17,12 +17,12 @@
   <a href="https://github.com/toastfr35/ZmalaCall/issues">Report an issue</a>
 </p>
 
-ZmalaCall brings family and friends onto a familiar TV screen. Settle into your
+Zmala brings family and friends onto a familiar TV screen. Settle into your
 sofa, choose a familiar face with a small remote, confirm the call and enjoy
 the conversation. Family can join from their Android phones or another TV
 terminal.
 
-**ZmalaTerminal is designed to make video calling feel comfortable and
+**Zmala Terminal is designed to make video calling feel comfortable and
 approachable.** It suits anyone who feels most at home with a TV and physical
 buttons, including older relatives who want an easy way to see the family.
 Large portraits, a simplified interface and clear on-screen prompts help each
@@ -92,7 +92,7 @@ local network.
 
 ## Call from an Android phone
 
-Install **ZmalaPhone** and scan the setup QR code supplied by your administrator,
+Install **Zmala Phone** and scan the setup QR code supplied by your administrator,
 on paper or displayed on another screen. Use **Open QR image** for a saved QR
 picture on the same phone. You do not need access to the server's
 administration page.
@@ -114,18 +114,18 @@ wait until the app is idle. Android may ask you to confirm installation.
 Allow notifications to receive incoming-call alerts while the app is closed or
 the phone is asleep. Callback requests can also generate a notification; tapping it
 opens the contact without calling. This requires internet access and Firebase push configured
-on the server. After using Android's **Force stop**, reopen ZmalaPhone to receive
+on the server. After using Android's **Force stop**, reopen Zmala Phone to receive
 calls again.
 
 ## How it fits together
 
 The system has three components:
 
-- **ZmalaTerminal:** a Raspberry Pi connected to a TV, camera and remote, for
+- **Zmala Terminal:** a Raspberry Pi connected to a TV, camera and remote, for
   simple calls from the sofa.
-- **ZmalaServer:** a separate Raspberry Pi that connects calls and lets a helper
+- **Zmala Server:** a separate Raspberry Pi that connects calls and lets a helper
   manage accounts, contacts and devices from a web browser.
-- **ZmalaPhone:** an Android app so family can join calls from their phones.
+- **Zmala Phone:** an Android app so family can join calls from their phones.
 
 The **terminal** and **Android app** provide the calling interfaces. The
 **server** holds accounts and settings, connects calls and relays their audio
@@ -209,9 +209,9 @@ download names (older releases may contain only the terminal):
 
 | Product | Installation PDF | User guide PDF | Installer |
 | --- | --- | --- | --- |
-| ZmalaTerminal | `ZmalaTerminal-Installation.pdf` | `ZmalaTerminal-Guide.pdf` | `ZmalaTerminal-Pi4-setup.exe` |
-| ZmalaServer | `ZmalaServer-Installation.pdf` | `ZmalaServer-Guide.pdf` | `ZmalaServer-Pi4-setup.exe` |
-| ZmalaPhone | `ZmalaPhone-Installation.pdf` | `ZmalaPhone-Guide.pdf` | `ZmalaPhone.apk` |
+| Zmala Terminal | `ZmalaTerminal-Installation.pdf` | `ZmalaTerminal-Guide.pdf` | `ZmalaTerminal-Pi4-setup.exe` |
+| Zmala Server | `ZmalaServer-Installation.pdf` | `ZmalaServer-Guide.pdf` | `ZmalaServer-Pi4-setup.exe` |
+| Zmala Phone | `ZmalaPhone-Installation.pdf` | `ZmalaPhone-Guide.pdf` | `ZmalaPhone.apk` |
 
 Published release downloads do not require a GitHub account. Run the Pi setup
 programs on a Windows computer; install the APK directly on your Android phone.
@@ -228,7 +228,7 @@ Download the matching PDFs for each product you use.
    server QR codes, and complete the TV-control checks. The server QR code
    assigns the terminal identity.
 4. **Set up phones.** Create a separate App account for each phone and give its
-   user the setup QR code. Install ZmalaPhone, scan the QR and allow camera,
+   user the setup QR code. Install Zmala Phone, scan the QR and allow camera,
    microphone and notification permissions.
 5. **Make a call.** Put the accounts in a shared calling group. Select a contact
    on the TV or tap a green contact name on the phone.
@@ -239,12 +239,12 @@ Use the PDFs supplied with your release:
 
 | Guide | What it covers |
 | --- | --- |
-| ZmalaServer Installation | SD card, installation and secure internet access |
-| ZmalaServer Guide | Accounts, groups, setup QR codes, backups and maintenance |
-| ZmalaTerminal Installation | SD card, physical connections and installation |
-| ZmalaTerminal Guide | Enrollment, TV settings, remote controls, calls and everyday help |
-| ZmalaPhone Installation | APK installation, QR enrollment and incoming alerts |
-| ZmalaPhone Guide | Contacts, calls, camera controls and everyday help |
+| Zmala Server Installation | SD card, installation and secure internet access |
+| Zmala Server Guide | Accounts, groups, setup QR codes, backups and maintenance |
+| Zmala Terminal Installation | SD card, physical connections and installation |
+| Zmala Terminal Guide | Enrollment, TV settings, remote controls, calls and everyday help |
+| Zmala Phone Installation | APK installation, QR enrollment and incoming alerts |
+| Zmala Phone Guide | Contacts, calls, camera controls and everyday help |
 
 ---
 

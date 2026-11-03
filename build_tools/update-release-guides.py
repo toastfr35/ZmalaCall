@@ -29,11 +29,11 @@ def update_existing():
                 text = text.replace(old, new)
             if text.startswith('Open the newest successful Build terminal installer run'):
                 text = ('Open the release link supplied by your administrator. Download '
-                        'ZmalaTerminal-Pi4-setup.exe and the two ZmalaTerminal PDF guides. '
+                        'ZmalaTerminal-Pi4-setup.exe and the two Zmala Terminal PDF guides. '
                         'Run the executable on your Windows PC; it installs the software on the Pi over Ethernet.')
             if text.startswith('Open the latest successful Build server installer run'):
                 text = ('Open the release link supplied by your administrator. Download '
-                        'ZmalaServer-Pi4-setup.exe and the two ZmalaServer PDF guides. '
+                        'ZmalaServer-Pi4-setup.exe and the two Zmala Server PDF guides. '
                         'Run the executable on your Windows PC; the PDF guides sit beside it.')
             if text.startswith('A published release is another option'):
                 text = ('Development builds are also available from successful GitHub Actions runs. '
@@ -46,8 +46,8 @@ def update_existing():
                     relation._target = RELEASES
             for node in p._p.iter(qn('w:t')):
                 if node.text and node.text.startswith('Latest successful '):
-                    node.text = 'Published ZmalaCall releases'
-        doc.core_properties.author = 'ZmalaCall'
+                    node.text = 'Published Zmala releases'
+        doc.core_properties.author = 'Zmala'
         doc.core_properties.last_modified_by = ''
         doc.save(path)
 
@@ -97,12 +97,12 @@ def build_phone(filenames=None):
                     paragraph._p.append(link)
                     paragraph.add_run(after)
         footer = section.footer.paragraphs[0]
-        footer.add_run('ZmalaPhone  |  ')
+        footer.add_run('Zmala Phone  |  ')
         field = OxmlElement('w:fldSimple')
         field.set(qn('w:instr'), 'PAGE')
         footer._p.append(field)
         doc.core_properties.title = title
-        doc.core_properties.author = 'ZmalaCall'
+        doc.core_properties.author = 'Zmala'
         doc.core_properties.last_modified_by = ''
         doc.save(ROOT / 'docs' / filename)
 

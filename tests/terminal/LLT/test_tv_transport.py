@@ -50,7 +50,7 @@ class TVTransportTests(unittest.TestCase):
         self.tv._run.side_effect=['3.0.0.0']
         with self.assertRaisesRegex(RuntimeError,'route changed'): self.transport.prepare(self.clock)
         self.tv._run.side_effect=['2.0.0.0','1','']; self.transport.prepare(self.clock)
-        self.tv._run.assert_called_with('--playback','--cec-version-1.4','--osd-name','ZmalaCall')
+        self.tv._run.assert_called_with('--playback','--cec-version-1.4','--osd-name','Zmala Terminal')
 
     def test_power_retries_wake_and_reports_incomplete_acknowledgements(self):
         self.assertTrue(self.transport.power(self.clock)); self.assertEqual(self.clock.waits,[3,0,2,3,3])

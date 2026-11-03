@@ -46,9 +46,9 @@ class CallbackMailer {
       .slice(0, 16);
     try {
       const result = await this.transport().sendMail({
-        from: { name: 'ZmalaCall', address: v.smtp.from },
+        from: { name: 'Zmala', address: v.smtp.from },
         to: address,
-        subject: 'ZmalaCall: callback requested',
+        subject: 'Zmala: callback requested',
         messageId: `<${request.id}.${recipientHash}@zmalacall.local>`,
         text: `${name} would like you to call back.\n\nOpen your calling app and call ${name} (sip:${request.from}@${v.host}).\nRequested: ${request.created_at}\nThis callback request will be removed at ${request.expires_at}.\n\nZmalaCall`,
         disableFileAccess: true,

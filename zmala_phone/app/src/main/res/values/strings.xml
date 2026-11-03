@@ -11,7 +11,7 @@
   <string name="scanner_prompt" formatted="false">Scan your setup QR code</string>
   <string name="qr_image_error" formatted="false">No readable setup QR code was found. Choose the QR picture, or scan the printed code.</string>
   <string name="no_picker" formatted="false">No image picker is available. Scan your printed setup QR instead.</string>
-  <string name="connect_title" formatted="false">Connect to ZmalaCall</string>
+  <string name="connect_title" formatted="false">Connect to Zmala</string>
   <string name="connect" formatted="false">Connect</string>
   <string name="cancel" formatted="false">Cancel</string>
   <string name="retry_connection" formatted="false">Retry connection</string>
@@ -81,15 +81,15 @@
   <string name="alerts_preparing" formatted="false">Preparing incoming alerts…</string>
   <string name="alerts_retry" formatted="false">Incoming alerts unavailable\nTry again</string>
   <string name="incoming_calls" formatted="false">Incoming calls</string>
-  <string name="alerts_server_help" formatted="false">Keep ZmalaPhone open to receive calls for now. Ask the person who supplied your setup QR to enable incoming alerts on the server.</string>
-  <string name="notification_settings_help" formatted="false">Open Android Settings &gt; Apps &gt; ZmalaPhone &gt; Notifications to enable incoming calls.</string>
-  <string name="notification_explanation_title" formatted="false">Receive calls when ZmalaPhone is closed</string>
+  <string name="alerts_server_help" formatted="false">Keep Zmala Phone open to receive calls for now. Ask the person who supplied your setup QR to enable incoming alerts on the server.</string>
+  <string name="notification_settings_help" formatted="false">Open Android Settings &gt; Apps &gt; Zmala Phone &gt; Notifications to enable incoming calls.</string>
+  <string name="notification_explanation_title" formatted="false">Receive calls when Zmala Phone is closed</string>
   <string name="continue_action" formatted="false">Continue</string>
-  <string name="notification_channel_help" formatted="false">Rings when someone calls your ZmalaPhone account.</string>
+  <string name="notification_channel_help" formatted="false">Rings when someone calls your Zmala Phone account.</string>
   <string name="updates" formatted="false">Updates</string>
   <string name="update_available" formatted="false">Update available</string>
-  <string name="check_updates_description" formatted="false">Check for ZmalaPhone updates</string>
-  <string name="updates_title" formatted="false">ZmalaPhone updates</string>
+  <string name="check_updates_description" formatted="false">Check for Zmala Phone updates</string>
+  <string name="updates_title" formatted="false">Zmala Phone updates</string>
   <string name="automatic_updates" formatted="false">Automatic updates on Wi-Fi</string>
   <string name="update" formatted="false">Update</string>
   <string name="check_now" formatted="false">Check now</string>
@@ -112,11 +112,11 @@
   <string name="download_failed" formatted="false">Update could not be downloaded or verified. Try again later.</string>
   <string name="scan_new_qr" formatted="false">Scan a new setup QR code.</string>
   <string name="calling_setup_failed" formatted="false">Unable to start calling. Check app permissions and setup.</string>
-  <string name="setup_invalid" formatted="false">This setup QR is not valid for ZmalaPhone. Ask the person who supplied it for a current App QR.</string>
+  <string name="setup_invalid" formatted="false">This setup QR is not valid for Zmala Phone. Ask the person who supplied it for a current App QR.</string>
   <string name="access_revoked" formatted="false">Account access was revoked. Scan a current App QR code.</string>
   <string name="media_permissions" formatted="false">Camera, microphone and local network access are needed for video calls. Enable them in Android Settings.</string>
-  <string name="notification_explanation" formatted="false">Allow notifications for incoming calls and callback requests when you\'re using another app or the phone is asleep. Internet and access to your call server are needed. If you use Android\'s Force stop, open ZmalaPhone again to receive alerts.</string>
-  <string name="update_explanation" formatted="false">Updates wait while calls ring or are connected. Automatic installation runs only while ZmalaPhone is open and idle; Android may still ask you to confirm. Your setup is kept.</string>
+  <string name="notification_explanation" formatted="false">Allow notifications for incoming calls and callback requests when you\'re using another app or the phone is asleep. Internet and access to your call server are needed. If you use Android\'s Force stop, open Zmala Phone again to receive alerts.</string>
+  <string name="update_explanation" formatted="false">Updates wait while calls ring or are connected. Automatic installation runs only while Zmala Phone is open and idle; Android may still ask you to confirm. Your setup is kept.</string>
   <string name="lan_warning" formatted="false">\n\nLAN mode: setup and calls are not encrypted. Use your trusted home network.</string>
   <string name="secure_confirm" formatted="false">\n\nUse this server for your app account?</string>
   <string name="open_contact_suffix" formatted="false">. Open contact</string>

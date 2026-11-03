@@ -34,7 +34,7 @@ SERVER_INSTALL = {'', 'Before you start', 'Prepare the microSD card',
 
 def selected(section, mode):
     if mode == 'terminal':
-        return section != 'Setting up ZmalaPhone'
+        return section != 'Setting up Zmala Phone'
     if mode == 'server-install':
         return section in SERVER_INSTALL
     if mode == 'server-use':
@@ -126,7 +126,7 @@ def build(name, destination):
         'title': ParagraphStyle('title', fontName='Helvetica-Bold', fontSize=27, leading=33,
                                 textColor=INK, spaceAfter=16),
     }
-    title = name.replace('-', ' ')
+    title = name.replace('ZmalaTerminal', 'Zmala Terminal').replace('ZmalaServer', 'Zmala Server').replace('ZmalaPhone', 'Zmala Phone').replace('-', ' ')
     if name.startswith('ZmalaPhone-') or name == 'ZmalaTerminal-Guide':
         styles['body'].leading = 15
         styles['body'].spaceAfter = 6
@@ -149,13 +149,13 @@ def build(name, destination):
         canvas.rect(22 * mm, A4[1] - 18 * mm, 165 * mm, 1.2 * mm, fill=1, stroke=0)
         canvas.setFont('Helvetica', 8)
         canvas.setFillColor(colors.HexColor('#647168'))
-        canvas.drawString(22 * mm, 13 * mm, 'ZmalaCall  |  ' + title)
+        canvas.drawString(22 * mm, 13 * mm, 'Zmala  |  ' + title)
         canvas.drawRightString(187 * mm, 13 * mm, str(document.page))
         canvas.restoreState()
 
     SimpleDocTemplate(str(destination / (name + '.pdf')), pagesize=A4,
                       leftMargin=22 * mm, rightMargin=23 * mm, topMargin=25 * mm,
-                      bottomMargin=23 * mm, title=title, author='ZmalaCall').build(
+                      bottomMargin=23 * mm, title=title, author='Zmala').build(
                           story, onFirstPage=frame, onLaterPages=frame)
 
 

@@ -29,7 +29,7 @@ class ConfigurationControl:
         # @llr LLR-TERM-UI-025
         self.language = update.language
         self.font_family = font_family(self.language, self.available_fonts)
-        self.root.title(f"ZmalaCall · ← → {self.text('select')} · Enter {self.text('call')}/{self.text('answer')} · Esc {self.text('end')}")
+        self.root.title(f"Zmala Terminal · ← → {self.text('select')} · Enter {self.text('call')}/{self.text('answer')} · Esc {self.text('end')}")
         if self.model.state != State.HOME:
             self.pending_config = config
             # Permission revocation cancels a pending auto-answer immediately.

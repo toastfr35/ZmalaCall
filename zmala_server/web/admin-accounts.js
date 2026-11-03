@@ -338,7 +338,7 @@ export function renderConnection() {
     container.append(
       el(
         'p',
-        'ZmalaPhone supports local calls and secure calls across networks when remote access is configured. Incoming alerts while closed require notifications and the server Firebase sender. Install ZmalaPhone, choose Scan setup QR, and scan this account’s server QR code. This account belongs to an app; it cannot also be assigned to a Pi terminal.',
+        'Zmala Phone supports local calls and secure calls across networks when remote access is configured. Incoming alerts while closed require notifications and the server Firebase sender. Install Zmala Phone, choose Scan setup QR, and scan this account’s server QR code. This account belongs to an app; it cannot also be assigned to a Pi terminal.',
         'info-box',
       ),
     );

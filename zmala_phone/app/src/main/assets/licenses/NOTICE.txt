@@ -1,6 +1,6 @@
-# ZmalaPhone source and dependency notices
+# Zmala Phone source and dependency notices
 
-ZmalaPhone is an original focused Android interface using Linphone SDK 5.5.32.
+Zmala Phone is an original focused Android interface using Linphone SDK 5.5.32.
 Linphone Android 6.2.8 (commit dcaa165b77ed374b7beaedc8deae3e8a9b4fd30c) was inspected
 as the reference for SDK ownership, camera/video surfaces, build versions and
 call lifecycle. The full Linphone application UI has not been copied or forked.
@@ -32,7 +32,7 @@ recorded in `SDK-SOURCES.json`. Debug APKs are development artifacts.
 
 ## Corresponding source access
 
-The release description links the exact ZmalaCall commit containing the app,
+The release description links the exact Zmala commit containing the app,
 native corrections and build/install scripts. The SDK's source, Android build
 presets and dependency revisions are available without charge at:
 

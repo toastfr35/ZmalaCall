@@ -13,7 +13,7 @@ request. Old servers without the capability flag are not polled. Display-fixture
 tests cover resizing and retained surfaces; physical audio/video continuity must
 be qualified separately on the deployed Pi.
 
-# ZmalaCall terminal implementation
+# Zmala Terminal implementation
 
 This technical guide covers the shared Python terminal and its Linux/Pi and
 Windows adapters. It is for developers and maintainers. Preparation, enrollment
@@ -32,7 +32,7 @@ Contents: [purpose and functions](#terminal-purpose-and-functions),
 
 ## Terminal purpose and functions
 
-ZmalaCall is a home audio and video call terminal. It connects a television,
+Zmala is a home audio and video call terminal. It connects a television,
 a Nuroum C10 or C20 camera with a microphone and speaker, and a Microsoft Presenter+
 remote to a Raspberry Pi. The television shows the people that the user can call.
 The remote lets the user select a person and control the call.
@@ -779,7 +779,7 @@ After server enrollment the wizard pauses media startup and idle restoration.
 Green starts the standby/wake test; a three-second off interval follows a bounded
 standby-report wait. The user confirms whether the picture went off and returned.
 For input testing, switch to another channel/input with the TV remote. The wizard
-detects departure, returns to ZmalaCall, restores the previous source, then returns
+detects departure, returns to Zmala, restores the previous source, then returns
 again, allowing three seconds between commands. Select the input manually if it
 does not return within 30 seconds. Green confirms success; red offers recovery/retry
 or manual operation. CEC acknowledgements alone do not count as a pass.
@@ -1158,10 +1158,10 @@ sudo systemctl start zmalacall-terminal
 
 ## Windows/source launch and architecture
 
-`Start ZmalaCall Terminal.cmd` prepares the Windows runtime and starts the regular
+`Start Zmala Terminal.cmd` prepares the Windows runtime and starts the regular
 profile; `-Fullscreen` is optional. `-Unconfigured` uses a separate fresh QR
 profile, and `-ConnectWifi` makes that profile join the scanned network instead
-of validating the existing link. `Stop ZmalaCall Terminal.cmd` stops both managed
+of validating the existing link. `Stop Zmala Terminal.cmd` stops both managed
 profiles, checking executable/start time before using recorded PIDs. It does not
 stop the server or directly launched Python processes. Direct entry:
 
@@ -1298,7 +1298,7 @@ certificates, coturn configuration and network limitations.
 
 ## Android companion accounts
 
-ZmalaPhone uses the same palette and logo with an **App** account. Pi enrollment still requires a **Terminal** account. An account cannot belong to both; changing its type revokes its previous device and SIP credentials and requires a fresh setup QR. ZmalaPhone supports LAN or encrypted relay calls and Firebase incoming alerts while closed. A blue App contact can be reached through push without an active SIP registration; delivery still depends on notification permission and connectivity. Both clients must use HTTPS enrollment when secure mode is enabled. See [Android implementation](android.md) for build and qualification status.
+Zmala Phone uses the same palette and logo with an **App** account. Pi enrollment still requires a **Terminal** account. An account cannot belong to both; changing its type revokes its previous device and SIP credentials and requires a fresh setup QR. Zmala Phone supports LAN or encrypted relay calls and Firebase incoming alerts while closed. A blue App contact can be reached through push without an active SIP registration; delivery still depends on notification permission and connectivity. Both clients must use HTTPS enrollment when secure mode is enabled. See [Android implementation](android.md) for build and qualification status.
 
 
 ### Contact presence colours

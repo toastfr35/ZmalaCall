@@ -21,7 +21,7 @@ export async function downloadPdf(route, filename, value) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
   notice(
-    'PDF downloaded. Print at actual size, then scan it with the assigned terminal or ZmalaPhone app.',
+    'PDF downloaded. Print at actual size, then scan it with the assigned terminal or Zmala Phone app.',
   );
 }
 /** @param {string} id */

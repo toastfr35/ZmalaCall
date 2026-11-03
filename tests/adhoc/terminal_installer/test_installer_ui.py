@@ -19,7 +19,7 @@ class TerminalInstallerUITests(InstallerUIContract, unittest.TestCase):
         self.app.target = self.target; self.target.info['installed'] = True
         self.dialogs.askokcancel.return_value = True
         with patch.object(app.threading, 'Thread', side_effect=self.run_worker): self.app.confirm()
-        self.assertIn('Update ZmalaCall', self.dialogs.askokcancel.call_args.args[1])
+        self.assertIn('Update Zmala Terminal', self.dialogs.askokcancel.call_args.args[1])
         self.assertIn('enrollment is preserved', self.dialogs.askokcancel.call_args.args[1])
         self.target.install.assert_called_once_with(self.app.archive, True)
         with patch.object(self.app.details, 'deiconify') as show, patch.object(self.app.details, 'lift') as lift:

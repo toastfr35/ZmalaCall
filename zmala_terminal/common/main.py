@@ -46,7 +46,7 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
 
     def create_window(self, fullscreen):
         self.root = tk.Tk()
-        self.root.title('ZmalaCall')
+        self.root.title('Zmala Terminal')
         self.product_icon = tk.PhotoImage(file=str(ROOT / 'common/assets/zmala-icon.png'))
         self.root.iconphoto(True, self.product_icon)
         self.root.geometry('1100x800')

@@ -423,9 +423,9 @@ public final class MainActivity extends Activity implements CallSession.Observer
     header.setGravity(Gravity.CENTER_VERTICAL);
     ImageView logo = new ImageView(this);
     logo.setImageResource(R.drawable.zmala_logo);
-    logo.setContentDescription("ZmalaCall logo");
+    logo.setContentDescription("Zmala logo");
     header.addView(logo, new LinearLayout.LayoutParams(dp(52), dp(52)));
-    TextView title = label("ZmalaPhone", 28, FG);
+    TextView title = label("Zmala Phone", 28, FG);
     title.setTypeface(null, Typeface.BOLD);
     header.addView(title);
     page.addView(header);
@@ -849,7 +849,7 @@ public final class MainActivity extends Activity implements CallSession.Observer
   private void showError(String text) {
     message = text;
     new AlertDialog.Builder(this)
-        .setTitle("ZmalaPhone")
+        .setTitle("Zmala Phone")
         .setMessage(text)
         .setPositiveButton(getString(R.string.ok), null)
         .show();

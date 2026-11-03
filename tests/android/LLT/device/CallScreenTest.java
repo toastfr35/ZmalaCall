@@ -270,7 +270,7 @@ public class CallScreenTest {
     PhoneFixture.INSTRUMENTATION.runOnMainSync(
         () -> {
           assertEquals(View.INVISIBLE, call.controls.getVisibility());
-          assertNull(PhoneFixture.text(call, "ZmalaPhone"));
+          assertNull(PhoneFixture.text(call, "Zmala Phone"));
           call.remote.performClick();
         });
     PhoneFixture.INSTRUMENTATION.waitForIdleSync();
