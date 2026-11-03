@@ -139,17 +139,19 @@ derived manuals/bundles. Never publish signing keys, device state or private log
 
 ## Current status
 
-Implementation through PR #128 is merged: signed release staging, stable root
+Implementation is delivered through the staged PRs for #113: signed release staging, stable root
 supervisor, boot recovery, independent localized display, safe app admission,
 private data checkpoints, installer bootstrap, server caching/telemetry/admission,
 and release publication. Production signing runs only in GitHub Actions.
 
-The server integration is deployed. Term2 runs the independently verified signed
-v0.3.71 baseline with updater services active. Actual native preparation and an
-isolated native-core startup check passed on the Pi. The current qualification
-branch closes passive-sleep and supervisor-fence continuity gaps and strengthens
-the native preflight. Code, regression plans and runtime requirements are updated.
+The server integration and updater host are deployed. Native preparation and an
+isolated native-core startup check passed on the Pi, followed by a genuine signed
+automatic transition from v0.3.71 to v0.3.72. This initial transition preserved
+account data and TV state but exposed USB wake paths. Qualification fixes protect
+passive media through cleanup and polling and keep boot/fan helpers outside app
+slots. Current executed versions, retests and recovery evidence are recorded in
+[issue #131](https://github.com/toastfr35/ZmalaCall/issues/131).
 
 See [terminal-update-qualification.md](terminal-update-qualification.md) for executed
-checks and remaining automatic-transition/recovery/call scenarios. Physical power
+checks and the qualification procedure. Physical power
 interruption has not been tested. OS/dependency upgrades remain excluded.
