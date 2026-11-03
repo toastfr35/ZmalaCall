@@ -1484,6 +1484,12 @@ application before terminal startup. The updater downloads compatible signed
 releases, prepares them in a dedicated unprivileged sandbox, and activates after
 safe inactivity. It never invokes an OS installer or package manager.
 
+Host compatibility level 2 places display-cookie setup, pairing, compositor and
+passive CEC files under `/usr/local/lib/zmalacall-terminal-host`. Their services
+never execute a candidate's boot helpers. The manual installer provisions these
+before first service startup; older level-1 prototypes need one trusted bootstrap
+update. Ordinary application payloads do not replace this privileged host layer.
+
 `update_package.py` authenticates canonical Ed25519 manifests, compatibility,
 sequence and exact package size/digest, then admits only bounded regular files in
 approved paths. The public trust registry is root-owned; signing material remains

@@ -7,11 +7,12 @@ Before=zmalacall-terminal.service
 StartLimitIntervalSec=0
 
 [Service]
+# @llr LLR-TERM-MAINT-030
 Type=simple
 EnvironmentFile=/etc/zmalacall/terminal.conf
 RuntimeDirectory=zmalacall-display
 RuntimeDirectoryMode=0755
-ExecStartPre=/usr/bin/python3 /opt/zmalacall/current/build_tools/linux/prepare-display.py
+ExecStartPre=/usr/bin/python3 /usr/local/lib/zmalacall-terminal-host/prepare-display.py
 ExecStart=/usr/lib/xorg/Xorg :0 vt7 -auth /run/zmalacall-display/Xauthority -nolisten tcp -noreset -nocursor
 Restart=always
 RestartSec=3

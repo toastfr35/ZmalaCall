@@ -20,6 +20,12 @@ class Response(io.BytesIO):
 
 
 class DownloadTests(unittest.TestCase):
+    def test_boot_host_units_do_not_depend_on_the_selected_candidate(self):
+        root=Path(__file__).resolve().parents[3]
+        for name in ('display','pairing','compositor','cec'):
+            unit=(root/f'build_tools/linux/zmalacall-{name}.service').read_text()
+            self.assertNotIn('/opt/zmalacall/current/',unit)
+            self.assertIn('/usr/local/lib/zmalacall-terminal-host/',unit)
     @unittest.skipUnless(os.name == 'posix', 'Requires POSIX durable cache directory synchronization')
     def test_origin_limits_digest_and_partial_cleanup(self):
         url = 'https://github.com/toastfr35/ZmalaCall/releases/download/v1.0.0/ZmalaTerminal-Update.tar.gz'
@@ -52,11 +58,17 @@ class DownloadTests(unittest.TestCase):
 class HeartbeatTests(unittest.TestCase):
     def test_preparation_rejects_links_and_quarantine_retains_recovery_slots(self):
         from zmala_terminal.linux.update_prepare import validate_built_tree, probe_release
-        from zmala_terminal.linux.update_service import UpdateService
+        from zmala_terminal.linux.update_service import UpdateService, validate_host_helpers
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             tree = root/'built'
             tree.mkdir()
+            host=root/'host';host.mkdir(mode=0o755)
+            for name in ('prepare-display.py','pair-presenter.py','picom.conf','cec_observer.py','cec_device.py'):
+                (host/name).write_text('host fixture');(host/name).chmod(0o644)
+            validate_host_helpers(host)
+            (host/'picom.conf').chmod(0o666)
+            with self.assertRaises(RecoveryError):validate_host_helpers(host)
             (tree/'regular').write_text('safe')
             validate_built_tree(tree)
             launch=Mock()

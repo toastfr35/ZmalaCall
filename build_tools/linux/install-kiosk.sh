@@ -190,6 +190,7 @@ if [ "$framing" = yes ]; then
 fi
 # Release code stays root-owned; the service user writes only persistent state.
 task_step 'Activating release and installing startup services'
+python3 "$task_root/build_tools/linux/install-terminal-host.py" --source "$task_root"
 chown -R root:root "$release"
 chmod -R go-w "$release"
 for task_service in zmalacall-terminal zmalacall-cec zmalacall-compositor zmalacall-display zmalacall-pairing; do

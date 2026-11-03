@@ -5,9 +5,10 @@ After=bluetooth.service
 StartLimitIntervalSec=0
 
 [Service]
+# @llr LLR-TERM-MAINT-030
 Type=simple
 ExecStartPre=/usr/sbin/rfkill unblock bluetooth
-ExecStart=/usr/bin/python3 /opt/zmalacall/current/build_tools/linux/pair-presenter.py
+ExecStart=/usr/bin/python3 /usr/local/lib/zmalacall-terminal-host/pair-presenter.py
 Restart=always
 RestartSec=5
 RuntimeDirectory=zmalacall-pairing

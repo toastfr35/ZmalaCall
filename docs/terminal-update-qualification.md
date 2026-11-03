@@ -12,6 +12,7 @@ credentials, account backups or private logs.
 | Native preparation | The published payload compiled the video, audio and TURN corrections in unprivileged isolated systemd units on the Pi. The previously running terminal stayed active. Passed. |
 | Native core preflight | A disposable candidate copy instantiated, iterated and closed the real Engine with empty account configuration. PrivateDevices, PrivateNetwork, PrivateTmp, read-only host paths and resource deadlines were applied. Passed. |
 | One-time updater bootstrap | A private rollback backup was retained. The signed compiled application passed a stable UI heartbeat before independent updater provisioning. Terminal and updater services are active with zero restarts. Passed. |
+| Independent boot infrastructure | Display-cookie setup, Bluetooth pairing, compositor configuration and passive CEC helpers were provisioned outside application slots. Their systemd units passed verification on the Pi without restarting the terminal. Passed. |
 | TV at bootstrap | The TV remained off. No TV power or input command was requested for update progress. Passed for this run. |
 | Durable transaction/data replay | Automated Linux scenarios kill processes at journal and atomic data-exchange boundaries, then replay recovery. Passed; these are process-death tests, not physical power cuts. |
 | Actual automatic signed transition | Planned: publish the next compatible version, allow normal idle activation and inspect confirmed selection, language, enrollment and peripheral state. Not yet run. |
@@ -29,6 +30,12 @@ heartbeat could lose its remembered sleeping-media state, and supervisor restart
 could briefly publish idle before retaining recovery fencing. Regression checks
 now cover both. Native preflight was strengthened beyond loading shared libraries
 because GUI trial startup deliberately postpones normal media initialization.
+
+Boot-path review found that application-only slots could omit files needed by
+display, pairing and compositor startup. These services now use installer-owned
+host files. Host compatibility level 2 gates new payloads; prototype level-1
+installations require one trusted installer/bootstrap update rather than running
+application-supplied code as root. Term2 has this host bootstrap installed.
 
 Operating-system, kernel, firmware and dependency upgrades remain outside this
 feature. Signing credentials stay in the release workflow. Future qualification

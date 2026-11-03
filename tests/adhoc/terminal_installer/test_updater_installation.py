@@ -24,7 +24,8 @@ class UpdaterInstallationTests(unittest.TestCase):
             (source/'zmala_terminal/linux').mkdir(parents=True)
             for name in module.MODULES:
                 (source/'zmala_terminal/linux'/(name+'.py')).write_bytes((ROOT/'zmala_terminal/linux'/(name+'.py')).read_bytes())
-            for name in ('update-keys.json', 'zmalacall-update-recover.service', 'zmalacall-updater.service', 'zmalacall-update-screen.service'):
+            for name in ('update-keys.json', 'zmalacall-update-recover.service', 'zmalacall-updater.service', 'zmalacall-update-screen.service',
+                         'zmalacall-display.service', 'zmalacall-pairing.service', 'zmalacall-compositor.service', 'zmalacall-cec.service'):
                 (source/'build_tools/linux'/name).write_bytes((ROOT/'build_tools/linux'/name).read_bytes())
             (source/'build_tools/linux/release-info.json').write_text(json.dumps({'version': '1.2.3', 'sequence': 99, 'commit': 'a'*40}))
             installed = root/'opt/zmalacall/releases/working'
@@ -52,4 +53,22 @@ class UpdaterInstallationTests(unittest.TestCase):
             self.assertFalse((stable/'zmala_terminal/common').exists())
             self.assertEqual((stable/'zmala_terminal/__init__.py').read_text(), '')
             self.assertIn('RemainAfterExit=yes', (root/'etc/systemd/system/zmalacall-update-recover.service').read_text())
-            self.assertTrue(all(command[0] in ('systemctl', 'dpkg-query', 'useradd') for command in commands))
+            self.assertTrue(all(command[0] in ('systemctl', 'dpkg-query', 'useradd', 'python3') for command in commands))
+
+    def test_host_helpers_are_copied_outside_application_slots(self):
+        specification = importlib.util.spec_from_file_location('install_terminal_host', ROOT/'build_tools/linux/install-terminal-host.py')
+        module = importlib.util.module_from_spec(specification)
+        specification.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            with patch('os.geteuid', return_value=0), patch('os.fchown'):
+                module.install(ROOT,layout=root)
+                module.install(ROOT,layout=root)
+            destination=root/'usr/local/lib/zmalacall-terminal-host'
+            for name,relative in module.FILES.items():
+                self.assertEqual((destination/name).read_bytes(),(ROOT/relative).read_bytes())
+                self.assertEqual((destination/name).stat().st_mode & 0o777,0o644)
+            for name in ('display','pairing','compositor','cec'):
+                unit=(ROOT/f'build_tools/linux/zmalacall-{name}.service').read_text()
+                self.assertNotIn('/opt/zmalacall/current',unit)
+                self.assertIn('/usr/local/lib/zmalacall-terminal-host/',unit)
