@@ -46,7 +46,8 @@ class UpdateClient:
         self.current = request
         if request['nonce'] != self.nonce:
             self.nonce = request['nonce']
-            self.activated = False
+            # Genuine activity belongs to this app process, not the updater's
+            # nonce. A restarted producer must not reapply an old sleep hint.
         if request['phase'] in ('updating', 'checking', 'rollback', 'recovery_failed'):
             self.locked = True
         elif request['phase'] == 'idle':

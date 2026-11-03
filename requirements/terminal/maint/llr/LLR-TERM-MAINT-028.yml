@@ -47,6 +47,8 @@ text: The application shall acknowledge only a fresh root-owned bounded maintena
   before the new USB manager has a confirmed power observation; a deferred manager's
   initial state shall not prevent a later maintenance lease. Root service cleanup
   shall retain sleeping USB power during an active maintenance fence.
+  After genuine activity resumes, a changed updater nonce shall not reapply an
+  earlier passive hint to the same application process.
 verification: Use bounded local file fixtures and direct call/input/native-owner assertions.
   Verify eligibility, freshness, stale request/trial distinction, symlink rejection
   and passive media guards; physical sleep remains a hardware qualification.

@@ -92,6 +92,8 @@ class UpdateClientTests(unittest.TestCase):
             value.update(phase='idle',heartbeat=130);request.write_text(json.dumps(value));client.refresh()
             self.assertFalse(client.locked);client.activity();self.assertFalse(client.passive)
             client.refresh();self.assertFalse(client.passive)
+            value.update(nonce='b'*32);request.write_text(json.dumps(value));client.refresh()
+            self.assertFalse(client.passive)
             request.unlink();request.symlink_to(status)
             self.assertIsNone(client.refresh())
             request.unlink();request.write_text('{');self.assertIsNone(client.refresh())
