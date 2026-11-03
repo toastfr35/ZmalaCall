@@ -48,7 +48,7 @@ def validate_host_helpers(root, cleanup=Path('/etc/systemd/system/zmalacall-term
     info = root.lstat()
     if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o022:
         raise RecoveryError('Untrusted terminal host helpers')
-    for name in ('prepare-display.py', 'pair-presenter.py', 'picom.conf', 'cec_observer.py', 'cec_device.py'):
+    for name in ('prepare-display.py', 'pair-presenter.py', 'picom.conf', 'cec_observer.py', 'cec_device.py', 'argon_fan.py'):
         info = (root/name).lstat()
         if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
                 or info.st_mode & 0o022 or info.st_size > 65536):

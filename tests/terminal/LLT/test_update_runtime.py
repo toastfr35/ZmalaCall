@@ -64,7 +64,7 @@ class HeartbeatTests(unittest.TestCase):
             tree = root/'built'
             tree.mkdir()
             host=root/'host';host.mkdir(mode=0o755)
-            for name in ('prepare-display.py','pair-presenter.py','picom.conf','cec_observer.py','cec_device.py'):
+            for name in ('prepare-display.py','pair-presenter.py','picom.conf','cec_observer.py','cec_device.py','argon_fan.py'):
                 (host/name).write_text('host fixture');(host/name).chmod(0o644)
             cleanup=root/'usb-power.conf';helper=root/'usb-helper'
             validate_host_helpers(host,cleanup,helper)

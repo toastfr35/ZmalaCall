@@ -1485,7 +1485,7 @@ releases, prepares them in a dedicated unprivileged sandbox, and activates after
 safe inactivity. It never invokes an OS installer or package manager.
 
 Host compatibility level 3 places display-cookie setup, pairing, compositor and
-passive CEC files under `/usr/local/lib/zmalacall-terminal-host`. Their services
+passive CEC and fan-cleanup files under `/usr/local/lib/zmalacall-terminal-host`. Their services
 never execute a candidate's boot helpers. The manual installer provisions these
 before first service startup; older prototypes need one trusted bootstrap
 update. Ordinary application payloads do not replace this privileged host layer.

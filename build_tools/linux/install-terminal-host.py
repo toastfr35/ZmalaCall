@@ -10,6 +10,7 @@ FILES = {
     'picom.conf': 'build_tools/linux/picom.conf',
     'cec_observer.py': 'zmala_terminal/linux/cec_observer.py',
     'cec_device.py': 'zmala_terminal/linux/cec_device.py',
+    'argon_fan.py': 'zmala_terminal/linux/argon_fan.py',
 }
 
 

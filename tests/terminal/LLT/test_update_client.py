@@ -16,6 +16,13 @@ from zmala_terminal.common.input_control import InputControl
 from zmala_terminal.common.engine import Engine
 
 class UpdateClientTests(unittest.TestCase):
+    def test_passive_poll_cannot_resume_usb_before_real_activity(self):
+        from zmala_terminal.common.management import ManagementLoop
+        app=SimpleNamespace(update_client=SimpleNamespace(locked=False,passive=True),usb_power=Mock())
+        ManagementLoop.tick_usb(app)
+        app.usb_power.update.assert_not_called()
+        app.usb_power.refresh.assert_not_called()
+
     def test_deferred_sleep_is_reported_before_usb_state_is_known(self):
         from zmala_terminal.common.model import State
         client=SimpleNamespace(passive=True,tick=Mock())
