@@ -9,13 +9,37 @@ from pathlib import Path
 from types import SimpleNamespace
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from zmala_terminal.common.update_client import UpdateClient
 from zmala_terminal.common.call_control import CallControl
 from zmala_terminal.common.input_control import InputControl
 from zmala_terminal.common.engine import Engine
 
 class UpdateClientTests(unittest.TestCase):
+    def test_tv_shutdown_during_update_does_not_start_restoration(self):
+        from zmala_terminal.linux.tv_control import TVControl
+        television = TVControl(device='/fixture/not-a-cec-device')
+        television.cancel = Mock()
+        television.hold_for_update()
+        television.close()
+        television.cancel.assert_not_called()
+
+    def test_deferred_usb_does_not_start_or_restore_power_until_activity(self):
+        from zmala_terminal.linux.usb_power import UsbPower
+        with patch('zmala_terminal.linux.usb_power.sys.platform', 'linux'), patch.dict(os.environ, {'ZMALA_USB_POWER': '1'}), patch('zmala_terminal.linux.usb_power.threading.Thread') as thread:
+            power = UsbPower(Path('.'), defer=True)
+            thread.assert_not_called()
+            power.command = Mock()
+            power.hold_for_update()
+            power.stopped = True
+            power.run()
+            power.command.assert_not_called()
+            power.stopped = False
+            power.require()
+            thread.assert_called_once()
+            self.assertFalse(power.preserve_shutdown)
+            power.close()
+
     def test_admitted_calls_and_buttons_do_not_touch_media_or_model(self):
         app=SimpleNamespace(update_client=SimpleNamespace(locked=True),engine=Mock(),model=Mock(),usb_power=Mock())
         CallControl.call_event(app,'incoming',1,'caller','domain')
@@ -34,7 +58,9 @@ class UpdateClientTests(unittest.TestCase):
             value={'nonce':'a'*32,'heartbeat':100,'phase':'request','preserve_sleep':True}
             request.write_text(json.dumps(value));client=UpdateClient(request,status,lambda:now[0],os.getuid())
             client.tick(False,'fr',True,True);self.assertFalse(client.locked)
-            now[0]+=1;client.tick(True,'fr',True,True)
+            fence=Mock(side_effect=lambda: self.assertFalse(status.exists() and json.loads(status.read_text())['maintenance']))
+            now[0]+=1;client.tick(True,'fr',True,True,on_fence=fence)
+            fence.assert_called_once()
             reply=json.loads(status.read_text());self.assertTrue(reply['maintenance']);self.assertEqual(reply['language'],'fr')
             self.assertTrue(client.passive)
             now[0]=115;client.tick(False,'fr',True,True);self.assertFalse(client.locked)

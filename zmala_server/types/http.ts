@@ -45,6 +45,7 @@ export interface SipApi {
   status(): SipStatus;
 }
 export interface HttpContext {
+  terminalUpdates?: InstanceType<typeof import('../terminal-updates').TerminalUpdates>;
   backups?: InstanceType<typeof import('../backups').ServerBackups>;
   persistenceReady?(): boolean;
   adminSessions: InstanceType<typeof import('../admin-sessions').AdminSessions>;
@@ -66,5 +67,6 @@ export interface DeviceContext extends Pick<
   HttpContext,
   'store' | 'sipServer' | 'callbacks' | 'consoleJobs' | 'terminalStatuses'
 > {
+  terminalUpdates?: HttpContext['terminalUpdates'];
   deviceId?: string;
 }

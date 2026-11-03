@@ -35,12 +35,14 @@ def media_present():
 
 class UsbPower:
     # @llr LLR-TERM-POWER-012
-    def __init__(self, root):
+    def __init__(self, root, defer=False):
         self.enabled = sys.platform == 'linux' and os.environ.get('ZMALA_USB_POWER') == '1'
         self.root = root
         self.lock = threading.RLock()
         self.changed = threading.Event()
         self.stopped = False
+        self.deferred = defer
+        self.preserve_shutdown = defer
         self.active, self.battery, self.ringing = True, None, False
         self.updated = self.last_use = time.monotonic()
         self.state = 'starting' if self.enabled else 'unsupported'
@@ -57,9 +59,25 @@ class UsbPower:
         self.playback_key = None
         self.next_ring = 0
         self.worker = None
-        if self.enabled:
+        if self.enabled and not defer:
             self.worker = threading.Thread(target=self.run, name='usb-power', daemon=True)
             self.worker.start()
+
+    # @llr LLR-TERM-MAINT-028
+    def hold_for_update(self):
+        """Fence USB transitions before acknowledging maintenance to root."""
+        with self.lock:
+            self.deferred = True
+            self.preserve_shutdown = True
+        self.changed.set()
+
+    def resume(self):
+        with self.lock:
+            self.deferred = False
+            self.preserve_shutdown = False
+            if self.enabled and self.worker is None:
+                self.worker = threading.Thread(target=self.run, name='usb-power', daemon=True)
+                self.worker.start()
 
     @property
     def ready(self):
@@ -73,6 +91,8 @@ class UsbPower:
             return self.powered
 
     def update(self, active, battery, ringing=False):
+        if active and self.deferred:
+            self.resume()
         if not self.enabled:
             with self.lock:
                 self.ringing = ringing
@@ -94,6 +114,8 @@ class UsbPower:
     # @llr LLR-TERM-POWER-013, LLR-TERM-POWER-014
     def require(self, urgent=False):
         """Record activity and wake the worker; never perform USB I/O on the caller."""
+        if self.deferred:
+            self.resume()
         if self.enabled:
             with self.lock:
                 self.last_use = time.monotonic()
@@ -253,6 +275,11 @@ class UsbPower:
         try:
             while not self.stopped:
                 self.changed.clear()
+                with self.lock:
+                    deferred = self.deferred
+                if deferred:
+                    self.changed.wait(.2)
+                    continue
                 now = time.monotonic()
                 with self.lock:
                     if handled_wake != self.wake_serial:
@@ -277,6 +304,8 @@ class UsbPower:
                         next_status = now + 5
                 if desired != state and now >= next_attempt:
                     with self.lock:
+                        if self.deferred:
+                            continue
                         # A call may request wake after this worker's snapshot.
                         # Claim the transition under the same lock as require().
                         if desired == 'off' and not should_power_off(time.monotonic(), self.last_use,
@@ -314,6 +343,8 @@ class UsbPower:
                 self.changed.wait(.2)
         finally:
             self.stop_ringing()
+            if self.preserve_shutdown:
+                return
             try:
                 self.command('on')
             except Exception:

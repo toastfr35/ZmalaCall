@@ -1,0 +1,34 @@
+active: true
+area: Application updates
+derived: false
+header: Cached signed feed and expiring maintenance status
+level: 84.0
+links:
+- HLR-SRV-MAINT-021: null
+normative: true
+ref: ''
+references:
+- path: zmala_server/terminal-updates.js
+  type: file
+- path: zmala_server/main.js
+  type: file
+- path: zmala_server/http/device-routes.js
+  type: file
+- path: zmala_server/sip-server.js
+  type: file
+- path: zmala_server/web/admin-terminals.js
+  type: file
+- path: tests/server/LLT/terminal-updates.test.js
+  type: file
+reviewed: null
+scope: Experimental
+text: The server shall share one bounded unauthenticated public manifest refresh among
+  concurrent requests, cache successful results for five minutes and back off failed
+  refreshes. It shall accept bounded phase/version/error fields under the authenticated
+  terminal identity, assign receipt time itself, preserve hardware and update reports
+  independently, and expire active maintenance after sixty seconds. Fresh updating/checking/rollback/recovery-failed
+  states shall reject new SIP calls with temporary unavailability.
+verification: Assert shared fetch counts, cache expiry, origin/redirect/size limits,
+  schema validation, server receipt time, maintenance freshness and SIP 480 before
+  dialog forwarding. HTTP tests assert terminal-only authentication and independent
+  report preservation.

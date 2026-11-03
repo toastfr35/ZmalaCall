@@ -1,0 +1,22 @@
+active: true
+area: Application updates
+derived: false
+header: Automatic terminal update coordination
+level: 24.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/server/HLT/terminal-updates.test.js
+  type: file
+reviewed: null
+scope: Experimental
+text: The server shall cache the public terminal update manifest, expose feed and
+  update-status endpoints only to enrolled terminals, display read-only updater status
+  independently of hardware diagnostics, and temporarily refuse new calls involving
+  a terminal reporting fresh active maintenance. No administrator approval shall be
+  required for routine application updates.
+verification: Exercise real authenticated HTTP status and diagnostic reports, app/anonymous
+  rejection and the bound SIP admission predicate. Verify cache and SIP rejection
+  separately with deterministic transport/clock fixtures.

@@ -344,11 +344,46 @@ REVISIONS['terminal_config.docx']['4  Download the two QR documents'] = ['4  Pre
 REVISIONS['server_prep.docx']['Open Setup to download its Wi-Fi and server QR documents.'] = [
     REVISIONS['server_prep.docx']['Open Terminals, choose the device'][1]]
 
-def improve_readability(root):
+UPDATE_SECTIONS = {
+    'terminal_use.docx': ('Automatic updates', [
+        'Zmala keeps its terminal software up to date automatically when you are not using it. '
+        'Calls, setup and settings changes finish first. You do not need to check for updates or press a button.',
+        'If the TV is showing Zmala, a clear message in your chosen language appears while the update '
+        'is applied and checked. Wait until your contacts return. You cannot make or answer calls '
+        'during this short installation. An update does not turn on the TV or change its input.',
+        'If the new version does not start correctly, Zmala restores the previous version and your '
+        'settings automatically. If a recovery message remains, ask your helper. Do not reset your '
+        'account or scan the setup codes again as the first troubleshooting step.',
+    ]),
+    'terminal_prep.docx': ('Keeping the terminal up to date', [
+        'This installer sets up automatic application updates. Leave the terminal powered and connected '
+        'to the internet; compatible updates download in the background and install during safe inactivity. '
+        'You do not need to run the Windows installer for each release.',
+        'Automatic updates keep the account, Wi-Fi, TV pairing and preferences. They do not upgrade '
+        'Raspberry Pi OS, firmware or system dependencies. A helper must handle those separately. '
+        'If a release needs a newer host setup, use the current installer after checking its instructions.',
+    ]),
+    'server_prep.docx': ('Automatic terminal updates', [
+        'Supported Pi terminals update their Zmala application automatically when safely idle. No '
+        'administrator approval is needed, and calls and setup are not interrupted. The TV is not '
+        'woken or switched to another input just to show an update.',
+        'Open Terminals to see the installed version and recent update progress. This report is separate '
+        'from the remote and camera status. Update status unavailable means the updater has not reported '
+        'recently; it does not by itself prove that the terminal or camera is offline.',
+        'A failed update restores the previous confirmed application and settings. If recovery needs '
+        'attention, ask the installer helper to inspect the terminal before resetting anything. '
+        'Operating-system, firmware and dependency upgrades remain separate maintenance tasks.',
+    ]),
+}
+
+
+def improve_readability(root, filenames=None):
     from docx import Document
     from docx.shared import Pt, RGBColor
 
     for filename, revisions in REVISIONS.items():
+        if filenames is not None and filename not in filenames:
+            continue
         path = root / 'docs' / filename
         doc = Document(path)
         for paragraph in list(doc.paragraphs):
@@ -437,6 +472,12 @@ def improve_readability(root):
                         paragraph._p.getparent().remove(paragraph._p)
         # Keep the familiar illustrations and table layout; make all headings
         # consistent and step labels distinguishable without relying on colour.
+        if filename in UPDATE_SECTIONS:
+            title, paragraphs = UPDATE_SECTIONS[filename]
+            if not any(paragraph.text == title for paragraph in doc.paragraphs):
+                doc.add_heading(title, level=1)
+                for text in paragraphs:
+                    doc.add_paragraph(text).paragraph_format.keep_together = True
         release_link_seen = False
         for paragraph in doc.paragraphs:
             if paragraph.text == 'Published ZmalaCall releases':

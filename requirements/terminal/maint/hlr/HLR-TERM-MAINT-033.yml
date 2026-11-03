@@ -1,0 +1,21 @@
+active: true
+area: Application updates
+derived: false
+header: Automatic update server reporting
+level: 34.0
+links:
+- PROD016: null
+normative: true
+ref: ''
+references:
+- path: tests/terminal/HLT/test_update_reporting.py
+  type: file
+reviewed: null
+scope: Experimental
+text: The independent updater shall retrieve the shared signed feed from the enrolled
+  server and report its confirmed version, current phase and bounded failure category
+  without blocking local recovery on server failure. Device credentials shall never
+  be sent to public release services.
+verification: Integrate updater reporting with confirmed metadata and enrolled-server
+  transport; inspect outgoing requests, phase transitions, throttling and network-failure
+  tolerance. Separate server HTTP tests qualify its receiving boundary.

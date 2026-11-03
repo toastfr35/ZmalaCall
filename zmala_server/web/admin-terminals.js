@@ -132,6 +132,38 @@ function appendTerminalHardware(summary, status, fresh) {
     ),
   );
 }
+/** @param {HTMLElement} connection
+ * @param {import('../types/contracts').TerminalUpdateStatus | undefined} update
+ * @param {number} [now] */
+export function appendTerminalUpdate(connection, update, now = Date.now()) {
+  // @llr LLR-SRV-MAINT-022
+  if (update) {
+    const age = now - Date.parse(update.received_at);
+    const fresh = age >= 0 && age <= 60000;
+    /** @type {Record<string, string>} */
+    const phases = {
+      idle: 'Up to date',
+      request: 'Waiting for inactivity',
+      updating: 'Applying update',
+      checking: 'Checking update',
+      rollback: 'Restoring previous version',
+      recovery_failed: 'Recovery needs attention',
+    };
+    const detail = fresh
+      ? update.error
+        ? 'Update retry pending'
+        : update.phase === 'idle' && update.available && update.available !== update.installed
+          ? 'Update available'
+          : phases[update.phase] || 'Update status unknown'
+      : 'Update status unavailable';
+    connection.append(
+      badge(
+        (update.installed ? 'Version ' + update.installed + ' · ' : '') + detail,
+        fresh && update.phase === 'idle' && !update.error ? 'success' : 'neutral',
+      ),
+    );
+  }
+}
 /** @param {HTMLElement} card @param {string} id */
 export function terminalCardState(card, id) {
   const u = state.model.users[id];
@@ -155,6 +187,7 @@ export function terminalCardState(card, id) {
   if (id === state.model.local_terminal_id)
     connection.append(badge('Server-local terminal', 'accent'));
   const audioStatus = state.model.terminal_statuses[id];
+  appendTerminalUpdate(connection, audioStatus?.update);
   appendTerminalHardware(hardware, audioStatus, online(id));
   if (state.model.profiles[id].auto_framing === true) {
     const framingStatus = audioStatus?.auto_framing_status;

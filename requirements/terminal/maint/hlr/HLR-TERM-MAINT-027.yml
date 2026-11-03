@@ -13,7 +13,8 @@ references:
 reviewed: null
 scope: Experimental
 text: The terminal shall defer automatic activation until safe inactivity with no
-  call, setup, settings write or held input. It shall fence new call/input actions
+  call, setup, settings write, in-flight configuration/console work, pending TV restoration,
+  USB power transition or held input. It shall fence new call/input actions
   before acknowledging maintenance, and preserve sleeping USB media during updater-controlled
   restarts until genuine user or call activity.
 verification: Exercise app lease/status integration with file IPC and call/input owners;

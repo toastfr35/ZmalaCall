@@ -21,6 +21,8 @@ class SipServer extends SipMessages {
     this.dialogs = new Map();
     this.appCalls = new AppCalls(this);
     this.maintenance = false;
+    /** @type {(id: string) => boolean} */
+    this.terminalUpdating = () => false;
     /** @type {{time: string; message: string}[]} */
     this.events = [];
     /** @type {import('./types/contracts').CallbackInstance | undefined} */
@@ -276,6 +278,11 @@ class SipServer extends SipMessages {
         return;
       }
       const fromContact = rq.headers.contact?.[0];
+      // @llr LLR-SRV-MAINT-022
+      if (this.terminalUpdating(from) || this.terminalUpdating(to)) {
+        this.reply(rq, 480, 'Temporarily Unavailable');
+        return;
+      }
       if (!fromContact) {
         this.reply(rq, 400, 'Contact Required');
         return;

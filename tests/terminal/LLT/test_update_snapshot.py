@@ -34,6 +34,7 @@ class DataCheckpointTests(unittest.TestCase):
 
     def test_restore_and_replay_preserve_enrollment_and_symlinks(self):
         self.owner.snapshot()
+        self.owner.collect()
         self.owner.validate()
         self.tx.trial()
         (self.data/'enrollment.json').write_text('broken')
@@ -53,6 +54,8 @@ class DataCheckpointTests(unittest.TestCase):
         (self.data/'enrollment.json').write_text('confirmed')
         self.owner.restore()
         self.assertEqual((self.data/'enrollment.json').read_text(), 'confirmed')
+        self.owner.collect()
+        self.assertEqual(list(self.owner.root.iterdir()), [])
 
     def test_checkpoint_rejects_public_or_symlink_directories(self):
         self.owner.root.mkdir(mode=0o755)

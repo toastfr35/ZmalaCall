@@ -139,21 +139,20 @@ derived manuals/bundles. Never publish signing keys, device state or private log
 
 ## Current status
 
-Transaction foundation implemented: separate durable confirmed/pending records,
-trial-before-selection, confirmation-before-selection and interrupted-trial quarantine.
-Four Linux tests pass, including SIGKILL at every transaction checkpoint. This is
-process-interruption evidence, not physical power-loss qualification. Signature/staging,
-boot supervisor, maintenance/display, feed/release integration and physical tests remain. Existing terminals need one installer/deployment update to acquire
-the stable updater and launcher before they can receive application-only updates.
+Implemented and merged through PR #126: durable transaction records, signature and
+bounded archive verification, independent trial supervisor, local maintenance
+admission, localized Pango/Tk progress display, root service and installer bootstrap,
+and signed machine-update release publication. The signing key is stored only as
+an encrypted Actions secret; production signing runs only in the release workflow.
 
-Verified staging foundation: Ed25519 canonical manifests, compatibility/sequence/digest bounds and safe regular-file extraction are implemented. Four additional Linux unit/integration scenarios pass. Downloader, stable boot supervisor, localized display/admission, server reporting, release signing and Pi qualification remain to implement.
+Server feed caching/status and SIP admission integration are implemented on the
+current feature branch. It also closes USB startup/shutdown wake paths, preserves
+pending TV restoration by deferring activation, and updates the three affected Word
+guides and their authoring copy. The rendered Word pages were visually checked.
 
-Trial supervisor foundation implemented with injected platform operations: exclusive admission, independent progress, stable process/generation readiness, bounded deadline, rollback and failed-recovery state. Four Linux scenarios pass, including real disposable candidate processes. Stable installer/service wiring, app admission/display, feed/signing and physical qualification remain incomplete.
-
-Maintenance/display integration implemented but not provisioned: root-owned local requests, bounded app heartbeats and call/input fences; idle USB media settings may be deferred across updater restarts. The independent Pango/Tk overlay covers all 16 supported languages. Five targeted Linux scenarios passed after running the display case without a skipped inspection-tool dependency; representative French/Arabic/Hindi/Chinese images reviewed. Full service/feed/release installation and Pi qualification remain.
-
-
-Stable runtime implementation in progress: bounded public transport, isolated native preparation, service/cgroup heartbeat admission and private data checkpoints are implemented. Linux tests cover atomic data-exchange replay after SIGKILL and maintenance trial/recovery integration. Installer units, release signing/distribution, server reporting and Pi deployment remain outstanding; automatic updates are not enabled on term2.
-
-
-Release integration now builds an application-only archive with pinned offline TURN sources and an Ed25519 manifest. Publication verifies the signature and exact commit/version before adding the two machine assets beside the nine user downloads. Unit checks use disposable keys; production signing is restricted to the release workflow. The signing key is provisioned as an encrypted GitHub Actions secret; production signing has not yet run. Server reporting and Pi qualification remain outstanding.
+Local evidence includes transaction and settings-restore SIGKILL checkpoints,
+native/display integration scenarios, complete terminal LLT and independent
+installer suites, and server HTTP/cache/SIP tests. Final Verify, published payload
+inspection, server/Pi deployment and hardware update/rollback qualification remain.
+No physical power-loss run has been performed. Automatic updates are not yet enabled
+on term2. Operating-system/dependency upgrades remain excluded.

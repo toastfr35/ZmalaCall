@@ -60,7 +60,7 @@ class UpdateClient:
             self.activated = True
             self.passive = False
 
-    def tick(self, eligible, language, ready, sleeping):
+    def tick(self, eligible, language, ready, sleeping, on_fence=None):
         now = self.clock()
         if now < self.next_tick:
             return
@@ -71,6 +71,8 @@ class UpdateClient:
                 self.locked = False
             return
         if request['phase'] == 'request' and eligible:
+            if on_fence:
+                on_fence()
             self.locked = True  # Fenced before acknowledging to the root updater.
         self.status.parent.mkdir(parents=True, exist_ok=True)
         temporary = self.status.with_suffix('.next')
@@ -88,11 +90,29 @@ def tick_terminal(app, now):
         return
     from zmala_terminal.common.model import State
     power = getattr(app, 'usb_power', None)
+    maintenance = getattr(app, 'maintenance', None)
+    television = getattr(app, 'tv_control', None)
+    viewing = getattr(television, 'session', None)
     idle = (app.model.state == State.HOME and not (app.engine and app.engine.call)
             and not app.setup_stage and not app.settings_open and not app.setup_busy
             and not app.settings_draft.busy and not app.keys_down
             and not getattr(app, 'worker_busy', False)
             and not getattr(app, 'network_worker_busy', False)
+            and not getattr(maintenance, 'busy', False)
+            and not getattr(viewing, 'browsing', None)
+            and not getattr(viewing, 'previous', None)
+            and getattr(power, 'state', None) not in ('switching', 'starting')
             and now - app.last_button >= 120)
+    def fence():
+        hold = getattr(power, 'hold_for_update', None)
+        if hold:
+            hold()
+        if maintenance:
+            maintenance.stop()
+            app.maintenance = None
+        hold_tv = getattr(television, 'hold_for_update', None)
+        if hold_tv:
+            hold_tv()
     client.tick(idle, app.language, not app.closed,
-                bool(power and power.enabled and power.powered is False))
+                bool(power and power.enabled and power.powered is False),
+                on_fence=fence)

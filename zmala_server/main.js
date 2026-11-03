@@ -16,6 +16,7 @@ const { recoverRestore } = require('./backup-storage');
 const { passwordFile } = require('./admin-password');
 const { AdminSessions } = require('./admin-sessions');
 const { createShutdown } = require('./shutdown');
+const { TerminalUpdates, updateBusy } = require('./terminal-updates');
 /** @param {{store?: import('./types/contracts').StoreInstance, sipServer?: import('./types/contracts').SipInstance, callbackMailer?: import('./types/contracts').Mailer, restart?: () => void}} [options] */
 function createApplication({
   store = new Store(),
@@ -35,7 +36,11 @@ function createApplication({
   const writeBootstrap = () => publication.publish();
   const bootstrap = JSON.stringify(store.bootstrap(), null, 2);
   for (const file of bootstrapFiles) fs.writeFileSync(file, bootstrap);
+  /** @type {Record<string, import('./types/contracts').TerminalStatus>} */
   const terminalStatuses = {};
+  const terminalUpdates = new TerminalUpdates();
+  // @llr LLR-SRV-MAINT-022
+  sipServer.terminalUpdating = (id) => updateBusy(terminalStatuses[id]);
   const adminSessions = new AdminSessions();
   const consoleJobs = new ConsoleJobs(store);
   // @llr LLR-SRV-CALLBACK-025
@@ -61,6 +66,7 @@ function createApplication({
     callbacks,
     consoleJobs,
     terminalStatuses,
+    terminalUpdates,
     writeBootstrap,
     adminSessions,
     persistenceReady: () =>

@@ -12,7 +12,8 @@ import re
 import shutil
 import stat
 import time
-from zmala_terminal.linux.update_download import latest_manifest, download
+from zmala_terminal.linux.update_download import download
+from zmala_terminal.linux.update_server import ServerLink
 from zmala_terminal.linux.update_package import verify_manifest
 from zmala_terminal.linux.update_prepare import prepare_release, StorageUnavailable
 from zmala_terminal.linux.update_runtime import Runtime
@@ -70,6 +71,21 @@ class UpdateService:
         self.next_report = 0
         self.available = None
         self.last_error = None
+        self.link = ServerLink(config)
+        self.runtime.report = self.report
+
+    # @llr LLR-TERM-MAINT-034
+    def report(self):
+        now = time.monotonic()
+        phase = self.runtime.phase
+        if now < self.next_report and phase == getattr(self, 'reported_phase', None):
+            return
+        self.next_report = now+15
+        self.reported_phase = phase
+        try:
+            self.link.report(phase, confirmed_release(self.transactions)['version'], self.available, self.last_error)
+        except Exception:
+            pass  # Network failures cannot prevent local recovery or leak credentials.
 
     def quarantine(self, digest):
         value = self.transactions.read('quarantine') or {'digests': []}
@@ -81,10 +97,13 @@ class UpdateService:
         return digest in value.get('digests', [])
 
     def collect(self):
+        from zmala_terminal.linux.update_snapshot import DataCheckpoint
+        DataCheckpoint(self.transactions, self.config.get('data', '/var/lib/zmalacall'),
+                       self.config.get('data_checkpoints', '/var/lib/zmalacall-update-data')).collect()
         confirmed = self.transactions.read('confirmed') or {}
         pending = self.transactions.read('pending') or {}
         keep = {confirmed.get('slot'), confirmed.get('previous')}
-        if pending.get('state') in ('ready', 'trial'):
+        if pending.get('state') in ('ready', 'trial', 'quarantined'):
             keep.add(pending.get('candidate'))
         for slot in self.transactions.slots.iterdir():
             if slot.name in keep or slot.is_symlink() or not slot.is_dir():
@@ -140,7 +159,7 @@ class UpdateService:
 
     def check(self):
         verify_host(self.config, self.runtime.command)
-        envelope = latest_manifest()
+        envelope = self.link.manifest()
         if envelope is None:
             return
         installed = confirmed_release(self.transactions)
@@ -171,6 +190,7 @@ class UpdateService:
             self.transactions.write('preparing', {'digest': digest, 'attempts': 0})
             self.last_error = None
         except StorageUnavailable:
+            self.transactions.write('preparing', {'digest': digest, 'attempts': 0})
             self.last_error = "insufficient_space"
             raise
         except Exception:

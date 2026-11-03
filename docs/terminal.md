@@ -1497,3 +1497,8 @@ Before a trial, the stopped application’s persistent data is copied to a priva
 
 
 The Pi installer now provisions root-owned updater code outside application slots, a dedicated unprivileged native builder, a once-per-boot recovery unit and a separate terminal-user display unit. The installed host supplies cryptography and compiler dependencies; automatic application updates never install them. The completed installer baseline becomes the initial confirmed slot. A manual reinstall stops automatic deployment while it owns the appliance. This wiring is implemented but has not yet been deployed to term2; signed release asset publication is still outstanding.
+
+
+The independent updater reads the active terminal profile enrollment (including reset markers) before any legacy bootstrap. It uses credential-isolated HTTPS with no redirects or environment proxies for the shared server feed and status; GitHub/CDN downloads carry no bearer credentials. Telemetry failures do not interrupt local recovery.
+
+Maintenance admission also waits for configuration/network/console workers, USB switching and pending TV restoration. Before acknowledgement it holds USB and TV shutdown behavior and stops console polling. Candidate startup defers the USB worker; update-driven shutdown does not restore USB power or the TV input. Real user/call activity resumes USB operation. Private data checkpoints are collected after completion, retaining an in-flight checkpoint. Term2 deployment and hardware qualification remain outstanding.

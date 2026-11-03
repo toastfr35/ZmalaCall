@@ -56,7 +56,8 @@ class PlatformServices:
 
 
 # @llr LLR-TERM-START-003
-def create_platform_services(root: Path) -> PlatformServices:
+# @llr LLR-TERM-MAINT-028
+def create_platform_services(root: Path, defer_usb=False) -> PlatformServices:
     """Construct the existing adapters at startup, rather than at module import.
 
     Imports stay here so the composition root no longer selects hardware classes.
@@ -74,7 +75,7 @@ def create_platform_services(root: Path) -> PlatformServices:
     try:
         fan = ArgonFan()
         created.append(fan)
-        power = UsbPower(root)
+        power = UsbPower(root, defer=True) if defer_usb else UsbPower(root)
         created.append(power)
         television = TVControl()
         return PlatformServices(fan, power, television)
