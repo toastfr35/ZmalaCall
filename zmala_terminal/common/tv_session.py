@@ -51,12 +51,14 @@ class ViewingSession:
         self.previous = None
         self.changed = False
 
-    # @llr LLR-TERM-TV-027, LLR-TERM-TV-028
+    # @llr LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-030
     def observe_browsing(self, observed):
         if self.browsing:
-            source = observed.get('active_source')
+            source = observed.get('selected_source')
             if observed.get('off') is True or (source is not None and source != self.browsing['address']):
                 self.browsing = None  # Never undo a manual source/power change.
+            elif source != self.browsing['address']:
+                return None  # Keep the baseline, but unknown input cannot run idle restoration.
         return self.browsing
 
     def capture_browsing(self, previous):

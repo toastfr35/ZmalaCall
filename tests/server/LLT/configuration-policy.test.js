@@ -1,7 +1,7 @@
 // @test S-LLT-037
-// @requirements LLR-SRV-CONFIG-016, LLR-SRV-CONFIG-017, LLR-SRV-CONFIG-018, LLR-SRV-CONFIG-019, LLR-SRV-CONFIG-020
+// @requirements LLR-SRV-CONFIG-016, LLR-SRV-CONFIG-017, LLR-SRV-CONFIG-018, LLR-SRV-CONFIG-019, LLR-SRV-CONFIG-020, LLR-SRV-CONFIG-025
 // @environment portable
-// @plan Exercise the real Store with isolated files. Check fresh defaults, each permitted setting, invalid types and boundary values. Reject an entire update without changing configuration, revision or saved bytes. Check auto-answer ring deadlines, media-selector limits, preserved omitted fields and state after restart.
+// @plan Verify the 1800-second inactivity default, all timeout choices including Never, saved-choice preservation and invalid-timeout rejection across restart. Exercise the real Store with isolated files. Check fresh defaults, each permitted setting, invalid types and boundary values. Reject an entire update without changing configuration, revision or saved bytes. Check auto-answer ring deadlines, media-selector limits, preserved omitted fields and state after restart.
 // @pass Accepted choices must be returned and persisted; every invalid candidate must leave the entire previous state unchanged.
 
 'use strict';
@@ -13,6 +13,15 @@ const { storeFixture } = require('../../support/server/unit-fixture');
 
 const base = { display_name: 'Settings fixture', camera: '', microphone: '', speaker: '' };
 
+test('a saved short timeout survives omitted edits while missing values use thirty minutes', (t) => {
+  const store = storeFixture(t);
+  store.setSettings('term1', { ...base, tv_idle_seconds: 30 });
+  store.setSettings('term1', { ...base, language: 'fr' });
+  assert.equal(new Store(store.dir).config('term1').tv_idle_seconds, 30);
+  delete store.value.profiles.term1.tv_idle_seconds;
+  assert.equal(store.config('term1').tv_idle_seconds, 1800);
+});
+
 test('fresh terminal settings and accepted choices survive save and restart', (t) => {
   const store = storeFixture(t);
   const initial = store.config('term1');
@@ -22,7 +31,7 @@ test('fresh terminal settings and accepted choices survive save and restart', (t
     language: 'en',
     auto_framing: false,
     carousel_portraits: 3,
-    tv_idle_seconds: 30,
+    tv_idle_seconds: 1800,
     c20_speaker_volume: 50,
     ringtone_volume: 50,
     action_sound_volume: 20,
@@ -35,7 +44,7 @@ test('fresh terminal settings and accepted choices survive save and restart', (t
     language: ['fr', 'en', 'ja'],
     auto_framing: [true, false],
     carousel_portraits: [5, 3],
-    tv_idle_seconds: [0, 30, 60, 120, 300, 600, 1200],
+    tv_idle_seconds: [0, 30, 60, 120, 300, 600, 1200, 1800],
     c20_speaker_volume: [0, 1, 99, 100],
     ringtone_volume: [0, 5, 50, 100],
     action_sound_volume: [0, 5, 20, 100],
@@ -68,7 +77,7 @@ test('invalid settings reject the whole candidate before any change or disk writ
     language: ['xx', 'constructor', '', null, 1],
     auto_framing: [0, 1, 'true', null],
     carousel_portraits: [0, 4, 6, '5', null],
-    tv_idle_seconds: [-1, 10, 1800, '30', null],
+    tv_idle_seconds: [-1, 10, 1801, '30', null],
     c20_speaker_volume: [-1, 101, 50.5, '50', null, NaN],
     ringtone_volume: [-1, 101, 50.5, '50', null, NaN],
     action_sound_volume: [-1, 101, 20.5, '20', null, NaN],

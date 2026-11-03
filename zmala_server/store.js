@@ -196,7 +196,8 @@ class Store {
       video_fps: p.video_fps ?? 15,
       auto_framing: p.auto_framing === true,
       carousel_portraits: p.carousel_portraits ?? 3,
-      tv_idle_seconds: p.tv_idle_seconds ?? 30,
+      // @llr LLR-SRV-CONFIG-025
+      tv_idle_seconds: p.tv_idle_seconds ?? 1800,
       c20_speaker_volume: p.c20_speaker_volume ?? 50,
       ringtone_volume: p.ringtone_volume ?? p.c20_speaker_volume ?? 50,
       action_sound_volume: p.action_sound_volume ?? 20,

@@ -5,10 +5,14 @@ header: |
   Idle-return inhibition
 level: 106.0
 links:
-- HLR-TERM-TV-018: ZYWJZfxPFY-U2Faag_owNyuH0jhoHw1LvN3GtcRGSgo=
+- HLR-TERM-TV-018: F35loWawZvWnhbpGyFAu7gd_eyY2h5N8S9KwsRLIoZg=
 normative: true
 ref: ''
 references:
+- path: tests/terminal/LLT/test_tv_control.py
+  type: file
+- path: zmala_terminal/common/tv_session.py
+  type: file
 - path: tests/terminal/LLT/test_idle_return.py
   type: file
 - path: zmala_terminal/common/idle_return.py
@@ -28,6 +32,18 @@ scope: Core
 text: |
   Calls, held buttons, setup and pending settings saves shall prevent idle
   restoration. Timeout expiry shall start only the current restoration operation.
+  Idle restoration shall additionally require a TV-originated confirmation of the
+  terminal's selected input received within 30 seconds and a live observer heartbeat
+  younger than five seconds. Local commands, source-device announcements and observer
+  heartbeats shall not renew that input evidence. Unknown, stale or other selected
+  input shall inhibit the countdown; unknown observations may retain the saved
+  baseline without authorizing restoration. Each standby attempt and authenticated
+  power-off fallback shall recheck the selected-input evidence and cancellation.
+  An originally-off TV shall return directly to standby without selecting a
+  different source before the guarded standby operation.
 verification: |
   Expire timeouts in each inhibited state and after a session replacement. Check that
   stale or inhibited work does not start.
+  Inject own/source-device announcements, TV routing reports, stale/future/missing
+  observation times, observer loss and manual input changes during asynchronous
+  waits and authentication. Assert no unauthorized source/power commands.

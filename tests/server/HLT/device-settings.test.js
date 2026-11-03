@@ -20,9 +20,9 @@ test('local settings are device-scoped, validated, durable and conflict-aware', 
       type: 'terminal',
       emails: ['other@example.test'],
     });
-    assert.equal(store.config('term1').tv_idle_seconds, 30);
+    assert.equal(store.config('term1').tv_idle_seconds, 1800);
     delete store.value.profiles.term1.tv_idle_seconds;
-    assert.equal(store.config('term1').tv_idle_seconds, 30); // Existing installations.
+    assert.equal(store.config('term1').tv_idle_seconds, 1800); // Existing installations.
     const token = store.value.users.term1.device_token;
     const untouched = JSON.stringify(store.config('other'));
     const post = (body, bearer = token) =>
@@ -40,7 +40,7 @@ test('local settings are device-scoped, validated, durable and conflict-aware', 
       { auto_framing: true },
       { carousel_portraits: 5 },
       { c20_speaker_volume: 76 },
-      ...[0, 30, 60, 120, 300, 600, 1200].map((seconds) => ({ tv_idle_seconds: seconds })),
+      ...[0, 30, 60, 120, 300, 600, 1200, 1800].map((seconds) => ({ tv_idle_seconds: seconds })),
       ...[10, 30, 60, 120, 300, 600].map((seconds) => ({
         auto_answer: true,
         auto_answer_seconds: seconds,
@@ -70,7 +70,7 @@ test('local settings are device-scoped, validated, durable and conflict-aware', 
       { settings: { c20_speaker_volume: -1 }, expected: { c20_speaker_volume: 76 } },
       ...[-1, 31, 1201, true, '30', null].map((value) => ({
         settings: { tv_idle_seconds: value },
-        expected: { tv_idle_seconds: 1200 },
+        expected: { tv_idle_seconds: 1800 },
       })),
       { settings: {}, expected: {} },
       { settings: [], expected: {} },

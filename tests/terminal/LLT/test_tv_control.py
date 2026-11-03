@@ -1,7 +1,7 @@
 # @test T-LLT-036
-# @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-031, LLR-TERM-TV-032, LLR-TERM-TV-033, LLR-TERM-TV-034
+# @requirements LLR-TERM-TV-021, LLR-TERM-TV-026, LLR-TERM-TV-027, LLR-TERM-TV-028, LLR-TERM-TV-030, LLR-TERM-TV-031, LLR-TERM-TV-032, LLR-TERM-TV-033, LLR-TERM-TV-034
 # @environment portable
-# @plan Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, call endings defer restoration to a fresh idle lease, consecutive calls preserve the original state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
+# @plan Feed local/source-device hints separately from dated TV routing reports; expire evidence independently of observer liveness. Unknown/stale/manual input must inhibit idle restoration, preserve a baseline without authorizing standby, and cancel a delayed or authenticated standby after input changes. Confirm standby is sent before any source change for an originally-off TV. Simulate TV power/input observations, network fallback, concurrent calls and delayed workers; assert the first button only reveals the UI, call endings defer restoration to a fresh idle lease, consecutive calls preserve the original state, stale work is fenced and no volume/mute command is emitted. Reproduce unknown power after restart with power qualified, source switching skipped and an unconfigured adapter; require the press to be consumed and playback registration/wake sent, without inventing a restoration baseline. Reject unknown-state wake when power is disabled. Feed fragmented CEC monitor output through fake selectors/processes; assert atomic routing heartbeats, query timeout handling, connected-port changes and monitor cleanup.
 # Ringing-only input retries: control waits and call predicates, require three five-second delays, verified input requests/CEC fallback, readiness before retries, stop after answer/end/replacement/setup disable, and no power/volume commands.
 # Normal call wake uses the model driver before CEC fallback, preserves power/source qualification, and fences cancellation after driver I/O. Ambiguous restoration observations are delegated to the guarded driver, never used as permission for a blind toggle.
 
@@ -32,6 +32,88 @@ from zmala_terminal.linux.cec_observer import RoutingState
 
 
 class TVControlTests(unittest.TestCase):
+    def test_idle_evidence_requires_tv_report_and_is_invalidated_by_local_commands(self):
+        now=[100]
+        state=RoutingState(clock=lambda:now[0])
+        for header in ('Transmitted by Playback Device 1 to all (4 to 15): ACTIVE_SOURCE (0x82):',
+                       'Received from Playback Device 1 to all (4 to 15): ACTIVE_SOURCE (0x82):'):
+            state.consume(header);state.consume('  phys-addr: 1.0.0.0')
+            self.assertEqual(state.source,'1.0.0.0')
+            self.assertIsNone(state.selected_source)
+        state.consume('Received from TV to all (0 to 15): ROUTING_CHANGE (0x80):')
+        state.consume('  orig-phys-addr: 0.0.0.0; new-phys-addr: 1.0.0.0')
+        self.assertEqual((state.selected_source,state.source_observed_at),('1.0.0.0',100))
+        now[0]=200
+        state.consume('Received from TV to all (0 to 15): REPORT_POWER_STATUS (0x90):')
+        state.consume('  pwr-state: on (0x00)')
+        self.assertEqual(state.source_observed_at,100,'Other messages do not renew input evidence')
+        state.consume('Transmitted by Playback Device 1 to all (4 to 15): ACTIVE_SOURCE (0x82):')
+        self.assertIsNone(state.selected_source)
+
+    def test_fresh_observer_heartbeat_does_not_renew_stale_input(self):
+        with tempfile.TemporaryDirectory() as directory:
+            tv=self.controller();tv.state_file=Path(directory)/'state'
+            for observed_at,valid in ((99,True),(70,False),(101,False),(None,False),(True,False)):
+                tv.state_file.write_text(json.dumps({'device':tv.device,'updated_at':100,
+                    'active_source':'1.0.0.0','selected_source':'1.0.0.0','source_observed_at':observed_at}))
+                with patch('zmala_terminal.linux.tv_control.time.time',return_value=100):
+                    self.assertEqual(tv._observed_state().get('selected_source')=='1.0.0.0',valid)
+
+    def test_idle_standby_rechecks_source_and_never_selects_another_input_first(self):
+        for changed in ('unknown','other','cancel','unchanged'):
+            tv=self.controller()
+            tv.session.browsing={'off':True,'source':'0.0.0.0','address':'1.0.0.0'}
+            observation={'off':False,'selected_source':'1.0.0.0'}
+            tv._observed_state=Mock(side_effect=lambda:dict(observation))
+            def wait(*args):
+                if changed=='unknown':observation.pop('selected_source',None)
+                elif changed=='other':observation['selected_source']='2.0.0.0'
+                elif changed=='cancel':tv._cancel.set()
+                return True
+            tv._restore_wait=Mock(side_effect=wait)
+            tv._run=Mock(return_value='pwr-state: standby (1)')
+            tv._restore(tv._cancel,browsing=True)
+            if changed=='unchanged':
+                self.assertEqual(tv._run.call_args_list,[unittest.mock.call('--to','0','--standby'),
+                                                       unittest.mock.call('--to','0','--give-device-power-status')])
+            else:tv._run.assert_not_called()
+
+    def test_unknown_input_never_starts_idle_restoration(self):
+        for state in ({},{'active_source':'1.0.0.0'},{'selected_source':'2.0.0.0'}):
+            tv=self.controller()
+            tv.session.browsing={'off':True,'source':'0.0.0.0','address':'1.0.0.0'}
+            tv._observed_state=Mock(return_value=state)
+            tv._restore(tv._cancel,browsing=True)
+            tv._run.assert_not_called();tv._driver_call.assert_not_called()
+
+    def test_driver_current_input_does_not_promote_source_hints(self):
+        tv=self.controller()
+        with patch('zmala_terminal.linux.tv_control.load_driver') as load:
+            driver=load.return_value
+            driver.get_capabilities.return_value={'get_current_input'}
+            driver.get_current_input.side_effect=lambda:load.call_args.args[1]['read_input']()
+            tv._observed_state=Mock(return_value={'active_source':'1.0.0.0'})
+            self.assertIsNone(TVControl._driver_call(tv,'get_current_input',is_current=lambda:True))
+            tv._observed_state.return_value={'selected_source':'1.0.0.0'}
+            self.assertEqual(TVControl._driver_call(tv,'get_current_input',is_current=lambda:True),'1.0.0.0')
+
+    def test_idle_network_fallback_rechecks_input_after_authentication(self):
+        tv=self.controller()
+        tv.session.browsing={'off':True,'source':'0.0.0.0','address':'1.0.0.0'}
+        observation={'off':False,'selected_source':'1.0.0.0'}
+        tv._observed_state=Mock(side_effect=lambda:dict(observation))
+        tv._restore_wait=Mock(return_value=True)
+        tv._run=Mock(return_value='pwr-state: on (0)')
+        sent=[]
+        def authenticated(method,*,is_current):
+            observation['selected_source']='2.0.0.0'
+            if is_current():sent.append(method)
+            return False
+        tv._driver_call=Mock(side_effect=authenticated)
+        tv._restore(tv._cancel,browsing=True)
+        tv._driver_call.assert_called_once()
+        self.assertEqual(sent,[])
+
     def test_pure_policy_preserves_unknown_state_and_discards_manual_changes(self):
         policy = ViewingSession()
         policy.previous = {'off': None, 'source': None, 'address': '2.0.0.0'}
@@ -42,11 +124,13 @@ class TVControlTests(unittest.TestCase):
         policy.changed = True
         policy.defer(20)
         baseline = policy.browsing
-        self.assertIs(policy.observe_browsing({}), baseline)
+        self.assertIsNone(policy.observe_browsing({}))
+        self.assertIs(policy.browsing, baseline)
+        self.assertIs(policy.observe_browsing({'selected_source': '2.0.0.0'}), baseline)
         plan = policy.restore_plan(baseline, True, True)
         self.assertTrue(plan.release_source)
         self.assertFalse(plan.power_off)
-        self.assertIsNone(policy.observe_browsing({'active_source': '3.0.0.0'}))
+        self.assertIsNone(policy.observe_browsing({'selected_source': '3.0.0.0'}))
 
     def test_observer_assembles_reports_publishes_atomic_heartbeat_and_closes_dead_monitor(self):
         import zmala_terminal.linux.cec_observer as observer
@@ -66,7 +150,8 @@ class TVControlTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'monitor stopped'):
                 observer.observe('/dev/cec0', destination)
             state = json.loads(destination.read_text())
-            self.assertEqual(state, {'device':'/dev/cec0', 'active_source':'1.0.0.0', 'off':True, 'updated_at':123})
+            self.assertEqual(state, {'device':'/dev/cec0', 'active_source':'1.0.0.0', 'off':True,
+                                    'selected_source':None, 'source_observed_at':None, 'updated_at':123})
             self.assertFalse(destination.with_suffix('.tmp').exists())
             self.assertEqual(query.call_count, 1)
             self.assertIn('--request-active-source', query.call_args.args[0])
@@ -263,6 +348,7 @@ class TVControlTests(unittest.TestCase):
             tv._restore(tv._cancel)
             tv._run.assert_not_called()
             self.assertIs(tv.session.browsing, session)
+            tv._observed_state = Mock(return_value={'off': False, 'selected_source': '3.0.0.0'})
             tv._restore(tv._cancel, browsing=True)
             if off:
                 tv._run.assert_any_call('--to', '0', '--standby')
@@ -321,7 +407,7 @@ class TVControlTests(unittest.TestCase):
     def test_call_after_manual_source_change_discards_old_idle_target(self):
         tv = self.controller()
         tv.session.browsing = {'off': True, 'source': '0.0.0.0', 'address': '3.0.0.0'}
-        tv._observed_state = Mock(return_value={'off': False, 'active_source': '1.0.0.0'})
+        tv._observed_state = Mock(return_value={'off': False, 'active_source': '1.0.0.0', 'selected_source': '1.0.0.0'})
         with patch('threading.Thread'), patch.object(Path, 'exists', return_value=True):
             tv.wake()
         self.assertIsNone(tv.session.previous, 'The wake worker must capture the new input')
@@ -419,7 +505,7 @@ class TVControlTests(unittest.TestCase):
                     self.assertEqual(thread.call_args.kwargs['target'], tv._retry_ringing_input)
 
     def test_manual_tv_change_releases_browsing_lease_without_restoration(self):
-        for state in ({'off': True}, {'off': False, 'active_source': '0.0.0.0'}):
+        for state in ({'off': True}, {'off': False, 'selected_source': '0.0.0.0'}):
             tv = self.controller()
             session = tv.session.browsing = {'off': False, 'source': '0.0.0.0', 'address': '3.0.0.0'}
             tv._observed_state = Mock(return_value=state)

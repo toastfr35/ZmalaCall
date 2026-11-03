@@ -2,6 +2,7 @@
 # @requirements HLR-TERM-TV-018
 # @environment display
 # @plan Run the real Tk input/idle controllers and asynchronous TVControl workers against a stateful CEC transport fixture. Begin on another input and in standby, press a button, use the visible UI and expire the idle countdown. Then answer, decline, cancel and fail incoming calls; verify a fresh countdown, delayed bar and deferred restoration for each outcome. Inspect source/power transitions, first-press consumption and all emitted commands.
+# Idle expiry additionally requires a dated TV-selected input. Local announcements, stale reports, observer loss and another input must leave the TV untouched; refresh must restart the full countdown.
 # @pass The first hidden-view press reveals the terminal without selecting a contact; idle expiry restores the captured input/power; all call endings keep the terminal visible until that countdown expires, without volume/mute commands. Real worker delays run; TV firmware, Samsung network pairing and physical HDMI switching are not qualified by this fixture.
 # Require the guarded model power-on call, then ignore the initial driver input request and CEC input announcements while reporting power On. Require a delayed driver retry to select HDMI during ringing, readiness before retries, and no further selection after answer.
 
@@ -20,6 +21,22 @@ from zmala_terminal.linux.tv_control import TVControl
 
 @unittest.skipUnless(sys.platform == 'linux' and os.environ.get('DISPLAY'), 'Linux Tk display required')
 class TVRoutingUITests(unittest.TestCase):
+    def test_unknown_stale_and_other_sources_cannot_turn_tv_off(self):
+        with terminal_fixture() as (app,directory):
+            app.model.config['tv_idle_seconds']=30
+            tv=TVControl(device=str(directory/'cec'),state_file=directory/'state')
+            app.tv_control=tv
+            baseline=tv.session.browsing={'off':True,'source':'0.0.0.0','address':'1.0.0.0'}
+            tv._run=lambda *args:self.fail('Unconfirmed input emitted a TV command')
+            for evidence in ({'active_source':'1.0.0.0'}, {}, {'selected_source':'2.0.0.0'}):
+                tv.session.browsing=baseline
+                tv._observed_state=lambda:dict(evidence)
+                app.tick_tv_idle(100);app.tick_tv_idle(200)
+                self.assertEqual(app.tv_idle_pixels,0)
+                self.assertIsNone(tv._restore_pending)
+            tv.session.browsing=None
+            tv.close()
+
     def test_ignored_live_tv_switch_is_retried_only_while_ringing(self):
         with terminal_fixture() as (app, directory):
             device = directory/'cec'
@@ -73,6 +90,7 @@ class TVRoutingUITests(unittest.TestCase):
     def test_button_idle_and_call_restore_from_input_and_standby(self):
         for standby in (False, True):
             with self.subTest(standby=standby), terminal_fixture() as (app, directory):
+                app.model.config['tv_idle_seconds']=30  # Explicit fast fixture.
                 device, state_file = directory/'cec', directory/'cec-state.json'
                 device.touch()
                 state = {'off': standby, 'active_source': '2.0.0.0'}
@@ -80,7 +98,8 @@ class TVRoutingUITests(unittest.TestCase):
 
                 def publish():
                     temporary = state_file.with_suffix('.tmp')
-                    temporary.write_text(json.dumps(dict(state, device=str(device), updated_at=time.time())))
+                    temporary.write_text(json.dumps(dict(state, device=str(device), updated_at=time.time(),
+                        selected_source=state['active_source'],source_observed_at=time.time())))
                     temporary.replace(state_file)
 
                 def transport(_tv, *arguments):
@@ -104,6 +123,7 @@ class TVRoutingUITests(unittest.TestCase):
                 app.tv_control = TVControl(device=str(device), state_file=state_file)
                 app.tv_control.command = 'fixture-cec-ctl'
                 tv = app.tv_control
+                tv._network_enabled = False  # Only the explicit transport fixture may act.
                 with patch.object(TVControl, '_run', transport):
                     try:
                         before = app.model.index
@@ -123,7 +143,7 @@ class TVRoutingUITests(unittest.TestCase):
                         self.assertEqual(app.tv_idle_pixels, 0, 'Any new input hides/restarts the bar')
                         app.tick_tv_idle(start+43)
                         pump(app, lambda: tv._restore_pending is None, timeout=5)
-                        self.assertEqual(state, {'off': standby, 'active_source': '2.0.0.0'})
+                        self.assertEqual(state, {'off': standby, 'active_source': '1.0.0.0' if standby else '2.0.0.0'})
 
                         for ending in ('answered', 'declined', 'cancelled', 'failed'):
                             publish()
@@ -148,7 +168,7 @@ class TVRoutingUITests(unittest.TestCase):
                             self.assertEqual(state, {'off': False, 'active_source': '1.0.0.0'}, ending)
                             app.tick_tv_idle(start+31)
                             pump(app, lambda: tv._restore_pending is None, timeout=5)
-                            self.assertEqual(state, {'off': standby, 'active_source': '2.0.0.0'}, ending)
+                            self.assertEqual(state, {'off': standby, 'active_source': '1.0.0.0' if standby else '2.0.0.0'}, ending)
                         self.assertTrue(all(thread != threading.get_ident() for _, thread in commands))
                         flattened = ' '.join(' '.join(args) for args, _ in commands)
                         for forbidden in ('volume', 'mute', 'user-control', 'system-audio'):

@@ -18,6 +18,19 @@ from zmala_terminal.common.configuration import validate
 
 
 class IdleTests(unittest.TestCase):
+    def test_unknown_source_resumption_starts_a_full_interval(self):
+        app=self.app()
+        app.tv_control.browsing_session.return_value=None
+        app.tick_tv_idle(0);app.tick_tv_idle(10000)
+        app.tv_control.browsing_session.return_value={'off':True}
+        app.tick_tv_idle(10001)
+        app.tv_control.restore_browsing.assert_not_called()
+        app.draw_tv_idle.assert_called_with(None)
+        app.tick_tv_idle(10030)
+        app.tv_control.restore_browsing.assert_not_called()
+        app.tick_tv_idle(10031)
+        app.tv_control.restore_browsing.assert_called_once()
+
     def test_bottom_bar_tracks_remaining_width_and_avoids_redundant_layout(self):
         from zmala_terminal.common import idle_return
         view = IdleReturn(); view.root = Mock()
@@ -41,8 +54,8 @@ class IdleTests(unittest.TestCase):
         draft = SettingsDraft()
         draft.row = FIELDS.index('tv_idle_seconds')
         draft.open(config())
-        self.assertEqual(draft.options, [30, 60, 120, 300, 600, 1200, 0])
-        self.assertEqual(draft.expected, {'tv_idle_seconds': 30})
+        self.assertEqual(draft.options, [30, 60, 120, 300, 600, 1200, 1800, 0])
+        self.assertEqual(draft.expected, {'tv_idle_seconds': 1800})
         for seconds in TV_IDLE_DELAYS:
             validate(config() | {'tv_idle_seconds': seconds}, 'test')
         for bad in (True, '30', 31, -1, 1201, None):
@@ -107,6 +120,7 @@ class IdleTests(unittest.TestCase):
         app = IdleReturn()
         app.model = TerminalModel()
         app.model.configure(config())
+        app.model.config['tv_idle_seconds'] = 30  # Explicit short fixture, not the product default.
         app.setup_stage, app.setup_busy = None, False
         app.keys_down, app.last_button = set(), 0
         app.settings_draft, app.settings_hold = SettingsDraft(), SettingsHold()
