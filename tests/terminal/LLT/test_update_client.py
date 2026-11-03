@@ -22,11 +22,14 @@ class UpdateClientTests(unittest.TestCase):
         app=SimpleNamespace(update_client=client,model=SimpleNamespace(state=State.HOME),
             engine=None,setup_stage=None,settings_open=False,setup_busy=False,
             settings_draft=SimpleNamespace(busy=False),keys_down=set(),last_button=0,
-            language='fr',closed=False,usb_power=SimpleNamespace(enabled=True,powered=None))
+            language='fr',closed=False,usb_power=SimpleNamespace(enabled=True,powered=None,state='starting',deferred=True))
         tick_terminal(app,200)
+        self.assertTrue(client.tick.call_args.args[0])
         self.assertTrue(client.tick.call_args.args[3])
         client.passive=False
+        app.usb_power.deferred=False
         tick_terminal(app,200)
+        self.assertFalse(client.tick.call_args.args[0])
         self.assertFalse(client.tick.call_args.args[3])
     def test_tv_shutdown_during_update_does_not_start_restoration(self):
         from zmala_terminal.linux.tv_control import TVControl

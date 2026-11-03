@@ -1484,11 +1484,14 @@ application before terminal startup. The updater downloads compatible signed
 releases, prepares them in a dedicated unprivileged sandbox, and activates after
 safe inactivity. It never invokes an OS installer or package manager.
 
-Host compatibility level 2 places display-cookie setup, pairing, compositor and
+Host compatibility level 3 places display-cookie setup, pairing, compositor and
 passive CEC files under `/usr/local/lib/zmalacall-terminal-host`. Their services
 never execute a candidate's boot helpers. The manual installer provisions these
-before first service startup; older level-1 prototypes need one trusted bootstrap
+before first service startup; older prototypes need one trusted bootstrap
 update. Ordinary application payloads do not replace this privileged host layer.
+The installer also migrates the optional root USB stop hook to maintenance-aware
+restoration. Active trial/recovery fencing suppresses all USB operations in that
+hook; ordinary service stops still restore power.
 
 `update_package.py` authenticates canonical Ed25519 manifests, compatibility,
 sequence and exact package size/digest, then admits only bounded regular files in
@@ -1521,6 +1524,8 @@ bootstrap data. Credential-isolated HTTPS without redirects/proxies carries the
 shared server feed and independent status reports; GitHub/CDN requests carry no
 device credentials. Network reporting cannot prevent local recovery.
 
-Term2 has the updater and signed v0.3.71 baseline installed. Current executed and
-remaining checks are in [terminal-update-qualification.md](terminal-update-qualification.md).
+Qualification procedures and the initial checkpoint are in
+[terminal-update-qualification.md](terminal-update-qualification.md); subsequent
+executed hardware evidence is recorded in
+[issue #131](https://github.com/toastfr35/ZmalaCall/issues/131).
 Process-death recovery passes do not constitute physical SD power-loss evidence.

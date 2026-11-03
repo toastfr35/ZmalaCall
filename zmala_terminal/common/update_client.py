@@ -101,7 +101,8 @@ def tick_terminal(app, now):
             and not getattr(maintenance, 'busy', False)
             and not getattr(viewing, 'browsing', None)
             and not getattr(viewing, 'previous', None)
-            and getattr(power, 'state', None) not in ('switching', 'starting')
+            and (getattr(power, 'deferred', False)
+                 or getattr(power, 'state', None) not in ('switching', 'starting'))
             and now - app.last_button >= 120)
     def fence():
         hold = getattr(power, 'hold_for_update', None)

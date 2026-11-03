@@ -42,7 +42,8 @@ def confirmed_release(transactions):
     return trusted_json(transactions.slot(confirmed.get('slot'))/'update-release.json')
 
 
-def validate_host_helpers(root):
+def validate_host_helpers(root, cleanup=Path('/etc/systemd/system/zmalacall-terminal.service.d/usb-power.conf'),
+                          helper=Path('/usr/local/libexec/zmala-usb-power')):
     root = Path(root)
     info = root.lstat()
     if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o022:
@@ -52,6 +53,14 @@ def validate_host_helpers(root):
         if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
                 or info.st_mode & 0o022 or info.st_size > 65536):
             raise RecoveryError('Untrusted terminal host helper')
+    if cleanup.exists() or cleanup.is_symlink():
+        for path in (cleanup, helper):
+            info = path.lstat()
+            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+                    or info.st_mode & 0o022 or info.st_size > 65536):
+                raise RecoveryError('Untrusted USB cleanup policy')
+        if 'ExecStopPost=+/usr/local/libexec/zmala-usb-power restore' not in cleanup.read_text():
+            raise RecoveryError('USB cleanup policy needs installer maintenance')
 
 
 def verify_host(config, run):
@@ -64,7 +73,7 @@ def verify_host(config, run):
     sdk = run(['dpkg-query', '-W', '-f=${Version}', 'libmediastreamer2-14']).stdout
     sdk = sdk.split('+')[0].split(':')[-1]
     expected = {'architecture': platform.machine(), 'os': release.get('VERSION_CODENAME'),
-                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 2}
+                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 3}
     if expected != config['compatibility']:
         raise RecoveryError('Host compatibility changed; installer maintenance required')
 

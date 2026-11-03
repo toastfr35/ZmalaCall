@@ -14,7 +14,7 @@ mkdir -p /etc/systemd/system/zmalacall-terminal.service.d
 cat > /etc/systemd/system/zmalacall-terminal.service.d/usb-power.conf <<'EOF'
 [Service]
 Environment=ZMALA_USB_POWER=1
-ExecStopPost=+/usr/local/libexec/zmala-usb-power on
+ExecStopPost=+/usr/local/libexec/zmala-usb-power restore
 EOF
 systemctl daemon-reload
 echo 'USB power experiment installed; restart zmalacall-terminal to activate.'
