@@ -1641,6 +1641,7 @@ function buildMediaFields(devices, media, id) {
   }
 }
 
+// @llr LLR-SRV-CONFIG-025
 /** @param {import('../types/admin-dom').TerminalForm} devices @param {HTMLElement} general @param {string} id */
 function buildGeneralFields(devices, general, id) {
   const profile = state.model.profiles[id];
@@ -1668,9 +1669,10 @@ function buildGeneralFields(devices, general, id) {
         ['300', '5 minutes'],
         ['600', '10 minutes'],
         ['1200', '20 minutes'],
+        ['1800', '30 minutes'],
         ['0', 'Never'],
       ],
-      String(profile.tv_idle_seconds ?? 30),
+      String(profile.tv_idle_seconds ?? 1800),
     ),
   );
 }

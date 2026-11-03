@@ -19,6 +19,7 @@ import time
 from zmala_terminal.common.tv_session import ViewingSession
 from zmala_terminal.linux.tv_plugins import load_driver
 from zmala_terminal.linux.cec_device import select_device
+from zmala_terminal.linux.cec_observer import SOURCE_MAX_AGE
 
 
 class TVControl:
@@ -382,6 +383,10 @@ class TVControl:
                 return {}
             if (value.get('device') == self.device and
                     0 <= time.time() - value['updated_at'] < 5):
+                observed_at = value.get('source_observed_at')
+                if (type(observed_at) not in (int, float)
+                        or not 0 <= time.time() - observed_at < SOURCE_MAX_AGE):
+                    value.pop('selected_source', None)
                 return value
         except (OSError, ValueError, TypeError, KeyError):
             pass
@@ -415,6 +420,15 @@ class TVControl:
             return source.lower()
         return None
 
+    # @llr LLR-TERM-TV-030
+    def _idle_source_current(self, previous, cancel):
+        if (self._closed or cancel is not self._cancel or cancel.is_set()
+                or self.session.browsing is not previous):
+            return False
+        state = self._observed_state()
+        return state.get('off') is not True and state.get('selected_source') == previous['address']
+
+    # @llr LLR-TERM-TV-030
     def _restore(self, cancel, browsing=False):
         """Serialize with wake; an older call must not put a newer call's TV to sleep."""
         with self._lock:
@@ -427,7 +441,11 @@ class TVControl:
                 if not browsing and not self.session.changed:
                     return
                 plan = self.session.restore_plan(previous, self.power_enabled, self.source_enabled)
-                if plan.release_source:
+                if browsing and not self._idle_source_current(previous, cancel):
+                    return
+                # An originally-off TV returns straight to standby. Selecting
+                # its old source first would invalidate the UI-only standby guard.
+                if plan.release_source and not (browsing and plan.power_off):
                     self._run('--to', '0', '--inactive-source', 'phys-addr=' + previous['address'])
                     if cancel is not self._cancel:
                         return
@@ -468,6 +486,8 @@ class TVControl:
                     for delay in (0, 3, 5, 5):
                         if not self._restore_wait(delay, cancel):
                             return
+                        if browsing and not self._idle_source_current(previous, cancel):
+                            return
                         self._run('--to', '0', '--standby')
                         power = self._run('--to', '0', '--give-device-power-status')
                         if re.search(r'pwr-state:\s*standby\s*\(', power):
@@ -478,7 +498,8 @@ class TVControl:
                     if not re.search(r'pwr-state:\s*standby\s*\(', power):
                         # The driver can resolve ambiguous CEC via fresh metadata;
                         # it still refuses a toggle unless on is confirmed twice.
-                        self._driver_call('set_power_off', is_current=lambda: cancel is self._cancel)
+                        self._driver_call('set_power_off', is_current=lambda:
+                            self._idle_source_current(previous, cancel) if browsing else cancel is self._cancel)
                 logging.info('CEC: previous TV state restoration sent')
             except (OSError, subprocess.SubprocessError, RuntimeError):
                 logging.warning('CEC: TV restoration failed', exc_info=True)
@@ -506,7 +527,7 @@ class TVControl:
                 'config_file': self._driver_config_file,
                 'is_current': is_current,
                 'read_power': self._driver_power_status,
-                'read_input': self._previous_source,
+                'read_input': lambda: self._observed_state().get('selected_source'),
                 'power_on': self._driver_power_on,
                 'trial_source': trial_source or {},
             })

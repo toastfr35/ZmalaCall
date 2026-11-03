@@ -449,7 +449,10 @@ quiet borders and high-contrast text suitable for grayscale printing. Display th
 app's QR-image import.
 Settings include auto-answer, fixed C20 hardware information, resolution, FPS, framing,
 volume, ringtone, language, portrait count and TV return. See the
-[terminal settings implementation](terminal.md#settings-and-controls) for input and save semantics.
+[terminal settings implementation](terminal.md#settings-and-controls) for input,
+save semantics and selected-input safety. New/missing TV inactivity values default
+to 30 minutes; saved choices, including 30 seconds and Never, are preserved. The
+administration form and device API also accept an explicit 30-minute choice.
 
 The Ringtone selector defaults to Nokia and offers an audio preview on the
 administrator's computer. Add ringtones imports audio files into a private server

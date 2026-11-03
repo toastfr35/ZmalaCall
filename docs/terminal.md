@@ -483,7 +483,7 @@ inside the small-window layout.
 | Button sounds volume | 0–100%, in 5% steps; idle navigation feedback |
 | Ringtone | Nokia (default) and the private server library |
 | Portraits | Three/five; short contact lists retain three positions |
-| Return to TV | 30 seconds (default), 1, 2, 5, 10, 20 minutes, Never |
+| Return to TV | 30 seconds, 1, 2, 5, 10, 20, 30 minutes (default), Never |
 | Reset | Confirmed local reset and re-enrollment |
 
 Open Ringtone with green, then use left/right to hear the highlighted choice.
@@ -614,7 +614,7 @@ If power control was not qualified, an unknown state cannot authorize waking it.
 
 Incoming calls remember observed power/source before revealing the UI. Answered,
 declined, cancelled, failed and missed calls leave the terminal view available
-for a fresh configured inactivity interval (30 seconds by default; Never disables
+for a fresh configured inactivity interval (30 minutes by default; Never disables
 return). The TV goes back to standby if originally off, or its previous input if
 originally on, only when this interval expires. The same browsing timer and thin
 blue bar are used: the bar appears after ten seconds idle, and any button activity
@@ -625,6 +625,27 @@ baseline to a browsing lease outside Tk, after any in-flight command finishes.
 The lease's `idle_started` timestamp prevents a short missed call from inheriting
 an expired idle anchor. Shutdown still uses immediate cancellation. Volume/mute
 are not changed by CEC. Unknown previous input is not guessed.
+
+Idle return requires a live observer heartbeat (under five seconds old) and a
+TV-originated selected-input report received within 30 seconds. The observer
+publishes `selected_source` and `source_observed_at` separately from ordinary
+`active_source` routing hints. Pi commands, source-device announcements and later
+heartbeats cannot renew this evidence. A read-only active-source request runs
+every ten seconds; a TV is not assumed to answer it with selected-input evidence.
+Missing, stale or legacy observer fields pause the countdown without using the
+saved baseline as proof of visibility. A fresh confirmation restarts a full
+interval; confirmation of another input or standby releases the pending return.
+
+The asynchronous worker rechecks the current input before restoration and each
+standby retry, including the paired driver's checks around authentication. An
+originally-off TV goes directly to standby while the terminal input is confirmed;
+it is not switched to another input before that guarded power command. An
+originally-on TV returns to the observed previous input without a standby command.
+TVs that do not supply selected-input confirmation remain on for manual control.
+Older stable observer installations fail safe until the trusted manual installer
+refreshes the host helpers; application-only updates never replace root host files.
+Existing explicit timeout settings are preserved; only new/missing values adopt
+the 30-minute default.
 
 If an incoming call needed to reveal the terminal, source selection is retried
 up to three times after the initial wake/selection sequence, waiting five seconds

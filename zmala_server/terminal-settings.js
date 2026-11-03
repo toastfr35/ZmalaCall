@@ -90,9 +90,10 @@ function terminalProfileFields(profile, update) {
       /** @type {const} */ ([3, 5]),
       'Choose 3 or 5 carousel portraits.',
     ),
+    // @llr LLR-SRV-CONFIG-025
     tv_idle_seconds: choice(
-      proposed(update, 'tv_idle_seconds', profile.tv_idle_seconds ?? 30),
-      /** @type {const} */ ([0, 30, 60, 120, 300, 600, 1200]),
+      proposed(update, 'tv_idle_seconds', profile.tv_idle_seconds ?? 1800),
+      /** @type {const} */ ([0, 30, 60, 120, 300, 600, 1200, 1800]),
       'Choose a supported TV idle timeout.',
     ),
     c20_speaker_volume: speakerVolume(

@@ -198,13 +198,14 @@ REVISIONS = {
             'call them back. Their missed-call badge stays unread until you open their confirmation.',
         ],
         'A thin blue bar at the bottom': [
-            'A thin blue bar at the bottom appears after ten seconds without a button press and shows '
-            'the countdown to returning to TV. A button press '
-            'restarts the countdown. After any incoming call ends, answered or not, a fresh countdown '
-            'starts. When it finishes, the TV switches off if it was off before the call, or returns '
-            'to what you were watching if it was on. Your helper chooses the delay; Never disables '
-            'automatic return. This works only when automatic TV control passed setup; otherwise '
-            'use the TV remote.',
+            'A thin blue bar at the bottom appears after ten seconds without a button press, '
+            'while the TV confirms that ZmalaCall is displayed. A button press restarts the countdown. '
+            'After any incoming call ends, answered or not, a fresh countdown starts. Return to TV '
+            'defaults to 30 minutes; an already saved delay stays unchanged. When it finishes, a TV '
+            'that was off returns directly to standby; one that was on returns to its previous input.',
+            'If the TV cannot confirm its selected input, ZmalaCall leaves it alone for manual control. '
+            'A confirmed switch to another input cancels automatic return. Your helper can choose '
+            'Never to disable it. Automatic TV control must also have passed setup.',
         ],
         'Webcam icon (if shown):': [
             'If a webcam symbol is shown, mint means power is on, a grey slash means off, and a '
@@ -273,10 +274,13 @@ REVISIONS = {
             'any ringtone preview.',
         ],
         'End the call with red.': [
-            'End the call with red. Then wait without pressing a button: the blue countdown bar should appear '
-            'after ten seconds. After the Return to TV delay, check that the TV returns to standby '
-            'if it was off, or the previous input if it was on. Repeat with an unanswered call. '
-            'Automatic return is disabled when the delay is set to Never.',
+            'End the call with red. When the TV confirms that ZmalaCall is displayed, a blue countdown '
+            'bar appears after ten seconds without a button press. Return to TV defaults to 30 minutes; '
+            'an already saved delay stays unchanged. After the delay, a TV that was off returns directly '
+            'to standby; one that was on returns to its previous input. Repeat with an unanswered call.',
+            'If the selected input cannot be confirmed, ZmalaCall leaves the TV alone. You can use the '
+            'TV remote normally. A confirmed switch to another input cancels the automatic return. '
+            'Choose Never to disable the countdown.',
         ],
     },
     'server_prep.docx': {
@@ -304,6 +308,10 @@ REVISIONS = {
             'Remote & camera shows the remote’s battery and charger, and the C10/C20’s connection and '
             'power when known. The Save changes bar stays visible as you scroll. Unsaved settings '
             'means your changes have not been applied; select Save changes to apply them.',
+            'Return to TV after inactivity defaults to 30 minutes for new terminals. Existing saved '
+            'delays stay unchanged. Choose a shorter delay, 30 minutes or Never, then Save changes. '
+            'Automatic return operates only while the TV provides fresh confirmation that ZmalaCall '
+            'is selected. If the TV cannot confirm its input, it stays on for manual control.',
             'Open Setup to download the server QR document. Its first step explains Android Wi-Fi sharing; '
             'a separate printed Wi-Fi QR is also available. Give setup codes privately to the '
             'person setting up that TV terminal, together with ZmalaTerminal-Guide.pdf.',
@@ -332,7 +340,8 @@ REVISIONS['server_prep.docx']['Open Terminals, choose the device'] = (
     REVISIONS['server_prep.docx']['In Terminals, choose native-language labels'])
 
 REVISIONS['server_prep.docx']['Open Callbacks to see Pending requests first.'] = [
-    REVISIONS['server_prep.docx']['Open Terminals, choose the device'][2]]
+    next(text for text in REVISIONS['server_prep.docx']['Open Terminals, choose the device']
+         if text.startswith('Open Callbacks'))]
 
 REVISIONS['terminal_use.docx']['This changes the sound you hear during calls.'] = (
     REVISIONS['terminal_use.docx']['The call-volume overlay changes only'])
@@ -342,7 +351,8 @@ REVISIONS['terminal_config.docx']['This part is for the helper setting up the TV
     REVISIONS['terminal_config.docx']['For the person setting up the terminal'])
 REVISIONS['terminal_config.docx']['4  Download the two QR documents'] = ['4  Prepare the setup QR codes']
 REVISIONS['server_prep.docx']['Open Setup to download its Wi-Fi and server QR documents.'] = [
-    REVISIONS['server_prep.docx']['Open Terminals, choose the device'][1]]
+    next(text for text in REVISIONS['server_prep.docx']['Open Terminals, choose the device']
+         if text.startswith('Open Setup'))]
 
 UPDATE_SECTIONS = {
     'terminal_use.docx': ('Automatic updates', [
@@ -499,6 +509,11 @@ def improve_readability(root, filenames=None):
         for style in ('Title', 'Heading 1', 'Heading 2'):
             doc.styles[style].font.color.rgb = RGBColor(0, 0, 0)
         doc.styles['Normal'].font.size = Pt(11)
+        if filename == 'terminal_config.docx':
+            for table in doc.tables:
+                for row in table.rows:
+                    if row.cells[0].text.strip() == 'Return to TV':
+                        row.cells[1].text = '30 seconds; 1, 2, 5, 10, 20 or 30 minutes (default); Never'
         doc.core_properties.author = 'ZmalaCall'
         doc.core_properties.last_modified_by = ''
         doc.save(path)

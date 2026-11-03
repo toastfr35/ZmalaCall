@@ -1,5 +1,5 @@
 // @test S-LLT-010
-// @requirements LLR-SRV-UI-016, LLR-SRV-UI-017, LLR-SRV-UI-019
+// @requirements LLR-SRV-UI-016, LLR-SRV-UI-017, LLR-SRV-UI-019, LLR-SRV-CONFIG-025
 // @environment portable
 // @plan Render terminal field definitions with DOM/API doubles; assert controls attach to the intended sections, frame-rate choices and all 5-percent speaker-volume choices are present, existing between-step levels show the nearest choice without changing the model and drafts/download errors retain ownership. Render peripheral badges for fresh, stale, legacy/unknown, connected, charging, zero-battery and powered-off reports.
 // @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
@@ -88,7 +88,11 @@ test('every terminal setting is attached to its visible section, including frame
     Array.from(form.fields.videoFps.children, (option) => option.value),
     ['10', '15', '20', '25', '30'],
   );
-  assert.equal(form.fields.tvIdleSeconds.value, '30');
+  assert.equal(form.fields.tvIdleSeconds.value, '1800');
+  assert.deepEqual(
+    Array.from(form.fields.tvIdleSeconds.children, (option) => option.value),
+    ['30', '60', '120', '300', '600', '1200', '1800', '0'],
+  );
 });
 
 test('terminal drafts retain their original revision and setup downloads propagate failures', async () => {

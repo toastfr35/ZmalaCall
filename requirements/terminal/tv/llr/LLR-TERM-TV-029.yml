@@ -5,7 +5,7 @@ header: |
   Idle TV return
 level: 105.0
 links:
-- HLR-TERM-TV-018: ZYWJZfxPFY-U2Faag_owNyuH0jhoHw1LvN3GtcRGSgo=
+- HLR-TERM-TV-018: F35loWawZvWnhbpGyFAu7gd_eyY2h5N8S9KwsRLIoZg=
 normative: true
 ref: ''
 references:
@@ -27,10 +27,12 @@ reviewed: null
 scope: Core
 text: |
   Browsing, including the period after an incoming call ends, shall restore previous
-  TV state after the configured idle timeout, with 30 seconds as default and Never
+  TV state after the configured idle timeout, with 30 minutes as default and Never
   supported. Call end shall start a fresh full interval, even without button input. Every button activity shall restart the
   countdown. A thin blue bar at the screen bottom shall appear after ten seconds
   without button activity.
+  Supported delays shall include 30 seconds, 1, 2, 5, 10, 20 and 30 minutes; existing
+  explicit saved choices shall remain unchanged when the default changes.
 verification: |
   Control time at bar and timeout boundaries. Press consumed and normal buttons and
   check countdown reset and Never behavior, including after a short missed call.

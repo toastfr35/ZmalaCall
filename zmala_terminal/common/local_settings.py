@@ -2,7 +2,7 @@
 from zmala_terminal.common.localization import LANGUAGES
 
 FIELDS = ('language', 'auto_answer', 'auto_framing', 'ringtone_volume', 'action_sound_volume', 'ringtone', 'carousel_portraits', 'tv_idle_seconds', 'reset')
-TV_IDLE_DELAYS = (30, 60, 120, 300, 600, 1200, 0)
+TV_IDLE_DELAYS = (30, 60, 120, 300, 600, 1200, 1800, 0)
 ANSWER_DELAYS = (0, 10, 30, 60, 120, 300, 600)
 
 
@@ -55,7 +55,7 @@ class SettingsDraft:
         if key == 'auto_answer':
             return config.get('auto_answer_seconds', 10) if config.get(key) else 0
         return config.get(key, {'language': 'en', 'auto_framing': False,
-                               'action_sound_volume': 20, 'ringtone': 'nokia', 'carousel_portraits': 3, 'tv_idle_seconds': 30}.get(key))
+                               'action_sound_volume': 20, 'ringtone': 'nokia', 'carousel_portraits': 3, 'tv_idle_seconds': 1800}.get(key))
 
     # @llr LLR-TERM-CONFIG-021, LLR-TERM-AUDIO-009
     def open(self, config):

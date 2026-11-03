@@ -32,7 +32,8 @@ function profile(name = 'Family') {
     video_fps: 15,
     auto_framing: false,
     carousel_portraits: 3,
-    tv_idle_seconds: 30,
+    // @llr LLR-SRV-CONFIG-025
+    tv_idle_seconds: 1800,
     c20_speaker_volume: 50,
     ringtone_volume: 50,
     action_sound_volume: 20,

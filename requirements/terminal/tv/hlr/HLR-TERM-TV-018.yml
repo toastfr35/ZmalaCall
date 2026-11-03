@@ -16,6 +16,8 @@ scope: Core
 text: |
   The terminal shall reveal its view when required and restore the observed previous
   TV state after use. It shall preserve TV audio settings.
+  Automatic idle restoration shall require fresh TV-confirmed evidence that its
+  view is still selected; unknown or another source shall leave the TV untouched.
 verification: |
   Start from standby and another input. Exercise button wake, incoming calls and idle
   return. Check restoration and unchanged TV volume.
