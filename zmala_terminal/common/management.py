@@ -232,8 +232,6 @@ class ManagementLoop:
                 if self.model.state == State.HOME:
                     self.render()
             now = time.monotonic()
-            from zmala_terminal.common.update_client import tick_terminal
-            tick_terminal(self, now)
             self.update_timers(now)
             self.update_setup_display(now)
             if self.carousel_motion:
@@ -246,6 +244,10 @@ class ManagementLoop:
             if not getattr(getattr(self, 'update_client', None), 'locked', False):
                 self.tick_tv_idle(now)
             self.case_fan.update(self.model.state == State.IN_CALL)
+            # A failing UI cycle must not keep a candidate's ready heartbeat
+            # fresh. Lease acknowledgement also follows all current UI work.
+            from zmala_terminal.common.update_client import tick_terminal
+            tick_terminal(self, now)
         except Exception:
             logging.exception('Terminal tick failed')
             self.notice = 'help'

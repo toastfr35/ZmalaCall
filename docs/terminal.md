@@ -1510,6 +1510,8 @@ genuine user/call activity. Configuration and console polling pause during trial
 `update_runtime.py` checks heartbeat ownership, freshness, service cgroup and working
 directory. `update_supervisor.py` requires a stable same-process UI heartbeat and
 rejects restarts/timeouts. Recovery never briefly releases maintenance fencing.
+The UI publishes readiness after its complete event/render cycle, so repeated
+cycle failures cannot keep a broken trial healthy.
 The independent Pango/Tk display survives app replacement, uses the selected
 language and sends no TV/USB commands. Background preparation stays quiet.
 

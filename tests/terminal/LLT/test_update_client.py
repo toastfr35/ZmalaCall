@@ -16,6 +16,21 @@ from zmala_terminal.common.input_control import InputControl
 from zmala_terminal.common.engine import Engine
 
 class UpdateClientTests(unittest.TestCase):
+    def test_failed_ui_cycle_does_not_publish_ready_heartbeat(self):
+        from zmala_terminal.common.management import ManagementLoop
+        from zmala_terminal.common.model import State
+        app=Mock(closed=False,engine=None,configuration=None,shared_photo=None,
+                 carousel_motion=None,model=SimpleNamespace(state=State.HOME),
+                 update_client=SimpleNamespace(locked=True))
+        app.update_timers.side_effect=RuntimeError('broken UI cycle')
+        with patch('zmala_terminal.common.update_client.tick_terminal') as heartbeat:
+            with self.assertLogs(level='ERROR'):
+                ManagementLoop.tick(app)
+            heartbeat.assert_not_called()
+            app.update_timers.side_effect=None
+            ManagementLoop.tick(app)
+            heartbeat.assert_called_once()
+
     def test_passive_poll_cannot_resume_usb_before_real_activity(self):
         from zmala_terminal.common.management import ManagementLoop
         app=SimpleNamespace(update_client=SimpleNamespace(locked=False,passive=True),usb_power=Mock())
