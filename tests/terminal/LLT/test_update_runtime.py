@@ -51,7 +51,7 @@ class DownloadTests(unittest.TestCase):
 @unittest.skipUnless(os.name == 'posix', 'Requires Linux process and ownership fixtures')
 class HeartbeatTests(unittest.TestCase):
     def test_preparation_rejects_links_and_quarantine_retains_recovery_slots(self):
-        from zmala_terminal.linux.update_prepare import validate_built_tree
+        from zmala_terminal.linux.update_prepare import validate_built_tree, probe_release
         from zmala_terminal.linux.update_service import UpdateService
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -59,6 +59,15 @@ class HeartbeatTests(unittest.TestCase):
             tree.mkdir()
             (tree/'regular').write_text('safe')
             validate_built_tree(tree)
+            launch=Mock()
+            probe_release(tree,'fixture-builder',launch)
+            arguments=launch.call_args.args[0]
+            self.assertIn('--uid=fixture-builder',arguments)
+            self.assertIn('--property=PrivateDevices=yes',arguments)
+            self.assertIn('--property=PrivateNetwork=yes',arguments)
+            self.assertIn('--property=ProtectSystem=strict',arguments)
+            self.assertIn('--property=ReadWritePaths='+str(tree),arguments)
+            self.assertIn("engine=Engine({},",arguments[-2])
             (tree/'link').symlink_to(root)
             with self.assertRaises(RecoveryError):
                 validate_built_tree(tree)
@@ -101,6 +110,11 @@ class HeartbeatTests(unittest.TestCase):
             owner = Runtime({'user': pwd.getpwuid(os.getuid()).pw_name, 'root': str(tx.root),
                              'proc_root': str(root/'proc'), 'request': str(root/'request/state.json'),
                              'status': str(root/'status.json')}, tx, clock=lambda: 100)
+            owner.phase = 'checking'
+            owner.preserve_sleep = True
+            self.assertFalse(owner.recover())
+            self.assertEqual(json.loads(owner.request.read_text())['phase'], 'checking')
+            self.assertTrue(owner.preserve_sleep)
             value = {'pid': 123, 'nonce': owner.nonce, 'heartbeat': 100, 'generation': 'a'*32}
             def write():
                 owner.status.write_text(json.dumps(value))

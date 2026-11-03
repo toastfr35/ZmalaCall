@@ -28,10 +28,14 @@ reviewed: null
 scope: Experimental
 text: The updater shall bound unauthenticated HTTPS release downloads to approved
   GitHub release origins, verify complete signed-size/digest packages before caching,
-  build in an unprivileged isolated service, and admit only fresh bounded heartbeats
+  build in an unprivileged isolated service, start/iterate/close the native core using
+  disposable data with devices and network isolated, and admit only fresh bounded heartbeats
   owned by the terminal user from its selected service process. Failed preparations
   and trials shall be quarantined; collection shall retain confirmed, previous and
-  pending slots.
+  pending slots. Supervisor restart shall retain active maintenance fencing until
+  recovery health is established, without briefly publishing an idle state.
 verification: Check transport origin/size/digest/cleanup boundaries and local heartbeat
   nonce, freshness, mode, process cgroup and selected directory. Test preparation
   sandbox commands, quarantine and retained slots using isolated service doubles.
+  Assert retained recovery fencing does not publish idle; qualify native core startup
+  separately on the Pi without accessing live account data or peripherals.

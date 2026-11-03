@@ -138,11 +138,15 @@ class UpdateService:
             prior = trusted_json(self.runtime.request, 8192)
         except (OSError, ValueError, RecoveryError):
             pass
-        recovered = self.runtime.recover()
-        if prior and prior.get('phase') in ('rollback', 'checking', 'updating', 'recovery_failed') and not recovered:
+        retained = bool(prior and prior.get('phase') in ('rollback', 'checking', 'updating', 'recovery_failed')
+                        and isinstance(prior.get('nonce'), str) and re.fullmatch('[a-f0-9]{32}', prior['nonce']))
+        if retained:
             self.runtime.nonce = prior['nonce']
             self.runtime.language = prior.get('language', 'en')
             self.runtime.preserve_sleep = prior.get('preserve_sleep') is True
+            self.runtime.phase = 'checking'
+        recovered = self.runtime.recover()
+        if retained and not recovered:
             self.runtime.display('checking')
             recovered = True
         pending = self.transactions.read('pending')

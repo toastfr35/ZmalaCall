@@ -139,20 +139,17 @@ derived manuals/bundles. Never publish signing keys, device state or private log
 
 ## Current status
 
-Implemented and merged through PR #126: durable transaction records, signature and
-bounded archive verification, independent trial supervisor, local maintenance
-admission, localized Pango/Tk progress display, root service and installer bootstrap,
-and signed machine-update release publication. The signing key is stored only as
-an encrypted Actions secret; production signing runs only in the release workflow.
+Implementation through PR #128 is merged: signed release staging, stable root
+supervisor, boot recovery, independent localized display, safe app admission,
+private data checkpoints, installer bootstrap, server caching/telemetry/admission,
+and release publication. Production signing runs only in GitHub Actions.
 
-Server feed caching/status and SIP admission integration are implemented on the
-current feature branch. It also closes USB startup/shutdown wake paths, preserves
-pending TV restoration by deferring activation, and updates the three affected Word
-guides and their authoring copy. The rendered Word pages were visually checked.
+The server integration is deployed. Term2 runs the independently verified signed
+v0.3.71 baseline with updater services active. Actual native preparation and an
+isolated native-core startup check passed on the Pi. The current qualification
+branch closes passive-sleep and supervisor-fence continuity gaps and strengthens
+the native preflight. Code, regression plans and runtime requirements are updated.
 
-Local evidence includes transaction and settings-restore SIGKILL checkpoints,
-native/display integration scenarios, complete terminal LLT and independent
-installer suites, and server HTTP/cache/SIP tests. Final Verify, published payload
-inspection, server/Pi deployment and hardware update/rollback qualification remain.
-No physical power-loss run has been performed. Automatic updates are not yet enabled
-on term2. Operating-system/dependency upgrades remain excluded.
+See [terminal-update-qualification.md](terminal-update-qualification.md) for executed
+checks and remaining automatic-transition/recovery/call scenarios. Physical power
+interruption has not been tested. OS/dependency upgrades remain excluded.

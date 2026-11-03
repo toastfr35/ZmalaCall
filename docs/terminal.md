@@ -1475,30 +1475,46 @@ Ambiguous CEC power replies require a fresh paired-driver query before saving th
 
 Pi installer payloads exclude local Floorplan, cache and VCS directories. Archive regression checks cover the current runtime modules; installer checks remain separate from product runtime requirements. Installation builds generated assets before root-owned deployment and preserves persistent device/account data.
 
-### Application updater transaction foundation (not yet enabled)
+### Automatic application updates
 
-`linux/update_transaction.py` keeps separate confirmed and pending records, fsyncs
-files and parent directories around replacement, records trials before selecting
-a slot and commits confirmation before selection. Recovery quarantines an
-interrupted unconfirmed trial and selects the confirmed release. Invalid confirmed
-metadata fails closed. No installed updater service uses this foundation yet; see
-`docs/terminal-update-plan.md` for integration and qualification still outstanding.
+The Pi installer provisions a root-owned updater under
+`/usr/local/lib/zmalacall-updater`, independently of application slots under
+`/opt/zmalacall-updates`. A once-per-boot recovery unit selects the durable confirmed
+application before terminal startup. The updater downloads compatible signed
+releases, prepares them in a dedicated unprivileged sandbox, and activates after
+safe inactivity. It never invokes an OS installer or package manager.
 
-The not-yet-enabled updater staging layer in `linux/update_package.py` authenticates canonical Ed25519 manifests, checks compatibility/newer sequence and exact package size/digest, and admits only bounded regular files into approved application paths. Root hooks, symlinks and private runtime data are rejected. Signing credentials are not part of this code.
+`update_package.py` authenticates canonical Ed25519 manifests, compatibility,
+sequence and exact package size/digest, then admits only bounded regular files in
+approved paths. The public trust registry is root-owned; signing material remains
+in the release workflow. Native preparation reuses installed framing dependencies,
+builds offline pinned corrections, and starts/iterates/closes a native core using
+disposable account-free data with devices and networking isolated. Prepared trees
+reject links and special files before root metadata writes.
 
-`linux/update_supervisor.py` orchestrates the updater trial through a narrow operations contract. It stops the old process before selection, rejects restarts/timeouts and keeps recovery failure distinct from successful rollback. Durable confirmation errors are replayed by boot recovery rather than misclassified as candidate failure. This foundation is not yet installed as an active service.
+`update_client.py` acknowledges fresh root-owned requests only after calls,
+setup/settings, held input, active workers, USB transitions and TV restoration have
+finished. The app fences calls/input and holds USB/TV shutdown behavior before
+acknowledgement. Sleeping media remains passive across consecutive restarts until
+genuine user/call activity. Configuration and console polling pause during trial.
 
-Updater integration uses fresh root-owned `/run/zmalacall-updater/state.json` requests and an application-owned bounded heartbeat under `/run/zmalacall/update.json`. Maintenance is fenced on the Tk owner thread before acknowledgement; incoming calls and input actions are rejected while fenced. A separate updater display process renders shaped/bidi text across all supported locales and survives app replacement. It sends no TV/USB commands. These paths are inactive until the updater is provisioned; current installer/service wiring is still tracked in the update plan.
+`update_runtime.py` checks heartbeat ownership, freshness, service cgroup and working
+directory. `update_supervisor.py` requires a stable same-process UI heartbeat and
+rejects restarts/timeouts. Recovery never briefly releases maintenance fencing.
+The independent Pango/Tk display survives app replacement, uses the selected
+language and sends no TV/USB commands. Background preparation stays quiet.
 
+Before a trial, the stopped application's persistent data is durably copied into
+a private same-filesystem checkpoint. Passive trials that change it are rejected.
+Rollback uses atomic directory exchange and a durable transaction marker to avoid
+swapping failed data back after interrupted recovery. Completed checkpoints are
+collected; confirmed, previous and pending application slots remain protected.
 
-The stable updater service adapter checks the heartbeat owner, current service cgroup and working directory before accepting a maintenance lease. Release transport uses bounded public HTTPS requests without device credentials. Preparation builds run in an isolated unprivileged systemd unit using installed dependencies; generated trees reject links and special files before root metadata writes. Automatic operation never invokes apt or pip. Provisioning and release integration remain outstanding.
+The updater reads active profile enrollment and reset markers before legacy
+bootstrap data. Credential-isolated HTTPS without redirects/proxies carries the
+shared server feed and independent status reports; GitHub/CDN requests carry no
+device credentials. Network reporting cannot prevent local recovery.
 
-Before a trial, the stopped application’s persistent data is copied to a private same-filesystem checkpoint. A passive trial that changes those files is rejected. Rollback uses Linux atomic directory exchange and a durable transaction marker so interrupted restoration can be replayed without exchanging failed data back. Process-kill recovery is tested; physical power-loss qualification is not yet complete.
-
-
-The Pi installer now provisions root-owned updater code outside application slots, a dedicated unprivileged native builder, a once-per-boot recovery unit and a separate terminal-user display unit. The installed host supplies cryptography and compiler dependencies; automatic application updates never install them. The completed installer baseline becomes the initial confirmed slot. A manual reinstall stops automatic deployment while it owns the appliance. This wiring is implemented but has not yet been deployed to term2; signed release asset publication is still outstanding.
-
-
-The independent updater reads the active terminal profile enrollment (including reset markers) before any legacy bootstrap. It uses credential-isolated HTTPS with no redirects or environment proxies for the shared server feed and status; GitHub/CDN downloads carry no bearer credentials. Telemetry failures do not interrupt local recovery.
-
-Maintenance admission also waits for configuration/network/console workers, USB switching and pending TV restoration. Before acknowledgement it holds USB and TV shutdown behavior and stops console polling. Candidate startup defers the USB worker; update-driven shutdown does not restore USB power or the TV input. Real user/call activity resumes USB operation. Private data checkpoints are collected after completion, retaining an in-flight checkpoint. Term2 deployment and hardware qualification remain outstanding.
+Term2 has the updater and signed v0.3.71 baseline installed. Current executed and
+remaining checks are in [terminal-update-qualification.md](terminal-update-qualification.md).
+Process-death recovery passes do not constitute physical SD power-loss evidence.
