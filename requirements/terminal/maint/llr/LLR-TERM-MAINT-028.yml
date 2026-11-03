@@ -38,7 +38,9 @@ text: The application shall acknowledge only a fresh root-owned bounded maintena
   request after safe inactivity and shall fence call/input actions before acknowledgement.
   Trial/recovery fencing shall survive stale producer heartbeats; an expired pre-activation
   request may release its fence. Updater-controlled sleeping-media restarts shall
-  defer device settings and volume until genuine input/call activity.
+  defer device settings and volume until genuine input/call activity. This passive
+  sleeping state shall remain reported across consecutive maintenance cycles even
+  before the new USB manager has a confirmed power observation.
 verification: Use bounded local file fixtures and direct call/input/native-owner assertions.
   Verify eligibility, freshness, stale request/trial distinction, symlink rejection
   and passive media guards; physical sleep remains a hardware qualification.

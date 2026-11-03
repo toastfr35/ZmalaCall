@@ -43,3 +43,7 @@ class AdmissionIntegrationTests(unittest.TestCase):
                     app.usb_power.hold_for_update.assert_called_once()
                     CallControl.call_event(app,'incoming',1,'caller','domain')
                     app.engine.call_decline.assert_called_once_with('incoming',6)
+                    request.write_text(json.dumps({'nonce':'a'*32,'heartbeat':200,'phase':'checking'}))
+                    client.passive=True;client.next_tick=0;app.usb_power.powered=None
+                    tick_terminal(app,200)
+                    self.assertTrue(json.loads(status.read_text())['sleeping'])

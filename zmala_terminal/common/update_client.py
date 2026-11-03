@@ -114,5 +114,5 @@ def tick_terminal(app, now):
         if hold_tv:
             hold_tv()
     client.tick(idle, app.language, not app.closed,
-                bool(power and power.enabled and power.powered is False),
+                bool(client.passive or power and power.enabled and power.powered is False),
                 on_fence=fence)

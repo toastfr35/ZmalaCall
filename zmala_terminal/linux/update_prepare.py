@@ -47,6 +47,29 @@ def validate_built_tree(root):
 
 
 # @llr LLR-TERM-MAINT-030
+def probe_release(stage, builder, run):
+    """Exercise the real native core against disposable data and no hardware/network."""
+    probe = '''import pathlib,sys,ctypes,time
+root=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(root))
+for path in (root/'zmala_terminal').rglob('*.py'):compile(path.read_bytes(),str(path),'exec')
+for name in ('zmala_terminal/linux/media/video/libzmala_video.so','zmala_terminal/linux/media/audio/libzmala_speech_audio.so','zmala_terminal/linux/turn-runtime/turn-fix.so'):ctypes.CDLL(str(root/name))
+from zmala_terminal.common.engine import Engine
+engine=Engine({},lambda *args:None,lambda *args:None,profile='updater-probe',defer_media=True)
+try:
+    for _ in range(10):engine.iterate();time.sleep(.05)
+finally:engine.close()
+'''
+    run(['systemd-run', '--wait', '--collect', '--pipe',
+         '--unit=zmalacall-update-check-'+uuid.uuid4().hex, '--uid='+builder,
+         '--property=PrivateNetwork=yes', '--property=PrivateDevices=yes',
+         '--property=PrivateTmp=yes', '--property=ProtectHome=yes',
+         '--property=ProtectSystem=strict', '--property=NoNewPrivileges=yes',
+         '--property=ReadWritePaths='+str(stage), '--property=MemoryMax=512M',
+         '--property=RuntimeMaxSec=60', '/usr/bin/python3', '-c', probe, str(stage)],
+        check=True, capture_output=True, text=True, timeout=90)
+
+
+# @llr LLR-TERM-MAINT-030
 def prepare_release(transactions, manifest, package, config, run=subprocess.run):
     verify_package(package, manifest)
     confirmed = transactions.read('confirmed')
@@ -104,23 +127,14 @@ def prepare_release(transactions, manifest, package, config, run=subprocess.run)
                  '--property=CPUWeight=10', '--property=IOWeight=10',
                  '/usr/bin/env', 'ZMALA_OFFLINE_BUILD=1', *command],
                 check=True, capture_output=True, text=True, timeout=330)
-        # Compile source without importing it or executing application side effects.
-        run(['systemd-run', '--wait', '--collect', '--pipe',
-             '--unit=zmalacall-update-check-'+uuid.uuid4().hex, '--uid='+builder.pw_name,
-             '--property=PrivateNetwork=yes', '--property=ProtectHome=yes',
-             '--property=ProtectSystem=strict', '--property=NoNewPrivileges=yes',
-             '--property=MemoryMax=512M', '--property=RuntimeMaxSec=60',
-             '/usr/bin/python3', '-c',
-             'import pathlib,sys,ctypes;root=pathlib.Path(sys.argv[1]);'
-             '[compile(p.read_bytes(),str(p),"exec") for p in (root/"zmala_terminal").rglob("*.py")];'
-             '[ctypes.CDLL(str(root/p)) for p in ("zmala_terminal/linux/media/video/libzmala_video.so",'
-             '"zmala_terminal/linux/media/audio/libzmala_speech_audio.so",'
-             '"zmala_terminal/linux/turn-runtime/turn-fix.so")]', str(stage)],
-            check=True, capture_output=True, text=True, timeout=90)
-        validate_built_tree(stage)
         data = stage/'zmala_terminal/data'
         if data.exists() or data.is_symlink():
             raise RecoveryError('Payload contains persistent state')
+        data.mkdir(mode=0o700)
+        os.chown(data, builder.pw_uid, builder.pw_gid)
+        probe_release(stage, builder.pw_name, run)
+        validate_built_tree(stage)
+        shutil.rmtree(data)
         data.symlink_to(config.get('data', '/var/lib/zmalacall'), target_is_directory=True)
         record = {'owned_by_updater': 1, 'version': manifest['version'],
                   'sequence': manifest['sequence'], 'digest': manifest['package']['sha256']}

@@ -42,7 +42,20 @@ def confirmed_release(transactions):
     return trusted_json(transactions.slot(confirmed.get('slot'))/'update-release.json')
 
 
+def validate_host_helpers(root):
+    root = Path(root)
+    info = root.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid() or info.st_mode & 0o022:
+        raise RecoveryError('Untrusted terminal host helpers')
+    for name in ('prepare-display.py', 'pair-presenter.py', 'picom.conf', 'cec_observer.py', 'cec_device.py'):
+        info = (root/name).lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+                or info.st_mode & 0o022 or info.st_size > 65536):
+            raise RecoveryError('Untrusted terminal host helper')
+
+
 def verify_host(config, run):
+    validate_host_helpers(config.get('host_root', '/usr/local/lib/zmalacall-terminal-host'))
     release = {}
     for line in Path('/etc/os-release').read_text().splitlines():
         if '=' in line:
@@ -51,7 +64,7 @@ def verify_host(config, run):
     sdk = run(['dpkg-query', '-W', '-f=${Version}', 'libmediastreamer2-14']).stdout
     sdk = sdk.split('+')[0].split(':')[-1]
     expected = {'architecture': platform.machine(), 'os': release.get('VERSION_CODENAME'),
-                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 1}
+                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 2}
     if expected != config['compatibility']:
         raise RecoveryError('Host compatibility changed; installer maintenance required')
 
@@ -138,11 +151,15 @@ class UpdateService:
             prior = trusted_json(self.runtime.request, 8192)
         except (OSError, ValueError, RecoveryError):
             pass
-        recovered = self.runtime.recover()
-        if prior and prior.get('phase') in ('rollback', 'checking', 'updating', 'recovery_failed') and not recovered:
+        retained = bool(prior and prior.get('phase') in ('rollback', 'checking', 'updating', 'recovery_failed')
+                        and isinstance(prior.get('nonce'), str) and re.fullmatch('[a-f0-9]{32}', prior['nonce']))
+        if retained:
             self.runtime.nonce = prior['nonce']
             self.runtime.language = prior.get('language', 'en')
             self.runtime.preserve_sleep = prior.get('preserve_sleep') is True
+            self.runtime.phase = 'checking'
+        recovered = self.runtime.recover()
+        if retained and not recovered:
             self.runtime.display('checking')
             recovered = True
         pending = self.transactions.read('pending')

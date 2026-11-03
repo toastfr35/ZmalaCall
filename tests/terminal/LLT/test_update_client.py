@@ -10,12 +10,24 @@ from types import SimpleNamespace
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
-from zmala_terminal.common.update_client import UpdateClient
+from zmala_terminal.common.update_client import UpdateClient, tick_terminal
 from zmala_terminal.common.call_control import CallControl
 from zmala_terminal.common.input_control import InputControl
 from zmala_terminal.common.engine import Engine
 
 class UpdateClientTests(unittest.TestCase):
+    def test_deferred_sleep_is_reported_before_usb_state_is_known(self):
+        from zmala_terminal.common.model import State
+        client=SimpleNamespace(passive=True,tick=Mock())
+        app=SimpleNamespace(update_client=client,model=SimpleNamespace(state=State.HOME),
+            engine=None,setup_stage=None,settings_open=False,setup_busy=False,
+            settings_draft=SimpleNamespace(busy=False),keys_down=set(),last_button=0,
+            language='fr',closed=False,usb_power=SimpleNamespace(enabled=True,powered=None))
+        tick_terminal(app,200)
+        self.assertTrue(client.tick.call_args.args[3])
+        client.passive=False
+        tick_terminal(app,200)
+        self.assertFalse(client.tick.call_args.args[3])
     def test_tv_shutdown_during_update_does_not_start_restoration(self):
         from zmala_terminal.linux.tv_control import TVControl
         television = TVControl(device='/fixture/not-a-cec-device')

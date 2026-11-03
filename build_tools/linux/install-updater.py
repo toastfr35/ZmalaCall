@@ -53,6 +53,7 @@ def install(source, user, layout=Path('/'), run=command):
     if not re.fullmatch('[a-z_][a-z0-9_-]{0,31}', user):
         raise ValueError('Invalid terminal user')
     info = release_info(source)
+    run('python3', str(source/'build_tools/linux/install-terminal-host.py'), '--source', str(source))
     if run('systemctl', 'show', '--value', '-p', 'LoadState', 'zmalacall-updater.service') != 'not-found':
         run('systemctl', 'stop', 'zmalacall-updater.service')
     stable = layout/'usr/local/lib/zmalacall-updater'
@@ -100,7 +101,7 @@ def install(source, user, layout=Path('/'), run=command):
               'keys': str(configuration/'update-keys.json'), 'data': '/var/lib/zmalacall',
               'data_checkpoints': '/var/lib/zmalacall-update-data',
               'compatibility': {'architecture': platform.machine(), 'os': release.get('VERSION_CODENAME'),
-                                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 1}}
+                                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 2}}
     write_json(configuration/'updater.json', config)
     run('systemctl', 'stop', 'zmalacall-terminal.service')
     installed = (layout/'opt/zmalacall/current').resolve(strict=True)
@@ -120,6 +121,10 @@ def install(source, user, layout=Path('/'), run=command):
     os.replace(alias, layout/'opt/zmalacall/current')
     sync_directory(layout/'opt/zmalacall')
     for name in ('zmalacall-update-recover.service', 'zmalacall-updater.service', 'zmalacall-update-screen.service'):
+        content = (source/'build_tools/linux'/name).read_text().replace('@USER@', user)
+        (layout/'etc/systemd/system'/name).write_text(content)
+    for name in ('zmalacall-display.service', 'zmalacall-pairing.service',
+                 'zmalacall-compositor.service', 'zmalacall-cec.service'):
         content = (source/'build_tools/linux'/name).read_text().replace('@USER@', user)
         (layout/'etc/systemd/system'/name).write_text(content)
     dropin = layout/'etc/systemd/system/zmalacall-terminal.service.d'

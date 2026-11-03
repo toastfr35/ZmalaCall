@@ -6,12 +6,13 @@ PartOf=zmalacall-display.service
 StartLimitIntervalSec=0
 
 [Service]
+# @llr LLR-TERM-MAINT-030
 Type=simple
 User=@USER@
 SupplementaryGroups=video render
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/run/zmalacall-display/Xauthority
-ExecStart=/usr/bin/picom --config /opt/zmalacall/current/build_tools/linux/picom.conf
+ExecStart=/usr/bin/picom --config /usr/local/lib/zmalacall-terminal-host/picom.conf
 # Xorg may still be initializing when its service becomes active.
 Restart=always
 RestartSec=3

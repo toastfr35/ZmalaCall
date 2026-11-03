@@ -151,21 +151,26 @@ class Runtime:
             invalid = False
         except RecoveryError:
             pending, invalid = None, True
-        self.language = pending.get('language', 'en') if pending else 'en'
-        self.preserve_sleep = bool(pending and pending.get('preserve_sleep'))
+        if pending and 'language' in pending:
+            self.language = pending['language']
+        if pending and 'preserve_sleep' in pending:
+            self.preserve_sleep = pending['preserve_sleep'] is True
         confirmed = self.transactions.read('confirmed')
         if not confirmed:
             raise RecoveryError('No confirmed application')
         selected = self.transactions.root/'current'
         inconsistent = selected.resolve() != self.transactions.slot(confirmed.get('slot')).resolve()
         if invalid or inconsistent or pending and pending.get('state') == 'trial':
-            self.display('rollback')
+            phase = ('checking' if pending and pending.get('transaction') == confirmed.get('transaction')
+                     else 'rollback')
+            self.display(phase)
             self.stop()
             self.transactions.recover()
             self.restore_data()
             self.start()
             return True
         self.transactions.recover()
-        self.phase = 'idle'
+        if self.phase not in ('checking', 'updating', 'rollback', 'recovery_failed'):
+            self.phase = 'idle'
         self.publish()
         return False
