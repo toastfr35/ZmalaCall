@@ -1,7 +1,7 @@
 # @test T-LLT-098
 # @requirements LLR-TERM-MAINT-030
 # @environment portable
-# @plan Exercise bounded public downloads with fake transports and authenticated local heartbeat fixtures; reject bad origin, size, digest, nonce, ownership permissions, cgroup and selected-directory mismatches.
+# @plan Exercise bounded public downloads with fake transports and authenticated local heartbeat fixtures; reject bad origin, size, digest, nonce, ownership permissions, cgroup and selected-directory mismatches. Reject legacy or writable enabled USB cleanup policies before activation.
 # @pass Only verified complete files are cached, partial failures leave no package, and only the current terminal service can acknowledge maintenance. Linux process fixtures skip on Windows.
 import hashlib
 import io
@@ -64,11 +64,22 @@ class HeartbeatTests(unittest.TestCase):
             tree = root/'built'
             tree.mkdir()
             host=root/'host';host.mkdir(mode=0o755)
-            for name in ('prepare-display.py','pair-presenter.py','picom.conf','cec_observer.py','cec_device.py'):
+            for name in ('prepare-display.py','pair-presenter.py','picom.conf','cec_observer.py','cec_device.py','argon_fan.py'):
                 (host/name).write_text('host fixture');(host/name).chmod(0o644)
-            validate_host_helpers(host)
+            cleanup=root/'usb-power.conf';helper=root/'usb-helper'
+            validate_host_helpers(host,cleanup,helper)
+            helper.write_text('root helper');helper.chmod(0o755)
+            cleanup.write_text('ExecStopPost=+/usr/local/libexec/zmala-usb-power on');cleanup.chmod(0o644)
+            with self.assertRaisesRegex(RecoveryError,'installer maintenance'):
+                validate_host_helpers(host,cleanup,helper)
+            cleanup.write_text('ExecStopPost=+/usr/local/libexec/zmala-usb-power restore')
+            validate_host_helpers(host,cleanup,helper)
+            helper.chmod(0o777)
+            with self.assertRaisesRegex(RecoveryError,'Untrusted USB'):
+                validate_host_helpers(host,cleanup,helper)
+            helper.chmod(0o755)
             (host/'picom.conf').chmod(0o666)
-            with self.assertRaises(RecoveryError):validate_host_helpers(host)
+            with self.assertRaises(RecoveryError):validate_host_helpers(host,cleanup,helper)
             (tree/'regular').write_text('safe')
             validate_built_tree(tree)
             launch=Mock()

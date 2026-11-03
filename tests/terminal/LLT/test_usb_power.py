@@ -1,9 +1,11 @@
 # @test T-LLT-037
-# @requirements LLR-TERM-POWER-012, LLR-TERM-POWER-013, LLR-TERM-POWER-014, LLR-TERM-POWER-015, LLR-TERM-POWER-016, LLR-TERM-POWER-017
+# @requirements LLR-TERM-POWER-012, LLR-TERM-POWER-013, LLR-TERM-POWER-014, LLR-TERM-POWER-015, LLR-TERM-POWER-016, LLR-TERM-POWER-017, LLR-TERM-MAINT-028
 # @environment portable
 # @plan Verify either supported USB identity may power down, but unrelated devices cannot. Control time, remote battery, hub status, input and call events with mocked USB helpers; assert five-minute inactivity and battery boundaries, immediate wake requests, media readiness gating, bounded retries and truthful power indication. Inject applied-volume status and worker time to verify ringing only after nonzero mixer convergence, atomic power telemetry, ringer termination escalation and unconditional shutdown power restoration.
 # Verify successful transitions and shutdown are quiet while helper rollback errors
 # remain visible; ordinary power-on emits no helper diagnostics. No real USB is switched.
+# Root cleanup must skip every USB operation while a trusted trial fence exists;
+# reject writable/symlink IPC and preserve the fence after a stale producer.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 """Boundary, wake-race, stale-input and cancellation tests without powering USB."""
@@ -11,6 +13,8 @@ from zmala_terminal.common.callbacks import CallbackController
 from zmala_terminal.common.media_adapter import MediaAdapter
 from zmala_terminal.linux import media as linux_media
 import importlib.util
+import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -316,6 +320,33 @@ class HelperSafetyTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('usb_helper', path)
         cls.helper = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.helper)
+
+    def test_cleanup_restore_honors_maintenance_before_device_io(self):
+        h=self.helper
+        with patch.object(h.os,'geteuid',return_value=0,create=True), patch.object(h,'maintenance_active',return_value=True), \
+                patch.object(h,'validate_board') as board,patch.object(h,'switch') as switch:
+            h.power('restore');board.assert_not_called();switch.assert_not_called()
+        with patch.object(h.os,'geteuid',return_value=0,create=True), patch.object(h,'maintenance_active',return_value=False), \
+                patch.object(h,'validate_board'),patch.object(h,'switch') as switch:
+            h.power('restore');switch.assert_called_once_with('on')
+        with patch.object(h.os,'geteuid',return_value=1000,create=True):
+            with self.assertRaises(PermissionError):h.power('restore')
+
+    @unittest.skipUnless(os.name=='posix','Root-owned no-follow maintenance IPC')
+    def test_cleanup_fence_requires_bounded_trusted_state_and_retains_stale_trial(self):
+        h=self.helper
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'request'
+            value={'phase':'checking','nonce':'a'*32,'heartbeat':0}
+            path.write_text(json.dumps(value));path.chmod(0o644)
+            self.assertTrue(h.maintenance_active(path,os.getuid()))
+            for phase in ('idle','request','unknown'):
+                value['phase']=phase;path.write_text(json.dumps(value))
+                self.assertFalse(h.maintenance_active(path,os.getuid()))
+            value['phase']='checking';path.write_text(json.dumps(value));path.chmod(0o666)
+            self.assertFalse(h.maintenance_active(path,os.getuid()))
+            path.unlink();path.symlink_to(Path(directory)/'absent')
+            self.assertFalse(h.maintenance_active(path,os.getuid()))
 
     def test_helper_inventory_checks_board_hub_topology_and_excludes_usb_hubs(self):
         h = self.helper

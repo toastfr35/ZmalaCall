@@ -1,7 +1,8 @@
 # Terminal application update qualification
 
-Status on 3 November 2026: implementation is installed on term2; end-to-end
-automatic update and rollback qualification is still in progress. This record
+Initial checkpoint on 3 November 2026: implementation is installed on term2;
+qualification continues in [issue #131](https://github.com/toastfr35/ZmalaCall/issues/131),
+which records subsequent executed versions and results. This record
 distinguishes executed checks from remaining plans. It contains no device
 credentials, account backups or private logs.
 
@@ -15,7 +16,7 @@ credentials, account backups or private logs.
 | Independent boot infrastructure | Display-cookie setup, Bluetooth pairing, compositor configuration and passive CEC helpers were provisioned outside application slots. Their systemd units passed verification on the Pi without restarting the terminal. Passed. |
 | TV at bootstrap | The TV remained off. No TV power or input command was requested for update progress. Passed for this run. |
 | Durable transaction/data replay | Automated Linux scenarios kill processes at journal and atomic data-exchange boundaries, then replay recovery. Passed; these are process-death tests, not physical power cuts. |
-| Actual automatic signed transition | Planned: publish the next compatible version, allow normal idle activation and inspect confirmed selection, language, enrollment and peripheral state. Not yet run. |
+| Actual automatic signed transition | v0.3.71 → v0.3.72 confirmed through normal idle activation. Enrollment, TV configuration, missed calls and preferences hashes matched; TV stayed off. Camera woke through a legacy root cleanup hook: peripheral preservation failed and requires correction/retest. |
 | Failed candidate and supervisor interruption | Planned: controlled diagnostic trials with retained recovery, then verify the confirmed application and settings return. No unsigned diagnostic fixture may enter the public feed or production trust registry. Not yet run. |
 | Call admission during maintenance | Automated app-side fences and server-side SIP 480 tests passed. Physical busy-call deferral still needs a suitable call test. |
 | Physical power interruption | Not run. Filesystem fsync/rename and process-kill evidence do not prove an SD controller's behavior when power is removed. |
@@ -33,9 +34,12 @@ because GUI trial startup deliberately postpones normal media initialization.
 
 Boot-path review found that application-only slots could omit files needed by
 display, pairing and compositor startup. These services now use installer-owned
-host files. Host compatibility level 2 gates new payloads; prototype level-1
+host files. Host compatibility level 3 gates new payloads; older prototype
 installations require one trusted installer/bootstrap update rather than running
-application-supplied code as root. Term2 has this host bootstrap installed.
+application-supplied code as root. The level-3 host migration additionally replaces
+the optional unconditional USB cleanup hook with maintenance-aware restoration.
+Another regression covers deferred USB managers remaining eligible for consecutive
+updates without requiring user activity. Retest both through normal idle activation.
 
 Operating-system, kernel, firmware and dependency upgrades remain outside this
 feature. Signing credentials stay in the release workflow. Future qualification

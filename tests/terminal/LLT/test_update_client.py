@@ -16,17 +16,42 @@ from zmala_terminal.common.input_control import InputControl
 from zmala_terminal.common.engine import Engine
 
 class UpdateClientTests(unittest.TestCase):
+    def test_failed_ui_cycle_does_not_publish_ready_heartbeat(self):
+        from zmala_terminal.common.management import ManagementLoop
+        from zmala_terminal.common.model import State
+        app=Mock(closed=False,engine=None,configuration=None,shared_photo=None,
+                 carousel_motion=None,model=SimpleNamespace(state=State.HOME),
+                 update_client=SimpleNamespace(locked=True))
+        app.update_timers.side_effect=RuntimeError('broken UI cycle')
+        with patch('zmala_terminal.common.update_client.tick_terminal') as heartbeat:
+            with self.assertLogs(level='ERROR'):
+                ManagementLoop.tick(app)
+            heartbeat.assert_not_called()
+            app.update_timers.side_effect=None
+            ManagementLoop.tick(app)
+            heartbeat.assert_called_once()
+
+    def test_passive_poll_cannot_resume_usb_before_real_activity(self):
+        from zmala_terminal.common.management import ManagementLoop
+        app=SimpleNamespace(update_client=SimpleNamespace(locked=False,passive=True),usb_power=Mock())
+        ManagementLoop.tick_usb(app)
+        app.usb_power.update.assert_not_called()
+        app.usb_power.refresh.assert_not_called()
+
     def test_deferred_sleep_is_reported_before_usb_state_is_known(self):
         from zmala_terminal.common.model import State
         client=SimpleNamespace(passive=True,tick=Mock())
         app=SimpleNamespace(update_client=client,model=SimpleNamespace(state=State.HOME),
             engine=None,setup_stage=None,settings_open=False,setup_busy=False,
             settings_draft=SimpleNamespace(busy=False),keys_down=set(),last_button=0,
-            language='fr',closed=False,usb_power=SimpleNamespace(enabled=True,powered=None))
+            language='fr',closed=False,usb_power=SimpleNamespace(enabled=True,powered=None,state='starting',deferred=True))
         tick_terminal(app,200)
+        self.assertTrue(client.tick.call_args.args[0])
         self.assertTrue(client.tick.call_args.args[3])
         client.passive=False
+        app.usb_power.deferred=False
         tick_terminal(app,200)
+        self.assertFalse(client.tick.call_args.args[0])
         self.assertFalse(client.tick.call_args.args[3])
     def test_tv_shutdown_during_update_does_not_start_restoration(self):
         from zmala_terminal.linux.tv_control import TVControl
@@ -82,6 +107,8 @@ class UpdateClientTests(unittest.TestCase):
             value.update(phase='idle',heartbeat=130);request.write_text(json.dumps(value));client.refresh()
             self.assertFalse(client.locked);client.activity();self.assertFalse(client.passive)
             client.refresh();self.assertFalse(client.passive)
+            value.update(nonce='b'*32);request.write_text(json.dumps(value));client.refresh()
+            self.assertFalse(client.passive)
             request.unlink();request.symlink_to(status)
             self.assertIsNone(client.refresh())
             request.unlink();request.write_text('{');self.assertIsNone(client.refresh())

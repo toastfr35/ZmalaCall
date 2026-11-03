@@ -101,7 +101,7 @@ def install(source, user, layout=Path('/'), run=command):
               'keys': str(configuration/'update-keys.json'), 'data': '/var/lib/zmalacall',
               'data_checkpoints': '/var/lib/zmalacall-update-data',
               'compatibility': {'architecture': platform.machine(), 'os': release.get('VERSION_CODENAME'),
-                                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 2}}
+                                'sdk': sdk, 'updater': 1, 'data': 1, 'host': 3}}
     write_json(configuration/'updater.json', config)
     run('systemctl', 'stop', 'zmalacall-terminal.service')
     installed = (layout/'opt/zmalacall/current').resolve(strict=True)

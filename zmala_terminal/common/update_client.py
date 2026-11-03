@@ -46,7 +46,8 @@ class UpdateClient:
         self.current = request
         if request['nonce'] != self.nonce:
             self.nonce = request['nonce']
-            self.activated = False
+            # Genuine activity belongs to this app process, not the updater's
+            # nonce. A restarted producer must not reapply an old sleep hint.
         if request['phase'] in ('updating', 'checking', 'rollback', 'recovery_failed'):
             self.locked = True
         elif request['phase'] == 'idle':
@@ -101,7 +102,8 @@ def tick_terminal(app, now):
             and not getattr(maintenance, 'busy', False)
             and not getattr(viewing, 'browsing', None)
             and not getattr(viewing, 'previous', None)
-            and getattr(power, 'state', None) not in ('switching', 'starting')
+            and (getattr(power, 'deferred', False)
+                 or getattr(power, 'state', None) not in ('switching', 'starting'))
             and now - app.last_button >= 120)
     def fence():
         hold = getattr(power, 'hold_for_update', None)

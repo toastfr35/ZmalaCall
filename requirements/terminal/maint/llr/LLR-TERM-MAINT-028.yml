@@ -8,6 +8,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: build_tools/linux/usb-power.py
+  type: file
+- path: tests/terminal/LLT/test_usb_power.py
+  type: file
 - path: zmala_terminal/common/maintenance.py
   type: file
 - path: zmala_terminal/linux/tv_control.py
@@ -40,7 +44,13 @@ text: The application shall acknowledge only a fresh root-owned bounded maintena
   request may release its fence. Updater-controlled sleeping-media restarts shall
   defer device settings and volume until genuine input/call activity. This passive
   sleeping state shall remain reported across consecutive maintenance cycles even
-  before the new USB manager has a confirmed power observation.
+  before the new USB manager has a confirmed power observation; a deferred manager's
+  initial state shall not prevent a later maintenance lease. Root service cleanup
+  shall retain sleeping USB power during an active maintenance fence.
+  After genuine activity resumes, a changed updater nonce shall not reapply an
+  earlier passive hint to the same application process.
+  A ready heartbeat shall follow a successful complete UI cycle; repeated cycle
+  failures shall not keep trial readiness fresh.
 verification: Use bounded local file fixtures and direct call/input/native-owner assertions.
   Verify eligibility, freshness, stale request/trial distinction, symlink rejection
   and passive media guards; physical sleep remains a hardware qualification.

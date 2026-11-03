@@ -21,7 +21,7 @@ from zmala_terminal.linux.update_package import (  # noqa: E402
 )
 
 COMPATIBILITY = {'architecture': 'aarch64', 'os': 'trixie', 'sdk': '5.3.105',
-                 'updater': 1, 'data': 1, 'host': 2}
+                 'updater': 1, 'data': 1, 'host': 3}
 KEY_ID = 'terminal-release-2026-01'
 UPSTREAM = {
     'turn_tcp.cpp': '95c98be983d7d547c88569438b8e7094309c989d4f4ea7b815a47036a425ac31',

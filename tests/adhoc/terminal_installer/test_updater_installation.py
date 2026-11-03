@@ -61,10 +61,15 @@ class UpdaterInstallationTests(unittest.TestCase):
         specification.loader.exec_module(module)
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary)
+            dropin=root/'etc/systemd/system/zmalacall-terminal.service.d/usb-power.conf'
+            dropin.parent.mkdir(parents=True)
+            dropin.write_text('[Service]\nEnvironment=ZMALA_USB_POWER=1\nExecStopPost=+/usr/local/libexec/zmala-usb-power on\n')
             with patch('os.geteuid', return_value=0), patch('os.fchown'):
                 module.install(ROOT,layout=root)
                 module.install(ROOT,layout=root)
             destination=root/'usr/local/lib/zmalacall-terminal-host'
+            self.assertIn('zmala-usb-power restore',dropin.read_text())
+            self.assertEqual((root/'usr/local/libexec/zmala-usb-power').stat().st_mode & 0o777,0o755)
             for name,relative in module.FILES.items():
                 self.assertEqual((destination/name).read_bytes(),(ROOT/relative).read_bytes())
                 self.assertEqual((destination/name).stat().st_mode & 0o777,0o644)

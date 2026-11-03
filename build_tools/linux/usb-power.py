@@ -1,12 +1,33 @@
 #!/usr/bin/python3
 """Fixed Pi 4 USB power helper. Installed root-owned; no arbitrary commands/paths."""
 import argparse
+import json
+import os
 from pathlib import Path
 import re
 import subprocess
+import stat
 import sys
 
 USB = Path('/sys/bus/usb/devices')
+
+
+# @llr LLR-TERM-MAINT-028
+def maintenance_active(path=Path('/run/zmalacall-updater/state.json'), root_uid=0):
+    """Cleanup must retain a root maintenance fence even after producer failure."""
+    try:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        with os.fdopen(descriptor, 'r', encoding='utf-8') as stream:
+            info = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(info.st_mode) or info.st_uid != root_uid
+                    or info.st_mode & 0o022 or info.st_size > 8192):
+                return False
+            state = json.loads(stream.read(8193))
+        return (state.get('phase') in ('updating', 'checking', 'rollback', 'recovery_failed')
+                and isinstance(state.get('nonce'), str)
+                and re.fullmatch('[a-f0-9]{32}', state['nonce']) is not None)
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
 
 
 def run(*args):
@@ -48,6 +69,13 @@ def switch(action):
 
 
 def power(action):
+    # @llr LLR-TERM-MAINT-028
+    if action == 'restore':
+        if os.geteuid() != 0:
+            raise PermissionError('Cleanup restoration requires root')
+        if maintenance_active():
+            return  # No USB enumeration or control transfer during maintenance.
+        action = 'on'
     validate_board()
     if action == 'on':
         # @llr LLR-TERM-POWER-016
@@ -78,7 +106,7 @@ def power(action):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('on', 'off'))
+    parser.add_argument('action', choices=('on', 'off', 'restore'))
     try:
         power(parser.parse_args().action)
     except Exception as error:

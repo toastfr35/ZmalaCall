@@ -8,6 +8,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: build_tools/linux/zmalacall-terminal.service
+  type: file
 - path: build_tools/linux/zmalacall-display.service
   type: file
 - path: build_tools/linux/zmalacall-pairing.service
@@ -42,8 +44,9 @@ text: The updater shall bound unauthenticated HTTPS release downloads to approve
   and trials shall be quarantined; collection shall retain confirmed, previous and
   pending slots. Supervisor restart shall retain active maintenance fencing until
   recovery health is established, without briefly publishing an idle state.
-  Display, pairing, compositor and passive CEC host services shall launch from
-  installer-owned stable files outside the selected application slot.
+  Display, pairing, compositor, shutdown fan cleanup and passive CEC host services shall launch from
+  installer-owned stable files outside the selected application slot. The updater
+  shall reject an enabled USB cleanup hook that bypasses maintenance fencing.
 verification: Check transport origin/size/digest/cleanup boundaries and local heartbeat
   nonce, freshness, mode, process cgroup and selected directory. Test preparation
   sandbox commands, quarantine and retained slots using isolated service doubles.
