@@ -153,13 +153,16 @@ class Terminal(InputControl, ConfigurationControl, IdleReturn, SettingsControl,
         self.render()
         if self.setup_stage and not self.update_client.locked:
             self.root.after(100, self.start_scanner)
-        elif self.configuration:
+        elif self.configuration and not self.update_client.locked:
             self.maintenance = self.make_maintenance(self.configuration)
         self.root.after(20, self.tick)
 
     # Keep dependency creation here so real hardware and isolated test engines
     # use the same controllers without importing one another's test substitutes.
+    # @llr LLR-TERM-MAINT-028
     def make_platform_services(self):
+        if self.update_client.locked or self.update_client.passive:
+            return create_platform_services(ROOT, defer_usb=True)
         return create_platform_services(ROOT)
 
     def make_configuration(self, bootstrap):

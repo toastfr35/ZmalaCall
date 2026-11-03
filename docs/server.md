@@ -1046,3 +1046,10 @@ Closing a SIP dialog revokes connected status and shared-photo revision/bytes be
 Account editing, photo preview URLs and account search/filter state are private to admin-accounts.js. Shared admin-state retains the loaded model and cross-feature navigation/refresh hooks. Existing generation guards fence late upload/save results; closing the editor revokes temporary URLs.
 
 Pi installer payloads exclude local Floorplan, cache and VCS directories. Archive regression checks cover the current runtime modules; installer checks remain separate from product runtime requirements. Installation builds generated assets before root-owned deployment and preserves persistent device/account data.
+
+
+### Automatic terminal update reporting
+
+`terminal-updates.js` caches one public signed manifest refresh for five minutes and shares an in-flight refresh. Requests have origin, redirect, deadline and byte limits and carry no device credentials. Enrolled terminal bearer identities alone may use `/api/terminal-updates/manifest` and `/api/terminal-updates/status`. The terminal still authenticates the manifest itself.
+
+Updater receipt time and phase/version/error fields are separate from camera/remote diagnostics; neither report overwrites the other. Read-only version/progress badges expire after sixty seconds. Fresh active maintenance rejects new SIP calls with 480; request/waiting and stale status do not block calls. This supplements the terminal-side lease fence and does not add administrator approval. These changes are implemented but not deployed yet.

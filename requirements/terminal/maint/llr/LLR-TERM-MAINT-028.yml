@@ -8,6 +8,14 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_terminal/common/maintenance.py
+  type: file
+- path: zmala_terminal/linux/tv_control.py
+  type: file
+- path: zmala_terminal/common/platform_services.py
+  type: file
+- path: zmala_terminal/linux/usb_power.py
+  type: file
 - path: zmala_terminal/common/update_client.py
   type: file
 - path: zmala_terminal/common/main.py

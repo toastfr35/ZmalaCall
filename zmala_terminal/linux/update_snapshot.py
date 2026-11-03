@@ -62,7 +62,8 @@ class DataCheckpoint:
         if self.data.is_symlink() or not self.data.is_dir():
             raise RecoveryError('Persistent data must be a real directory')
         self.root.mkdir(mode=0o700, parents=True, exist_ok=True)
-        if self.root.is_symlink() or self.root.stat().st_mode & 0o077:
+        if (self.root.is_symlink() or self.root.stat().st_mode & 0o077
+                or self.root.stat().st_uid != os.geteuid()):
             raise RecoveryError('Data checkpoint directory is not private')
         if self.data.stat().st_dev != self.root.stat().st_dev:
             raise RecoveryError('Data checkpoint must share the data filesystem')
@@ -155,3 +156,18 @@ class DataCheckpoint:
             return result
         if inventory(self.data) != inventory(target):
             raise RecoveryError('Trial changed persistent settings')
+
+    def collect(self):
+        """Retain only an in-flight checkpoint; never collect the live directory."""
+        if not self.root.exists():
+            return
+        if (self.root.is_symlink() or self.root.stat().st_uid != os.geteuid()
+                or self.root.stat().st_mode & 0o077):
+            raise RecoveryError('Data checkpoint directory is not private')
+        pending = self.transactions.read('pending') or {}
+        keep = pending.get('transaction') if pending.get('state') in ('ready', 'trial') else None
+        for target in self.root.iterdir():
+            if (target.name != keep and re.fullmatch('[a-f0-9]{32}', target.name)
+                    and target.is_dir() and not target.is_symlink()):
+                shutil.rmtree(target)
+        sync_directory(self.root)

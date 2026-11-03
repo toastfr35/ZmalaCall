@@ -40,6 +40,9 @@ class ManagementLoop:
 
     # @llr LLR-TERM-POWER-013
     def tick_usb(self):
+        client = getattr(self, 'update_client', None)
+        if client and client.locked:
+            return
         power = getattr(self, 'usb_power', None)
         if power and power.enabled:
             active = bool(self.setup_stage or self.scanner or self.model.state != State.HOME
@@ -169,6 +172,10 @@ class ManagementLoop:
             self.render()
 
     def update_timers(self, now):
+        client = getattr(self, 'update_client', None)
+        if (client and not client.locked and self.configuration
+                and self.maintenance is None):
+            self.maintenance = self.make_maintenance(self.configuration)
         self.tick_settings_access(now)
         if self.pending_config and self.model.state == State.HOME and not self.setup_stage and now >= getattr(self, 'engine_retry_at', 0):
             config, self.pending_config = self.pending_config, None
@@ -235,7 +242,8 @@ class ManagementLoop:
             self.draw_connectivity(bool(self.engine and self.engine.registered))
             if self.model.state == State.RINGING:
                 self.animate_ringing(now)
-            self.tick_tv_idle(now)
+            if not getattr(getattr(self, 'update_client', None), 'locked', False):
+                self.tick_tv_idle(now)
             self.case_fan.update(self.model.state == State.IN_CALL)
         except Exception:
             logging.exception('Terminal tick failed')

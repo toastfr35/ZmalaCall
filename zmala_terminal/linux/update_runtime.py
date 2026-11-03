@@ -55,6 +55,9 @@ class Runtime:
         temporary.write_text(json.dumps(value), encoding='utf-8')
         temporary.chmod(0o644)
         os.replace(temporary, self.request)
+        report = getattr(self, 'report', None)
+        if report:
+            report()
 
     def read_status(self):
         try:

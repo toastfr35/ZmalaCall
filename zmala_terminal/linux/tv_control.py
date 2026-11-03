@@ -30,6 +30,7 @@ class TVControl:
         self._cancel = threading.Event()
         self._lock = threading.Lock()
         self._closed = False
+        self._update_hold = False
         self._ready = threading.Event()
         self._ready.set()
         self._started = None
@@ -188,9 +189,18 @@ class TVControl:
         """A failed/slow TV must never hold automatic answering indefinitely."""
         return self._ready.is_set() or self._started is None or now - self._started >= 30
 
+    # @llr LLR-TERM-MAINT-028
+    def hold_for_update(self):
+        """Do not restore a TV source merely because the updater replaces the UI."""
+        self._update_hold = True
+        self._cancel.set()
+
     def close(self):
         self._closed = True
-        self.cancel()
+        if self._update_hold:
+            self._cancel.set()
+        else:
+            self.cancel()
 
     # @llr LLR-TERM-TV-032
     # TV sequences use power/routing commands only; playback volume belongs to C20.

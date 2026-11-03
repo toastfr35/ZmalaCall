@@ -287,7 +287,15 @@ export interface SipStatus {
   events: { time: string; message: string }[];
 }
 
+export interface TerminalUpdateStatus {
+  phase: string;
+  received_at: string;
+  installed?: string;
+  available?: string;
+  error?: string;
+}
 export interface TerminalStatus {
+  update?: TerminalUpdateStatus;
   media?: JsonObject;
   remote_status?:
     | 'connected'

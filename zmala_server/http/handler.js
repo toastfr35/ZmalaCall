@@ -87,7 +87,15 @@ function createHandler(context) {
       // Pass only route-owned collaborators; credentials and backup lifecycle
       // remain at this common authentication boundary.
       const { sipServer, callbacks, consoleJobs, terminalStatuses, writeBootstrap } = context;
-      const identity = { store, sipServer, callbacks, consoleJobs, terminalStatuses, deviceId };
+      const identity = {
+        store,
+        sipServer,
+        callbacks,
+        consoleJobs,
+        terminalStatuses,
+        deviceId,
+        terminalUpdates: context.terminalUpdates,
+      };
       if (await deviceRoutes(req, res, url, identity)) return;
       // @llr LLR-SRV-CONFIG-024
       const sound = url.pathname.match(/^\/api\/ringtones\/(nokia|[a-f0-9]{64})\.wav$/);

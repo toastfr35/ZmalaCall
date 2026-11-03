@@ -83,10 +83,12 @@ def run_command(command, timeout_seconds, cancelled, shell='powershell'):
     return {'status': status, 'exit_code': exit_code} | bounded_output(chunks['stdout'], chunks['stderr'], truncated[0])
 
 
+# @llr LLR-TERM-MAINT-028
 class MaintenanceAgent:
     def __init__(self, configuration, interval=3):
         self.configuration, self.interval = configuration, interval
         self.cancelled = threading.Event()
+        self.busy = False
         self.thread = threading.Thread(target=self.loop, daemon=True)
         self.thread.start()
 
@@ -121,6 +123,7 @@ class MaintenanceAgent:
         pending = None
         while not self.cancelled.is_set():
             try:
+                self.busy = True
                 if pending:
                     job_id, result = pending
                     self.submit(job_id, result)
@@ -138,4 +141,6 @@ class MaintenanceAgent:
                     pending = None
             except Exception as error:
                 logging.debug('Maintenance polling failed (%s)', type(error).__name__)
+            finally:
+                self.busy = False
             self.cancelled.wait(self.interval)

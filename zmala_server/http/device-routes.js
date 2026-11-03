@@ -4,6 +4,7 @@
 const { callPhotoRoute } = require('../call-photo');
 const developerAccess = require('../developer-access');
 const { terminalStatus } = require('../terminal-status');
+const { updateStatus } = require('../terminal-updates');
 const { contactPresence } = require('../registrations');
 const { send, readJson, requireDevice, httpError } = require('./responses');
 // @llr LLR-SRV-CONFIG-022
@@ -34,6 +35,20 @@ async function deviceRoutes(req, res, url, context) {
   if (await callPhotoRoute(req, res, url, context)) return true;
   const { store, sipServer, callbacks, consoleJobs, terminalStatuses } = context;
   let { deviceId } = context;
+  // @llr LLR-SRV-MAINT-022
+  if (url.pathname.startsWith('/api/terminal-updates/')) {
+    deviceId = requireDevice(deviceId);
+    if (!store.terminalAccount(deviceId)) throw httpError(403, 'A terminal account is required.');
+    if (url.pathname === '/api/terminal-updates/manifest' && req.method === 'GET') {
+      if (!context.terminalUpdates) throw httpError(503, 'Update feed unavailable.');
+      return send(res, 200, { manifest: await context.terminalUpdates.manifest() });
+    }
+    if (url.pathname === '/api/terminal-updates/status' && req.method === 'POST') {
+      const update = updateStatus(await readJson(req, 4096));
+      terminalStatuses[deviceId] = { ...terminalStatuses[deviceId], update };
+      return send(res, 200, { ok: true });
+    }
+  }
   // @llr LLR-SRV-CALLBACK-016, LLR-SRV-APP-003
   const appCallback = url.pathname.match(/^\/api\/app\/callbacks\/([a-f0-9-]{36})$/);
   if (appCallback && req.method === 'DELETE') {
@@ -168,7 +183,9 @@ async function deviceRoutes(req, res, url, context) {
   if (url.pathname === '/api/status' && req.method === 'POST') {
     deviceId = requireDevice(deviceId);
     const update = await readJson(req, 32000);
+    const previousUpdate = terminalStatuses[deviceId]?.update;
     terminalStatuses[deviceId] = terminalStatus(update);
+    if (previousUpdate) terminalStatuses[deviceId].update = previousUpdate;
     return send(res, 200, { ok: true });
   }
   if (url.pathname === '/api/console/next' && req.method === 'POST') {

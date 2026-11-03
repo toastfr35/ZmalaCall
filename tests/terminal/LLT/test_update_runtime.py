@@ -77,7 +77,7 @@ class HeartbeatTests(unittest.TestCase):
             key.write_text(json.dumps({'test': 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE='}))
             with patch('zmala_terminal.linux.update_service.trusted_json',
                        side_effect=lambda path, *args: json.loads(Path(path).read_text())):
-                service = UpdateService({'keys': str(key)}, tx, Mock())
+                service = UpdateService({'keys': str(key), 'data_checkpoints': str(root/'checkpoints')}, tx, Mock())
                 service.quarantine('failed-digest')
                 self.assertTrue(service.quarantined('failed-digest'))
                 self.assertFalse(service.quarantined('new-digest'))
