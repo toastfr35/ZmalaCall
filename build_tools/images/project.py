@@ -1,4 +1,5 @@
 """Versioned build intent and lab configuration, separate from package locks."""
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -72,3 +73,30 @@ def emit_lab(role, output):
                      'product-provisioning', 'data-mount-policy', 'hardware-qualification']
     }, indent=2)+'\n', encoding='utf-8')
     return output
+
+
+def package_locks():
+    """Verify reviewed intent/lock synchronization without network or binaries."""
+    folder = ROOT/'build_tools/images/locks'
+    index = json.loads((folder/'index.json').read_text())
+    if (index['schema'] != 1 or index['purpose'] != 'requested-package-closure'
+            or index['image_qualified'] is not False or set(index['roles']) != {'server', 'terminal'}):
+        raise ValueError('Unknown role package lock index')
+    for role, record in index['roles'].items():
+        if record['file'] != role+'.json':
+            raise ValueError('Unexpected role lock filename')
+        path = folder/record['file']
+        if path.stat().st_size > 4*1024**2 or path.is_symlink():
+            raise ValueError('Invalid role package lock')
+        body = path.read_bytes()
+        if hashlib.sha256(body).hexdigest() != record['sha256']:
+            raise ValueError('Role package lock digest changed')
+        manifest = json.loads(body)
+        if (manifest['requested'] != packages(role) or manifest['schema'] != 1
+                or manifest['architecture'] != profiles()['architecture']
+                or manifest['distribution'] != profiles()['distribution']
+                or manifest['image_qualified'] is not False
+                or len(manifest['packages']) != record['archives']
+                or sum(p['bytes'] for p in manifest['packages']) != record['archive_bytes']):
+            raise ValueError('Package intent and reviewed closure disagree; refresh intake through review')
+    return index
