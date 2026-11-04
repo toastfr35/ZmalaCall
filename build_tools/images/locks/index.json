@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "purpose": "requested-package-closure",
+  "image_qualified": false,
+  "roles": {
+    "server": {
+      "file": "server.json",
+      "sha256": "37a886ca4f10b08449b19468a64e8e945a69ff65f2641cc7d095b77b95c478bf",
+      "archives": 170,
+      "archive_bytes": 77056328
+    },
+    "terminal": {
+      "file": "terminal.json",
+      "sha256": "f81616d560f6502b0a44995cda312e4a19544e718cf9dbbbd3c8f12416e372b3",
+      "archives": 721,
+      "archive_bytes": 528545960
+    }
+  }
+}

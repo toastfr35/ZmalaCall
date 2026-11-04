@@ -112,6 +112,60 @@ this subset remains explicitly `production_qualified: false` and does not prove
 that either system can boot. Future production layout/schema validation is a
 separate gate.
 
+## Authenticated package intake and retained closures
+
+On Linux, download a role's package intent into a **new** isolated cache:
+
+```sh
+python3 -m build_tools.images lock-packages server \
+  --output /path/to/new/server-intake \
+  --debian-keyring /usr/share/keyrings/debian-archive-keyring.gpg \
+  --raspberrypi-keyring /path/to/verified/imagegen/keydir/raspberrypi-archive-keyring.gpg
+
+python3 -m build_tools.images verify-packages /path/to/new/server-intake \
+  --expected-lock-sha256 <reviewed-lock-file-digest>
+```
+
+Use `terminal` for the terminal intent. Supply trusted **public** archive keyrings;
+the tool records their hashes and never uses a private release key. Debian and
+Raspberry Pi repositories are explicit HTTPS/Trixie sources. APT's state, empty
+package-status file, sources, archive cache, configuration and logs are isolated.
+`APT_CONFIG` suppresses loading host configuration/hooks before APT initializes.
+No package is installed: the only install-subcommand invocation uses
+`--download-only`; `dpkg-deb` reads control metadata without running maintainer
+scripts. Run as an ordinary user, not with sudo.
+
+The tool verifies signed InRelease metadata, records verified signer fingerprints,
+bounds the resolved download count/bytes and checks each retained archive's
+SHA-256 against authenticated package metadata. Legacy URI output may include an
+MD5 field or omit it; that field is never the authenticity decision. During
+archive-key rollover, one valid, unexpired signature from the selected keyring
+can coexist with additional unknown signing keys. Unknown-only, bad, expired,
+revoked or malformed signature results are rejected.
+
+Keep the accepted lock digest in a reviewed build input. Verification requires
+that external digest; a replaced manifest cannot authenticate itself. Retain the
+**whole** cache (archives, copied public keyrings, signed metadata and lock file)
+immutably. The verifier rejects missing/extra/changed archives or changed audit
+metadata. Build from retained bytes after verification, rather than resolving the
+same names against today's mirror. APT failure leaves an incomplete directory
+without an accepted lock; do not reuse it as a completed intake.
+
+This locks the requested dependency closure only. It does **not** yet lock the
+image builder's whole base package set, build-toolchain/npm/model inputs, create a
+local build repository, provide long-term remote archive retention or qualify a
+production image. Those remain separate stages in the plan. Large downloaded
+caches stay outside Git; lock metadata is suitable for review after checking
+provenance and policy. Do not publish raw operator logs without review.
+
+Reviewed candidate metadata is retained in `locks/server.json` and
+`locks/terminal.json`, anchored by `locks/index.json`. The normal `check` command
+rejects dependency intent that has drifted from those reviewed locks, changed
+lock bytes, or inconsistent archive counts/sizes. Keep the binary caches outside
+Git. A future build must verify its cache using the corresponding reviewed
+`sha256` from that index. New intake is a reviewable dependency change, not an
+automatic overwrite of the accepted lock.
+
 ## Source audit decisions
 
 The native Pi backend at the pinned audit commit uses a temporary file and `mv`

@@ -65,6 +65,24 @@ closure lock, hardware boot qualification or automatic system updater is claimed
   parent checkout's tags. Probe configs now set an explicit unqualified artifact
   version. Production assembly still needs its full source/package/build identity.
 
+4 November 2026 — [#143](https://github.com/toastfr35/ZmalaCall/issues/143):
+
+- Implemented isolated download-only APT intake against explicit signed Debian
+  and Raspberry Pi Trixie repositories. Host configuration/hooks and installed
+  package state are separated from intake; no target or host package is installed.
+- Verified actual intent closures: server 170 archives / 77,056,328 bytes;
+  terminal 721 archives / 528,545,960 bytes. Host package database hashes were
+  unchanged before/after both runs. Retained all archives and signed audit inputs
+  privately; reviewed public lock metadata lives in `build_tools/images/locks/`.
+- Added mandatory external lock-digest verification and regression coverage for
+  altered/missing/extra archives, trust metadata, traversal, download budgets,
+  invalid signatures and overlapping archive-key rollover. SHA-256 is checked
+  against authenticated package metadata, independently of optional legacy MD5
+  fields in APT's URI output.
+- These are requested dependency closures, not a complete factory image lock.
+  Full base/toolchain/model/npm inputs, immutable remote retention and consuming
+  the lock in a complete image build remain incomplete.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
