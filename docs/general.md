@@ -59,6 +59,11 @@ calls. Family members use Zmala Phone on Android or another Pi terminal.
 | Development compatibility terminal | 64-bit Windows with Tk/Liblinphone and server-selected camera/audio devices |
 | Installers | Windows executables deploying over Ethernet SSH; graphical and headless modes |
 
+The proposed replacement with ready-to-flash Pi images and recoverable automatic
+OS/package upgrades is detailed in [the system update plan](../update_upgrade.md).
+It is planning work; the current installation and application-update behavior
+remains as documented here until the corresponding implementation is qualified.
+
 Windows server hosting, the serial-keypad project and CAD models are retired.
 Other cameras/boards and direct GPIO controls are not established terminal
 deployments. Passing portable tests does not qualify a new TV, USB setup or
