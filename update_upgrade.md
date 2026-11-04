@@ -48,12 +48,22 @@ closure lock, hardware boot qualification or automatic system updater is claimed
 - Added offline probe-disk validation of primary/backup GPT checksums/agreement,
   partition bounds/identities/order, nonoverlap and equal A/B sizes. It reads only
   regular image files and explicitly does not qualify boot or payload integrity.
-- Installed image-builder prerequisites in WSL and started a real minimal ARM64
-  filesystem build under emulation. Host utilities and layer resolution passed;
-  the first build is still being investigated, not accepted as a finished image.
-  Cross-build success will not substitute for physical boot testing.
+- Installed image-builder prerequisites in WSL and completed a real minimal ARM64
+  probe image build under emulation (builder exit 0). The raw disk is
+  22,590,541,824 bytes, with two 8 GiB roots, two 512 MiB boots, a 32 MiB selector
+  and 4 GiB data. The compressed raw image is approximately 424 MiB. Primary and
+  backup GPT/layout checks pass against that artifact. This is a common-base boot
+  experiment with no Zmala application, not a Terminal/Server installer.
+- Offline root inspection found the expected missing slot-local package database:
+  the upstream A/B layer moved it into per-slot persistent `/var`. That confirms
+  the documented production mount-policy blocker. The other implemented privacy
+  subset checks reported no violations. No physical boot or power-cut test passed.
+- The selected RAUC `1.13-3+deb13u1` installed successfully in the prototype. The
+  upstream-generated update archive is not a Zmala RAUC bundle; there is no
+  configured automatic system feed or adopted boot backend in this image.
 - Observed that upstream's default Git-derived artifact version can inherit the
-  parent checkout's tags. Production assembly needs explicit image/build identity.
+  parent checkout's tags. Probe configs now set an explicit unqualified artifact
+  version. Production assembly still needs its full source/package/build identity.
 
 ## Contents
 

@@ -148,6 +148,7 @@ class InventoryAndProfileTests(unittest.TestCase):
                 for name in ('application_installed', 'packages_locked', 'hardware_qualified', 'production_eligible'):
                     self.assertFalse(status[name])
                 self.assertIn('image-rota', (target/'probe.yaml').read_text())
+                self.assertIn('version: unqualified-'+role+'-probe1', (target/'probe.yaml').read_text())
                 self.assertIn('rauc=', (target/'package-intent.txt').read_text())
                 with self.assertRaises(ValueError):
                     project.emit_lab(role, target)

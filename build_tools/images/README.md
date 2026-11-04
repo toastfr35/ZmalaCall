@@ -48,6 +48,9 @@ install Zmala, a bootloader backend, production keys or an update coordinator.
 `package-intent.txt` is separate from the minimal probe package list. Its adjacent
 `status.json` explicitly records missing package locking, product provisioning,
 boot safety and hardware qualification. Nothing here publishes or promotes it.
+Probe artifact versions are explicitly `unqualified-<role>-probe1`; they do not
+inherit a misleading release version from the parent checkout's Git tags. This
+lab label is not a reproducible package/build identity for production.
 
 After fetching, the upstream configuration resolver can check each probe:
 
