@@ -43,6 +43,18 @@ their direct LLT/HLT coverage before the corresponding behavior ships.
 Stages 0 and 1 are **not complete**. In particular, no production image, package
 closure lock, hardware boot qualification or automatic system updater is claimed.
 
+4 November 2026 — continuation of #140:
+
+- Added offline probe-disk validation of primary/backup GPT checksums/agreement,
+  partition bounds/identities/order, nonoverlap and equal A/B sizes. It reads only
+  regular image files and explicitly does not qualify boot or payload integrity.
+- Installed image-builder prerequisites in WSL and started a real minimal ARM64
+  filesystem build under emulation. Host utilities and layer resolution passed;
+  the first build is still being investigated, not accepted as a finished image.
+  Cross-build success will not substitute for physical boot testing.
+- Observed that upstream's default Git-derived artifact version can inherit the
+  parent checkout's tags. Production assembly needs explicit image/build identity.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)

@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 
-from . import inspect_root, project, sources
+from . import inspect_disk, inspect_root, project, sources
 
 
 def main():
@@ -18,6 +18,9 @@ def main():
     probe.add_argument('--output', required=True, type=Path)
     inspect = sub.add_parser('inspect-root', help='Read an already unpacked offline root')
     inspect.add_argument('root', type=Path)
+    disk = sub.add_parser('inspect-disk', help='Validate an offline probe image partition table')
+    disk.add_argument('image', type=Path)
+    disk.add_argument('--sector-size', choices=(512, 4096), type=int, default=512)
     args = parser.parse_args()
     try:
         if args.command == 'check':
@@ -29,6 +32,8 @@ def main():
             print(sources.acquire(args.source, args.cache))
         elif args.command == 'probe-config':
             print(project.emit_lab(args.role, args.output))
+        elif args.command == 'inspect-disk':
+            print(json.dumps(inspect_disk.audit(args.image, args.sector_size), indent=2))
         else:
             result = inspect_root.audit(args.root)
             print(json.dumps(result, indent=2))
