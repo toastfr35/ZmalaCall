@@ -16,7 +16,9 @@ python3 -m build_tools.images probe-config server --output build_tools/tmp/serve
 python3 -m build_tools.images fetch imagegen --cache build_tools/tmp/image-sources
 python3 -m build_tools.images fetch backend_audit --cache build_tools/tmp/image-sources
 python3 -m build_tools.images inspect-root /path/to/offline/root
+python3 -m build_tools.images inspect-disk /path/to/uncompressed-probe.img
 python3 -m unittest tests.adhoc.test_image_foundation -v
+python3 -m unittest tests.adhoc.test_image_disk -v
 ```
 
 Use Linux for source extraction/building. Windows can validate profiles and emit
@@ -46,6 +48,9 @@ install Zmala, a bootloader backend, production keys or an update coordinator.
 `package-intent.txt` is separate from the minimal probe package list. Its adjacent
 `status.json` explicitly records missing package locking, product provisioning,
 boot safety and hardware qualification. Nothing here publishes or promotes it.
+Probe artifact versions are explicitly `unqualified-<role>-probe1`; they do not
+inherit a misleading release version from the parent checkout's Git tags. This
+lab label is not a reproducible package/build identity for production.
 
 After fetching, the upstream configuration resolver can check each probe:
 
@@ -93,6 +98,19 @@ special files and a missing slot-local package database. It does not read throug
 symlinked sensitive parents. A passing report covers this privacy subset only;
 it always records `production_qualified: false`. It cannot establish boot safety,
 all possible secret locations, services, artifact signatures or call readiness.
+
+## Offline probe disk inspection
+
+`inspect-disk` accepts a regular uncompressed image file, never a disk-device
+path or symlink. It reads the protective MBR, verifies primary and backup GPT
+header/array CRCs and agreement, bounds table allocation and validates the pinned
+six-partition probe labels/order, unique partition identities, nonoverlap and
+equal boot/root slot sizes. Use `--sector-size 4096` for a 4 KiB-sector image;
+the default is 512. It does not modify the image or inspect filesystem contents.
+CRC checks detect corruption, not a maliciously signed/unsigned image. Passing
+this subset remains explicitly `production_qualified: false` and does not prove
+that either system can boot. Future production layout/schema validation is a
+separate gate.
 
 ## Source audit decisions
 

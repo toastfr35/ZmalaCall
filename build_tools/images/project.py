@@ -41,6 +41,8 @@ def lab_config(role):
 # Package resolution is not locked. Never publish to a stable image/feed.
 device:
   layer: rpi4
+artefact:
+  version: unqualified-{role}-probe1
 image:
   layer: image-rota
   name: zmala-{role}-boot-probe
