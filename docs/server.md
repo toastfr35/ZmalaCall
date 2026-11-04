@@ -234,6 +234,11 @@ alone proves call quality or hardware compatibility.
 
 ## Deployment pipeline
 
+The proposed SD-card replacement and system-maintenance stages are tracked in
+[the update/upgrade plan](../update_upgrade.md). The initial
+[image tools](../build_tools/images/README.md) include a read-only server inventory
+and development boot profile; they do not replace the installation path below yet.
+
 `build_tools/server_installer/` provides the Tk GUI and headless entry point.
 It shares `windows_installer/ssh_transport.py` and the read-only target probe with
 the terminal installer. Transport owns host-key pinning, bounded SSH commands,

@@ -4,12 +4,44 @@ Planning issue: [#138](https://github.com/toastfr35/ZmalaCall/issues/138).
 Prepared against `main` at `c6aabe2109e8478c6c3b1e6c7564fb7d2f651d7f`
 (Zmala 0.3.76), on 4 November 2026.
 
-**Status: detailed implementation proposal.** This file records the intended
+**Status: implementation started; feasibility and development tooling in progress.** This file records the intended
 architecture, work sequence, unresolved engineering decisions and acceptance
 evidence. It does not describe functionality already shipped. Its checklists are
 uncompleted work, not passed verification. Product requirements remain exclusively
 in `requirements/`; implementation changes will add or revise those records and
 their direct LLT/HLT coverage before the corresponding behavior ships.
+
+### Implementation log
+
+4 November 2026 — [#140](https://github.com/toastfr35/ZmalaCall/issues/140):
+
+- Added `build_tools/images/` source pins/acquisition, explicit role/package intent,
+  minimal A/B boot-probe configuration, bounded read-only Pi inventory and offline
+  root privacy inspection. Source downloads are verified before safe extraction;
+  neither the sample backend nor a generic mark-good service is installed.
+- Collected private read-only inventories from both current Pi roles. Both report
+  Debian 13 ARM64. Terminal and server application trees occupy approximately
+  0.97 GiB and 0.58 GiB respectively, including retained releases. Some private
+  terminal data/checkpoint trees were unreadable without elevated access and are
+  marked incomplete. These figures do not establish future root/card fit.
+- Audited the pinned native backend: selector commit uses a temporary file/rename
+  without explicit durability handling; its example mark-good unit precedes any
+  Zmala health checks. Production adoption is blocked on a qualified replacement
+  or demonstrated safe integration. The upstream A/B image layer also persists
+  per-slot `/var` and enables persistent journals; do not adopt that policy unchanged.
+- Selected reviewed imagegen/backend audit revisions in `sources.lock.json` and
+  Debian RAUC `1.13-3+deb13u1` as the initial package candidate. Transitive package
+  locking and upstream feature qualification are still pending.
+- Verified both generated probe configurations through the pinned upstream
+  configuration resolver in WSL. The probes do not include the Zmala application
+  and have not been built/booted as complete images. Added tool regression checks
+  and a CI profile-validation step; runtime requirements remain unchanged.
+- Hardware available: spare SD card, no spare Pi. Later physical tests need an
+  arranged card swap on an existing Pi, retaining the original card. No live
+  installation, service restart, TV or USB power operation was performed.
+
+Stages 0 and 1 are **not complete**. In particular, no production image, package
+closure lock, hardware boot qualification or automatic system updater is claimed.
 
 ## Contents
 
@@ -1039,9 +1071,9 @@ Regenerate affected assets with existing tools. Render and inspect the Word/PDF
 guides for readability, screenshots, links and print layout. Do not hand-edit
 generated admin bundles. Do not commit `requirements/output/`.
 
-This planning-only change leaves current user guides and normative runtime
-requirements unchanged because no installed workflow changes yet. Their future
-updates are deliverables of the relevant implementation stages below.
+The initial planning/build-tool changes leave current user guides and normative
+runtime requirements unchanged because no installed workflow changes yet. Their
+future updates are deliverables of the relevant implementation stages below.
 
 ## 15. Verification strategy and acceptance evidence
 
