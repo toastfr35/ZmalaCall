@@ -149,7 +149,9 @@ def build(name, destination):
         canvas.rect(22 * mm, A4[1] - 18 * mm, 165 * mm, 1.2 * mm, fill=1, stroke=0)
         canvas.setFont('Helvetica', 8)
         canvas.setFillColor(colors.HexColor('#647168'))
-        canvas.drawString(22 * mm, 13 * mm, 'Zmala  |  ' + title)
+        canvas.drawImage(str(ROOT / 'zmala_server/assets/zmala-icon-light.png'),
+                         22 * mm, 10 * mm, width=8 * mm, height=8 * mm)
+        canvas.drawString(32 * mm, 13 * mm, 'Zmala  |  ' + title)
         canvas.drawRightString(187 * mm, 13 * mm, str(document.page))
         canvas.restoreState()
 

@@ -60,6 +60,7 @@ lint-format:
 
 lint-generated:
 	$(NODE) build_tools/build-admin.cjs --check
+	$(NODE) build_tools/create-product-icon.cjs --check
 
 test: test-llt test-hlt
 

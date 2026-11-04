@@ -15,6 +15,10 @@ be qualified separately on the deployed Pi.
 
 # Zmala Terminal implementation
 
+A1 dark supplies the terminal/window mark and updated family-word-cloud boot artwork.
+The Windows Pi installers use A1 light. The artwork remains in `common/assets/`;
+application updates do not rewrite the installed Plymouth host theme.
+
 This technical guide covers the shared Python terminal and its Linux/Pi and
 Windows adapters. It is for developers and maintainers. Preparation, enrollment
 and everyday operation are covered by the release's `ZmalaTerminal-Installation.pdf`

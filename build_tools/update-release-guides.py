@@ -6,7 +6,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.shared import Inches, Pt, RGBColor
-from release.guide_copy import PHONE, improve_readability
+from release.guide_copy import PHONE, improve_readability, add_brand_footer
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASES = 'https://github.com/toastfr35/ZmalaCall/releases/latest'
@@ -101,6 +101,7 @@ def build_phone(filenames=None):
         field = OxmlElement('w:fldSimple')
         field.set(qn('w:instr'), 'PAGE')
         footer._p.append(field)
+        add_brand_footer(doc, ROOT)
         doc.core_properties.title = title
         doc.core_properties.author = 'Zmala'
         doc.core_properties.last_modified_by = ''

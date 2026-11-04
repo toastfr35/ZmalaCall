@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @llr LLR-AND-UI-002 -->
+<!-- The full-bleed A3 artwork keeps the mark inside the launcher mask safe area. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+ <background android:drawable="@color/zmala_launcher_background"/>
+ <foreground android:drawable="@drawable/zmala_app_icon"/>
+</adaptive-icon>

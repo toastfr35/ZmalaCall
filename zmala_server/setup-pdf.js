@@ -2,6 +2,7 @@
 // Payloads match zmala_terminal/common/provisioning.py; PDFs carry private Wi-Fi or enrollment credentials.
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
+const path = require('node:path');
 
 // @llr LLR-SRV-ENROLL-003
 /** @param {import('./types/contracts').JsonObject} update @returns {string} */
@@ -106,7 +107,8 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
   }
   // Sparse colour, strong contrast and numbered instructions also work in grayscale.
   doc.moveTo(40, 44).lineTo(555.28, 44).lineWidth(3).stroke(accent);
-  text('Zmala', 40, 61, 300, 22, 30, true);
+  doc.image(path.join(__dirname, 'assets/zmala-icon-light.png'), 40, 57, { width: 36, height: 36 });
+  text('Zmala', 84, 61, 256, 22, 30, true);
   doc
     .font('Helvetica-Bold')
     .fontSize(9)
