@@ -148,7 +148,7 @@ try:
     changed = copy.deepcopy(base)
     changed['language'] = 'ja'
     app.apply_config(changed)
-    assert app.language == 'ja' and app.root.title().startswith('ZmalaCall')
+    assert app.language == 'ja' and app.root.title().startswith('Zmala Terminal')
     (ROOT/'data/languages-ui-result.json').write_text(json.dumps({'languages':checked,'screen_states':6,'animation':True,'ringing_animation':True,'call_during_animation':True,'live_language_change':True,'no_footer_or_terminal_name':True,'small_connectivity_icons':True}))
     print(f'{len(checked)} languages: all six states fit; countdowns, motion, ringing pulse, immediate calling and live language changes passed. Footer/name removed; smaller icons verified.')
 finally:

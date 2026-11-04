@@ -11,7 +11,7 @@
   <string name="scanner_prompt" formatted="false">Scannez votre QR code de configuration</string>
   <string name="qr_image_error" formatted="false">Aucun QR code lisible trouvé. Choisissez une image du code ou scannez sa version imprimée.</string>
   <string name="no_picker" formatted="false">Aucun sélecteur d’image disponible. Scannez votre QR code imprimé.</string>
-  <string name="connect_title" formatted="false">Se connecter à ZmalaCall</string>
+  <string name="connect_title" formatted="false">Se connecter à Zmala</string>
   <string name="connect" formatted="false">Se connecter</string>
   <string name="cancel" formatted="false">Annuler</string>
   <string name="retry_connection" formatted="false">Réessayer la connexion</string>
@@ -81,15 +81,15 @@
   <string name="alerts_preparing" formatted="false">Préparation des alertes d’appel…</string>
   <string name="alerts_retry" formatted="false">Alertes d’appel indisponibles\nRéessayer</string>
   <string name="incoming_calls" formatted="false">Appels entrants</string>
-  <string name="alerts_server_help" formatted="false">Gardez ZmalaPhone ouvert pour recevoir les appels. Demandez à la personne qui vous a donné le QR code d’activer les alertes sur le serveur.</string>
-  <string name="notification_settings_help" formatted="false">Ouvrez Paramètres Android &gt; Applications &gt; ZmalaPhone &gt; Notifications pour activer les appels entrants.</string>
-  <string name="notification_explanation_title" formatted="false">Recevoir les appels quand ZmalaPhone est fermé</string>
+  <string name="alerts_server_help" formatted="false">Gardez Zmala Phone ouvert pour recevoir les appels. Demandez à la personne qui vous a donné le QR code d’activer les alertes sur le serveur.</string>
+  <string name="notification_settings_help" formatted="false">Ouvrez Paramètres Android &gt; Applications &gt; Zmala Phone &gt; Notifications pour activer les appels entrants.</string>
+  <string name="notification_explanation_title" formatted="false">Recevoir les appels quand Zmala Phone est fermé</string>
   <string name="continue_action" formatted="false">Continuer</string>
-  <string name="notification_channel_help" formatted="false">Sonnerie lorsque quelqu’un vous appelle sur ZmalaPhone.</string>
+  <string name="notification_channel_help" formatted="false">Sonnerie lorsque quelqu’un vous appelle sur Zmala Phone.</string>
   <string name="updates" formatted="false">Mises à jour</string>
   <string name="update_available" formatted="false">Mise à jour disponible</string>
-  <string name="check_updates_description" formatted="false">Rechercher les mises à jour de ZmalaPhone</string>
-  <string name="updates_title" formatted="false">Mises à jour de ZmalaPhone</string>
+  <string name="check_updates_description" formatted="false">Rechercher les mises à jour de Zmala Phone</string>
+  <string name="updates_title" formatted="false">Mises à jour de Zmala Phone</string>
   <string name="automatic_updates" formatted="false">Mises à jour automatiques en Wi-Fi</string>
   <string name="update" formatted="false">Mettre à jour</string>
   <string name="check_now" formatted="false">Vérifier</string>
@@ -112,11 +112,11 @@
   <string name="download_failed" formatted="false">Téléchargement ou vérification impossible. Réessayez plus tard.</string>
   <string name="scan_new_qr" formatted="false">Utilisez un nouveau QR code de configuration.</string>
   <string name="calling_setup_failed" formatted="false">Impossible de démarrer les appels. Vérifiez les autorisations et la configuration.</string>
-  <string name="setup_invalid" formatted="false">Ce QR code n’est pas valide pour ZmalaPhone. Demandez un QR code App à jour à la personne qui vous l’a donné.</string>
+  <string name="setup_invalid" formatted="false">Ce QR code n’est pas valide pour Zmala Phone. Demandez un QR code App à jour à la personne qui vous l’a donné.</string>
   <string name="access_revoked" formatted="false">L’accès à ce compte a été retiré. Utilisez un QR code App à jour.</string>
   <string name="media_permissions" formatted="false">Les appels vidéo nécessitent l’accès à la caméra, au micro et au réseau local. Activez ces autorisations dans les paramètres Android.</string>
-  <string name="notification_explanation" formatted="false">Autorisez les notifications pour recevoir les appels et les demandes de rappel lorsque vous utilisez une autre application ou que le téléphone est en veille. Internet et l’accès au serveur sont nécessaires. Après un arrêt forcé Android, ouvrez à nouveau ZmalaPhone.</string>
-  <string name="update_explanation" formatted="false">Les mises à jour attendent la fin des appels et des sonneries. L’installation automatique attend que ZmalaPhone soit ouvert et inactif. Android peut demander une confirmation. Votre configuration est conservée.</string>
+  <string name="notification_explanation" formatted="false">Autorisez les notifications pour recevoir les appels et les demandes de rappel lorsque vous utilisez une autre application ou que le téléphone est en veille. Internet et l’accès au serveur sont nécessaires. Après un arrêt forcé Android, ouvrez à nouveau Zmala Phone.</string>
+  <string name="update_explanation" formatted="false">Les mises à jour attendent la fin des appels et des sonneries. L’installation automatique attend que Zmala Phone soit ouvert et inactif. Android peut demander une confirmation. Votre configuration est conservée.</string>
   <string name="lan_warning" formatted="false">\n\nMode local : la configuration et les appels ne sont pas chiffrés. Utilisez votre réseau domestique de confiance.</string>
   <string name="secure_confirm" formatted="false">\n\nUtiliser ce serveur pour votre compte ?</string>
   <string name="open_contact_suffix" formatted="false">. Ouvrir ce contact</string>

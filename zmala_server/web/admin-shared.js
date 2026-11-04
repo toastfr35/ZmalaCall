@@ -73,7 +73,7 @@ $('eyebrow').hidden = !eyebrow;
 $('page-description').textContent = description;
 $('page-description').hidden = !description;
 query(document, '.page-heading').hidden = page === '/';
-document.title = title ? title + ' · ZmalaCall' : 'ZmalaCall';
+document.title = title ? title + ' · Zmala' : 'Zmala';
 /** @param {string} id @param {string} text */
 export function message(id, text) {
   $(id).textContent = text;

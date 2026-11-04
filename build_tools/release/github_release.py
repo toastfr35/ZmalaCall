@@ -95,7 +95,7 @@ def notes(folder, output):
     tag = version_tag()
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     repo = 'https://github.com/toastfr35/ZmalaCall'
-    text = f'''ZmalaCall {tag}: Pi terminal, Pi server and ZmalaPhone.
+    text = f'''Zmala {tag}: Pi terminal, Pi server and Zmala Phone.
 
 Download the **Installation.pdf**, **Guide.pdf** and installer for the product you need below.
 The two `.exe` files run on a Windows PC and install onto the Pi over wired Ethernet.
@@ -103,9 +103,9 @@ The APK installs directly on Android 9 or newer (64-bit ARM phones).
 The two `ZmalaTerminal-Update` files are signed machine-update assets, downloaded automatically by supported Pi terminals; users do not install these manually.
 
 - Pi OS: Raspberry Pi OS Lite 64-bit, Debian 13 Trixie. Terminal: Pi 4 Model B; server: Pi 3 B/B+ or Pi 4 B.
-- ZmalaPhone: scan the private App QR supplied by your administrator. Allow notifications for incoming alerts.
+- Zmala Phone: scan the private App QR supplied by your administrator. Allow notifications for incoming alerts.
 - Earlier development APKs use a different signing key. Obtain your setup QR before uninstalling a development copy; future signed releases install as updates.
-- Windows installers are unsigned. Android uses the retained ZmalaPhone release certificate.
+- Windows installers are unsigned. Android uses the retained Zmala Phone release certificate.
 - Remote calls require the server TLS/TURN configuration; the basic Pi installer does not enable internet access automatically.
 
 Built from [{commit[:12]}]({repo}/tree/{commit}). Both installers pass packaged GUI/headless smoke tests. The Android job runs portable JVM tests, release lint, signature and manifest checks. These checks do not replace physical call testing.
@@ -113,7 +113,7 @@ Built from [{commit[:12]}]({repo}/tree/{commit}). Both installers pass packaged 
 ### Source and licenses
 
 No source packages are attached. The exact project source, build scripts and local native corrections are available at [this commit]({repo}/tree/{commit}).
-ZmalaPhone uses the AGPL-3.0-or-later Linphone SDK; see [source and dependency notices]({repo}/blob/{commit}/zmala_phone/NOTICE.md) and the [license]({repo}/blob/{commit}/zmala_phone/LICENSE.txt).
+Zmala Phone uses the AGPL-3.0-or-later Linphone SDK; see [source and dependency notices]({repo}/blob/{commit}/zmala_phone/NOTICE.md) and the [license]({repo}/blob/{commit}/zmala_phone/LICENSE.txt).
 The SDK and external component source locations are linked there. GitHub automatically adds its own source ZIP/tar links.
 
 ### SHA-256 checksums
@@ -132,7 +132,7 @@ def publish(folder, notes_file):
     # Create a draft, upload each allowlisted file, verify names, then publish.
     # Existing releases are never replaced; a failed draft is left for inspection.
     subprocess.run(['gh', 'release', 'create', tag, '--target', commit, '--draft',
-                    '--title', 'ZmalaCall ' + tag, '--notes-file', str(notes_file)], cwd=ROOT, check=True)
+                    '--title', 'Zmala ' + tag, '--notes-file', str(notes_file)], cwd=ROOT, check=True)
     subprocess.run(['gh', 'release', 'upload', tag, *map(str, paths)], cwd=ROOT, check=True)
     draft = json.loads(subprocess.check_output(
         ['gh', 'release', 'view', tag, '--json', 'assets,databaseId,isDraft,tagName,targetCommitish'],

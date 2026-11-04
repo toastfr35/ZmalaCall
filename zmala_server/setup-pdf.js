@@ -57,7 +57,7 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
   const doc = new PDFDocument({
     size: 'A4',
     margin: 40,
-    info: { Title: `ZmalaCall - ${phone ? 'phone' : kind} setup`, Author: 'ZmalaCall' },
+    info: { Title: `Zmala - ${phone ? 'phone' : kind} setup`, Author: 'Zmala' },
   });
   /** @type {Buffer[]} */
   const chunks = [];
@@ -106,7 +106,7 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
   }
   // Sparse colour, strong contrast and numbered instructions also work in grayscale.
   doc.moveTo(40, 44).lineTo(555.28, 44).lineWidth(3).stroke(accent);
-  text('ZmalaCall', 40, 61, 300, 22, 30, true);
+  text('Zmala', 40, 61, 300, 22, 30, true);
   doc
     .font('Helvetica-Bold')
     .fontSize(9)
@@ -160,9 +160,9 @@ async function setupPdf({ kind, label, payload, serverUrl, app = false }) {
     doc.moveTo(40, 480).lineTo(555.28, 480).lineWidth(0.6).stroke('#A9B8B4');
     step(2, 'Connect your account', 499);
     qr(payload, 40, 535, 205);
-    text('Scan this code in ZmalaPhone', 265, 544, 290, 13, 38, true);
+    text('Scan this code in Zmala Phone', 265, 544, 290, 13, 38, true);
     text(
-      'Open ZmalaPhone and choose Scan setup QR. Allow camera, microphone and notifications.',
+      'Open Zmala Phone and choose Scan setup QR. Allow camera, microphone and notifications.',
       265,
       589,
       290,

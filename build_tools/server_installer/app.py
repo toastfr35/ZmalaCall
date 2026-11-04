@@ -14,7 +14,7 @@ from build_tools.server_installer.cli import resources
 class Installer(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('Zmala server setup')
+        self.title('Zmala Server setup')
         self.geometry('800x680')
         self.minsize(760, 650)
         self.configure(bg='#f3f6fa')
@@ -33,7 +33,7 @@ class Installer(tk.Tk):
         style.configure('TEntry', padding=8)
         frame = ttk.Frame(self, padding=28)
         frame.pack(fill='both', expand=True)
-        ttk.Label(frame, text='Set up your Zmala server', style='Title.TLabel').pack(anchor='w')
+        ttk.Label(frame, text='Set up your Zmala Server', style='Title.TLabel').pack(anchor='w')
         ttk.Label(frame, text='Raspberry Pi 3 / 4 · Raspberry Pi OS Lite 64-bit', foreground='#56677b').pack(anchor='w', pady=(5, 20))
         ttk.Label(frame, text='Connect power and Ethernet to the Pi prepared with Raspberry Pi Imager.\nNo screen or keyboard is needed.', wraplength=710).pack(anchor='w')
         ttk.Label(frame, text='Network address').pack(anchor='w', pady=(22, 5))

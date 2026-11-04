@@ -252,7 +252,7 @@ export function renderCallbacks() {
   policy.append(policyBody);
   const p = panel(
       'Callback requests',
-      'Calls always start manually. ZmalaPhone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
+      'Calls always start manually. Zmala Phone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
     ),
     list = el('div', null, 'registration-list');
   const requests = state.model.callbacks || [];

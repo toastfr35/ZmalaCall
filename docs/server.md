@@ -19,7 +19,7 @@ enrollments and dialog identity. A 12-second sender lease bounds stale display;
 status/image access expires it, and dialog closure releases all photo state.
 No SIP or audio/video negotiation changes are made by photo operations.
 
-# ZmalaCall server implementation
+# Zmala Server implementation
 
 This guide describes the Linux server's deployment, request boundaries, identities,
 SIP/media lifecycle and persistence. It is intended for developers and maintainers.
@@ -42,7 +42,7 @@ Contents: [purpose and functions](#server-purpose-and-functions),
 
 ## Server purpose and functions
 
-The ZmalaCall server connects a family's Pi terminals and ZmalaPhone Android apps.
+The Zmala server connects a family's Pi terminals and Zmala Phone Android apps.
 It runs independently on a Raspberry Pi. It holds the shared directory, controls
 communication permissions and supplies settings to each terminal. Terminals own
 their cameras, microphones, speakers, displays and remote controls.
@@ -159,7 +159,7 @@ An enrolled terminal or app can request a callback from a permitted contact. Rep
 share one pending record. The requester or administrator can cancel it. A connected
 call completes requests between the two accounts.
 
-Terminals obtain requests through polling. ZmalaPhone uses signed Firebase hints
+Terminals obtain requests through polling. Zmala Phone uses signed Firebase hints
 and authenticated state refresh to show callback reminders; reachable SIP clients
 can also receive SIP notices.
 Optional email reminders use the configured deadline and recipient addresses.
@@ -569,7 +569,7 @@ an SDP offer (488 otherwise); overlapping negotiations return 491. BUNDLE/ICE
 is unsupported in LAN relay mode; secure relay mode retains ICE. Closed dialogs
 cannot be revived by pending asynchronous work.
 
-For ZmalaPhone, download the App account server QR and scan it in the app.
+For Zmala Phone, download the App account server QR and scan it in the app.
 `GET /api/app/config` authenticates with that app bearer token, returns only its
 identity and permitted contacts, and excludes Pi settings and other account secrets.
 App tokens cannot use terminal APIs. The app supports LAN and secure relay calls with Firebase incoming alerts; see [Android implementation](android.md). Legacy SIP clients keep
@@ -577,7 +577,7 @@ their migrated credentials; LAN calling uses video, no media encryption and no I
 for Pi calls. Video targets are settings, not delivered-frame guarantees;
 the relay does not reduce the terminal's camera/codec workload.
 
-## ZmalaPhone push sender
+## Zmala Phone push sender
 
 `app-push.js` uses FCM HTTP v1 with an OAuth JWT scoped to Firebase Messaging.
 Concurrent sends share one bounded token refresh. Failed or malformed refreshes

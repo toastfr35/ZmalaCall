@@ -331,13 +331,13 @@ test('connection view handles terminal assignment downloads and removed accounts
   f.openConnection('bob');
   assert.match(
     text(f.$('details-content')),
-    /Install ZmalaPhone.*cannot also be assigned to a Pi terminal/,
+    /Install Zmala Phone.*cannot also be assigned to a Pi terminal/,
   );
   f.state.model.sip_proxy = 'sip:secure.example.org:443;transport=tls';
   f.renderConnection();
   assert.match(
     text(f.$('details-content')),
-    /ZmalaPhone supports local calls and secure calls across networks/,
+    /Zmala Phone supports local calls and secure calls across networks/,
   );
   assert.ok(!text(f.$('details-content')).includes('Use UDP'));
   delete f.state.model.users.bob;

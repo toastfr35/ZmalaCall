@@ -284,7 +284,7 @@ class TVControl:
                 # a change that must be restored if cancellation races setup.
                 logical = self._run('--logical-address').strip()
                 if logical not in ('4', '8', '11'):
-                    self._run('--playback', '--cec-version-1.4', '--osd-name', 'ZmalaCall')
+                    self._run('--playback', '--cec-version-1.4', '--osd-name', 'Zmala Terminal')
                 if cancel.is_set():
                     return
                 if self.power_enabled:

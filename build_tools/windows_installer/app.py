@@ -28,7 +28,7 @@ def logo_path():
 class Installer(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('Zmala terminal setup')
+        self.title('Zmala Terminal setup')
         self.geometry('820x660')
         self.minsize(780, 640)
         self.configure(bg='#f3f6fa')
@@ -65,7 +65,7 @@ class Installer(tk.Tk):
         ttk.Label(hero, image=self.logo).pack(side='left', padx=(0, 16))
         titles = ttk.Frame(hero)
         titles.pack(side='left')
-        ttk.Label(titles, text='Set up your Zmala terminal', style='Title.TLabel').pack(anchor='w')
+        ttk.Label(titles, text='Set up your Zmala Terminal', style='Title.TLabel').pack(anchor='w')
         ttk.Label(titles, text='Raspberry Pi 4 · Argon ONE V2', style='Muted.TLabel').pack(anchor='w', pady=(4, 0))
         steps = ttk.Frame(frame)
         steps.pack(fill='x', pady=(24, 22))
@@ -181,7 +181,7 @@ class Installer(tk.Tk):
         info = self.target.info
         action = 'Update' if info['installed'] else 'Install'
         answer = messagebox.askokcancel('Confirm installation',
-            f"{action} ZmalaCall on {self.host.get()}?\n\n"
+            f"{action} Zmala Terminal on {self.host.get()}?\n\n"
             f"{info['model']}\n{info['os'].get('PRETTY_NAME')} (64-bit)\n"
             f"Ethernet address: {info['ssh_address']}\n\n"
             'This will install dependencies and automatic startup, restrict SSH to Ethernet, '
@@ -218,7 +218,7 @@ class Installer(tk.Tk):
                     self.status.set('Complete — terminal running after reboot. Continue setup on the TV.')
                     self.target.close()
                     self.target = None
-                    messagebox.showinfo('Installation complete', 'ZmalaCall is running on the Pi.\n'
+                    messagebox.showinfo('Installation complete', 'Zmala Terminal is running on the Pi.\n'
                                         'Follow the remote and QR setup instructions on the TV.', parent=self)
                 else:
                     self.status_heading.set('We need your attention')

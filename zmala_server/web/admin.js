@@ -139,7 +139,7 @@ $('eyebrow').hidden = !eyebrow;
 $('page-description').textContent = description;
 $('page-description').hidden = !description;
 query(document, '.page-heading').hidden = page === '/';
-document.title = title ? title + ' · ZmalaCall' : 'ZmalaCall';
+document.title = title ? title + ' · Zmala' : 'Zmala';
 /** @param {string} id @param {string} text */
 function message(id, text) {
   $(id).textContent = text;
@@ -556,7 +556,7 @@ async function downloadPdf(route, filename, value) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
   notice(
-    'PDF downloaded. Print at actual size, then scan it with the assigned terminal or ZmalaPhone app.',
+    'PDF downloaded. Print at actual size, then scan it with the assigned terminal or Zmala Phone app.',
   );
 }
 /** @param {string} id */
@@ -953,7 +953,7 @@ function renderConnection() {
     container.append(
       el(
         'p',
-        'ZmalaPhone supports local calls and secure calls across networks when remote access is configured. Incoming alerts while closed require notifications and the server Firebase sender. Install ZmalaPhone, choose Scan setup QR, and scan this account’s server QR code. This account belongs to an app; it cannot also be assigned to a Pi terminal.',
+        'Zmala Phone supports local calls and secure calls across networks when remote access is configured. Incoming alerts while closed require notifications and the server Firebase sender. Install Zmala Phone, choose Scan setup QR, and scan this account’s server QR code. This account belongs to an app; it cannot also be assigned to a Pi terminal.',
         'info-box',
       ),
     );
@@ -2409,7 +2409,7 @@ function renderCallbacks() {
   policy.append(policyBody);
   const p = panel(
       'Callback requests',
-      'Calls always start manually. ZmalaPhone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
+      'Calls always start manually. Zmala Phone can show callback reminders when notifications and server push are enabled. Delivery does not confirm that a reminder was read.',
     ),
     list = el('div', null, 'registration-list');
   const requests = state.model.callbacks || [];

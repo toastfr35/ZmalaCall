@@ -244,7 +244,7 @@ class Callbacks {
         continue;
       this.sending.add(r.id);
       this.retry.set(r.id, Date.now() + 60000);
-      const text = `ZmalaCall: ${this.store.value.users[r.from].name} would like you to call back.\nCall sip:${r.from}@${this.store.value.host}\nRequest expires at ${r.expires_at}.`;
+      const text = `Zmala: ${this.store.value.users[r.from].name} would like you to call back.\nCall sip:${r.from}@${this.store.value.host}\nRequest expires at ${r.expires_at}.`;
       const operation = Promise.resolve()
         .then(async () => {
           await this.flush();

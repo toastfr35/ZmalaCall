@@ -13,10 +13,10 @@ def parse_wifi(text):
     if isinstance(text, str) and text.startswith('FAMILY-WIFI:1:'):
         encoded = text[14:]
         if not encoded or len(encoded) > 160 or not re.fullmatch('[a-zA-Z0-9_-]+', encoded):
-            raise ValueError('Invalid ZmalaCall Wi-Fi QR')
+            raise ValueError('Invalid Zmala Wi-Fi QR')
         data = base64.urlsafe_b64decode(encoded + '=' * (-len(encoded) % 4))
         if len(data) < 3 or data[0] > 3 or not 1 <= data[1] <= 32 or len(data) < data[1]+2:
-            raise ValueError('Invalid ZmalaCall Wi-Fi QR')
+            raise ValueError('Invalid Zmala Wi-Fi QR')
         ssid = data[2:2+data[1]].decode('utf-8')
         password = data[2+data[1]:].decode('utf-8')
         escape = lambda value: re.sub(r'([\\;,:\"])', r'\\\1', value)
@@ -61,7 +61,7 @@ def parse_server(text):
         raise ValueError('Invalid server QR code')
     value = json.loads(text)
     if not isinstance(value, dict) or value.get('type') != 'family-call-server' or type(value.get('version')) is not int or value['version'] != 1:
-        raise ValueError('Not a ZmalaCall server QR code')
+        raise ValueError('Not a Zmala server QR code')
     url = value.get('server_url')
     if not isinstance(url, str) or len(url) > 512:
         raise ValueError('Invalid server address')

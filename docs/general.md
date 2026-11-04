@@ -1,10 +1,18 @@
-# ZmalaCall implementation overview
+# Zmala implementation overview
+
+The public brand is **Zmala**. Component names are **Zmala Terminal**, **Zmala Server**
+and **Zmala Phone**. Historical spellings in requirement baselines, repository URLs,
+release filenames, service names, package IDs and private pairing identities are
+compatibility identifiers, not alternative public brands. Keep those identifiers
+stable; display the spaced names in user interfaces and guide titles. Samsung
+permission prompts for an existing pairing may still identify it as ZmalaCall.
+
 
 This technical guide is for developers and maintainers. It describes component
 boundaries, networking, persistent state, build tooling and verification.
 [Server implementation](server.md) covers the Node services and deployment;
 [terminal implementation](terminal.md) covers state ownership, native media and
-Pi hardware integration. [Android implementation](android.md) covers ZmalaPhone. Product requirements exist only in
+Pi hardware integration. [Android implementation](android.md) covers Zmala Phone. Product requirements exist only in
 [Doorstop records](../requirements/). [astra.md](../astra.md) tracks engineering gaps.
 
 The Pi and Android SDK adapters share the bounded TURN TLS write helper under
@@ -32,16 +40,16 @@ Contents: [system](#system-and-supported-hosts), [network](#network-and-identity
 
 ## System and supported hosts
 
-ZmalaCall provides a television video-call interface with portrait contacts and
+Zmala provides a television video-call interface with portrait contacts and
 a Microsoft Presenter+ remote. A separate server manages accounts, groups,
 settings, SIP signalling and an RTP/RTCP relay. It neither transcodes nor records
-calls. Family members use ZmalaPhone on Android or another Pi terminal.
+calls. Family members use Zmala Phone on Android or another Pi terminal.
 
 | Component | Current deployment |
 | --- | --- |
 | Server | Raspberry Pi OS Lite 64-bit, Debian 13 Trixie; installer accepts Pi 3 Model B/B+ and Pi 4 Model B |
 | TV terminal | Raspberry Pi 4 Model B, the same OS, Nuroum C10/C20, Presenter+, HDMI TV; Argon ONE Pi 4 V2 fan integration |
-| Android app | ZmalaPhone LAN or encrypted relay video with Firebase incoming alerts, Android 9+, Linphone SDK 5.5.32 |
+| Android app | Zmala Phone LAN or encrypted relay video with Firebase incoming alerts, Android 9+, Linphone SDK 5.5.32 |
 | Development compatibility terminal | 64-bit Windows with Tk/Liblinphone and server-selected camera/audio devices |
 | Installers | Windows executables deploying over Ethernet SSH; graphical and headless modes |
 
@@ -537,7 +545,7 @@ each home and calls in both directions: SIP must connect while decoded video and
 received audio remain absent. Each unblock is followed by a decoded-media recovery
 call. Recording files are removed before each capture because the SDK can append
 to an existing WAV after a client restart. A passed negative test means the predicted failure was reproduced, not that
-ZmalaCall supports UDP-blocked networks. The report is written separately to
+Zmala supports UDP-blocked networks. The report is written separately to
 `tests/coverage/network-lab/udp-blocked/index.html`. No live Pi firewall is changed.
 
 ## Distribution and third-party components

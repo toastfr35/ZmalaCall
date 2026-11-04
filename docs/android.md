@@ -1,6 +1,6 @@
-# ZmalaPhone implementation guide
+# Zmala Phone implementation guide
 
-ZmalaPhone is the Android companion in `zmala_phone/`, package `org.zmala.phone`.
+Zmala Phone is the Android companion in `zmala_phone/`, package `org.zmala.phone`.
 
 Current releases support encrypted calls through the server's TLS/TURN relay from
 
@@ -50,9 +50,9 @@ Allow notifications when prompted to receive calls while using another app or
 
 when the phone is asleep. The phone and Pi need internet access for Firebase.
 
-If notifications are denied, enable them in Android Settings > Apps > ZmalaPhone >
+If notifications are denied, enable them in Android Settings > Apps > Zmala Phone >
 
-Notifications, then reopen ZmalaPhone. Android Force stop blocks delivery until
+Notifications, then reopen Zmala Phone. Android Force stop blocks delivery until
 
 the app is opened again; swiping it from Recents is not the same operation.
 
@@ -162,7 +162,7 @@ Call and answer controls are green; decline and hangup are red. The dark palette
 
 comes from `zmala_terminal/common/theme.py`; the Android vector reproduces
 
-`zmala_server/assets/zmala-icon.svg`. To remove enrollment, use Android Settings > Apps > ZmalaPhone > Storage >
+`zmala_server/assets/zmala-icon.svg`. To remove enrollment, use Android Settings > Apps > Zmala Phone > Storage >
 
 Clear storage (called Clear app data on some phones), then scan an App QR again.
 
