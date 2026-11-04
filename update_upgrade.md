@@ -79,6 +79,9 @@ closure lock, hardware boot qualification or automatic system updater is claimed
   invalid signatures and overlapping archive-key rollover. SHA-256 is checked
   against authenticated package metadata, independently of optional legacy MD5
   fields in APT's URI output.
+- Windows CI exposed Git CRLF translation changing lock-file byte digests. Added
+  LF attributes for the content-addressed JSON and a checkout regression with
+  `core.autocrlf=true`; lock bytes remain identical across Windows/Linux.
 - These are requested dependency closures, not a complete factory image lock.
   Full base/toolchain/model/npm inputs, immutable remote retention and consuming
   the lock in a complete image build remain incomplete.

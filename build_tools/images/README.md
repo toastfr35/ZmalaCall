@@ -165,6 +165,8 @@ lock bytes, or inconsistent archive counts/sizes. Keep the binary caches outside
 Git. A future build must verify its cache using the corresponding reviewed
 `sha256` from that index. New intake is a reviewable dependency change, not an
 automatic overwrite of the accepted lock.
+Git attributes force LF checkout for these content-addressed JSON files on every
+platform. Keep those bytes intact; CRLF conversion changes their lock digests.
 
 ## Source audit decisions
 
