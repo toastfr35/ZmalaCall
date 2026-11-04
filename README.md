@@ -1,8 +1,9 @@
-<p align="center">
-  <img src="zmala_server/assets/zmala-icon.svg" alt="Zmala logo" width="96" height="96">
-</p>
-
-<h1 align="center">Zmala</h1>
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/branding/PNG/a1-wordmark-dark-512.png">
+    <img src="docs/branding/PNG/a1-wordmark-light-512.png" alt="Zmala" width="320">
+  </picture>
+</h1>
 
 <p align="center"><strong>Easy family video calls, from the comfort of your sofa.</strong></p>
 

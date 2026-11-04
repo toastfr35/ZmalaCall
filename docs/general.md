@@ -8,6 +8,12 @@ stable; display the spaced names in user interfaces and guide titles. Samsung
 permission prompts for an existing pairing may still identify it as ZmalaCall.
 
 
+Approved A1/A3 logo variants, masters, sizes and generation provenance are in
+[the branding asset pack](branding/README.md). A1 is the shared brand mark; A3 dark
+is the Android launcher icon. `node build_tools/create-product-icon.cjs` copies the
+approved artwork into runtime assets; `--check` detects stale copies. The existing
+server favicon SVG embeds the PNG and needs no external fonts or image requests.
+
 This technical guide is for developers and maintainers. It describes component
 boundaries, networking, persistent state, build tooling and verification.
 [Server implementation](server.md) covers the Node services and deployment;

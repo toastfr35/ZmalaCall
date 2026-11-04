@@ -56,6 +56,12 @@ references:
   type: file
 - path: tests/android/LLT/unit/PortraitQueueTest.java
   type: file
+- path: zmala_phone/app/src/main/res/mipmap-anydpi-v26/zmala_launcher.xml
+  type: file
+- path: zmala_phone/app/src/main/AndroidManifest.xml
+  type: file
+- path: zmala_phone/app/src/main/res/values/branding.xml
+  type: file
 reviewed: null
 scope: Experimental
 text: |

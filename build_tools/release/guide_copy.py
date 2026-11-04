@@ -387,6 +387,20 @@ UPDATE_SECTIONS = {
 }
 
 
+def add_brand_footer(doc, root):
+    """Put the approved print mark beside existing footer text, once per section."""
+    from docx.shared import Inches
+
+    for section in doc.sections:
+        footer = section.footer.paragraphs[0]
+        if footer._p.xpath('.//w:drawing'):
+            continue
+        run = footer.add_run()
+        run.add_picture(str(root / 'zmala_server/assets/zmala-icon-light.png'), width=Inches(.28))
+        run.add_text('  ')
+        footer._p.insert(1 if footer._p.pPr is not None else 0, run._r)
+
+
 def improve_readability(root, filenames=None):
     from docx import Document
     from docx.shared import Pt, RGBColor
@@ -514,6 +528,7 @@ def improve_readability(root, filenames=None):
                 for row in table.rows:
                     if row.cells[0].text.strip() == 'Return to TV':
                         row.cells[1].text = '30 seconds; 1, 2, 5, 10, 20 or 30 minutes (default); Never'
+        add_brand_footer(doc, root)
         doc.core_properties.author = 'Zmala'
         doc.core_properties.last_modified_by = ''
         doc.save(path)

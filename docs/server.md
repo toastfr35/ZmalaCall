@@ -21,6 +21,9 @@ No SIP or audio/video negotiation changes are made by photo operations.
 
 # Zmala Server implementation
 
+The administration uses A1 dark; setup PDFs and guide footers use A1 light.
+Runtime logo copies come from `docs/branding/` via `node build_tools/create-product-icon.cjs`.
+
 This guide describes the Linux server's deployment, request boundaries, identities,
 SIP/media lifecycle and persistence. It is intended for developers and maintainers.
 The Windows executable is a deployment client, not a Windows server runtime.

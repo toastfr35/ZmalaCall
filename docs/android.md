@@ -160,9 +160,10 @@ missing images keep the common logo.
 
 Call and answer controls are green; decline and hangup are red. The dark palette
 
-comes from `zmala_terminal/common/theme.py`; the Android vector reproduces
-
-`zmala_server/assets/zmala-icon.svg`. To remove enrollment, use Android Settings > Apps > Zmala Phone > Storage >
+comes from `zmala_terminal/common/theme.py`. A1 dark supplies the in-app mark and
+portrait fallback; the text-free A3 dark adaptive launcher icon is separate.
+Approved masters and three export sizes live in `docs/branding/`.
+Run `node build_tools/create-product-icon.cjs` to refresh runtime copies. To remove enrollment, use Android Settings > Apps > Zmala Phone > Storage >
 
 Clear storage (called Clear app data on some phones), then scan an App QR again.
 
