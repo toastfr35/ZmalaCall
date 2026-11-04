@@ -1049,6 +1049,12 @@ Source archives omit downloaded models/runtime; calls never download them.
 
 ## Appliance services, storage and peripherals
 
+The proposed image-installed system update path is tracked in
+[the update/upgrade plan](../update_upgrade.md). Initial
+[image tools](../build_tools/images/README.md) collect read-only sizing information
+and emit a development boot probe; they do not change terminal services or the
+application-only updater described below.
+
 ```sh
 sudo systemctl status zmalacall-terminal zmalacall-display zmalacall-pairing
 sudo systemctl restart zmalacall-terminal

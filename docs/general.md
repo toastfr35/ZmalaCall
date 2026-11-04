@@ -63,6 +63,10 @@ The proposed replacement with ready-to-flash Pi images and recoverable automatic
 OS/package upgrades is detailed in [the system update plan](../update_upgrade.md).
 It is planning work; the current installation and application-update behavior
 remains as documented here until the corresponding implementation is qualified.
+Initial [image development tools](../build_tools/images/README.md) provide pinned
+source acquisition, minimal boot-probe profiles, a read-only Pi inventory and an
+offline privacy inspector. They do not yet produce a production installer or
+enable system updates on deployed devices.
 
 Windows server hosting, the serial-keypad project and CAD models are retired.
 Other cameras/boards and direct GPIO controls are not established terminal
