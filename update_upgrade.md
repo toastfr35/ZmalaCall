@@ -226,6 +226,39 @@ boot-state qualification in progress:
   treat either as a ready-to-flash installer. The physical spare has both
   corrections; original installation cards and server software remain untouched.
 
+
+5 November 2026 — corrected U-Boot hardware feasibility sequence for #149:
+
+- The memory-placement correction booted successfully. Pinned diagnostic SSH
+  verified the expected physical Pi and common loader partition; the explicit
+  A argument resolved to the read-only A root. Repeated readings retained the
+  same boot identity through approximately 145 seconds. The full 512 MiB CMA pool
+  was reserved and the connected HDMI output was enabled. Later kernel logs show
+  successful framebuffer setup; the initrd was relocated above the low CMA window.
+- Completed the sequence **A -> B -> A -> B -> B** on the private card. Staging B with
+  one attempt booted the read-only B root and persisted a zero B count. An ordinary
+  reboot without confirmation returned to A. Staging B again, explicitly resetting
+  its count to three from userspace, then rebooting retained B with a count of two.
+  Both redundant environment copies retained valid CRCs through these operations.
+  Each checked boot matched its explicit slot/root, diagnostic identity and
+  EEPROM mask. The B and fallback-A graphics checks also passed.
+- This confirms hardware selection, attempt consumption, ordinary-reboot fallback
+  and a **manual counter reset**, not the proposed application's health predicate.
+  The watchdog remained inactive. No deliberate power cut, corrupted-state boot,
+  failed-kernel recovery or automatic production health confirmation was tested.
+  These remain blockers; the experimental loader is not an adopted RAUC backend.
+- Assembled a fresh private whole-image artifact containing valid FAT16 and the
+  corrected script; GPT/FAT checks, filesystem check and loader/script read-back
+  checks passed. It contains diagnostic credentials and must never be published.
+  Its GNU-created FAT16 geometry differs from the Windows-repaired physical card,
+  despite matching loader/script contents; the new whole image itself has not
+  been flashed or hardware-qualified. Earlier artifacts remain superseded.
+- Reset the lab's next selection to A with three attempts and accepted a clean
+  shutdown. Asked for the original terminal card to be restored. Verification of
+  the original installation is pending that physical swap. No server deployment,
+  EEPROM operation, camera test or product call was performed in this sequence.
+
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
