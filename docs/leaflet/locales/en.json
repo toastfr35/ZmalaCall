@@ -5,26 +5,26 @@
   "ready": "Have your TV remote and the supplied Wi-Fi and server QR codes ready. These pages show you how to connect your terminal, complete setup and make calls.",
   "connect": "Connect the terminal",
   "equipment": [
-    "Argon ONE Pi 4 V2",
-    "Nuroum C10",
-    "Microsoft Presenter+"
+    "Terminal",
+    "Camera",
+    "Remote control"
   ],
   "connections": [
     [
       "Camera first",
-      "Connect the C10 USB cable to a blue USB 3 port. Use its USB-A adapter if needed. Face the camera towards your seat."
+      "Connect the camera cable to a blue USB port on the terminal. Point the camera towards your seat."
     ],
     [
       "Remote charger",
-      "Connect the charging cradle to a black USB 2 port. Place the remote on it to charge."
+      "Connect the remote control’s charging cradle to a black USB port. Place the remote control on it to charge."
     ],
     [
       "Television",
-      "Connect either full-size HDMI socket on the case to the TV. Leave the other unused. Select that HDMI input on the TV."
+      "Connect the terminal to your TV with the HDMI cable. Select that HDMI input on the TV."
     ],
     [
       "Power last",
-      "Connect the Pi 4 USB-C power supply (5 V, at least 3 A). If needed, press the case power button once. Wait for setup."
+      "Connect the supplied power supply to the terminal and then to a wall socket. The terminal starts automatically."
     ]
   ],
   "setup_title": "Wi-Fi and server setup",
@@ -43,11 +43,7 @@
     ],
     [
       "Scan this terminal's server QR",
-      "Use the server QR supplied for this terminal. Show it to the camera when requested. Setup starts in English; your chosen language applies after this code is accepted."
-    ],
-    [
-      "Check TV control",
-      "Follow the power and input tests with the TV remote ready. Green confirms what actually worked; red reports failure. If the picture does not return within 30 seconds, select Zmala's HDMI input yourself."
+      "Use the server QR supplied for this terminal. Show it to the camera when requested."
     ],
     [
       "Make a test call",
@@ -86,8 +82,9 @@
     ],
     [
       "Leave",
-      "Press red on the settings list, then green to exit or red to stay. Reset needs a separate confirmation and repeats setup; have both QR codes ready."
+      "Press red on the settings list, then green to exit or red to stay."
     ]
   ],
-  "help": "If TV control is enabled, the first press may only show Zmala. Otherwise select its HDMI input with the TV remote. If the remote stops responding, check its rear switch and charge it. Ask your helper if saving or calling fails."
+  "help": "If TV control is enabled, the first press may only show Zmala. Otherwise select its HDMI input with the TV remote. If the remote stops responding, check its rear switch and charge it. Ask your helper if saving or calling fails.",
+  "setup_intro": "When the terminal starts for the first time, follow the on-screen instructions."
 }

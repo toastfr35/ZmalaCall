@@ -5,26 +5,26 @@
   "ready": "Tenga preparados el mando del televisor y los códigos QR de Wi-Fi y servidor suministrados. Estas páginas explican cómo conectar el terminal, configurarlo y hacer llamadas.",
   "connect": "Conecte el terminal",
   "equipment": [
-    "Argon ONE Pi 4 V2",
-    "Nuroum C10",
-    "Microsoft Presenter+"
+    "Terminal",
+    "Cámara",
+    "Mando a distancia"
   ],
   "connections": [
     [
       "Primero la cámara",
-      "Conecte el cable USB del C10 a un puerto USB 3 azul. Use su adaptador USB-A si hace falta. Oriente la cámara hacia su asiento."
+      "Conecte el cable de la cámara a un puerto USB azul del terminal. Oriente la cámara hacia su asiento."
     ],
     [
       "Cargador del mando",
-      "Conecte la base de carga a un puerto USB 2 negro. Coloque el mando en ella para cargarlo."
+      "Conecte la base de carga del mando a un puerto USB negro. Coloque el mando en ella para cargarlo."
     ],
     [
       "Televisor",
-      "Conecte una de las tomas HDMI de tamaño estándar de la caja al televisor. Deje la otra libre. Seleccione esa entrada HDMI en el televisor."
+      "Conecte el terminal al televisor con el cable HDMI. Seleccione esa entrada HDMI en el televisor."
     ],
     [
       "La corriente al final",
-      "Conecte la fuente USB-C del Pi 4 (5 V, al menos 3 A). Si es necesario, pulse una vez el botón de la caja. Espere a la configuración."
+      "Conecte la fuente de alimentación suministrada al terminal y después a una toma de pared. El terminal se inicia automáticamente."
     ]
   ],
   "setup_title": "Configure el Wi-Fi y el servidor",
@@ -43,11 +43,7 @@
     ],
     [
       "Escanee el QR de servidor de este terminal",
-      "Use el QR de servidor suministrado para este terminal. Muéstrelo a la cámara cuando se solicite. La configuración empieza en inglés; su idioma se aplica tras aceptar el código."
-    ],
-    [
-      "Compruebe el control del televisor",
-      "Siga las pruebas de encendido y entrada con el mando del televisor a mano. Verde confirma lo que funcionó; rojo indica un fallo. Si la imagen no vuelve en 30 segundos, seleccione manualmente la entrada HDMI de Zmala."
+      "Use el QR de servidor suministrado para este terminal. Muéstrelo a la cámara cuando se solicite."
     ],
     [
       "Haga una llamada de prueba",
@@ -86,8 +82,9 @@
     ],
     [
       "Salga",
-      "Pulse rojo en la lista y luego verde para salir o rojo para quedarse. Restablecer requiere otra confirmación y repite la configuración; tenga preparados los dos QR."
+      "Pulse rojo en la lista de ajustes y luego verde para salir o rojo para quedarse."
     ]
   ],
-  "help": "Con el control TV activo, la primera pulsación puede solo mostrar Zmala. Si no, elija su entrada HDMI con el mando TV. Si el mando no responde, revise su interruptor trasero y cárguelo. Pida ayuda si falla una llamada o no puede guardar."
+  "help": "Con el control TV activo, la primera pulsación puede solo mostrar Zmala. Si no, elija su entrada HDMI con el mando TV. Si el mando no responde, revise su interruptor trasero y cárguelo. Pida ayuda si falla una llamada o no puede guardar.",
+  "setup_intro": "Cuando el terminal se inicie por primera vez, siga las instrucciones en pantalla."
 }

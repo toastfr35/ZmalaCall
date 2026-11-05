@@ -5,26 +5,26 @@
   "ready": "Halten Sie die TV-Fernbedienung und die mitgelieferten WLAN- und Server-QR-Codes bereit. Diese Seiten zeigen Anschluss, Einrichtung und Anrufe mit Ihrem Terminal.",
   "connect": "Terminal anschließen",
   "equipment": [
-    "Argon ONE Pi 4 V2",
-    "Nuroum C10",
-    "Microsoft Presenter+"
+    "Terminal",
+    "Kamera",
+    "Fernbedienung"
   ],
   "connections": [
     [
       "Zuerst die Kamera",
-      "C10-USB-Kabel an einen blauen USB-3-Anschluss anschließen. Bei Bedarf den USB-A-Adapter verwenden. Kamera auf Ihren Sitzplatz richten."
+      "Schließen Sie das Kamerakabel an einen blauen USB-Anschluss des Terminals an. Richten Sie die Kamera auf Ihren Sitzplatz."
     ],
     [
       "Ladestation",
-      "Ladestation an einen schwarzen USB-2-Anschluss anschließen. Fernbedienung zum Laden darauflegen."
+      "Schließen Sie die Ladestation der Fernbedienung an einen schwarzen USB-Anschluss an. Legen Sie die Fernbedienung zum Laden darauf."
     ],
     [
       "Fernseher",
-      "Eine der normal großen HDMI-Buchsen am Gehäuse mit dem Fernseher verbinden. Die andere bleibt frei. Diesen HDMI-Eingang am Fernseher auswählen."
+      "Verbinden Sie das Terminal über das HDMI-Kabel mit dem Fernseher. Wählen Sie dort diesen HDMI-Eingang."
     ],
     [
       "Strom zuletzt",
-      "USB-C-Netzteil für Pi 4 anschließen (5 V, mindestens 3 A). Falls nötig einmal den Gehäuseschalter drücken. Auf die Einrichtung warten."
+      "Schließen Sie das mitgelieferte Netzteil zuerst an das Terminal und dann an eine Steckdose an. Das Terminal startet automatisch."
     ]
   ],
   "setup_title": "WLAN und Server einrichten",
@@ -43,11 +43,7 @@
     ],
     [
       "Server-QR dieses Terminals scannen",
-      "Verwenden Sie den für dieses Terminal mitgelieferten Server-QR. Auf Aufforderung vor die Kamera halten. Die Einrichtung beginnt auf Englisch; nach Annahme des Codes gilt Ihre gewählte Sprache."
-    ],
-    [
-      "TV-Steuerung prüfen",
-      "Ein-/Ausschalt- und Eingangstests mit griffbereiter TV-Fernbedienung durchführen. Grün bestätigt beobachteten Erfolg, rot meldet einen Fehler. Kehrt das Bild nach 30 Sekunden nicht zurück, Zmalas HDMI-Eingang selbst auswählen."
+      "Verwenden Sie den für dieses Terminal mitgelieferten Server-QR. Halten Sie ihn auf Aufforderung vor die Kamera."
     ],
     [
       "Testanruf machen",
@@ -86,8 +82,9 @@
     ],
     [
       "Verlassen",
-      "In der Liste Rot drücken, dann Grün zum Verlassen oder Rot zum Bleiben. Zurücksetzen erfordert eine weitere Bestätigung und wiederholt die Einrichtung; beide QR-Codes bereithalten."
+      "Drücken Sie in der Einstellungsliste Rot, dann Grün zum Verlassen oder Rot zum Bleiben."
     ]
   ],
-  "help": "Bei aktivierter TV-Steuerung zeigt der erste Tastendruck eventuell nur Zmala. Sonst den HDMI-Eingang mit der TV-Fernbedienung wählen. Reagiert die Fernbedienung nicht, Schalter hinten prüfen und laden. Bei Speicher- oder Anruffehlern Ihre helfende Person fragen."
+  "help": "Bei aktivierter TV-Steuerung zeigt der erste Tastendruck eventuell nur Zmala. Sonst den HDMI-Eingang mit der TV-Fernbedienung wählen. Reagiert die Fernbedienung nicht, Schalter hinten prüfen und laden. Bei Speicher- oder Anruffehlern Ihre helfende Person fragen.",
+  "setup_intro": "Wenn das Terminal zum ersten Mal startet, folgen Sie den Anweisungen auf dem Bildschirm."
 }

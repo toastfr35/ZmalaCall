@@ -5,26 +5,26 @@
   "ready": "Préparez la télécommande du téléviseur et les QR Wi-Fi et serveur fournis. Ces pages vous expliquent comment brancher le terminal, le configurer et passer des appels.",
   "connect": "Brancher le terminal",
   "equipment": [
-    "Argon ONE Pi 4 V2",
-    "Nuroum C10",
-    "Microsoft Presenter+"
+    "Terminal",
+    "Caméra",
+    "Télécommande"
   ],
   "connections": [
     [
       "La caméra d'abord",
-      "Branchez le câble USB du C10 sur un port USB 3 bleu. Utilisez son adaptateur USB-A si nécessaire. Orientez la caméra vers votre siège."
+      "Branchez le câble de la caméra sur un port USB bleu du terminal. Orientez la caméra vers votre siège."
     ],
     [
       "Le chargeur",
-      "Branchez le socle de recharge sur un port USB 2 noir. Posez la télécommande dessus pour la charger."
+      "Branchez le socle de recharge de la télécommande sur un port USB noir. Posez la télécommande dessus pour la charger."
     ],
     [
       "Le téléviseur",
-      "Reliez une des prises HDMI de taille standard du boîtier au téléviseur. Laissez l'autre libre. Sélectionnez cette entrée HDMI sur le téléviseur."
+      "Reliez le terminal au téléviseur avec le câble HDMI. Sélectionnez cette entrée HDMI sur le téléviseur."
     ],
     [
       "L'alimentation en dernier",
-      "Branchez l'alimentation USB-C du Pi 4 (5 V, au moins 3 A). Au besoin, appuyez une fois sur le bouton du boîtier. Attendez la configuration."
+      "Branchez l’alimentation fournie au terminal, puis à une prise murale. Le terminal démarre automatiquement."
     ]
   ],
   "setup_title": "Configurer le Wi-Fi et le serveur",
@@ -43,11 +43,7 @@
     ],
     [
       "Scanner le QR serveur de ce terminal",
-      "Utilisez le QR serveur fourni pour ce terminal. Présentez-le à la caméra lorsqu’il est demandé. La configuration commence en anglais ; la langue choisie s’applique après acceptation du code."
-    ],
-    [
-      "Vérifier le contrôle du téléviseur",
-      "Suivez les tests d'alimentation et d'entrée avec la télécommande du téléviseur à portée de main. Vert confirme ce qui a fonctionné ; rouge signale un échec. Sans retour de l'image après 30 secondes, sélectionnez vous-même l'entrée HDMI de Zmala."
+      "Utilisez le QR serveur fourni pour ce terminal. Présentez-le à la caméra lorsqu’il est demandé."
     ],
     [
       "Faire un appel d'essai",
@@ -86,8 +82,9 @@
     ],
     [
       "Quitter",
-      "Dans la liste, appuyez sur rouge, puis vert pour sortir ou rouge pour rester. La réinitialisation demande une confirmation distincte et relance la configuration ; préparez les deux QR."
+      "Dans la liste des réglages, appuyez sur rouge, puis vert pour sortir ou rouge pour rester."
     ]
   ],
-  "help": "Avec le contrôle TV activé, le premier appui peut seulement afficher Zmala. Sinon, sélectionnez son entrée HDMI avec la télécommande TV. Si la télécommande ne répond plus, vérifiez l'interrupteur au dos et rechargez-la. Demandez de l'aide en cas d'échec d'appel ou d'enregistrement."
+  "help": "Avec le contrôle TV activé, le premier appui peut seulement afficher Zmala. Sinon, sélectionnez son entrée HDMI avec la télécommande TV. Si la télécommande ne répond plus, vérifiez l'interrupteur au dos et rechargez-la. Demandez de l'aide en cas d'échec d'appel ou d'enregistrement.",
+  "setup_intro": "Au premier démarrage du terminal, suivez les instructions à l’écran."
 }

@@ -5,10 +5,16 @@ connections, Wi-Fi and server QR setup, remote use and local settings. It does n
 instruct users to prepare media, install software, administer the server or connect
 Ethernet. The back page combines remote operation and local settings.
 
-The authoring sources are `locales/*.json`, `layout.css` and `assets/`. The locale
+The authoring sources are `locales/*.json`, `layout.css` and `assets/`, with the
+approved official cover logo reused directly from `docs/branding/PNG/`. The locale
 set must exactly match `zmala_terminal/common/shared/terminal-languages.json`.
-There is no English fallback. The JSON preserves product names; all instructions
-are translated. These are initial translations, with technical/layout checks;
+There is no English fallback. Equipment captions use translated generic names
+(terminal, camera and remote control). Connection instructions identify the blue
+and black USB ports and the supplied power supply, without model names, power
+ratings or case-button instructions. The setup page starts with following the
+first-start on-screen instructions; TV test detail and reset instructions are
+left to the full guides. All instructions are translated. These are initial
+translations, with technical/layout checks;
 native-speaker editorial review has not been recorded.
 
 ## Generate
@@ -43,8 +49,9 @@ and the printing notes, not old PDFs from the output folder.
 
 The PDF build rejects missing/extra locales, missing keys, incomplete sections,
 empty strings, broken images, overflowing content and non-four-page reading PDFs.
-Text remains live and selectable; graphics contain no captions or instruction
-text. Numbered port markers are HTML text placed outside the SVG. Physical port
+Text remains live and selectable; hardware and overview graphics contain no
+captions or instruction text. The official wordmark is the branding exception.
+Numbered port markers are HTML text placed outside the SVG. Physical port
 layout and remote buttons are never mirrored for RTL languages.
 
 ## Print
@@ -66,7 +73,8 @@ Doorstop records are unchanged. Content was checked against the setup flow,
 settings/input controllers and these existing requirements:
 
 - `HLR-TERM-SETUP-019`, `HLR-TERM-SETUP-020`; `LLR-TERM-SETUP-025` through
-  `LLR-TERM-SETUP-035` for camera/remote verification, QR enrollment and reset.
+  `LLR-TERM-SETUP-035` for the setup workflow; the leaflet covers camera/remote
+  verification and QR enrollment, without detailing TV tests or reset.
 - `HLR-TERM-REMOTE-011`, `HLR-TERM-REMOTE-012` and the associated remote LLRs.
 - `HLR-TERM-CONFIG-016`, `HLR-TERM-CONFIG-017` and the associated settings LLRs.
 - The connection illustration in `terminal_prep.docx`, the user workflows in

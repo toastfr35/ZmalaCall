@@ -16,8 +16,9 @@ h2 { font-size: 19pt; line-height: 1.16; margin-bottom: 3mm; color: #142d29; }
 h3 { font-size: 10.7pt; line-height: inherit; font-weight: 700; }
 p { margin-top: .6mm; }
 .eyebrow { color: #227759; font-size: 10pt; font-weight: 700; letter-spacing: 1pt; margin-bottom: 2mm; }
-.brand { direction: ltr; text-align: start; font-size: 35pt; font-weight: 700; letter-spacing: -1.2pt; color: #176a4c; }
-.brand span { display: block; font-size: 11pt; letter-spacing: 2pt; font-weight: 400; }
+.cover { background: #ffffff; }
+.brand { display: block; width: 42mm; height: auto; }
+.cover h1 { margin: 5mm 0; }
 .hero { width: calc(100% + 10mm); max-height: 66mm; object-fit: contain; margin: 0 -5mm 5mm; }
 .blurb { font-size: 14pt; line-height: 1.3; font-weight: 700; margin-bottom: 4mm; }
 .cover p:not(.blurb) { font-size: 11pt; margin-top: 4mm; }
@@ -38,14 +39,12 @@ ol li::before { content: counter(step, decimal-leading-zero); position: absolute
 .pairing { float: right; width: 15mm; height: 38mm; margin: 0 0 2mm 4mm; }
 html[dir="rtl"] .pairing { float: left; margin: 0 4mm 2mm 0; }
 .setup li { margin-bottom: 3.3mm; }
+.setup-intro { margin: 0 0 5mm; font-size: 11pt; }
 .private, .help { color: #426058; font-size: 9.2pt; margin-top: 2mm; }
 .controls { padding: 0; margin: 0; list-style: none; }
 .controls li { display: flex; gap: 3mm; margin-bottom: 2.2mm; align-items: flex-start; }
-.button { flex: 0 0 4mm; width: 4mm; height: 4mm; border: .4mm solid #192a2a; border-radius: 50%; margin-top: 1mm; }
-.b0 { border-radius: 1mm; background: linear-gradient(90deg,#192a2a 0 20%,transparent 20% 80%,#192a2a 80%); }
-.b1 { background: #078b43; }
-.b2 { background: #e43138; }
-.b3 { width: 5mm; border-radius: 2mm; background: #d6dbd8; }
+.button { flex: 0 0 12mm; width: 12mm; height: 7mm; display: flex; align-items: center; justify-content: center; margin-top: .5mm; }
+.button img { display: block; width: 12mm; max-height: 7mm; object-fit: contain; }
 .settings-heading { font-size: 16pt; margin: 3mm 0 3mm; }
 .settings li { margin-bottom: 2.2mm; }
 @media screen { .page { margin: 8mm auto; box-shadow: 0 2mm 6mm #0002; } }

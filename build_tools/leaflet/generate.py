@@ -10,9 +10,9 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'docs/leaflet'
 FIELDS = {'title', 'blurb', 'scope', 'ready', 'connect', 'equipment', 'connections',
-          'setup_title', 'setup', 'private', 'operate', 'controls', 'settings_title',
+          'setup_title', 'setup_intro', 'setup', 'private', 'operate', 'controls', 'settings_title',
           'settings', 'help'}
-LENGTHS = {'equipment': 3, 'connections': 4, 'setup': 6, 'controls': 4, 'settings': 3}
+LENGTHS = {'equipment': 3, 'connections': 4, 'setup': 5, 'controls': 4, 'settings': 3}
 
 
 def load_catalogs(source=SOURCE, languages=None):
@@ -43,7 +43,8 @@ def load_catalogs(source=SOURCE, languages=None):
 
 
 def asset(name):
-    path = SOURCE / 'assets' / name
+    path = (ROOT / 'docs/branding/PNG/a1-wordmark-light-1024.png'
+            if name == 'official-logo.png' else SOURCE / 'assets' / name)
     mime = 'image/svg+xml' if path.suffix == '.svg' else 'image/png'
     return f'data:{mime};base64,' + base64.b64encode(path.read_bytes()).decode('ascii')
 
@@ -68,7 +69,7 @@ def render_html(code, info, copy):
 <html lang="{esc(code)}" dir="{info['direction']}"><head><meta charset="utf-8">
 <title>Zmala · {esc(copy['title'])}</title><style>{css}</style></head><body>
 <section class="page cover"><main>
-<div class="brand">Zmala<span>Terminal</span></div>
+{picture('official-logo.png', 'brand')}
 <h1>{esc(copy['title'])}</h1>
 {picture('overview.png', 'hero')}
 <p class="blurb">{esc(copy['blurb'])}</p>
@@ -86,13 +87,14 @@ def render_html(code, info, copy):
 </main>{footer(2)}</section>
 <section class="page"><main>
 <div class="eyebrow">02</div><h2>{esc(copy['setup_title'])}</h2>
+<p class="setup-intro">{esc(copy['setup_intro'])}</p>
 {picture('remote-back.svg', 'pairing')}
 {steps('setup')}
 <p class="private">{esc(copy['private'])}</p>
 </main>{footer(3)}</section>
 <section class="page"><main>
 <div class="eyebrow">03</div><h2>{esc(copy['operate'])}</h2>
-<ul class="controls">{''.join(f'<li><span class="button b{i}"></span><div><h3>{esc(t)}</h3><p>{esc(b)}</p></div></li>' for i, (t,b) in enumerate(copy['controls']))}</ul>
+<ul class="controls">{''.join(f'<li><span class="button">{picture(name)}</span><div><h3>{esc(t)}</h3><p>{esc(b)}</p></div></li>' for name, (t,b) in zip(('buttons-arrows.svg', 'button-green.svg', 'button-red.svg', 'button-middle.svg'), copy['controls']))}</ul>
 <h2 class="settings-heading">{esc(copy['settings_title'])}</h2>
 {steps('settings')}
 <p class="help">{esc(copy['help'])}</p>
