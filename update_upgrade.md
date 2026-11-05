@@ -114,6 +114,229 @@ closure lock, hardware boot qualification or automatic system updater is claimed
   card budget. Native selector durability and the upstream mutable `/var` policy
   remain production blockers.
 
+5 November 2026 — [#149](https://github.com/toastfr35/ZmalaCall/issues/149),
+boot-state qualification in progress:
+
+- The successful native A/B probe does not resolve the audited selector's FAT
+  commit window. Prepared a separate **private, unbooted** U-Boot feasibility
+  image; it does not replace the restored terminal installation or settle the
+  production backend decision.
+- Audited and cross-compiled official U-Boot `v2026.10`, Git commit
+  `5508406582f6f7120dce0c4b3059819a41788db2`. Its stock Pi ARM64 configuration uses
+  FAT environment storage and has no enabled legacy watchdog. An experimental
+  configuration selects redundant raw MMC state. The actual pinned source uses
+  `CONFIG_ENV_REDUNDANT`, `CONFIG_ENV_MMC_DEVICE_INDEX` and
+  `CONFIG_ENV_MMC_EMMC_HW_PARTITION`; older integration examples use different
+  names. Checking the resolved `.config` is mandatory; silently discarded old
+  option names do not establish redundancy.
+- Retained an authenticated ARM64 `libubootenv-tool`/library dependency closure.
+  Ran the actual tools under emulation against regular files: a state change
+  preserved the other valid copy, and corruption of the new copy caused reads to
+  return the retained state. This checks the selected tool/library format only;
+  it is **not** an SD power-cut result or a bootloader fallback result.
+- The private candidate contains a fixed common firmware/loader area, two
+  kernel/root groups and the existing diagnostic data. Its slot mapper and
+  initramfs use the boot script's explicit slot argument, because a fixed common
+  loader partition no longer identifies the selected Linux slot. Both roots
+  retain the EEPROM mask. GPT and offline filesystem checks pass; no new candidate
+  has been written to a card or booted. The build host/toolchain is not fully
+  locked, and the private recipe has not been promoted to the public image tools.
+  It still inherits the upstream `rw,nofail` common-boot mount request; a fixed
+  loader area is not yet an enforced read-only production mount policy.
+- Remaining gates: reproducible public assembly, firmware/kernel/DT compatibility,
+  real reads/writes of both state copies, initial-state recovery, physical cuts,
+  early-watchdog coverage and a reviewed production backend/layout decision.
+  Factory persistence, runtime requirements, coordinator implementation and
+  complete role qualification remain unfinished. The next hardware run requires
+  the spare card back in the reader and an arranged terminal test window.
+
+5 November 2026 — further offline evidence for #149:
+
+- The real ARM64 environment tools also passed a multi-variable batch update
+  against ordinary files, with both copies retaining valid CRCs. This selected
+  tool version's script format is `key=value`; space-separated lines would be
+  ignored. The test checks read-back values as well as command completion.
+- Built a separate host-only U-Boot sandbox to exercise the command interpreter.
+  Found a lab-script bug: `setexpr` stores hexadecimal text, while `test` uses
+  automatic-base integer parsing. An initial `10` became `f`, which the later
+  comparison treated as zero. Prepared a corrected script using the standard
+  small attempt count of three. Its image header and payload CRCs are verified.
+  Seven selection/counter/error cases pass in the actual interpreter: initial A, trial
+  B, exhausted B falling back to A, a manual B count reset, and no attempts left.
+  A failed state-save prevents kernel loading, and a missing B kernel falls back
+  to A in the simulated command path. Filesystem loading, state persistence and
+  reset commands were stubbed; none of
+  these cases is a hardware boot or production health-confirmation result.
+- On reinserting the previously booted spare card, its exact-preimage guard
+  stopped before writing. Read-only comparison found changes confined to valid
+  ext4 superblock write-time, written-KiB accounting and checksum fields among
+  the eight compared 1 MiB ranges. All other compared bytes matched; this is not
+  a whole-filesystem comparison. Reviewed and pinned those post-boot range
+  hashes before retrying. A read-only mounted root should not be assumed to have
+  a bit-identical raw image after startup filesystem handling.
+- The new base image was written and fully read-back verified. It must receive
+  the corrected boot script before first boot; the card was automatically
+  unmounted/ejected and is awaiting reinsertion for that correction. The original
+  compressed lab artifact is retained as an explicitly superseded base. A fresh
+  complete image with the correction embedded is retained for future writes.
+  The current card's provenance is its verified base plus the required file
+  correction, not a claim that its FAT metadata matches the fresh image. No new hardware boot
+  or power-cut result is claimed. The original terminal installation remains
+  running separately.
+
+5 November 2026 — common-loader preflight and hardware diagnosis for #149:
+
+- The corrected three-attempt script was installed and verified after the full
+  card write. The first U-Boot experiment nevertheless reached Linux without an
+  explicit slot argument and could not resolve its active root. Both raw
+  environment areas remained untouched. Inspection found the private 32 MiB
+  common volume had been forced to FAT32 with only 64,496 data clusters, below
+  FAT32's 65,525 minimum. Firmware bypass was a hypothesis, not a proven selector
+  result from that run.
+- Rebuilt only that common volume as valid FAT16, restored and checksum-verified
+  all 427 boot files, and verified unchanged partition geometry and raw state.
+  On the next hardware attempt, Ethernet and SSH appeared briefly before becoming
+  unreachable and the user reported loss of HDMI signal. Read-only card inspection
+  subsequently found two CRC-valid environment copies with successive A-slot
+  counts of two and one. This establishes execution and persistence of the
+  U-Boot script; the kernel recorded `rauc.slot=A`, and recovered journal entries show one
+  boot reaching the multi-user target and SSH startup in about ten seconds.
+  Subsequent network loss and stable operation remain under investigation. It is not a passed fallback,
+  health-confirmation, watchdog or power-cut test.
+- Recovered the dirty data filesystem journal on a disposable local copy,
+  preserving the card and the original read-only snapshot. Both recorded boots
+  failed the requested 512 MiB graphics CMA reservation and framebuffer setup;
+  loss of HDMI alone does not prove that Linux stopped. Prepared a lab-only
+  correction setting both `fdt_high` and `initrd_high` to the firmware/control FDT
+  ceiling, retaining U-Boot's bounded relocation allocator. The FDT placement
+  diagnosis is consistent with [the upstream Home Assistant fix](https://github.com/home-assistant/operating-system/pull/4954);
+  the initrd additionally needs a placement policy in this probe. Eight actual
+  hush tests pass with hardware commands stubbed. The corrected script is
+  read-back verified on the spare; its next physical boot is still pending. A
+  one-time lab script revision resets diagnostic attempts, not a production
+  health check or automatically replenished retry policy.
+- Added offline `inspect-bootfs` preflight for GPT plus the three FAT footprints.
+  Tool regression tests cover the undersized FAT32 defect, valid FAT16/FAT32,
+  invalid geometry/root/table capacity, both disk sector sizes and named-volume
+  rejection. This is build tooling, so runtime requirements and user installation
+  workflows remain unchanged. Production images still need file/payload checks
+  and real boot qualification in addition to this preflight.
+- The earlier compressed U-Boot artifacts remain superseded: even the artifact
+  with corrected counters still needs the common-volume FAT16 correction. Do not
+  treat either as a ready-to-flash installer. The physical spare has both
+  corrections; original installation cards and server software remain untouched.
+
+
+5 November 2026 — corrected U-Boot hardware feasibility sequence for #149:
+
+- The memory-placement correction booted successfully. Pinned diagnostic SSH
+  verified the expected physical Pi and common loader partition; the explicit
+  A argument resolved to the read-only A root. Repeated readings retained the
+  same boot identity through approximately 145 seconds. The full 512 MiB CMA pool
+  was reserved and the connected HDMI output was enabled. Later kernel logs show
+  successful framebuffer setup; the initrd was relocated above the low CMA window.
+- Completed the sequence **A -> B -> A -> B -> B** on the private card. Staging B with
+  one attempt booted the read-only B root and persisted a zero B count. An ordinary
+  reboot without confirmation returned to A. Staging B again, explicitly resetting
+  its count to three from userspace, then rebooting retained B with a count of two.
+  Both redundant environment copies retained valid CRCs through these operations.
+  Each checked boot matched its explicit slot/root, diagnostic identity and
+  EEPROM mask. The B and fallback-A graphics checks also passed.
+- This confirms hardware selection, attempt consumption, ordinary-reboot fallback
+  and a **manual counter reset**, not the proposed application's health predicate.
+  The watchdog remained inactive. No deliberate power cut, corrupted-state boot,
+  failed-kernel recovery or automatic production health confirmation was tested.
+  These remain blockers; the experimental loader is not an adopted RAUC backend.
+- Assembled a fresh private whole-image artifact containing valid FAT16 and the
+  corrected script; GPT/FAT checks, filesystem check and loader/script read-back
+  checks passed. It contains diagnostic credentials and must never be published.
+  Its GNU-created FAT16 geometry differs from the Windows-repaired physical card,
+  despite matching loader/script contents; the new whole image itself has not
+  been flashed or hardware-qualified. Earlier artifacts remain superseded.
+- Reset the lab's next selection to A with three attempts and accepted a clean
+  shutdown. Asked for the original terminal card to be restored. Verification of
+  the original installation is pending that physical swap. No server deployment,
+  EEPROM operation, camera test or product call was performed in this sequence.
+
+
+
+5 November 2026 — watchdog handoff probe preparation for #149:
+
+- Restored the original terminal installation and verified its pinned host and
+  physical identity, absence of the lab marker and active terminal service. All
+  three Verify jobs passed for the preceding feasibility/tooling commit.
+- Cross-compiled a separate private U-Boot candidate with resolved `WDT`,
+  `WDT_BCM2835`, `WATCHDOG`, `WATCHDOG_AUTOSTART` and `CMD_WDT` enabled and a
+  15,000 ms timeout. The successful non-watchdog loader and its evidence remain
+  retained. This candidate has not yet demonstrated watchdog operation on hardware.
+- Inspected the exact offline probe kernel configuration: the BCM2835 driver and
+  boot-enabled watchdog handling are built in, but its userspace-open timeout
+  defaults to zero. [Kernel watchdog documentation](https://docs.kernel.org/watchdog/watchdog-parameters.html)
+  defines that as an unlimited wait. Prepared a lab handoff using an explicit
+  60-second kernel open deadline and PID 1 ownership with a 15-second runtime
+  watchdog. Product health confirmation remains a separate, unimplemented check.
+- Prepared an optional, bounded 120-second initramfs stall for a later fault test.
+  This initramfs sources an explicit hook `ORDER` list, so an arbitrary new file
+  would not run. Verified that only the existing ordered premount hook changes,
+  that its prerequisite-query exit remains intact, its shell syntax is valid,
+  and its sleep command resolves to an included executable. The fault is **not**
+  installed in either boot slot; the first check must be a healthy watchdog boot.
+- The handoff script passed eight actual hush cases with hardware operations
+  stubbed. Offline root filesystem checks passed. Reviewed the ten affected
+  1 MiB card ranges; differences from the reference were confined to valid
+  superblock write-time, lifetime-written-KiB and checksum fields. Rechecked
+  pinned device/partition/source identities and exact reviewed preimages before
+  applying and read-back verifying the small root/loader/script correction.
+  Both raw environment copies were preserved. This lab-only card patching is
+  not the proposed production update transaction or a power-loss test.
+- After renewed availability approval and a fresh idle check, the original Pi
+  accepted shutdown for the next spare-card boot. The healthy watchdog test is
+  pending the physical swap; reset, handoff and stalled-boot recovery remain
+  unqualified. No production watchdog or system updater was deployed.
+
+
+
+5 November 2026 — watchdog, redundant-state and first power-cut evidence for #149:
+
+- Healthy A and B boots passed the private watchdog checks: a 15-second active
+  device owned by PID 1, a 60-second kernel userspace-open deadline, expected
+  read-only roots and identities, full graphics CMA and enabled HDMI. The first
+  A boot stayed on the same identity across repeated observations; a later
+  healthy A remained reachable beyond 180 seconds. No diagnostic tool opened the
+  watchdog device; ownership checks used sysfs and PID 1's file descriptors.
+- Installed the verified bounded stall into inactive B only, retained its healthy
+  backup, staged one B attempt and commanded one ordinary reboot. The Pi returned
+  automatically to a different healthy A boot after 104 seconds. B's count was
+  zero, A's was two, both state CRCs were valid and the environment flags showed
+  the two expected boot commits. Restored and read-back verified B's healthy
+  initramfs immediately afterward. This exercises one ordered pre-root stall;
+  it does not qualify every kernel/initramfs or later application failure.
+- Wrote distinguishable baseline and newer state copies, then intentionally
+  flipped only one CRC byte in the newer copy. The selected userspace library
+  read the retained baseline. After reboot, the actual loader preserved its
+  baseline marker and expected attempt count, proving it used that copy rather
+  than factory defaults; both copies again had valid CRCs. This is one explicit
+  single-copy checksum fault, not arbitrary media-corruption qualification.
+- Ran a bounded commit-load loop with legal A-first state and a unique per-commit
+  marker. The operator disconnected the Pi's power while the loop was active,
+  waited and reconnected it. The transport ended during the load, after the host
+  had received reports of 201 completed commits. The subsequent cold A boot
+  retained that run's sequence 201 marker, both CRCs were valid, the root remained
+  read-only and watchdog/graphics/SSH checks passed. This is **one power cut during
+  repeated commit load**; its exact intersection with a card write is unknown.
+  It does not establish the complete timing/card/controller power-loss matrix.
+- Reset the lab selection to A with three attempts and shut it down cleanly.
+  The operator restored the original card; its pinned/physical identity, absence
+  of the lab marker and active terminal service were verified. The original
+  installation and server received no experimental loader or watchdog policy.
+- These results support continuing reproducible image/backend integration with
+  the U-Boot candidate. Production adoption remains blocked on the remaining
+  fault/power-loss matrix, firmware/common-loader recovery policy, bounded product
+  health confirmation, complete data/image policy and the later plan stages.
+  Runtime requirements and their LLT/HLT evidence must accompany that installed
+  integration; private probe results are not product verification passes.
+
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)

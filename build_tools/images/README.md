@@ -17,8 +17,10 @@ python3 -m build_tools.images fetch imagegen --cache build_tools/tmp/image-sourc
 python3 -m build_tools.images fetch backend_audit --cache build_tools/tmp/image-sources
 python3 -m build_tools.images inspect-root /path/to/offline/root
 python3 -m build_tools.images inspect-disk /path/to/uncompressed-probe.img
+python3 -m build_tools.images inspect-bootfs /path/to/uncompressed-probe.img
 python3 -m unittest tests.adhoc.test_image_foundation -v
 python3 -m unittest tests.adhoc.test_image_disk -v
+python3 -m unittest tests.adhoc.test_image_boot -v
 python3 -m unittest tests.adhoc.test_image_eeprom -v
 ```
 
@@ -93,6 +95,18 @@ persistent `/var` policy. Those are acceptable subjects of a boot experiment,
 not adopted production storage policy. In particular, its per-slot persistent
 package database cannot be reused unchanged across replacement root images.
 The custom narrow persistent mounts and qualified selector are still required.
+
+`inspect-bootfs` first validates both GPT copies and the probe layout, then reads
+the FAT BIOS Parameter Block in each of the three boot volumes. It rejects
+inconsistent geometry, a filesystem larger than its partition, invalid root
+directory geometry and FAT tables too small for their data clusters. In particular,
+a forced FAT32 volume with fewer than 65,525 data clusters is rejected, even when
+its signature and GPT are valid. The private 32 MiB common-loader experiment
+exposed that case; use a valid FAT16 footprint there or qualify a larger FAT32
+volume. Do not infer the actual FAT type from a volume label or formatting flag.
+The command reads regular image files only; it does not flash, mount or repair
+anything. Geometry validation does not check file chains, payload signatures,
+firmware selection or successful boot. Its result remains explicitly unqualified.
 
 ## Read-only deployment inventory
 
@@ -213,6 +227,35 @@ The exact reviewed upstream files can be inspected from the acquired trees:
 - `bootloader-custom-backend` and `rauc-mark-good.service` in the backend source.
 - `image/gpt/ab_userdata/image.d/hooks/preimage10-slots` in imagegen, including its
   per-slot `/var` and persistent journal behavior, which differs from Zmala's plan.
+
+The alternative boot-state investigation is tracked in
+[#149](https://github.com/toastfr35/ZmalaCall/issues/149). A private U-Boot experiment
+has compiled and completed an A/B selection, fallback and manual counter-reset
+sequence on a Pi. Further private checks exercised healthy watchdog handoff,
+a controlled pre-root stall, one newer-copy CRC fault and one operator power cut
+during repeated commits. See the plan for measured scope and remaining gates.
+It is not included by `probe-config`, acquired by `fetch`, or
+adopted as the production backend. The current source's configuration names differ
+from older RAUC examples; validate the resolved settings, not just a fragment.
+Source references for that investigation:
+
+- [U-Boot v2026.10 environment configuration](https://github.com/u-boot/u-boot/blob/5508406582f6f7120dce0c4b3059819a41788db2/env/Kconfig).
+- [U-Boot v2026.10 Pi ARM64 defaults](https://github.com/u-boot/u-boot/blob/5508406582f6f7120dce0c4b3059819a41788db2/configs/rpi_arm64_defconfig).
+- [RAUC 1.13 bootloader integration](https://rauc.readthedocs.io/en/v1.13/integration.html#u-boot).
+
+Deterministic environment-library tests using ordinary files do not demonstrate
+physical SD durability, the bootloader's selection, early-watchdog recovery, or
+firmware/kernel compatibility. The private hardware checks add initial recovery evidence,
+but do not establish the complete power-cut matrix or product health-confirmation
+recovery. Those
+remain hardware and architecture gates.
+
+The private kernel handoff also exposed low-memory fragmentation: U-Boot's default
+placement split the graphics CMA window, leaving too little contiguous memory for
+the framebuffer. Setting explicit bounded FDT and initrd relocation ceilings
+restored the full pool and HDMI in that experiment. Future image integration must
+qualify the complete memory map and payload sizes on supported boards, rather than
+copy an address from one Pi. See the implementation log for measured scope.
 
 Product runtime requirements and user installation guides remain unchanged until
 the runtime/image installation flows are implemented. Image-tool regressions live
