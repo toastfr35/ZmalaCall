@@ -337,6 +337,39 @@ boot-state qualification in progress:
   integration; private probe results are not product verification passes.
 
 
+
+5 November 2026 — [#151](https://github.com/toastfr35/ZmalaCall/issues/151),
+pinned bootloader probe build inputs:
+
+- Added the immutable U-Boot candidate archive to source acquisition. Reviewed its
+  SHA-256, 46,731,588 compressed bytes, 41,465 members and 264,670,480 expanded file
+  bytes. Only this source receives the larger 64 MiB / 384 MiB / 50,000-member
+  budgets; existing sources retain their previous limits. Safe path/link checks
+  and full extracted-tree hashing passed against the real archive. Cached FIFOs,
+  devices and links are rejected before archive reads, which are now bounded.
+- Added a development-only Pi 4 SD profile that emits raw-state Kconfig settings
+  and watchdog/kernel handoff examples into a new directory. It fences alignment,
+  separation from GPT/partitions and bounded watchdog values, omits a boot script
+  and marks its output uncompiled/incomplete/unqualified. The existing native
+  `probe-config` and all deployed runtimes remain unchanged.
+- Added inspection of the resolved Kconfig subset, including actual current
+  option names, local-only default boot, redundancy, raw MMC locations and
+  disabled alternate stores/location overrides. Missing or duplicate settings
+  fail; a passing subset does not establish compilation or hardware behavior.
+- In fresh Linux source/profile/build directories outside any repository,
+  acquired and verified the pinned archive, applied the generated fragment,
+  resolved Kconfig, passed the inspector, and cross-compiled an ARM64 ELF/binary.
+  Retained compiler, source/config/binary hashes and source-commit build epoch
+  privately. The complete resolved configuration matched the previously
+  hardware-tested private candidate byte for byte. The complete toolchain is not
+  locked and the resulting binary was
+  not installed or boot-tested; this is not full reproducibility qualification.
+- All 47 image-tool regressions passed in Linux; Windows passed 37 with ten
+  explicit Linux-only skips. Ruff and profile/whitespace checks passed. These are
+  build-tool changes outside the product runtime baseline; installed integration
+  still requires its own runtime requirements, owning trace comments and LLT/HLT.
+
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)

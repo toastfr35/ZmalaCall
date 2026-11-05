@@ -5,19 +5,25 @@ import os
 from pathlib import Path, PurePosixPath
 import posixpath
 import re
+import stat
 import tarfile
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[2]
 MAX_ARCHIVE = 32*1024*1024
 MAX_TREE = 160*1024*1024
+MAX_MEMBERS = 10000
+SOURCE_NAMES = ('imagegen', 'backend_audit', 'bootloader_audit')
+# The reviewed U-Boot archive is 46.7 MB / 264.7 MB expanded / 41,465 entries.
+# Keep the smaller sources' original budgets; this is not a global relaxation.
+BOOTLOADER_LIMITS = {'archive': 64*1024*1024, 'tree': 384*1024*1024, 'members': 50000}
 
 
 def pins():
     value = json.loads((ROOT/'build_tools/images/sources.lock.json').read_text())
-    if value['schema'] != 1 or set(value) != {'schema', 'imagegen', 'backend_audit'}:
+    if value['schema'] != 1 or set(value) != {'schema', *SOURCE_NAMES}:
         raise ValueError('Unknown source lock schema')
-    for name in ('imagegen', 'backend_audit'):
+    for name in SOURCE_NAMES:
         pin = value[name]
         if (set(pin) != {'repository', 'commit', 'sha256'}
                 or not re.fullmatch(r'[A-Za-z0-9_-]+/[A-Za-z0-9_-]+', pin['repository'])
@@ -46,15 +52,19 @@ def verify_tree(folder, manifest):
         raise ValueError('Incomplete source tree')
 
 
-def unpack(archive, destination):
+def unpack(archive, destination, *, max_tree=None, max_members=None):
     """Extract files and contained relative links, never devices or hard links."""
     destination = Path(destination)
+    max_tree = MAX_TREE if max_tree is None else max_tree
+    max_members = MAX_MEMBERS if max_members is None else max_members
+    if type(max_tree) is not int or type(max_members) is not int or min(max_tree, max_members) < 1:
+        raise ValueError('Invalid source extraction budget')
     if destination.exists():
         raise ValueError('Source destination already exists')
     with tarfile.open(archive, 'r:gz') as tar:
         names, roots, total, files, links = set(), set(), 0, [], []
         for count, member in enumerate(tar, start=1):
-            if count > 10000:
+            if count > max_members:
                 raise ValueError('Too many source entries')
             raw = member.name
             parts = PurePosixPath(raw).parts
@@ -68,7 +78,7 @@ def unpack(archive, destination):
                 raise ValueError('Duplicate or invalid source member')
             names.add(name)
             total += member.size
-            if total > MAX_TREE or member.size > MAX_ARCHIVE:
+            if total > max_tree or member.size > MAX_ARCHIVE:
                 raise ValueError('Source archive exceeds extraction budget')
             if member.isfile():
                 files.append((member, name))
@@ -104,6 +114,7 @@ def unpack(archive, destination):
 
 def acquire(name, cache, opener=urllib.request.urlopen):
     pin = pins()[name]
+    archive_limit = BOOTLOADER_LIMITS['archive'] if name == 'bootloader_audit' else MAX_ARCHIVE
     cache = Path(cache)
     cache.mkdir(parents=True, exist_ok=True)
     archive = cache/(name+'-'+pin['commit']+'.tar.gz')
@@ -113,18 +124,24 @@ def acquire(name, cache, opener=urllib.request.urlopen):
         with opener(url, timeout=60) as response:
             if response.geturl() != url:
                 raise ValueError('Unexpected source download redirect')
-            data = response.read(MAX_ARCHIVE+1)
-        if len(data) > MAX_ARCHIVE:
+            data = response.read(archive_limit+1)
+        if len(data) > archive_limit:
             raise ValueError('Source download exceeds budget')
         if hashlib.sha256(data).hexdigest() != pin['sha256']:
             raise ValueError('Source download hash mismatch')
         with archive.open('xb') as stream:
             stream.write(data)
-    if (archive.is_symlink() or archive.stat().st_size > MAX_ARCHIVE
-            or hashlib.sha256(archive.read_bytes()).hexdigest() != pin['sha256']):
+    info = archive.lstat()
+    if not stat.S_ISREG(info.st_mode) or info.st_size > archive_limit:
+        raise ValueError('Cached source hash mismatch or non-regular archive')
+    with archive.open('rb') as stream:
+        cached = stream.read(archive_limit+1)
+    if len(cached) > archive_limit or hashlib.sha256(cached).hexdigest() != pin['sha256']:
         raise ValueError('Cached source hash mismatch')
     destination = cache/(name+'-'+pin['commit'])
     # Re-extraction is deliberately explicit, avoiding untrusted stale checkouts.
-    manifest = unpack(archive, destination)
+    budgets = ({'max_tree': BOOTLOADER_LIMITS['tree'], 'max_members': BOOTLOADER_LIMITS['members']}
+               if name == 'bootloader_audit' else {})
+    manifest = unpack(archive, destination, **budgets)
     verify_tree(destination, manifest)
     return destination

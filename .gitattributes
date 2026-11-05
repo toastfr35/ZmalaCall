@@ -12,3 +12,4 @@
 *.docx binary
 # Content-addressed package locks must have identical bytes on Windows and Linux.
 build_tools/images/locks/*.json text eol=lf
+build_tools/images/bootloader-profile.json text eol=lf

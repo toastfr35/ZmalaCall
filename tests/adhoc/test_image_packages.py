@@ -105,7 +105,7 @@ class ArchiveSignatureTests(unittest.TestCase):
 
 
 class RetainedPackageTests(unittest.TestCase):
-    def test_git_checkout_preserves_lock_bytes_with_autocrlf_enabled(self):
+    def test_git_checkout_preserves_hashed_input_bytes_with_autocrlf_enabled(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             env = {**os.environ, 'GIT_CONFIG_GLOBAL': os.devnull, 'GIT_CONFIG_NOSYSTEM': '1'}
@@ -115,14 +115,18 @@ class RetainedPackageTests(unittest.TestCase):
             git('init', '-q')
             git('config', 'core.autocrlf', 'true')
             shutil.copyfile(project.ROOT/'.gitattributes', root/'.gitattributes')
-            path = root/'build_tools/images/locks/server.json'
-            path.parent.mkdir(parents=True)
+            names = ('build_tools/images/locks/server.json', 'build_tools/images/bootloader-profile.json')
             body = b'{\n  "fixture": true\n}\n'
-            path.write_bytes(body)
-            git('add', '.gitattributes', 'build_tools/images/locks/server.json')
-            path.unlink()
+            for name in names:
+                path = root/name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(body)
+            git('add', '.gitattributes', *names)
+            for name in names:
+                (root/name).unlink()
             git('checkout-index', '--all', '--force')
-            self.assertEqual(path.read_bytes(), body)
+            for name in names:
+                self.assertEqual((root/name).read_bytes(), body)
 
     def test_role_lock_index_detects_intent_drift(self):
         with tempfile.TemporaryDirectory() as temporary:
