@@ -17,8 +17,10 @@ python3 -m build_tools.images fetch imagegen --cache build_tools/tmp/image-sourc
 python3 -m build_tools.images fetch backend_audit --cache build_tools/tmp/image-sources
 python3 -m build_tools.images inspect-root /path/to/offline/root
 python3 -m build_tools.images inspect-disk /path/to/uncompressed-probe.img
+python3 -m build_tools.images inspect-bootfs /path/to/uncompressed-probe.img
 python3 -m unittest tests.adhoc.test_image_foundation -v
 python3 -m unittest tests.adhoc.test_image_disk -v
+python3 -m unittest tests.adhoc.test_image_boot -v
 python3 -m unittest tests.adhoc.test_image_eeprom -v
 ```
 
@@ -93,6 +95,18 @@ persistent `/var` policy. Those are acceptable subjects of a boot experiment,
 not adopted production storage policy. In particular, its per-slot persistent
 package database cannot be reused unchanged across replacement root images.
 The custom narrow persistent mounts and qualified selector are still required.
+
+`inspect-bootfs` first validates both GPT copies and the probe layout, then reads
+the FAT BIOS Parameter Block in each of the three boot volumes. It rejects
+inconsistent geometry, a filesystem larger than its partition, invalid root
+directory geometry and FAT tables too small for their data clusters. In particular,
+a forced FAT32 volume with fewer than 65,525 data clusters is rejected, even when
+its signature and GPT are valid. The private 32 MiB common-loader experiment
+exposed that case; use a valid FAT16 footprint there or qualify a larger FAT32
+volume. Do not infer the actual FAT type from a volume label or formatting flag.
+The command reads regular image files only; it does not flash, mount or repair
+anything. Geometry validation does not check file chains, payload signatures,
+firmware selection or successful boot. Its result remains explicitly unqualified.
 
 ## Read-only deployment inventory
 

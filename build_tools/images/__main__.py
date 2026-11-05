@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 
-from . import inspect_disk, inspect_root, package_lock, project, sources
+from . import inspect_boot, inspect_disk, inspect_root, package_lock, project, sources
 
 
 def main():
@@ -22,6 +22,9 @@ def main():
     disk = sub.add_parser('inspect-disk', help='Validate an offline probe image partition table')
     disk.add_argument('image', type=Path)
     disk.add_argument('--sector-size', choices=(512, 4096), type=int, default=512)
+    boot = sub.add_parser('inspect-bootfs', help='Read GPT and FAT boot-volume geometry in an offline probe')
+    boot.add_argument('image', type=Path)
+    boot.add_argument('--sector-size', choices=(512, 4096), type=int, default=512)
     lock = sub.add_parser('lock-packages', help='Download and retain an authenticated dependency closure (Linux)')
     lock.add_argument('role', choices=('terminal', 'server'))
     lock.add_argument('--output', type=Path, required=True)
@@ -45,6 +48,8 @@ def main():
             print(project.emit_lab(args.role, args.output))
         elif args.command == 'inspect-disk':
             print(json.dumps(inspect_disk.audit(args.image, args.sector_size), indent=2))
+        elif args.command == 'inspect-bootfs':
+            print(json.dumps(inspect_boot.audit(args.image, args.sector_size), indent=2))
         elif args.command == 'lock-packages':
             result = package_lock.intake(project.packages(args.role), args.output,
                                          args.debian_keyring, args.raspberrypi_keyring)

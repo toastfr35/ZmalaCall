@@ -184,6 +184,48 @@ boot-state qualification in progress:
   or power-cut result is claimed. The original terminal installation remains
   running separately.
 
+5 November 2026 — common-loader preflight and hardware diagnosis for #149:
+
+- The corrected three-attempt script was installed and verified after the full
+  card write. The first U-Boot experiment nevertheless reached Linux without an
+  explicit slot argument and could not resolve its active root. Both raw
+  environment areas remained untouched. Inspection found the private 32 MiB
+  common volume had been forced to FAT32 with only 64,496 data clusters, below
+  FAT32's 65,525 minimum. Firmware bypass was a hypothesis, not a proven selector
+  result from that run.
+- Rebuilt only that common volume as valid FAT16, restored and checksum-verified
+  all 427 boot files, and verified unchanged partition geometry and raw state.
+  On the next hardware attempt, Ethernet and SSH appeared briefly before becoming
+  unreachable and the user reported loss of HDMI signal. Read-only card inspection
+  subsequently found two CRC-valid environment copies with successive A-slot
+  counts of two and one. This establishes execution and persistence of the
+  U-Boot script; the kernel recorded `rauc.slot=A`, and recovered journal entries show one
+  boot reaching the multi-user target and SSH startup in about ten seconds.
+  Subsequent network loss and stable operation remain under investigation. It is not a passed fallback,
+  health-confirmation, watchdog or power-cut test.
+- Recovered the dirty data filesystem journal on a disposable local copy,
+  preserving the card and the original read-only snapshot. Both recorded boots
+  failed the requested 512 MiB graphics CMA reservation and framebuffer setup;
+  loss of HDMI alone does not prove that Linux stopped. Prepared a lab-only
+  correction setting both `fdt_high` and `initrd_high` to the firmware/control FDT
+  ceiling, retaining U-Boot's bounded relocation allocator. The FDT placement
+  diagnosis is consistent with [the upstream Home Assistant fix](https://github.com/home-assistant/operating-system/pull/4954);
+  the initrd additionally needs a placement policy in this probe. Eight actual
+  hush tests pass with hardware commands stubbed. The corrected script is
+  read-back verified on the spare; its next physical boot is still pending. A
+  one-time lab script revision resets diagnostic attempts, not a production
+  health check or automatically replenished retry policy.
+- Added offline `inspect-bootfs` preflight for GPT plus the three FAT footprints.
+  Tool regression tests cover the undersized FAT32 defect, valid FAT16/FAT32,
+  invalid geometry/root/table capacity, both disk sector sizes and named-volume
+  rejection. This is build tooling, so runtime requirements and user installation
+  workflows remain unchanged. Production images still need file/payload checks
+  and real boot qualification in addition to this preflight.
+- The earlier compressed U-Boot artifacts remain superseded: even the artifact
+  with corrected counters still needs the common-volume FAT16 correction. Do not
+  treat either as a ready-to-flash installer. The physical spare has both
+  corrections; original installation cards and server software remain untouched.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
