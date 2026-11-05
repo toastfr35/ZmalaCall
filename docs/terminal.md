@@ -1063,13 +1063,30 @@ Source archives omit downloaded models/runtime; calls never download them.
 ## Appliance services, storage and peripherals
 
 The proposed image-installed system update path is tracked in
-[the update/upgrade plan](../update_upgrade.md). Initial
-[image tools](../build_tools/images/README.md) collect read-only sizing information
-and emit a development boot probe; they do not change terminal services or the
-application-only updater described below.
+[the update/upgrade plan](../update_upgrade.md).
+[Image development tools](../build_tools/images/README.md) now build locked
+OS-package roots and package experimental host-storage archives. They do not
+change installed terminal services or the application-only updater described below.
 Boot-probe assembly uses the emitted project's `-S` source directory and its
 offline EEPROM mask hook; see the image tools for inspection and remaining
 qualification limits. This does not update or reconfigure an installed terminal.
+
+The experimental shared `zmala_system` policy (`HLR-TERM-MAINT-035` and its LLRs)
+expects a marked read-only root, prevalidated ext4 data with initialized identity
+and RAM work. Package records/alternatives stay in the selected root; fresh `/etc`
+overlay defaults and `/var` state are not imported from another OS generation.
+The RAM upper area is capped at 64 MiB, `/var` at 128 MiB and `/tmp` at 128 MiB.
+The image journald template uses volatile storage capped at 32 MiB/4 MiB files.
+Fixed bindings preserve terminal data, network/Bluetooth state, SSH keys and
+operator settings; `/etc/ssh/keys` and `/etc/zmalacall/operator` are distinct from
+new slot defaults. Saved identity/hostname are exposed read-only. Only declared
+mount operations are invoked; no TV, camera, media, package or service helper runs.
+
+Unit and real private-namespace tests cover this storage helper. The offline
+archive tool packages its profile, variable-state seed and runtime without
+extracting or booting the result. Early-boot integration, first device identity,
+onboarding/service integration and physical qualification remain pending. The
+current manual installer and its 64 MiB journal policy remain as described below.
 
 ```sh
 sudo systemctl status zmalacall-terminal zmalacall-display zmalacall-pairing
