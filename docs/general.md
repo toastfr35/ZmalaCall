@@ -67,6 +67,9 @@ Initial [image development tools](../build_tools/images/README.md) provide pinne
 source acquisition, minimal boot-probe profiles, a read-only Pi inventory and an
 offline privacy inspector. They do not yet produce a production installer or
 enable system updates on deployed devices.
+Probe builds require the emitted project's `-S` source directory so its offline
+EEPROM-service mask hook runs. The root inspector rejects an unmasked known
+updater; this narrow check is not full boot-firmware qualification.
 Download-only package intake now retains authenticated archive closures and
 reviewed per-role lock metadata. This covers dependency intent; the entire image
 base/toolchain is not yet frozen. CI rejects intent/lock drift without downloading
