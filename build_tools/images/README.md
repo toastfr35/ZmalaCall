@@ -214,6 +214,21 @@ The exact reviewed upstream files can be inspected from the acquired trees:
 - `image/gpt/ab_userdata/image.d/hooks/preimage10-slots` in imagegen, including its
   per-slot `/var` and persistent journal behavior, which differs from Zmala's plan.
 
+The alternative boot-state investigation is tracked in
+[#149](https://github.com/toastfr35/ZmalaCall/issues/149). A private U-Boot experiment
+has compiled, but is not included by `probe-config`, acquired by `fetch`, or
+adopted as the production backend. The current source's configuration names differ
+from older RAUC examples; validate the resolved settings, not just a fragment.
+Source references for that investigation:
+
+- [U-Boot v2026.10 environment configuration](https://github.com/u-boot/u-boot/blob/5508406582f6f7120dce0c4b3059819a41788db2/env/Kconfig).
+- [U-Boot v2026.10 Pi ARM64 defaults](https://github.com/u-boot/u-boot/blob/5508406582f6f7120dce0c4b3059819a41788db2/configs/rpi_arm64_defconfig).
+- [RAUC 1.13 bootloader integration](https://rauc.readthedocs.io/en/v1.13/integration.html#u-boot).
+
+Deterministic environment-library tests using ordinary files do not demonstrate
+physical SD durability, the bootloader's selection, early-watchdog recovery, or
+firmware/kernel compatibility. Those remain hardware and architecture gates.
+
 Product runtime requirements and user installation guides remain unchanged until
 the runtime/image installation flows are implemented. Image-tool regressions live
 under `tests/adhoc/` and run independently of requirement-based runtime tests.

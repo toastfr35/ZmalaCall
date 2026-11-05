@@ -114,6 +114,40 @@ closure lock, hardware boot qualification or automatic system updater is claimed
   card budget. Native selector durability and the upstream mutable `/var` policy
   remain production blockers.
 
+5 November 2026 — [#149](https://github.com/toastfr35/ZmalaCall/issues/149),
+boot-state qualification in progress:
+
+- The successful native A/B probe does not resolve the audited selector's FAT
+  commit window. Prepared a separate **private, unbooted** U-Boot feasibility
+  image; it does not replace the restored terminal installation or settle the
+  production backend decision.
+- Audited and cross-compiled official U-Boot `v2026.10`, Git commit
+  `5508406582f6f7120dce0c4b3059819a41788db2`. Its stock Pi ARM64 configuration uses
+  FAT environment storage and has no enabled legacy watchdog. An experimental
+  configuration selects redundant raw MMC state. The actual pinned source uses
+  `CONFIG_ENV_REDUNDANT`, `CONFIG_ENV_MMC_DEVICE_INDEX` and
+  `CONFIG_ENV_MMC_EMMC_HW_PARTITION`; older integration examples use different
+  names. Checking the resolved `.config` is mandatory; silently discarded old
+  option names do not establish redundancy.
+- Retained an authenticated ARM64 `libubootenv-tool`/library dependency closure.
+  Ran the actual tools under emulation against regular files: a state change
+  preserved the other valid copy, and corruption of the new copy caused reads to
+  return the retained state. This checks the selected tool/library format only;
+  it is **not** an SD power-cut result or a bootloader fallback result.
+- The private candidate contains an immutable common firmware/loader area, two
+  kernel/root groups and the existing diagnostic data. Its slot mapper and
+  initramfs use the boot script's explicit slot argument, because a fixed common
+  loader partition no longer identifies the selected Linux slot. Both roots
+  retain the EEPROM mask. GPT and offline filesystem checks pass; no new candidate
+  has been written to a card or booted. The build host/toolchain is not fully
+  locked, and the private recipe has not been promoted to the public image tools.
+- Remaining gates: reproducible public assembly, firmware/kernel/DT compatibility,
+  real reads/writes of both state copies, initial-state recovery, physical cuts,
+  early-watchdog coverage and a reviewed production backend/layout decision.
+  Factory persistence, runtime requirements, coordinator implementation and
+  complete role qualification remain unfinished. The next hardware run requires
+  the spare card back in the reader and an arranged terminal test window.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
