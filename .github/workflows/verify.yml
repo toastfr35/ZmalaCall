@@ -108,6 +108,17 @@ jobs:
       - run: python tests/terminal/HLT/render_cache_ui.py
       - run: python -m unittest discover -s tests/adhoc -t . -p 'test_*.py'
       - run: powershell -NoProfile -File build_tools/lint-powershell.ps1
+      - name: Build the multilingual terminal leaflet release ZIP
+        run: |
+          npx playwright install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python build_tools/leaflet/generate.py --language all --bundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: terminal-leaflets
+          path: build_tools/dist/leaflets/ZmalaTerminal-Leaflets.zip
+          if-no-files-found: error
+          retention-days: 7
 
   android:
     runs-on: ubuntu-24.04

@@ -97,7 +97,12 @@ One pre-existing inconsistency was found: `terminal_config.docx` says Ethernet
 skips Wi-Fi setup, while `common/setup_flow.py` still requires the Wi-Fi QR stage.
 This leaflet does not repeat that claim. It remains a separate guide correction.
 
-The normal release download allowlist is unchanged. This generator is optional
-and the multilingual PDFs are not added to the nine user-facing release assets.
+Every release generates all language editions and publishes
+`ZmalaTerminal-Leaflets.zip` alongside the component installers and guides. Verify
+builds the same ZIP on Windows and retains it as the `terminal-leaflets` workflow
+artifact for seven days. The release collector and publisher require exactly the
+two PDFs per supported language and `PRINTING.txt`, reject incomplete, unexpected
+or duplicate members, and check PDF signatures and ZIP integrity. Loose PDFs and
+HTML proofs remain build outputs rather than additional release assets.
 
 See [assets/README.md](assets/README.md) for graphic sources and the cover prompt.

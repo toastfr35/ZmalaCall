@@ -8,7 +8,8 @@ import unittest
 from unittest.mock import patch
 
 from build_tools.release import github_release as release
-from build_tools.release.assemble import ASSETS
+from build_tools.release.assemble import ASSETS, LEAFLETS
+from tests.support.leaflet_release import write_leaflet_bundle
 
 
 def gradle(version, code):
@@ -66,6 +67,7 @@ class ReleaseAutomationTests(unittest.TestCase):
             folder = Path(directory)
             for name in ASSETS:
                 (folder / name).write_bytes(b'fixture')
+            write_leaflet_bundle(folder / LEAFLETS)
             draft = {'assets': [{'name': name, 'state': 'uploaded'} for name in ASSETS],
                      'databaseId': 123, 'isDraft': True, 'tagName': 'v0.3.9', 'targetCommitish': 'a' * 40}
             assets = json.dumps(draft)

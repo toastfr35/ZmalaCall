@@ -214,6 +214,10 @@ download names (older releases may contain only the terminal):
 | Zmala Server | `ZmalaServer-Installation.pdf` | `ZmalaServer-Guide.pdf` | `ZmalaServer-Pi4-setup.exe` |
 | Zmala Phone | `ZmalaPhone-Installation.pdf` | `ZmalaPhone-Guide.pdf` | `ZmalaPhone.apk` |
 
+`ZmalaTerminal-Leaflets.zip` contains the four-page terminal end user leaflet in
+every supported terminal language. Each language has a reading PDF and a folded
+A4 print PDF; printing instructions are included in the ZIP.
+
 Published release downloads do not require a GitHub account. Run the Pi setup
 programs on a Windows computer; install the APK directly on your Android phone.
 Download the matching PDFs for each product you use.

@@ -1,4 +1,4 @@
-"""Build the four-page terminal leaflet without changing release downloads."""
+"""Build the four-page terminal leaflet and multilingual release bundle."""
 import argparse
 import base64
 import html

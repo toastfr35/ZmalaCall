@@ -28,6 +28,8 @@ The four-page [end user leaflet](leaflet/README.md) covers supplied hardware,
 Wi-Fi/server QR setup, remote calls and local settings. Its JSON/CSS/graphic
 sources generate all supported terminal languages and folded A4 print layouts;
 normal end user setup uses Wi-Fi without an Ethernet cable.
+Releases include all language editions in `ZmalaTerminal-Leaflets.zip`, with
+reading copies, folded A4 print copies and printing notes.
 See [general.md](general.md) for build/network conventions and [server.md](server.md)
 for the authenticated configuration and SIP services.
 
