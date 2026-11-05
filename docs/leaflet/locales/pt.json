@@ -1,0 +1,93 @@
+{
+  "title": "Configure e use o terminal",
+  "blurb": "Videochamadas em família, no conforto do seu sofá.",
+  "scope": "Veja familiares e amigos no televisor. Escolha um rosto conhecido com o comando, confirme a chamada e converse. A família pode usar o Zmala Phone ou outro terminal.",
+  "ready": "Tenha à mão o comando do televisor e os códigos QR de Wi-Fi e servidor fornecidos. Estas páginas mostram como ligar o terminal, configurá-lo e fazer chamadas.",
+  "connect": "Ligue o terminal",
+  "equipment": [
+    "Argon ONE Pi 4 V2",
+    "Nuroum C10",
+    "Microsoft Presenter+"
+  ],
+  "connections": [
+    [
+      "Primeiro a câmara",
+      "Ligue o cabo USB da C10 a uma porta USB 3 azul. Use o adaptador USB-A se necessário. Oriente a câmara para o seu lugar."
+    ],
+    [
+      "Carregador do comando",
+      "Ligue a base de carregamento a uma porta USB 2 preta. Coloque o comando na base para carregar."
+    ],
+    [
+      "Televisor",
+      "Ligue uma das tomadas HDMI de tamanho normal da caixa ao televisor. Deixe a outra livre. Selecione essa entrada HDMI no televisor."
+    ],
+    [
+      "Alimentação por último",
+      "Ligue a fonte USB-C do Pi 4 (5 V, pelo menos 3 A). Se necessário, prima uma vez o botão da caixa. Aguarde a configuração."
+    ]
+  ],
+  "setup_title": "Configure o Wi-Fi e o servidor",
+  "setup": [
+    [
+      "Emparelhe o comando",
+      "Ligue-o na parte de trás. Mantenha o botão Bluetooth traseiro premido durante 3 segundos até a luz branca piscar. Aguarde a ligação."
+    ],
+    [
+      "Teste os cinco botões",
+      "Prima e solte cada botão pela ordem indicada no televisor: esquerda, direita, verde, vermelho e centro."
+    ],
+    [
+      "Leia o QR do Wi-Fi",
+      "Peça o QR da rede a quem o ajuda ou partilhe-o nas definições Wi-Fi de um Android ligado. Coloque o código inteiro dentro das marcas da câmara. Aguarde o sucesso e os 10 segundos de confirmação."
+    ],
+    [
+      "Leia o QR de servidor deste terminal",
+      "Use o QR de servidor fornecido para este terminal. Mostre-o à câmara quando solicitado. A configuração começa em inglês; o idioma escolhido aplica-se após aceitar o código."
+    ],
+    [
+      "Verifique o controlo do televisor",
+      "Siga os testes de alimentação e entrada com o comando TV à mão. Verde confirma o que funcionou; vermelho indica uma falha. Se a imagem não voltar em 30 segundos, selecione a entrada HDMI do Zmala manualmente."
+    ],
+    [
+      "Faça uma chamada de teste",
+      "Ligue a um contacto e verifique vídeo em movimento e som nos dois sentidos. Verifique se o Wi-Fi continua ligado. O terminal usa Wi-Fi nas chamadas do dia a dia."
+    ]
+  ],
+  "private": "Guarde os dois QR em privado: dão acesso à rede e à conta do terminal. Se ocorrer um erro, verifique o código e a ligação e tente novamente.",
+  "operate": "Use o comando",
+  "controls": [
+    [
+      "Esquerda e direita",
+      "Escolha a pessoa apresentada no centro."
+    ],
+    [
+      "Verde",
+      "Prima para verificar a pessoa, solte e prima novamente para ligar. Numa chamada recebida, verde atende."
+    ],
+    [
+      "Vermelho",
+      "Cancele, recuse ou termine a chamada. Com atendimento automático, vermelho recusa antes de terminar a contagem."
+    ],
+    [
+      "Centro",
+      "Abra o volume da chamada. Esquerda baixa; direita aumenta. Vermelho ou centro fecha a barra. Enquanto estiver aberta, vermelho só fecha a barra, sem terminar a chamada."
+    ]
+  ],
+  "settings_title": "Altere as definições locais",
+  "settings": [
+    [
+      "Abra",
+      "No ecrã de contactos, mantenha vermelho premido durante 7 segundos. Continue quando aparecer a barra de progresso."
+    ],
+    [
+      "Escolha e guarde",
+      "Esquerda/direita escolhe a definição; verde abre-a. Esquerda/direita altera o valor; verde guarda, vermelho descarta. Opções: idioma, atendimento automático, enquadramento, toque, volumes, retratos e regresso à TV."
+    ],
+    [
+      "Saia",
+      "Prima vermelho na lista e depois verde para sair ou vermelho para ficar. Repor exige outra confirmação e repete a configuração; tenha os dois QR prontos."
+    ]
+  ],
+  "help": "Com controlo TV ativo, a primeira pressão pode apenas mostrar o Zmala. Caso contrário, escolha a entrada HDMI com o comando TV. Se o comando não responder, verifique o interruptor traseiro e carregue-o. Peça ajuda se falhar uma chamada ou gravação."
+}

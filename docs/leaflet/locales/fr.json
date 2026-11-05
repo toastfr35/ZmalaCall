@@ -1,0 +1,93 @@
+{
+  "title": "Configurer et utiliser votre terminal",
+  "blurb": "Des appels vidéo en famille, confortablement installé dans votre canapé.",
+  "scope": "Retrouvez vos proches sur votre téléviseur. Choisissez un visage avec la télécommande, confirmez l'appel et discutez. Vos proches peuvent utiliser Zmala Phone ou un autre terminal.",
+  "ready": "Préparez la télécommande du téléviseur et les QR Wi-Fi et serveur fournis. Ces pages vous expliquent comment brancher le terminal, le configurer et passer des appels.",
+  "connect": "Brancher le terminal",
+  "equipment": [
+    "Argon ONE Pi 4 V2",
+    "Nuroum C10",
+    "Microsoft Presenter+"
+  ],
+  "connections": [
+    [
+      "La caméra d'abord",
+      "Branchez le câble USB du C10 sur un port USB 3 bleu. Utilisez son adaptateur USB-A si nécessaire. Orientez la caméra vers votre siège."
+    ],
+    [
+      "Le chargeur",
+      "Branchez le socle de recharge sur un port USB 2 noir. Posez la télécommande dessus pour la charger."
+    ],
+    [
+      "Le téléviseur",
+      "Reliez une des prises HDMI de taille standard du boîtier au téléviseur. Laissez l'autre libre. Sélectionnez cette entrée HDMI sur le téléviseur."
+    ],
+    [
+      "L'alimentation en dernier",
+      "Branchez l'alimentation USB-C du Pi 4 (5 V, au moins 3 A). Au besoin, appuyez une fois sur le bouton du boîtier. Attendez la configuration."
+    ]
+  ],
+  "setup_title": "Configurer le Wi-Fi et le serveur",
+  "setup": [
+    [
+      "Associer la télécommande",
+      "Allumez-la au dos. Maintenez le bouton Bluetooth arrière pendant 3 secondes, jusqu'au clignotement blanc. Attendez la connexion."
+    ],
+    [
+      "Tester les cinq boutons",
+      "Appuyez puis relâchez chaque bouton dans l'ordre indiqué sur le téléviseur : gauche, droite, vert, rouge et milieu."
+    ],
+    [
+      "Scanner le QR Wi-Fi",
+      "Demandez le QR du réseau à votre aidant ou partagez-le depuis les réglages Wi-Fi d'un téléphone Android connecté. Placez tout le code dans les repères de la caméra. Attendez la réussite puis les 10 secondes de confirmation."
+    ],
+    [
+      "Scanner le QR serveur de ce terminal",
+      "Utilisez le QR serveur fourni pour ce terminal. Présentez-le à la caméra lorsqu’il est demandé. La configuration commence en anglais ; la langue choisie s’applique après acceptation du code."
+    ],
+    [
+      "Vérifier le contrôle du téléviseur",
+      "Suivez les tests d'alimentation et d'entrée avec la télécommande du téléviseur à portée de main. Vert confirme ce qui a fonctionné ; rouge signale un échec. Sans retour de l'image après 30 secondes, sélectionnez vous-même l'entrée HDMI de Zmala."
+    ],
+    [
+      "Faire un appel d'essai",
+      "Appelez un de vos contacts et vérifiez l’image animée et le son dans les deux sens. Vérifiez que le Wi-Fi reste connecté. Le terminal utilise le Wi-Fi pour les appels quotidiens."
+    ]
+  ],
+  "private": "Gardez les deux QR confidentiels : ils donnent accès au réseau et au compte du terminal. En cas d'erreur, vérifiez le code et la connexion, puis réessayez.",
+  "operate": "Utiliser la télécommande",
+  "controls": [
+    [
+      "Gauche et droite",
+      "Placez la personne souhaitée au centre."
+    ],
+    [
+      "Vert",
+      "Appuyez pour vérifier la personne, relâchez puis appuyez à nouveau pour appeler. Pour un appel entrant, vert répond."
+    ],
+    [
+      "Rouge",
+      "Annule, refuse ou termine l'appel. Si la réponse automatique est activée, rouge refuse avant la fin du compte à rebours."
+    ],
+    [
+      "Milieu",
+      "Ouvre le volume d'appel. Gauche diminue ; droite augmente. Rouge ou milieu ferme la barre. Tant qu'elle est ouverte, rouge la ferme seulement, sans raccrocher."
+    ]
+  ],
+  "settings_title": "Modifier les réglages locaux",
+  "settings": [
+    [
+      "Ouvrir",
+      "Depuis les contacts, maintenez rouge pendant 7 secondes. Continuez lorsque la barre de progression apparaît."
+    ],
+    [
+      "Choisir et enregistrer",
+      "Gauche/droite choisit un réglage ; vert l'ouvre. Gauche/droite modifie la valeur ; vert enregistre, rouge annule. Réglages : langue, réponse automatique, cadrage, sonnerie, volumes, portraits et retour au téléviseur."
+    ],
+    [
+      "Quitter",
+      "Dans la liste, appuyez sur rouge, puis vert pour sortir ou rouge pour rester. La réinitialisation demande une confirmation distincte et relance la configuration ; préparez les deux QR."
+    ]
+  ],
+  "help": "Avec le contrôle TV activé, le premier appui peut seulement afficher Zmala. Sinon, sélectionnez son entrée HDMI avec la télécommande TV. Si la télécommande ne répond plus, vérifiez l'interrupteur au dos et rechargez-la. Demandez de l'aide en cas d'échec d'appel ou d'enregistrement."
+}

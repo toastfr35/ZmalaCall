@@ -24,6 +24,10 @@ Windows adapters. It is for developers and maintainers. Preparation, enrollment
 and everyday operation are covered by the release's `ZmalaTerminal-Installation.pdf`
 and `ZmalaTerminal-Guide.pdf`. Their editable sources are `terminal_prep.docx`,
 `terminal_config.docx` and `terminal_use.docx`.
+The four-page [end user leaflet](leaflet/README.md) covers supplied hardware,
+Wi-Fi/server QR setup, remote calls and local settings. Its JSON/CSS/graphic
+sources generate all supported terminal languages and folded A4 print layouts;
+normal end user setup uses Wi-Fi without an Ethernet cable.
 See [general.md](general.md) for build/network conventions and [server.md](server.md)
 for the authenticated configuration and SIP services.
 

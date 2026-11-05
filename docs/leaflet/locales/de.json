@@ -1,0 +1,93 @@
+{
+  "title": "Terminal einrichten und verwenden",
+  "blurb": "Videoanrufe mit der Familie, bequem vom Sofa aus.",
+  "scope": "Sehen Sie Familie und Freunde auf Ihrem Fernseher. Wählen Sie mit der Fernbedienung ein vertrautes Gesicht, bestätigen Sie den Anruf und unterhalten Sie sich. Ihre Familie nutzt Zmala Phone oder ein weiteres Terminal.",
+  "ready": "Halten Sie die TV-Fernbedienung und die mitgelieferten WLAN- und Server-QR-Codes bereit. Diese Seiten zeigen Anschluss, Einrichtung und Anrufe mit Ihrem Terminal.",
+  "connect": "Terminal anschließen",
+  "equipment": [
+    "Argon ONE Pi 4 V2",
+    "Nuroum C10",
+    "Microsoft Presenter+"
+  ],
+  "connections": [
+    [
+      "Zuerst die Kamera",
+      "C10-USB-Kabel an einen blauen USB-3-Anschluss anschließen. Bei Bedarf den USB-A-Adapter verwenden. Kamera auf Ihren Sitzplatz richten."
+    ],
+    [
+      "Ladestation",
+      "Ladestation an einen schwarzen USB-2-Anschluss anschließen. Fernbedienung zum Laden darauflegen."
+    ],
+    [
+      "Fernseher",
+      "Eine der normal großen HDMI-Buchsen am Gehäuse mit dem Fernseher verbinden. Die andere bleibt frei. Diesen HDMI-Eingang am Fernseher auswählen."
+    ],
+    [
+      "Strom zuletzt",
+      "USB-C-Netzteil für Pi 4 anschließen (5 V, mindestens 3 A). Falls nötig einmal den Gehäuseschalter drücken. Auf die Einrichtung warten."
+    ]
+  ],
+  "setup_title": "WLAN und Server einrichten",
+  "setup": [
+    [
+      "Fernbedienung koppeln",
+      "Hinten einschalten. Die rückseitige Bluetooth-Taste 3 Sekunden halten, bis das weiße Licht blinkt. Verbindung abwarten."
+    ],
+    [
+      "Alle fünf Tasten testen",
+      "Jede Taste in der am Fernseher gezeigten Reihenfolge drücken und loslassen: links, rechts, grün, rot und Mitte."
+    ],
+    [
+      "WLAN-QR scannen",
+      "Netzwerk-QR von Ihrer helfenden Person anfordern oder über die WLAN-Einstellungen eines verbundenen Android-Handys teilen. Den ganzen Code innerhalb der Kameramarkierungen halten. Erfolg und 10 Sekunden Bestätigung abwarten."
+    ],
+    [
+      "Server-QR dieses Terminals scannen",
+      "Verwenden Sie den für dieses Terminal mitgelieferten Server-QR. Auf Aufforderung vor die Kamera halten. Die Einrichtung beginnt auf Englisch; nach Annahme des Codes gilt Ihre gewählte Sprache."
+    ],
+    [
+      "TV-Steuerung prüfen",
+      "Ein-/Ausschalt- und Eingangstests mit griffbereiter TV-Fernbedienung durchführen. Grün bestätigt beobachteten Erfolg, rot meldet einen Fehler. Kehrt das Bild nach 30 Sekunden nicht zurück, Zmalas HDMI-Eingang selbst auswählen."
+    ],
+    [
+      "Testanruf machen",
+      "Rufen Sie einen Kontakt an und prüfen Sie bewegtes Bild und Ton in beide Richtungen. Prüfen Sie, ob WLAN verbunden bleibt. Das Terminal nutzt WLAN für alltägliche Anrufe."
+    ]
+  ],
+  "private": "Beide QR-Codes vertraulich aufbewahren: Sie gewähren Zugang zu Netzwerk und Terminal-Konto. Bei Fehlern Code und Verbindung prüfen und erneut versuchen.",
+  "operate": "Fernbedienung verwenden",
+  "controls": [
+    [
+      "Links und rechts",
+      "Die gewünschte Person in die Mitte holen."
+    ],
+    [
+      "Grün",
+      "Drücken, Person prüfen, loslassen und erneut drücken, um anzurufen. Bei eingehendem Anruf mit Grün antworten."
+    ],
+    [
+      "Rot",
+      "Abbrechen, ablehnen oder auflegen. Bei automatischer Annahme lehnt Rot vor Ende des Countdowns ab."
+    ],
+    [
+      "Mitte",
+      "Anruflautstärke öffnen. Links leiser, rechts lauter. Rot oder Mitte schließt den Balken. Solange er offen ist, schließt Rot nur den Balken und legt nicht auf."
+    ]
+  ],
+  "settings_title": "Lokale Einstellungen ändern",
+  "settings": [
+    [
+      "Öffnen",
+      "In der Kontaktansicht Rot 7 Sekunden halten. Beim Fortschrittsbalken weiter gedrückt halten."
+    ],
+    [
+      "Wählen und speichern",
+      "Links/rechts wählt die Einstellung, Grün öffnet sie. Links/rechts ändert den Wert, Grün speichert, Rot verwirft. Optionen: Sprache, automatische Annahme, Bildausschnitt, Klingelton, Lautstärken, Porträts und Rückkehr zum TV."
+    ],
+    [
+      "Verlassen",
+      "In der Liste Rot drücken, dann Grün zum Verlassen oder Rot zum Bleiben. Zurücksetzen erfordert eine weitere Bestätigung und wiederholt die Einrichtung; beide QR-Codes bereithalten."
+    ]
+  ],
+  "help": "Bei aktivierter TV-Steuerung zeigt der erste Tastendruck eventuell nur Zmala. Sonst den HDMI-Eingang mit der TV-Fernbedienung wählen. Reagiert die Fernbedienung nicht, Schalter hinten prüfen und laden. Bei Speicher- oder Anruffehlern Ihre helfende Person fragen."
+}
