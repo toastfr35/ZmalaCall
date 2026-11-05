@@ -77,6 +77,10 @@ Download-only package intake now retains authenticated archive closures and
 reviewed per-role lock metadata. This covers dependency intent; the entire image
 base/toolchain is not yet frozen. CI rejects intent/lock drift without downloading
 or installing packages.
+The separate bootloader probe tooling now fetches a pinned U-Boot candidate and
+emits/audits its Kconfig subset and bounded watchdog handoff examples. It does not
+replace the native `probe-config`, install a backend or produce a qualified image;
+see the image-tool guide for source-specific budgets and build instructions.
 
 Windows server hosting, the serial-keypad project and CAD models are retired.
 Other cameras/boards and direct GPIO controls are not established terminal

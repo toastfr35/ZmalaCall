@@ -15,12 +15,16 @@ python3 -m build_tools.images probe-config terminal --output build_tools/tmp/ter
 python3 -m build_tools.images probe-config server --output build_tools/tmp/server-probe
 python3 -m build_tools.images fetch imagegen --cache build_tools/tmp/image-sources
 python3 -m build_tools.images fetch backend_audit --cache build_tools/tmp/image-sources
+python3 -m build_tools.images fetch bootloader_audit --cache /path/to/new/outside-checkout-cache
+python3 -m build_tools.images bootloader-config --output /path/to/new/bootloader-profile
+python3 -m build_tools.images inspect-bootloader /path/to/resolved-build/.config
 python3 -m build_tools.images inspect-root /path/to/offline/root
 python3 -m build_tools.images inspect-disk /path/to/uncompressed-probe.img
 python3 -m build_tools.images inspect-bootfs /path/to/uncompressed-probe.img
 python3 -m unittest tests.adhoc.test_image_foundation -v
 python3 -m unittest tests.adhoc.test_image_disk -v
 python3 -m unittest tests.adhoc.test_image_boot -v
+python3 -m unittest tests.adhoc.test_image_bootloader -v
 python3 -m unittest tests.adhoc.test_image_eeprom -v
 ```
 
@@ -38,6 +42,14 @@ It never executes a downloaded script. Destinations must be new; an interrupted
 extraction is deliberately not reused. Use a new cache or remove only the known
 incomplete extraction directory before retrying. Source-cache changes are not
 silently accepted as a new upstream version.
+
+The separately pinned `bootloader_audit` source is U-Boot `v2026.10` at the exact
+commit/digest in `sources.lock.json`. Its reviewed archive contains 41,465 members
+and 264,670,480 expanded file bytes. Only that source receives larger budgets:
+64 MiB compressed, 384 MiB expanded and 50,000 members. The other two sources keep
+their 32 MiB / 160 MiB / 10,000-member limits. Individual files remain capped at
+32 MiB, and the same path, link, hash and tree-verification rules apply. Cached
+archives must be regular files; FIFOs/devices/links are rejected before reading.
 
 `profiles.json` records the common base and role package **intent**, not a complete
 resolved package lock. The terminal intent reuses the existing dependency list;
@@ -211,6 +223,52 @@ Git. A future build must verify its cache using the corresponding reviewed
 automatic overwrite of the accepted lock.
 Git attributes force LF checkout for these content-addressed JSON files on every
 platform. Keep those bytes intact; CRLF conversion changes their lock digests.
+
+## Bootloader probe inputs and configuration audit
+
+`bootloader-config` emits a Kconfig fragment, raw-environment settings and the
+watchdog/kernel-handoff examples from `bootloader-profile.json`. It writes only a
+new ordinary directory. It does not compile, mount, flash, write raw state or
+install a watchdog policy. It deliberately omits `boot.scr`, product health
+confirmation and factory provisioning; this output is not a bootable image.
+The ordinary `probe-config` still uses the upstream native boot experiment and
+does **not** incorporate this candidate automatically.
+
+The profile fences the two 64 KiB environment copies to nonoverlapping aligned
+ranges before the probe's first partition. It uses the actual pinned source's
+`ENV_REDUNDANT` and MMC index/hardware-partition names and disables FAT storage,
+device-tree location overrides and software-partition location overrides. Its
+compiled default boot command loads only the local common partition's script.
+The watchdog fragment enables the BCM2835 driver, servicing and autostart; its
+matching handoff examples bound the kernel's wait for userspace and select PID 1
+as the runtime owner. These are experimental inputs, not an installed recovery
+contract. Qualify the complete firmware/kernel/initramfs/userspace chain.
+
+Use fresh absolute **Linux** cache/build directories outside any Git checkout,
+so an ancestor repository cannot supply an unrelated build version. Work as an
+ordinary user in the isolated builder, without signing/deployment credentials.
+After acquiring the pinned source and emitting the profile, run from that source:
+
+```sh
+make O=/path/to/new-build CROSS_COMPILE=aarch64-linux-gnu- rpi_arm64_defconfig
+scripts/kconfig/merge_config.sh -m -O /path/to/new-build \
+  /path/to/new-build/.config /path/to/bootloader-profile/probe.config
+make O=/path/to/new-build CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
+```
+
+Back in Zmala's repository, run `inspect-bootloader` on the resolved `.config`
+before compiling with `make -j4 O=... CROSS_COMPILE=aarch64-linux-gnu-`. The
+inspector detects missing/discarded settings, legacy-name substitutions,
+contradictory state stores and address overrides. It checks a bounded regular
+Kconfig file, rejects duplicates, and returns a nonzero status on violations.
+A passing subset audit does not prove compilation, source provenance, binary
+identity or hardware boot; its result states those limits explicitly.
+
+Record the source commit/digest, resolved config, compiler identity, build log,
+binary hash and reviewed source-commit `SOURCE_DATE_EPOCH` together. The complete
+host toolchain/dependency closure is not locked by this command. Emitting fixed
+settings and pinning source bytes is a step towards repeatable builds, not a
+claim of end-to-end reproducibility or production qualification.
 
 ## Source audit decisions
 
