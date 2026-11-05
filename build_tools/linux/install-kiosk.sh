@@ -247,6 +247,8 @@ if [ "$splash" = yes ]; then
     install -m 644 "$task_root/build_tools/linux/zmala.plymouth" "$task_root/build_tools/linux/zmala.script" /usr/share/plymouth/themes/zmala/
     install -m 644 "$task_root/zmala_terminal/common/assets/boot-family.png" /usr/share/plymouth/themes/zmala/boot-family.png
     python3 "$task_root/build_tools/linux/boot-branding.py"
+    install -m 644 "$task_root/build_tools/linux/zmalacall-boot-version.service" /etc/systemd/system/
+    systemctl enable zmalacall-boot-version.service
     if [ "$theme_changed" = yes ] || [ "$(plymouth-set-default-theme)" != zmala ]; then
         plymouth-set-default-theme -R zmala
     fi

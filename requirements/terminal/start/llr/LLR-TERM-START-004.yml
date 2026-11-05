@@ -5,10 +5,14 @@ header: |
   Boot presentation
 level: 2.0
 links:
-- HLR-TERM-START-001: 5v-Cf82XELFAE-WnzQ0nNxqE2DlnDv6PpyBL7uYcwJo=
+- HLR-TERM-START-001: anPAq-LwRuhvwZebd-npmLgNYa2U_b6-ypxb9EXVZTk=
 normative: true
 ref: ''
 references:
+- path: build_tools/linux/boot-version.py
+  type: file
+- path: build_tools/linux/zmalacall-boot-version.service
+  type: file
 - path: build_tools/linux/zmala.plymouth
   type: file
 - path: build_tools/linux/zmala.script
@@ -19,7 +23,15 @@ reviewed: null
 scope: Core
 text: |
   During supported Plymouth boot stages, the terminal shall show the Zmala family-
-  word-cloud artwork. A recovery console shall remain available.
+  word-cloud artwork. Once local filesystems are mounted, a stable host helper shall
+  send the version from the durable confirmed release metadata to Plymouth, which
+  shall overlay it in the bottom-right corner with an inset margin. The version
+  shall follow application confirmation and rollback without changing the artwork
+  or rebuilding boot images. Missing or invalid metadata or an unavailable Plymouth
+  daemon shall omit the label without blocking startup. A recovery console shall
+  remain available.
 verification: |
   Check theme configuration and inspect a Pi boot. Firmware frames before Plymouth are
   outside this check.
+  Unit-check confirmed identity validation, bounded command failure and boot ordering.
+  Visually check readable bottom-right placement at supported display resolutions.

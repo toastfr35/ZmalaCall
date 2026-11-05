@@ -7,6 +7,15 @@ from tests.terminal.LLT.test_pi_install import module
 
 
 class LinuxLifecycleTests(unittest.TestCase):
+    def test_version_service_is_installed_only_with_the_splash(self):
+        root = Path(__file__).resolve().parents[3]
+        installer = (root/'build_tools/linux/install-kiosk.sh').read_text()
+        splash = installer.split('if [ "$splash" = yes ]; then', 1)[1].split('\nfi', 1)[0]
+        self.assertIn('install -m 644 "$task_root/build_tools/linux/zmalacall-boot-version.service"', splash)
+        self.assertIn('systemctl enable zmalacall-boot-version.service', splash)
+        host = module('install-terminal-host')
+        self.assertEqual(host.FILES['boot-version.py'], 'build_tools/linux/boot-version.py')
+
     def test_boot_branding_keeps_first_backups_and_is_idempotent(self):
         boot=module('boot-branding')
         with tempfile.TemporaryDirectory() as directory:
