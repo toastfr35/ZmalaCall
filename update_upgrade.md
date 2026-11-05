@@ -134,13 +134,15 @@ boot-state qualification in progress:
   preserved the other valid copy, and corruption of the new copy caused reads to
   return the retained state. This checks the selected tool/library format only;
   it is **not** an SD power-cut result or a bootloader fallback result.
-- The private candidate contains an immutable common firmware/loader area, two
+- The private candidate contains a fixed common firmware/loader area, two
   kernel/root groups and the existing diagnostic data. Its slot mapper and
   initramfs use the boot script's explicit slot argument, because a fixed common
   loader partition no longer identifies the selected Linux slot. Both roots
   retain the EEPROM mask. GPT and offline filesystem checks pass; no new candidate
   has been written to a card or booted. The build host/toolchain is not fully
   locked, and the private recipe has not been promoted to the public image tools.
+  It still inherits the upstream `rw,nofail` common-boot mount request; a fixed
+  loader area is not yet an enforced read-only production mount policy.
 - Remaining gates: reproducible public assembly, firmware/kernel/DT compatibility,
   real reads/writes of both state copies, initial-state recovery, physical cuts,
   early-watchdog coverage and a reviewed production backend/layout decision.
@@ -159,9 +161,11 @@ boot-state qualification in progress:
   automatic-base integer parsing. An initial `10` became `f`, which the later
   comparison treated as zero. Prepared a corrected script using the standard
   small attempt count of three. Its image header and payload CRCs are verified.
-  Five selection/counter cases pass in the actual interpreter: initial A, trial
+  Seven selection/counter/error cases pass in the actual interpreter: initial A, trial
   B, exhausted B falling back to A, a manual B count reset, and no attempts left.
-  Filesystem loading, state persistence and reset commands were stubbed; none of
+  A failed state-save prevents kernel loading, and a missing B kernel falls back
+  to A in the simulated command path. Filesystem loading, state persistence and
+  reset commands were stubbed; none of
   these cases is a hardware boot or production health-confirmation result.
 - On reinserting the previously booted spare card, its exact-preimage guard
   stopped before writing. Read-only comparison found changes confined to valid
@@ -170,9 +174,13 @@ boot-state qualification in progress:
   a whole-filesystem comparison. Reviewed and pinned those post-boot range
   hashes before retrying. A read-only mounted root should not be assumed to have
   a bit-identical raw image after startup filesystem handling.
-- The new base image is being written and read-back verified. It must receive
-  the corrected boot script before first boot; the original compressed lab
-  artifact is retained as an explicitly superseded base. No new hardware boot
+- The new base image was written and fully read-back verified. It must receive
+  the corrected boot script before first boot; the card was automatically
+  unmounted/ejected and is awaiting reinsertion for that correction. The original
+  compressed lab artifact is retained as an explicitly superseded base. A fresh
+  complete image with the correction embedded is retained for future writes.
+  The current card's provenance is its verified base plus the required file
+  correction, not a claim that its FAT metadata matches the fresh image. No new hardware boot
   or power-cut result is claimed. The original terminal installation remains
   running separately.
 
