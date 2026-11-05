@@ -55,8 +55,9 @@ archives must be regular files; FIFOs/devices/links are rejected before reading.
 resolved package lock. The terminal intent reuses the existing dependency list;
 server npm/build dependencies and full secure-relay provisioning remain to be
 separated into build/runtime sets. The selected RAUC package is Debian Trixie's
-`1.13-3+deb13u1`; availability and exact transitive package/archive inputs still
-need to be locked before production builds.
+`1.13-3+deb13u1`; its role dependency closures are now retained and reviewed.
+Complete builder/toolchain inputs and use of the locks in factory builds still
+need to be established before production builds.
 
 The emitted `probe.yaml` is a minimal Pi 4 A/B **boot experiment**. It does not
 install Zmala, a bootloader backend, production keys or an update coordinator.
@@ -207,10 +208,10 @@ metadata. Build from retained bytes after verification, rather than resolving th
 same names against today's mirror. APT failure leaves an incomplete directory
 without an accepted lock; do not reuse it as a completed intake.
 
-This locks the requested dependency closure only. It does **not** yet lock the
-image builder's whole base package set, build-toolchain/npm/model inputs, create a
-local build repository, provide long-term remote archive retention or qualify a
-production image. Those remain separate stages in the plan. Large downloaded
+This locks the requested dependency closure only. It does **not** lock every
+future image file, build-toolchain/npm/model inputs, provide long-term remote
+archive retention or qualify a production image. Those remain separate stages
+in the plan. Large downloaded
 caches stay outside Git; lock metadata is suitable for review after checking
 provenance and policy. Do not publish raw operator logs without review.
 
@@ -223,6 +224,63 @@ Git. A future build must verify its cache using the corresponding reviewed
 automatic overwrite of the accepted lock.
 Git attributes force LF checkout for these content-addressed JSON files on every
 platform. Keep those bytes intact; CRLF conversion changes their lock digests.
+
+## Clean-base capture and local build repositories
+
+`capture-base` reads a clean **offline** dpkg status ledger whose SHA-256 the
+caller already knows. Review the ledger's image provenance first; a hash alone
+does not prove that it came from the selected builder or covers every image file.
+Never substitute a live Pi inventory. The parser requires complete installed
+records with exact versions and `arm64`/`all` architecture; duplicate packages,
+fields, scalar continuations and unfinished package states are rejected. Dpkg's
+desired action is distinct from installed state: `purge ok installed` remains an
+installed package and is retained. Linked/special/oversized ledger files are
+refused before reading. Output creation is exclusive.
+
+```sh
+python3 -m build_tools.images capture-base /path/to/clean/status \
+  --expected-ledger-sha256 <reviewed-ledger-digest> --output /path/to/new/base-intent.json
+python3 -m build_tools.images lock-base --output /path/to/new/base-intake \
+  --debian-keyring /usr/share/keyrings/debian-archive-keyring.gpg \
+  --raspberrypi-keyring /path/to/verified/imagegen/keydir/raspberrypi-archive-keyring.gpg
+python3 -m build_tools.images local-repo \
+  --cache /path/to/base-intake <base-lock-sha256> \
+  --cache /path/to/server-intake <server-lock-sha256> \
+  --output /path/to/new/server-repository
+python3 -m unittest tests.adhoc.test_image_base_inputs -v
+```
+
+The reviewed capture in `locks/base-intent.json` comes from the selected imagegen
+probe's pre-boot ledger. Both original slot ledgers matched. Its 259 exact
+installed selections resolve to 259 retained authenticated archives (164,614,914
+bytes), anchored by `locks/base.json` and the `base` entry in `locks/index.json`.
+`check` rejects changed intent/lock bytes, mismatched source commits, inconsistent
+counts/sizes or a closure missing a captured selection. The raw ledger remains
+private. An intake refresh is reviewed explicitly; it never updates an accepted
+lock silently. The capture is observed intent, not proof of full build closure.
+
+`local-repo` verifies one to three caches using their **external reviewed lock
+digests**, rejects conflicting versions/architectures/content and total budgets,
+then copies archives into a new directory. It rehashes copies and uses Linux
+`dpkg-scanpackages` to generate an index; package identity, path, size and SHA-256
+must agree with the locks. Identical dependencies are deduplicated. Archive
+copies are separate files, not hard links into mutable caches. A successful
+directory contains `Packages`, deterministic `Packages.gz`, `Release`, a
+`build-only.list` and `READY.json`; failures have no READY marker and their
+incomplete directory must not be consumed. Simple absolute Linux paths are
+required so the source line cannot contain injected APT options.
+
+The source uses `trusted=yes` **only for these verified local `file:` inputs**;
+the retained upstream intake remains signed. Do not expose this unsigned
+repository over HTTP, put its source in a deployed device, or change host APT
+configuration. Keep the generated repository read-only during a build and verify
+the original caches again before regenerating it. `READY.json` is a completion
+record, not a signature or a continuing integrity monitor. No release private
+key is used. Combining the reviewed base with each role produced 312 server and
+805 terminal archives. Real isolated, file-only APT download tests consumed all
+exact selections for both roles without changing host dpkg state. This proves
+local APT consumption, **not yet full image-builder consumption**; `probe-config`
+still resolves from upstream repositories and is explicitly unqualified.
 
 ## Bootloader probe inputs and configuration audit
 

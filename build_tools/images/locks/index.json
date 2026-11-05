@@ -15,5 +15,13 @@
       "archives": 721,
       "archive_bytes": 528545960
     }
+  },
+  "base": {
+    "intent_file": "base-intent.json",
+    "intent_sha256": "f7a3978a869197ad556e0448c812f0267b9ccdb33699136a6a73b7b4156be7d1",
+    "lock_file": "base.json",
+    "lock_sha256": "9ac89ec60e5d04191fcc3dce36b0b91a0d8a954b6901eadb44aacd6769b91f77",
+    "archives": 259,
+    "archive_bytes": 164614914
   }
 }

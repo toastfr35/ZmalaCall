@@ -74,9 +74,12 @@ The offline `inspect-bootfs` command also checks GPT and the three boot-volume
 FAT footprints, including rejection of undersized forced FAT32 volumes. It does
 not establish firmware selection, file integrity or successful hardware boot.
 Download-only package intake now retains authenticated archive closures and
-reviewed per-role lock metadata. This covers dependency intent; the entire image
-base/toolchain is not yet frozen. CI rejects intent/lock drift without downloading
-or installing packages.
+reviewed per-role lock metadata. A strict offline ledger capture also anchors
+exact common-base package intent and its authenticated closure. Verified local
+file repositories can combine the base and role caches without host installs;
+isolated APT consumption has been exercised. Complete image-builder consumption
+and toolchain freezing remain unfinished. CI rejects intent/lock drift without
+downloading or installing packages; see the image-tool guide for these boundaries.
 The separate bootloader probe tooling now fetches a pinned U-Boot candidate and
 emits/audits its Kconfig subset and bounded watchdog handoff examples. It does not
 replace the native `probe-config`, install a backend or produce a qualified image;

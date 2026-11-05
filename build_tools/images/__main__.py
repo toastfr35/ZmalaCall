@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 
-from . import bootloader, inspect_boot, inspect_disk, inspect_root, package_lock, project, sources
+from . import base_intent, bootloader, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, sources
 
 
 def main():
@@ -37,12 +37,25 @@ def main():
     verify = sub.add_parser('verify-packages', help='Verify retained archives against a trusted lock digest')
     verify.add_argument('folder', type=Path)
     verify.add_argument('--expected-lock-sha256', required=True)
+    ledger = sub.add_parser('capture-base', help='Capture exact clean-base intent from an offline dpkg ledger')
+    ledger.add_argument('ledger', type=Path)
+    ledger.add_argument('--expected-ledger-sha256', required=True)
+    ledger.add_argument('--output', required=True, type=Path)
+    base = sub.add_parser('lock-base', help='Retain the reviewed common-base package closure (Linux)')
+    base.add_argument('--output', required=True, type=Path)
+    base.add_argument('--debian-keyring', required=True, type=Path)
+    base.add_argument('--raspberrypi-keyring', required=True, type=Path)
+    repo = sub.add_parser('local-repo', help='Assemble a verified, build-only file repository (Linux)')
+    repo.add_argument('--cache', nargs=2, action='append', required=True, metavar=('FOLDER', 'LOCK_SHA256'))
+    repo.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     try:
         if args.command == 'check':
             sources.pins()
             bootloader.profile()
             locks = project.package_locks()
+            print('common base: '+str(len(project.common_base()['requested']))+' exact installed selections; '
+                  +str(locks['base']['archives'])+' locked dependency archives')
             for role in project.profiles()['roles']:
                 print(role+': '+str(len(project.packages(role)))+' requested packages; '
                       +str(locks['roles'][role]['archives'])+' locked dependency archives')
@@ -69,6 +82,16 @@ def main():
         elif args.command == 'verify-packages':
             result = package_lock.verify(args.folder, args.expected_lock_sha256)
             print(str(len(result['packages']))+' retained package archives verified.')
+        elif args.command == 'capture-base':
+            result = base_intent.emit(args.ledger, args.expected_ledger_sha256, args.output)
+            print(str(len(result['requested']))+' exact installed selections captured; not an image qualification.')
+        elif args.command == 'lock-base':
+            result = package_lock.intake(project.common_base()['requested'], args.output,
+                                         args.debian_keyring, args.raspberrypi_keyring)
+            print(str(len(result['packages']))+' base dependency archives retained; lock SHA-256: '
+                  +package_lock.digest(args.output/'packages.lock.json'))
+        elif args.command == 'local-repo':
+            print(json.dumps(local_repo.emit(args.cache, args.output), indent=2))
         else:
             result = inspect_root.audit(args.root)
             print(json.dumps(result, indent=2))
