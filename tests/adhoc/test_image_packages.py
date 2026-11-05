@@ -207,3 +207,22 @@ class CombinedIntentTests(unittest.TestCase):
                          sorted(set(project.packages('terminal')) | set(project.packages('server'))))
         index = project.package_locks()
         self.assertEqual(set(index['roles']), {'server', 'terminal', 'combined'})
+
+    def test_reanchored_role_lock_cannot_change_a_shared_archive(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name in ('build_tools/images/profiles.json', 'build_tools/linux/dependencies.txt'):
+                target = root/name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(project.ROOT/name, target)
+            folder = root/'build_tools/images/locks'
+            shutil.copytree(project.ROOT/'build_tools/images/locks', folder)
+            manifest = json.loads((folder/'combined.json').read_text())
+            shared = json.loads((folder/'server.json').read_text())['packages'][0]['package']
+            next(p for p in manifest['packages'] if p['package'] == shared)['sha256'] = 'f'*64
+            (folder/'combined.json').write_text(json.dumps(manifest))
+            index = json.loads((folder/'index.json').read_text())
+            index['roles']['combined']['sha256'] = packages.digest(folder/'combined.json')
+            (folder/'index.json').write_text(json.dumps(index))
+            with patch.object(project, 'ROOT', root), self.assertRaisesRegex(ValueError, 'Shared role'):
+                project.package_locks()

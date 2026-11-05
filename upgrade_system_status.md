@@ -41,7 +41,10 @@ Local verification: 240 runtime LLTs and 83 image-tool tests passed on Linux;
 eight combined root-only HLTs passed. Windows completed 108 combined LLTs with
 50 platform skips and 83 image-tool tests with 18 platform skips. Requirements:
 313 source files, 303 anchored LLRs, 282 test plans, zero unmapped HLRs/LLRs.
-Required PR Verify checks remain pending.
+This source checkpoint precedes final asynchronous build/Verify completion.
+Final component identities, checks and merge status are recorded in
+[PR #169](https://github.com/toastfr35/ZmalaCall/pull/169). Read that evidence and
+the current private build-result catalogs before restarting a build.
 
 No complete flashable application image or automatic system updater exists yet.
 Offline application/service provisioning, matched loader/card assembly, secure
