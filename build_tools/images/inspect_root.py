@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 import stat
 
+from . import eeprom_policy
+
 FORBIDDEN = (
     'etc/ssh/ssh_host_*_key*', 'etc/NetworkManager/system-connections/*',
     'var/lib/bluetooth/*', 'etc/letsencrypt/accounts/*', 'etc/letsencrypt/live/*',
@@ -80,5 +82,6 @@ def audit(root):
     package_db = root/'var/lib/dpkg/status'
     if linked_parent('var/lib/dpkg/status') or package_db.is_symlink() or not package_db.is_file():
         violations.append('missing-slot-package-database')
-    return {'schema': 1, 'checks': 'offline-privacy-subset',
+    violations.extend(eeprom_policy.violations(root))
+    return {'schema': 1, 'checks': 'offline-privacy-and-eeprom-subset',
             'violations': sorted(set(violations)), 'production_qualified': False}

@@ -238,6 +238,9 @@ The proposed SD-card replacement and system-maintenance stages are tracked in
 [the update/upgrade plan](../update_upgrade.md). The initial
 [image tools](../build_tools/images/README.md) include a read-only server inventory
 and development boot profile; they do not replace the installation path below yet.
+Probe builds use the emitted project as imagegen's `-S` directory so its offline
+EEPROM-service mask hook runs. The image tools document inspection and the
+remaining firmware/boot qualification limits; the live server is unaffected.
 
 `build_tools/server_installer/` provides the Tk GUI and headless entry point.
 It shares `windows_installer/ssh_transport.py` and the read-only target probe with

@@ -86,6 +86,34 @@ closure lock, hardware boot qualification or automatic system updater is claimed
   Full base/toolchain/model/npm inputs, immutable remote retention and consuming
   the lock in a complete image build remain incomplete.
 
+5 November 2026 — [#145](https://github.com/toastfr35/ZmalaCall/issues/145):
+
+- Wrote a private diagnostic copy of the common-base probe to a spare
+  31,266,439,168-byte card with Raspberry Pi Imager, including full read-back
+  verification. Diagnostic SSH identities are private, unique to this lab copy
+  and never part of the public build inputs or release artifacts.
+- Before its first boot, found and masked the inherited stock
+  `rpi-eeprom-update.service` in both system slots. Verified all changed ranges
+  against the accepted preimage and read them back after writing. No EEPROM
+  update was performed. Future probe projects emit a standalone offline mask
+  hook; builders must use the project's `-S` directory. Root inspection now
+  rejects the known updater without a mask or with uninspectable policy parents.
+- On an available Pi 4, completed an initial slot-A boot, a one-shot tryboot into
+  B, and an ordinary reboot back into A. Pinned diagnostic SSH and the recorded
+  physical Pi identity matched on every boot. All three boot IDs differed;
+  machine identity remained stable. The roots were read-only; resolved active
+  roots in B and the final A boot matched their expected partitions. The EEPROM
+  mask and RAUC 1.13 were confirmed in both slots. Initial Ethernet discovery
+  became possible after the cable was connected.
+- A watchdog device is present; supervision, early-boot recovery and power-cut
+  safety have **not** been qualified. No permanent selector commit, signed RAUC
+  installation, product call test or automatic system update was exercised.
+  The original installation card was retained and not modified, then restored;
+  its pinned identity and active terminal service were verified. This common-base
+  experiment does not qualify either role's complete application image or final
+  card budget. Native selector durability and the upstream mutable `/var` policy
+  remain production blockers.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
@@ -1198,7 +1226,9 @@ after required Verify checks are clean. Do not push or mirror commits onto `main
 
 - [ ] Inventory shipped OS/boot/host state and service writes for both roles.
 - [ ] Measure root sizes, data/checkpoint/cache budgets and minimum card capacity.
-- [ ] Boot minimal `rpi-image-gen` A/B images on spare Pi 4 cards.
+- [x] Boot a minimal `rpi-image-gen` A/B common-base probe on a spare card in an
+      available Pi 4; A → trial B → ordinary A demonstrated. Complete role images
+      and interrupted-update qualification remain separate gates.
 - [ ] Resolve partition format and stable slot identity.
 - [ ] Audit native tryboot backend and establish selector/early-watchdog safety;
       choose an alternative if necessary.

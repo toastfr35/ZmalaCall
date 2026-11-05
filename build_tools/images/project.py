@@ -53,6 +53,7 @@ image:
   data_part_size: 4G
 layer:
   base: trixie-minbase
+  eeprom_scope: zmala-probe-eeprom
 packages:
   - rauc={profiles()['rauc_version']}
 '''
@@ -63,12 +64,33 @@ def emit_lab(role, output):
     if output.exists():
         raise ValueError('Use a new output directory')
     output.mkdir(parents=True)
+    # Requiring a project-local layer makes omission of -S fail during layer
+    # resolution, rather than silently assembling an unmasked probe. Emit the
+    # standalone hook with LF, including from Windows checkouts.
+    layer = output/'layer'
+    layer.mkdir()
+    (layer/'zmala-probe-eeprom.yaml').write_text('''# METABEGIN
+# X-Env-Layer-Name: zmala-probe-eeprom
+# X-Env-Layer-Desc: Keep EEPROM updates outside diagnostic probe scope
+# X-Env-Layer-Category: policy
+# X-Env-Layer-Version: 1.0.0
+# X-Env-Layer-Requires: trixie-minbase
+# METAEND
+---
+''', encoding='utf-8', newline='\n')
+    hooks = layer/'zmala-probe-eeprom.d/hooks'
+    hooks.mkdir(parents=True)
+    hook = hooks/'customize99-zmala-eeprom-scope'
+    hook.write_text(Path(__file__).with_name('eeprom_policy.py').read_text(encoding='utf-8'),
+                    encoding='utf-8', newline='\n')
+    hook.chmod(0o755)
     (output/'probe.yaml').write_text(lab_config(role), encoding='utf-8', newline='\n')
     (output/'package-intent.txt').write_text('\n'.join(packages(role))+'\n', encoding='utf-8')
     (output/'status.json').write_text(json.dumps({
         'schema': 1, 'role': role, 'purpose': 'minimal-boot-probe',
         'production_eligible': False, 'application_installed': False,
         'packages_locked': False, 'hardware_qualified': False,
+        'required_project_source': '.', 'eeprom_scope_hook_emitted': True,
         'blockers': ['boot-selector-commit', 'early-watchdog', 'package-lock',
                      'product-provisioning', 'data-mount-policy', 'hardware-qualification']
     }, indent=2)+'\n', encoding='utf-8')

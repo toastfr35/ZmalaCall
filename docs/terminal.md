@@ -1054,6 +1054,9 @@ The proposed image-installed system update path is tracked in
 [image tools](../build_tools/images/README.md) collect read-only sizing information
 and emit a development boot probe; they do not change terminal services or the
 application-only updater described below.
+Boot-probe assembly uses the emitted project's `-S` source directory and its
+offline EEPROM mask hook; see the image tools for inspection and remaining
+qualification limits. This does not update or reconfigure an installed terminal.
 
 ```sh
 sudo systemctl status zmalacall-terminal zmalacall-display zmalacall-pairing

@@ -19,6 +19,7 @@ python3 -m build_tools.images inspect-root /path/to/offline/root
 python3 -m build_tools.images inspect-disk /path/to/uncompressed-probe.img
 python3 -m unittest tests.adhoc.test_image_foundation -v
 python3 -m unittest tests.adhoc.test_image_disk -v
+python3 -m unittest tests.adhoc.test_image_eeprom -v
 ```
 
 Use Linux for source extraction/building. Windows can validate profiles and emit
@@ -61,6 +62,32 @@ build_tools/tmp/image-sources/imagegen-<commit>/rpi-image-gen config \
   --write-to build_tools/tmp/terminal-probe/resolved.env
 ```
 
+Build with the emitted project as the explicit source directory, so imagegen
+discovers its executable customization hook:
+
+```sh
+build_tools/tmp/image-sources/imagegen-<commit>/rpi-image-gen build \
+  -S build_tools/tmp/terminal-probe \
+  -c build_tools/tmp/terminal-probe/probe.yaml -B /path/to/new/lab-build
+```
+
+The project's `layer/zmala-probe-eeprom.d/hooks/customize99-zmala-eeprom-scope`
+is a standalone copy of
+`eeprom_policy.py`, emitted with Unix line endings. It masks the known
+`rpi-eeprom-update.service` in the offline root, before A/B assembly, without
+executing systemctl, chroot or firmware utilities. **Do not omit `-S`.** The
+configuration requires this project-local layer, so a missing source directory
+fails layer resolution instead of silently assembling an unmasked image. The
+unqualified upstream probe otherwise inherits the stock EEPROM updater, which
+is outside this work's scope. The hook refuses the host filesystem root, linked
+policy parents and existing operator overrides; rerunning an existing correct
+mask is harmless. Inspect the resulting root before writing any card.
+
+Masking this known OS service is not a full firmware safety audit: inspect the
+actual boot payloads too, and never substitute a recovery/EEPROM image for this
+probe. It neither upgrades EEPROM nor establishes that an old EEPROM supports
+the intended boot path. Existing installed devices are not changed by this tool.
+
 The upstream `image-rota` probe layer uses its own selector partition size and
 persistent `/var` policy. Those are acceptable subjects of a boot experiment,
 not adopted production storage policy. In particular, its per-slot persistent
@@ -94,9 +121,12 @@ that installation, not a trusted reproducible package source lock.
 `inspect-root` does not mount disks or execute image code. Supply an already
 unpacked/mounted **offline** tree. It reports selected factory identities,
 passwords, enrollment/imported data and private configuration, plus unexpected
-special files and a missing slot-local package database. It does not read through
+special files, a missing slot-local package database and the known vendor EEPROM
+update service without a `/dev/null` mask. Linked policy parents are reported as
+uninspectable. It does not read through
 symlinked sensitive parents. A passing report covers this privacy subset only;
-it always records `production_qualified: false`. It cannot establish boot safety,
+it always records `production_qualified: false`. A correct EEPROM service mask
+does not authenticate arbitrary boot/recovery firmware. It cannot establish boot safety,
 all possible secret locations, services, artifact signatures or call readiness.
 
 ## Offline probe disk inspection
