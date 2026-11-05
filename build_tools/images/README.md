@@ -282,6 +282,77 @@ exact selections for both roles without changing host dpkg state. This proves
 local APT consumption, **not yet full image-builder consumption**; `probe-config`
 still resolves from upstream repositories and is explicitly unqualified.
 
+## Isolated locked-root construction
+
+`build-root` constructs an **unqualified OS-package root tar**, not an SD image,
+slot payload or Zmala installer. It does not install the application, provision
+devices, assemble A/B partitions or provide the production mount/update runtime.
+Do not flash or distribute the tar as a product release. The host toolchain is
+not fully locked yet; an exact package ledger does not make every output byte
+reproducible or qualify a complete appliance.
+
+```sh
+python3 -m build_tools.images build-root server \
+  --base-cache /path/to/reviewed/base-intake \
+  --role-cache /path/to/reviewed/server-intake \
+  --output /path/to/new/server-root-build
+python3 -m unittest tests.adhoc.test_image_root_build -v
+```
+
+Use `terminal` with its corresponding reviewed role cache for the terminal root.
+Both caches must match `locks/index.json`; this command offers no arbitrary lock
+digest override. Run as an ordinary Linux user with working subordinate UID/GID
+maps, `unshare`, `mmdebstrap` and `dpkg-scanpackages`. Cross-building also needs
+configured ARM64 binfmt/QEMU support. The file-mirror hook directory shipped with
+mmdebstrap must be present. Namespace/tool failures stop the build. Do not run
+with sudo or weaken the host's namespace policy to make an unsupported builder
+pass; select an appropriately isolated builder. Keep output on a Linux filesystem
+with at least 32 GiB free, and provide that much free space on `/tmp` too: package
+copies/caches, the expanded root and output tar can coexist. Full ARM64 emulation is substantially slower than a
+native ARM64 build, particularly kernel/module and Python setup.
+
+The command verifies caches and creates a separate local repository containing
+only authenticated public package bytes and build hooks. Its scratch directory
+is traversable by the build namespace's service UIDs without changing private
+cache/home permissions. The repository is bind-mounted read-only. An outer
+unprivileged user/mount/network namespace supplies subordinate IDs and no external
+network interfaces; mmdebstrap supplies the disposable root/PID isolation. Every
+package is requested at its exact reviewed version with a custom empty variant,
+file-only sources, no recommendations/suggestions and service starts inhibited
+by mmdebstrap. No host APT configuration or installed package state is changed.
+The host dpkg database hash is compared before/after, and child termination is
+requested if the supervising namespace exits. A failure retains diagnostic
+output and never writes `READY.json`.
+
+The standalone build cleanup hook requires a disposable bootstrap marker and
+refuses the host root or linked policy parents. It removes generated SSH host
+keys, machine/build-host identity, entropy/NetworkManager seeds, copied resolver state and build-only APT
+sources/options; all factory account passwords must already be locked. The
+package database remains inside the root. Known EEPROM and APT timers are masked
+in this experimental root so a later lab boot cannot silently update packages or
+EEPROM before those policies are implemented. These masks are not the production
+updater or a complete firmware safety audit. The hook is copied with LF endings
+even when invoked from a Windows checkout; it is not installed on devices or
+offered as an in-place cleanup/migration tool.
+
+Before accepting output, the builder bounds raw tar headers (including extended
+headers), member count and expansion, then reads the archive without extraction.
+It rejects unsafe/duplicate paths, linked policy parents, wrong selected-file
+ownership, unlocked passwords, retained temporary keys/sources, missing masks
+and any package-version/architecture difference from the reviewed selections.
+This is a selected factory-boundary audit, not proof of every possible secret
+location or filesystem property. Success writes `root.tar`, `build.log` and a
+`READY.json` with its digest, package count, bootstrap version and explicit missing
+application/toolchain/mount-policy/hardware qualification. Keep logs and artifacts
+private until reviewed. Retained public scratch inputs are left for diagnosis;
+only remove a known inactive build directory after checking its resolved path.
+
+Both role experiments completed under ARM64 emulation with unchanged host dpkg
+state: the cleaned server tar contains exactly 312 locked packages and is
+765,826,560 bytes; the terminal tar contains exactly 805 and is 2,366,328,320 bytes.
+Both retained hashes and the current archive acceptance checks passed. These are
+raw tar sizes, not partition-capacity measurements or boot/call qualification.
+
 ## Bootloader probe inputs and configuration audit
 
 `bootloader-config` emits a Kconfig fragment, raw-environment settings and the

@@ -3,8 +3,9 @@ import argparse
 import json
 from pathlib import Path
 import subprocess
+import tarfile
 
-from . import base_intent, bootloader, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, sources
+from . import base_intent, bootloader, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources
 
 
 def main():
@@ -48,6 +49,11 @@ def main():
     repo = sub.add_parser('local-repo', help='Assemble a verified, build-only file repository (Linux)')
     repo.add_argument('--cache', nargs=2, action='append', required=True, metavar=('FOLDER', 'LOCK_SHA256'))
     repo.add_argument('--output', required=True, type=Path)
+    root = sub.add_parser('build-root', help='Build an unqualified locked ARM64 root tar in namespaces (Linux)')
+    root.add_argument('role', choices=('server', 'terminal'))
+    root.add_argument('--base-cache', required=True, type=Path)
+    root.add_argument('--role-cache', required=True, type=Path)
+    root.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     try:
         if args.command == 'check':
@@ -92,14 +98,17 @@ def main():
                   +package_lock.digest(args.output/'packages.lock.json'))
         elif args.command == 'local-repo':
             print(json.dumps(local_repo.emit(args.cache, args.output), indent=2))
+        elif args.command == 'build-root':
+            print(json.dumps(root_build.build(args.role, args.base_cache, args.role_cache, args.output), indent=2))
         else:
             result = inspect_root.audit(args.root)
             print(json.dumps(result, indent=2))
             return 1 if result['violations'] else 0
-    except (OSError, ValueError, KeyError) as error:
+    except (OSError, ValueError, KeyError, tarfile.TarError) as error:
         parser.error(str(error))
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-        parser.error('Isolated package tool failed; retain its incomplete cache for diagnosis. No lock was accepted.')
+        parser.error('Isolated build/package tool failed; retain its incomplete output for diagnosis. '
+                     'No completed output was accepted.')
     return 0
 
 
