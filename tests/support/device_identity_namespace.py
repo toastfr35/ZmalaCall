@@ -93,6 +93,6 @@ class IdentityNamespaceScenario(unittest.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fixture', type=Path, required=True)
-    parser.add_argument('--role', choices=('server', 'terminal'), required=True)
+    parser.add_argument('--role', choices=('server', 'terminal', 'combined'), required=True)
     args = parser.parse_args()
     worker(args.fixture, args.role)

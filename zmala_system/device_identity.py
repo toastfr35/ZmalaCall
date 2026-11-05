@@ -20,13 +20,13 @@ NEXT = '.zmala-storage.next'
 IDENTITY = ('machine-id', 'hostname')
 
 
-# @llr LLR-SRV-HOST-014, LLR-TERM-MAINT-041
+# @llr LLR-SRV-HOST-014, LLR-TERM-MAINT-041, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def factory_profile(role):
     layout.profile(role)
     return {'schema': 1, 'role': role, 'purpose': 'zmala-factory-data'}
 
 
-# @llr LLR-SRV-HOST-014, LLR-TERM-MAINT-041
+# @llr LLR-SRV-HOST-014, LLR-TERM-MAINT-041, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def factory_record(data, role):
     body = storage.read_record(data, FACTORY, 0o600, layout.MAX_PROFILE_BYTES)
     value = json.loads(body.decode('utf-8'), object_pairs_hook=layout.unique_fields)
@@ -75,7 +75,7 @@ def present(path):
     return path.exists() or path.is_symlink()
 
 
-# @llr LLR-SRV-HOST-014, LLR-SRV-HOST-016, LLR-TERM-MAINT-041, LLR-TERM-MAINT-043
+# @llr LLR-SRV-HOST-014, LLR-SRV-HOST-016, LLR-TERM-MAINT-041, LLR-TERM-MAINT-043, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def admit(data, role, facts):
     layout.profile(role)
     data = storage.canonical(data)
@@ -229,7 +229,7 @@ def initialize(data, role, mounts=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data', type=Path, required=True)
-    parser.add_argument('--role', choices=('server', 'terminal'), required=True)
+    parser.add_argument('--role', choices=layout.ROLES, required=True)
     args = parser.parse_args()
     try:
         initialize(args.data, args.role)

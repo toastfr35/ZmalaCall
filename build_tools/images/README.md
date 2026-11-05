@@ -634,3 +634,23 @@ Experimental runtime requirements and direct LLT/HLT plans cover the implemented
 helper boundaries. Supported user installation guides remain unchanged until a
 qualified image installation flow exists. Image-tool regressions live under
 `tests/adhoc/` and run independently of requirement-based runtime tests.
+
+
+## Combined Terminal + Server build inputs
+
+All role-taking build commands also accept `combined`, displayed as **Zmala
+Terminal + Server**. Its 52 requested packages are the exact union of the two
+standalone intents. The separately retained authenticated closure contains 738
+archives; common package identities match the reviewed standalone locks. `check`
+rejects conflicting shared versions or hashes. The observed base remains unchanged.
+Use the combined cache for `build-root`, `prepare-root` and `build-initramfs`;
+never substitute a terminal or server cache or relabel an existing prepared root.
+`factory-data combined` emits an empty combined marker without shared identities.
+
+Combined runtime storage uses terminal UID/GID 1000 and server UID/GID 1001,
+separate private application and operator bindings, and one host identity and
+confirmed/trial boot record. Exact role checks reject standalone data/boot records.
+The profile and archive tools do not yet create system users, provision both
+applications, assemble a flashable card or implement joint health/admission.
+Current installer workflows and release downloads are unchanged; user-guide
+changes belong with the eventual qualified installation workflow.

@@ -21,7 +21,7 @@ def fixture(path, extra=None):
 
 class PreparedArchiveTests(unittest.TestCase):
     def test_package_state_moves_into_slot_and_runtime_matches_authored_sources(self):
-        for role in ('server', 'terminal'):
+        for role in ('server', 'terminal', 'combined'):
             with self.subTest(role=role), tempfile.TemporaryDirectory() as folder:
                 root = Path(folder); source = root/'source.tar'; fixture(source)
                 checksum = package_lock.digest(source)

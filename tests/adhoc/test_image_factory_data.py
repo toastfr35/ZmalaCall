@@ -13,7 +13,7 @@ from zmala_system import device_identity as identity
 
 class FactoryDataTests(unittest.TestCase):
     def test_both_roles_emit_only_private_factory_marker_without_identity(self):
-        for role in ('server', 'terminal'):
+        for role in ('server', 'terminal', 'combined'):
             with self.subTest(role=role), tempfile.TemporaryDirectory() as folder:
                 output = Path(folder)/'output'
                 result = factory_data.emit(role, output)

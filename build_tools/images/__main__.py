@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 import tarfile
 
+from zmala_system.host_layout import ROLES
+
 from . import (base_intent, bootloader, factory_data, image_state, initramfs_build,
               inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources)
 
@@ -17,7 +19,7 @@ def main():
     fetch.add_argument('source', choices=sources.SOURCE_NAMES)
     fetch.add_argument('--cache', required=True, type=Path)
     probe = sub.add_parser('probe-config', help='Emit a development-only minimal boot configuration')
-    probe.add_argument('role', choices=('terminal', 'server'))
+    probe.add_argument('role', choices=ROLES)
     probe.add_argument('--output', required=True, type=Path)
     boot_config = sub.add_parser('bootloader-config', help='Emit unqualified Pi 4 bootloader probe settings')
     boot_config.add_argument('--output', required=True, type=Path)
@@ -32,7 +34,7 @@ def main():
     boot.add_argument('image', type=Path)
     boot.add_argument('--sector-size', choices=(512, 4096), type=int, default=512)
     lock = sub.add_parser('lock-packages', help='Download and retain an authenticated dependency closure (Linux)')
-    lock.add_argument('role', choices=('terminal', 'server'))
+    lock.add_argument('role', choices=ROLES)
     lock.add_argument('--output', type=Path, required=True)
     lock.add_argument('--debian-keyring', type=Path, required=True)
     lock.add_argument('--raspberrypi-keyring', type=Path, required=True)
@@ -51,22 +53,22 @@ def main():
     repo.add_argument('--cache', nargs=2, action='append', required=True, metavar=('FOLDER', 'LOCK_SHA256'))
     repo.add_argument('--output', required=True, type=Path)
     root = sub.add_parser('build-root', help='Build an unqualified locked ARM64 root tar in namespaces (Linux)')
-    root.add_argument('role', choices=('server', 'terminal'))
+    root.add_argument('role', choices=ROLES)
     root.add_argument('--base-cache', required=True, type=Path)
     root.add_argument('--role-cache', required=True, type=Path)
     root.add_argument('--output', required=True, type=Path)
     state = sub.add_parser('prepare-root', help='Package experimental host storage into a new root tar; no extraction')
-    state.add_argument('role', choices=('server', 'terminal'))
+    state.add_argument('role', choices=ROLES)
     state.add_argument('--source', required=True, type=Path)
     state.add_argument('--expected-root-sha256', required=True)
     state.add_argument('--base-cache', required=True, type=Path)
     state.add_argument('--role-cache', required=True, type=Path)
     state.add_argument('--output', required=True, type=Path)
     factory = sub.add_parser('factory-data', help='Emit an empty marked data tar; no formatting or device access')
-    factory.add_argument('role', choices=('server', 'terminal'))
+    factory.add_argument('role', choices=ROLES)
     factory.add_argument('--output', required=True, type=Path)
     initrd = sub.add_parser('build-initramfs', help='Build an unqualified initramfs from a reviewed root (Linux)')
-    initrd.add_argument('role', choices=('server', 'terminal'))
+    initrd.add_argument('role', choices=ROLES)
     initrd.add_argument('--source', required=True, type=Path)
     initrd.add_argument('--expected-root-sha256', required=True)
     initrd.add_argument('--base-cache', required=True, type=Path)
