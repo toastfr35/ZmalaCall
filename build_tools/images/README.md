@@ -526,6 +526,61 @@ host toolchain/dependency closure is not locked by this command. Emitting fixed
 settings and pinning source bytes is a step towards repeatable builds, not a
 claim of end-to-end reproducibility or production qualification.
 
+## Experimental confirmed/trial boot control
+
+`prepare-root` now packages the exact `boot-control.json` role contract, Linux
+state/transport/backend modules, the authored `boot_select.sh`, an executable
+`/usr/lib/zmala/bin/boot-backend`, and a PID1 startup watchdog setting of zero.
+Role locks retain the authenticated ARM64 `libubootenv-tool` dependency closure;
+the observed clean-base inventory is unchanged. The offline GPT audit shares
+its bounded parser with runtime admission while still refusing block devices.
+
+The adapter implements `get-current`, `get-primary`, `get-state A|B`, and
+`set-state A|B good|bad`. Generic `set-primary` deliberately fails: it cannot
+identify a product transaction. Candidate installation must use RAUC 1.13
+`activate-installed=false`; the later coordinator calls `stage A|B TRANSACTION`
+only after installation, durable transaction recording and safe admission.
+`snapshot` returns the fixed boot fields; `confirm TRANSACTION GENERATION`
+requires the current consumed trial and exact 16-character hexadecimal
+generation. `cancel TRANSACTION` is permitted only on the confirmed system.
+The backend neither verifies candidate contents nor decides product health.
+
+The selector clears stale outputs and sets only `zm_selected=A|B` and
+`zm_is_trial=0|1`. The payload loader must refuse an empty selection and use
+only those fixed slot values. A pending trial gets one attempt, persisted by
+`saveenv` before selection. Save failure selects the confirmed system; a later
+boot with no attempt remaining falls back without writing. Compiled fallback
+environments must contain **none** of the `zm_*` contract fields. Runtime readers
+use an empty explicit default file and never initialize corrupt environments.
+Factory creation must seed both redundant copies explicitly, retaining the
+reviewed loader's unrelated default addresses/settings. That complete factory
+assembler is not implemented yet.
+
+Raw access is unavailable on legacy installations. Admission requires complete
+current image readiness, a marked exact role contract, the supported Pi 4 SD
+transport, selected root/data topology, primary/backup GPT checksums and the
+fixed disjoint 64 KiB ranges at 1 MiB and 5 MiB before the first partition at
+8 MiB. Root-private generated configuration, a nonblocking lock inode, fixed
+tools/keys, bounded operations, complete expected-state comparison and exact
+readback protect Linux mutations. No command accepts a device or offset.
+
+LLTs execute the authored selector using POSIX environment-command adapters;
+HLTs use actual native Linux environment tools on new regular GPT files in
+private namespaces. Neither proves U-Boot interpretation, actual Pi transport,
+physical power-loss recovery, complete boot/root pairing or product health.
+Full image wiring and hardware qualification remain required before any release.
+
+PID1 must not pet an unhealthy trial indefinitely. Its runtime watchdog remains
+disabled until a separate qualified product-health handover. Kernel
+`watchdog.handle_boot_enabled=1` and a nonzero `watchdog.open_timeout` can bound
+the gap after a loader-armed watchdog; the actual complete image and supported
+kernel must qualify that behavior. The final handover can use systemd 257's
+writable `RuntimeWatchdogUSec` property, but no backend command invokes it here.
+See the [kernel watchdog parameters](https://docs.kernel.org/watchdog/watchdog-parameters.html)
+and [systemd 257 manager implementation](https://github.com/systemd/systemd/blob/v257/src/core/dbus-manager.c).
+The earlier `bootloader-config` output is a diagnostic probe with its own
+watchdog takeover settings, not this product trial policy.
+
 ## Source audit decisions
 
 The native Pi backend at the pinned audit commit uses a temporary file and `mv`
@@ -571,6 +626,7 @@ restored the full pool and HDMI in that experiment. Future image integration mus
 qualify the complete memory map and payload sizes on supported boards, rather than
 copy an address from one Pi. See the implementation log for measured scope.
 
-Product runtime requirements and user installation guides remain unchanged until
-the runtime/image installation flows are implemented. Image-tool regressions live
-under `tests/adhoc/` and run independently of requirement-based runtime tests.
+Experimental runtime requirements and direct LLT/HLT plans cover the implemented
+helper boundaries. Supported user installation guides remain unchanged until a
+qualified image installation flow exists. Image-tool regressions live under
+`tests/adhoc/` and run independently of requirement-based runtime tests.

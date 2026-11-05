@@ -416,6 +416,24 @@ service/provisioning integration and physical qualification remain pending.
 Current installers/services use the layout and
 64 MiB journal policy described above; this experiment does not change them.
 
+The experimental confirmed/trial controller (`HLR-SRV-HOST-022`) now has a
+closed redundant environment contract. A distinct eligible candidate receives
+one attempt, durably consumed before selection; subsequent selection falls back
+to the confirmed slot until an explicit current-slot, transaction and generation
+confirmation succeeds. RAUC eligibility changes never confirm product health.
+Automatic installed-slot activation remains disabled by the packaged policy.
+The custom adapter refuses unqualified `set-primary`; the future coordinator
+must use explicit `stage` after its complete-pair installation/admission checks.
+
+Linux raw access requires the existing startup gate, marked boot policy, Pi 4
+SD topology, current-root and sibling-data identities, both GPT copies and fixed
+environment ranges outside partition metadata/filesystems. Fixed bounded tools
+run with private configuration, empty fallback defaults, a persistent lock inode
+and exact state readback. Corruption never initializes factory state. The package
+keeps PID1 runtime watchdog ownership disabled during trial startup; bounded
+kernel handoff and qualified product-health transfer remain integration gates.
+These components are not installed on the existing server by this experiment.
+
 ## Administration and authentication
 
 Open the server's LAN address/HTTP port; `127.0.0.1:8080` works only on the server

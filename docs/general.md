@@ -389,6 +389,21 @@ The parent removes fixture files after the worker namespace exits. The scenario
 requires `sfdisk`, `losetup`, `mkfs.ext4`, `blkid` and mount tools; CI installs them
 explicitly. It does not execute a real initramfs or PID1 boot.
 
+Confirmed/trial boot-control integration has a separate fixture:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_boot_state_linux tests.terminal.HLT.test_boot_state_linux -v
+```
+
+It requires `libubootenv-tool`, `sfdisk`, `unshare` and mount tools. Each role uses
+a new regular GPT file, a private native-tool lock mount and fixed raw environment
+ranges. Actual `fw_printenv`/`fw_setenv` transactions and the authored selector
+under POSIX shell exercise one-shot trials, fallback, explicit confirmation,
+cancellation, stale state, corrupt copies and unchanged surrounding bytes.
+Linux LLTs separately control production block topology/admission and command
+failures. These are not actual U-Boot interpretation, Pi boot, physical power-cut
+or product-health/watchdog qualification. Windows skips are reported separately.
+
 New product regressions belong in LLT/HLT. `tests/adhoc/` is for non-RBT work,
 including development-tool self-tests and Windows-only terminal compatibility
 outside the Pi baseline. Its maintained `test_*.py` and `*.test.js` checks run via

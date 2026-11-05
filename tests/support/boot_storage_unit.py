@@ -472,3 +472,16 @@ class BootStorageScenario(unittest.TestCase):
                     contextlib.redirect_stderr(output):
                 self.assertEqual(gate.main(), 1)
         self.assertNotIn('private detail', output.getvalue())
+
+    @unittest.skipUnless(os.name == 'posix', 'The installed PID1 root path is POSIX')
+    def test_pid1_gate_accepts_canonical_root_path_before_policy_validation(self):
+        self.assertEqual(storage.host_storage.canonical(Path('/')), Path('/'))
+        for value in ('relative/path', '/tmp/../tmp', '/tmp/with space'):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                storage.host_storage.canonical(Path(value))
+        # Do not inspect this development host as an appliance. Reaching the
+        # policy boundary proves the real default '/' survived path admission.
+        with patch.object(storage, 'configured_role', side_effect=ValueError('fixture policy boundary')) as policy:
+            with self.assertRaisesRegex(ValueError, 'fixture policy boundary'):
+                gate.verify()
+        policy.assert_called_once_with(Path('/'))

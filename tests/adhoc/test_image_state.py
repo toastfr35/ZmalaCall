@@ -45,7 +45,8 @@ class PreparedArchiveTests(unittest.TestCase):
                     self.assertEqual(json.loads(profile), layout.profile(role))
                     for name, content in image_state.payloads(role).items():
                         self.assertEqual(archive.extractfile(name).read(), content)
-                        self.assertEqual((members[name].uid, members[name].gid, members[name].mode), (0, 0, 0o644))
+                        mode = 0o755 if name == image_state.BOOT_BACKEND else 0o644
+                        self.assertEqual((members[name].uid, members[name].gid, members[name].mode), (0, 0, mode))
                 self.assertTrue((output/'READY.json').is_file())
                 with self.assertRaises(ValueError):
                     image_state.prepare(source, checksum, SELECTED, role, output)
