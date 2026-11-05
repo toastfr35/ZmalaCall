@@ -584,7 +584,7 @@ experimental early-boot storage integration:
   is published as a system image or update candidate.
 
 5 November 2026 — [#165](https://github.com/toastfr35/ZmalaCall/issues/165),
-experimental confirmed/trial boot control (implementation in progress):
+experimental confirmed/trial boot-control helper implementation:
 
 - Added explicit confirmed/trial state, eligibility, a single remaining attempt,
   transaction identity and bounded generation. Linux parsing rejects incomplete,
@@ -623,15 +623,29 @@ experimental confirmed/trial boot control (implementation in progress):
   Fresh role resolution also selected newer Mesa userspace and Linux development
   headers for the terminal; these are unqualified build inputs, not deployed
   updates. The observed common-base intent and its exact package lock remain
-  unchanged. Rebuilding/auditing both full package roots is in progress.
+  unchanged. The server root passed its audit with 314 exact installed selections;
+  rebuilding the new terminal root is separate from runtime helper verification.
 - Direct role LLTs cover typed contracts, transitions, authored selector adapters,
   block/transport refusal, serialization and command failures. Native Linux HLTs
   passed both roles on NEW regular GPT files: trial consumption, fallback,
   explicit confirmation in both directions, cancellation/stale-state refusal,
   one/two damaged copies, and unchanged bytes outside the environment ranges.
   These run actual `fw_printenv`/`fw_setenv`, with POSIX shell for the authored
-  selector; actual Pi transport, U-Boot, watchdog and physical power cuts remain
-  separate gates. Final combined validation and CI are still pending.
+  selector. A further 24 decision cases passed under the pinned U-Boot hush
+  interpreter with `saveenv` explicitly substituted; this does not combine actual
+  U-Boot with SD persistence. Actual Pi transport, boot loading, watchdog and
+  physical power cuts remain separate gates.
+- Final focused checks passed 78 runtime LLTs and all eight isolated HLTs on
+  Linux. Offline image-tool regressions passed 82 cases on Linux; Windows
+  completed those 82 with 18 platform-specific skips. Requirements validation
+  found 313 mapped sources, 301 code anchors, 278 test plans and no unmapped
+  requirements. The initial required portable, Windows and Android Verify jobs
+  all passed; final PR/release evidence is recorded independently.
+- The new server initramfs passed with 15 exact copied runtime/role files, target
+  imports and entry execution, actual vendor-unit graph verification, and actual
+  ARM64 Python/environment-tool read/write checks on new RAM-backed files. This
+  is emulated component validation, not a complete image or physical boot pass.
+  New terminal and combined image artifacts require their own recorded checks.
 - No live Pi, original card, TV, USB device, supported installation workflow or
   user guide has changed. Complete card assembly, product provisioning, health,
   signed coordination, migration and release qualification remain unfinished.

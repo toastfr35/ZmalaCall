@@ -566,9 +566,13 @@ readback protect Linux mutations. No command accepts a device or offset.
 
 LLTs execute the authored selector using POSIX environment-command adapters;
 HLTs use actual native Linux environment tools on new regular GPT files in
-private namespaces. Neither proves U-Boot interpretation, actual Pi transport,
-physical power-loss recovery, complete boot/root pairing or product health.
-Full image wiring and hardware qualification remain required before any release.
+private namespaces. A separate development check passed 24 decision cases under
+the pinned U-Boot hush interpreter, explicitly substituting `saveenv`. The
+initramfs build also executes actual target ARM64 environment-tool read/write
+operations on new RAM-backed fixture files. These checks do not establish the
+combined U-Boot/SD persistence path, actual Pi transport, physical power-loss
+recovery, complete boot/root pairing or product health. Full image wiring and
+hardware qualification remain required before any system image release.
 
 PID1 must not pet an unhealthy trial indefinitely. Its runtime watchdog remains
 disabled until a separate qualified product-health handover. Kernel
