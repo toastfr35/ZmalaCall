@@ -231,7 +231,10 @@ The exact reviewed upstream files can be inspected from the acquired trees:
 The alternative boot-state investigation is tracked in
 [#149](https://github.com/toastfr35/ZmalaCall/issues/149). A private U-Boot experiment
 has compiled and completed an A/B selection, fallback and manual counter-reset
-sequence on a Pi. It is not included by `probe-config`, acquired by `fetch`, or
+sequence on a Pi. Further private checks exercised healthy watchdog handoff,
+a controlled pre-root stall, one newer-copy CRC fault and one operator power cut
+during repeated commits. See the plan for measured scope and remaining gates.
+It is not included by `probe-config`, acquired by `fetch`, or
 adopted as the production backend. The current source's configuration names differ
 from older RAUC examples; validate the resolved settings, not just a fragment.
 Source references for that investigation:
@@ -242,8 +245,9 @@ Source references for that investigation:
 
 Deterministic environment-library tests using ordinary files do not demonstrate
 physical SD durability, the bootloader's selection, early-watchdog recovery, or
-firmware/kernel compatibility. The hardware sequence adds selection evidence,
-but does not establish power-cut safety or health-confirmation recovery. Those
+firmware/kernel compatibility. The private hardware checks add initial recovery evidence,
+but do not establish the complete power-cut matrix or product health-confirmation
+recovery. Those
 remain hardware and architecture gates.
 
 The private kernel handoff also exposed low-memory fragmentation: U-Boot's default

@@ -295,6 +295,48 @@ boot-state qualification in progress:
   unqualified. No production watchdog or system updater was deployed.
 
 
+
+5 November 2026 — watchdog, redundant-state and first power-cut evidence for #149:
+
+- Healthy A and B boots passed the private watchdog checks: a 15-second active
+  device owned by PID 1, a 60-second kernel userspace-open deadline, expected
+  read-only roots and identities, full graphics CMA and enabled HDMI. The first
+  A boot stayed on the same identity across repeated observations; a later
+  healthy A remained reachable beyond 180 seconds. No diagnostic tool opened the
+  watchdog device; ownership checks used sysfs and PID 1's file descriptors.
+- Installed the verified bounded stall into inactive B only, retained its healthy
+  backup, staged one B attempt and commanded one ordinary reboot. The Pi returned
+  automatically to a different healthy A boot after 104 seconds. B's count was
+  zero, A's was two, both state CRCs were valid and the environment flags showed
+  the two expected boot commits. Restored and read-back verified B's healthy
+  initramfs immediately afterward. This exercises one ordered pre-root stall;
+  it does not qualify every kernel/initramfs or later application failure.
+- Wrote distinguishable baseline and newer state copies, then intentionally
+  flipped only one CRC byte in the newer copy. The selected userspace library
+  read the retained baseline. After reboot, the actual loader preserved its
+  baseline marker and expected attempt count, proving it used that copy rather
+  than factory defaults; both copies again had valid CRCs. This is one explicit
+  single-copy checksum fault, not arbitrary media-corruption qualification.
+- Ran a bounded commit-load loop with legal A-first state and a unique per-commit
+  marker. The operator disconnected the Pi's power while the loop was active,
+  waited and reconnected it. The transport ended during the load, after the host
+  had received reports of 201 completed commits. The subsequent cold A boot
+  retained that run's sequence 201 marker, both CRCs were valid, the root remained
+  read-only and watchdog/graphics/SSH checks passed. This is **one power cut during
+  repeated commit load**; its exact intersection with a card write is unknown.
+  It does not establish the complete timing/card/controller power-loss matrix.
+- Reset the lab selection to A with three attempts and shut it down cleanly.
+  The operator restored the original card; its pinned/physical identity, absence
+  of the lab marker and active terminal service were verified. The original
+  installation and server received no experimental loader or watchdog policy.
+- These results support continuing reproducible image/backend integration with
+  the U-Boot candidate. Production adoption remains blocked on the remaining
+  fault/power-loss matrix, firmware/common-loader recovery policy, bounded product
+  health confirmation, complete data/image policy and the later plan stages.
+  Runtime requirements and their LLT/HLT evidence must accompany that installed
+  integration; private probe results are not product verification passes.
+
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
