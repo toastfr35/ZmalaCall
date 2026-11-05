@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import tarfile
 
-from . import base_intent, bootloader, image_state, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources
+from . import base_intent, bootloader, factory_data, image_state, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources
 
 
 def main():
@@ -61,6 +61,9 @@ def main():
     state.add_argument('--base-cache', required=True, type=Path)
     state.add_argument('--role-cache', required=True, type=Path)
     state.add_argument('--output', required=True, type=Path)
+    factory = sub.add_parser('factory-data', help='Emit an empty marked data tar; no formatting or device access')
+    factory.add_argument('role', choices=('server', 'terminal'))
+    factory.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     try:
         if args.command == 'check':
@@ -113,6 +116,8 @@ def main():
                                             (args.role_cache, index['roles'][args.role]['sha256'])])
             print(json.dumps(image_state.prepare(args.source, args.expected_root_sha256, selected,
                                                 args.role, args.output), indent=2))
+        elif args.command == 'factory-data':
+            print(json.dumps(factory_data.emit(args.role, args.output), indent=2))
         else:
             result = inspect_root.audit(args.root)
             print(json.dumps(result, indent=2))

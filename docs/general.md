@@ -90,8 +90,13 @@ The shared experimental `zmala_system` runtime now prepares image-managed storag
 from a marked read-only root, prevalidated ext4 data and RAM work. It keeps package
 state in the selected slot, creates fresh RAM views and binds a fixed set of saved
 paths. `prepare-root` packages that helper and its seed/profile into a new archive
-without extraction. Early-boot invocation, data/identity initialization and complete
-role provisioning are still absent; current SSH-installed hosts remain unchanged.
+without extraction. `device_identity` now supplies the separate first-device
+identity prerequisite on explicitly marked factory data: kernel entropy, ordered
+file/directory synchronization, atomic identity publication and resumable final
+marker creation. Existing committed identities are never regenerated. This is not
+an initramfs hook or disk-selection/formatting tool. Early-boot invocation, data
+expansion and complete role provisioning remain absent; current SSH-installed
+hosts remain unchanged.
 The separate bootloader probe tooling now fetches a pinned U-Boot candidate and
 emits/audits its Kconfig subset and bounded watchdog handoff examples. It does not
 replace the native `probe-config`, install a backend or produce a qualified image;
@@ -135,7 +140,7 @@ dependencies; ordinary calls do not download code or models.
 | `zmala_phone/` | Android application, resources and native SDK adapter |
 | `tests/android/{LLT,HLT}/` | Android JVM/device verification plans and assertions |
 | `zmala_server/` | Node server, administration source and SIP transport |
-| `zmala_system/` | Shared experimental image-managed host layout/storage policy; no UI or media dependency |
+| `zmala_system/` | Shared experimental image-managed host layout, storage and first-device identity policy; no UI or media dependency |
 | `zmala_terminal/common/` | Shared Python controllers, UI, assets and translations |
 | `tests/server/{LLT,HLT}/` | Server unit and system/integration test plans and implementations |
 | `tests/terminal/{LLT,HLT}/` | Pi terminal unit and system/integration test plans and implementations |
@@ -349,6 +354,19 @@ operation cleanup. The parent removes fixture files only after the worker namesp
 exits. `unshare`, mount tools, `mkfs.ext4` and loop-file support are required; CI
 does not treat a non-root skip as successful integration. These runs do not count
 as physical boot, reboot, power-cut, media or complete updater qualification.
+
+First-device identity has separate root HLTs:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_device_identity_linux tests.terminal.HLT.test_device_identity_linux -v
+```
+
+These create fresh ext4 file images and terminate initializer child processes at
+eight actual synchronization boundaries per role. Retrying must retain committed
+identity and saved application bytes, validate private ownership/modes and refuse
+application-owned identity without changing it. Ordinary LLTs separately inject
+write, rename and sync errors and control entropy/mount/ownership facts. Process
+termination leaves the kernel running; it is not a physical power-loss test.
 
 New product regressions belong in LLT/HLT. `tests/adhoc/` is for non-RBT work,
 including development-tool self-tests and Windows-only terminal compatibility

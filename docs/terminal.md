@@ -1084,8 +1084,18 @@ mount operations are invoked; no TV, camera, media, package or service helper ru
 
 Unit and real private-namespace tests cover this storage helper. The offline
 archive tool packages its profile, variable-state seed and runtime without
-extracting or booting the result. Early-boot integration, first device identity,
-onboarding/service integration and physical qualification remain pending. The
+extracting or booting the result. The separate `device_identity` helper
+(`HLR-TERM-MAINT-040`) initializes identity on an explicitly marked, prevalidated
+ext4 data mount. Linux UID/GID 0, private ownership/modes and a matching factory
+record are required. Kernel entropy supplies the machine ID and default hostname;
+ordered file/directory synchronization and atomic publication allow interrupted
+first boot to resume without changing a committed identity. Unknown or corrupt
+saved state is rejected without resetting data. It never selects/formats disks,
+generates SSH keys, operates TV/USB devices or starts terminal services.
+
+Direct LLTs and isolated ext4 process-interruption HLTs cover both roles. Early-boot
+integration, data expansion, onboarding/service integration and physical
+qualification remain pending. The
 current manual installer and its 64 MiB journal policy remain as described below.
 
 ```sh

@@ -491,6 +491,45 @@ experimental shared host storage and offline root preparation:
   retention; stage 2 still owns initial identity/claim and migration. No new
   factory image or automatic system updater is claimed; stages 0/1 remain open.
 
+5 November 2026 — [#161](https://github.com/toastfr35/ZmalaCall/issues/161),
+durable first-device identity prerequisite:
+
+- Added experimental server HOST and terminal MAINT first-device HLRs with three
+  direct LLRs each: validated/serialized admission, kernel entropy and durable
+  commit, and identity-preserving retry. Owning anchors and direct component
+  LLT/HLT plans describe the actual helper boundary, separately from full boot.
+- The shared `device_identity` helper accepts prevalidated separate writable
+  ext4 data, explicit matching factory state and Linux UID/GID 0. It does not
+  discover disks or format, expand, import or reset existing data. Fresh unknown
+  files, invalid schemas/roles/owners/modes and unsafe links are rejected.
+- A persistent zero-length private lock uses nonblocking `flock`; its inode is
+  retained so competing invocations cannot lock different files. Kernel entropy
+  supplies a 128-bit machine identifier and a derived role-specific hostname.
+- Identity files and their private staging directory are synchronized before
+  atomic directory publication, then the data parent is synchronized before
+  publishing the initialized-data marker. Readiness follows final validation and
+  directory synchronization. Retries preserve committed identity even if the
+  final marker was interrupted. A short hostname write is not mistaken for a
+  complete stage merely because its prefix is a valid DNS label.
+- Both role LLTs passed entropy, admission, lock, mode/umask, ordered commit,
+  partial-stage, missing-marker and injected write/rename/sync cases. Real
+  namespace HLTs passed process exit/retry at eight actual synchronization
+  boundaries per role on disposable ext4 file images, retaining committed
+  identity/application bytes and refusing application-owned identity. These are
+  not physical power-loss, reboot or complete boot qualification.
+- `prepare-root` packages the initializer. The archive-only `factory-data` tool
+  emits a private data root and exact role factory record without device identity,
+  formatting or mount access. Its ad-hoc regressions check contents, deterministic
+  bytes, permissions, role mismatch, tampering and bounded regular-file inputs.
+- Both actual ARM64 role roots were regenerated with the final initializer and
+  passed their complete runtime-byte, package and archive-graph audits. These
+  remain private unqualified root archives; no new image was flashed or published.
+- Early-boot invocation, correct data-device selection, data expansion, host-key
+  generation, service/application provisioning, owner claim and migration remain
+  unfinished. Current SSH installers/user workflows are unchanged; user guides
+  need no workflow revision yet. Stage-2 initialization remains open until those
+  integration and physical gates are met.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
@@ -1636,6 +1675,8 @@ partition and permissions inspection passes; original deployment is untouched.
 ### Stage 2 — First boot and migration tooling
 
 - [ ] Implement durable per-device initialization and resumable data expansion.
+      Identity helper and namespace process-interruption checks exist; boot
+      invocation, expansion, keys and physical power-loss qualification are pending.
 - [ ] Reuse terminal remote/camera/Wi-Fi/enrollment stages from the installed image.
 - [ ] Implement server local claim, fresh setup and validated migration import.
 - [ ] Add selected host-secret/config export/import separate from app backup.

@@ -41,7 +41,7 @@ def relocate(value):
 
 def payloads(role):
     result = {layout.PROFILE: (json.dumps(layout.profile(role), indent=2)+'\n').encode()}
-    for filename in ('__init__.py', 'host_layout.py', 'host_storage.py', 'journald.conf'):
+    for filename in ('__init__.py', 'host_layout.py', 'host_storage.py', 'device_identity.py', 'journald.conf'):
         source = RUNTIME/filename
         if source.is_symlink() or not source.is_file() or source.stat().st_size > 128*1024:
             raise ValueError('Expected a bounded authored storage runtime file')
@@ -194,6 +194,7 @@ def prepare(source, expected_sha256, selected, role, output):
                   source_root_sha256=expected_sha256, root_tar_sha256=package_lock.digest(target),
                   root_tar_bytes=target.stat().st_size, runtime_storage_helper_packaged=True,
                   runtime_payload_sha256={name: hashlib.sha256(body).hexdigest() for name, body in content.items()},
+                  device_initializer_packaged=True,
                   early_boot_integration_installed=False, device_data_initialized=False,
                   application_installed=False, toolchain_fully_locked=False,
                   hardware_boot_verified=False, production_qualified=False)
