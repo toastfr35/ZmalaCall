@@ -389,6 +389,19 @@ enrollment; OS/package changes are not automatically rolled back.
 | `--bootstrap PATH` | Administrator-supplied connection JSON instead of server QR |
 | `--wifi-mode existing-link` | Development-only bypass of joining the scanned Wi-Fi |
 
+The Plymouth boot screen overlays `Zmala vX.Y.Z` in the bottom-right corner, with
+text size and inset scaled to the display. `zmalacall-boot-version.service` runs
+after local filesystems mount and before Plymouth quits. Its installer-owned helper
+reads `/opt/zmalacall-updates/confirmed.json` and the confirmed slot's
+`update-release.json`; an interrupted trial therefore shows the recovery target's
+version. Later confirmed application updates and rollbacks need no artwork edit or
+initramfs rebuild. The early initramfs frames show the artwork alone. Missing or
+invalid release metadata or an unavailable Plymouth daemon leaves the label absent
+and startup continues. Existing hosts need a trusted installer run to provision the
+helper, unit and updated theme; `--no-splash` leaves their boot presentation alone.
+Portable tests check metadata and the command boundary; actual Pi/TV rendering
+and readability still require a boot check at 720p and 1080p.
+
 Use the system Python on Pi: apt-installed GI, Cairo, Tk and OpenCV are not
 automatically visible in a pip virtual environment. The installer supplies Xorg,
 Openbox, Picom, BlueZ, NetworkManager, Liblinphone 5.3, native media plugins,

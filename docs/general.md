@@ -131,6 +131,9 @@ Source launches keep state in component `data/` directories. Pi installations
 link those paths to private `/var/lib/zmalacall` or `/var/lib/zmalacall-server`;
 root-owned code lives under `/opt/zmalacall/releases` or
 `/opt/zmalacall-server/releases`. Do not edit an installed release to store data.
+The terminal boot theme receives a bottom-right version label from the durable
+confirmed application metadata after local filesystems mount. A stable host helper
+supplies it each boot, so application updates need no artwork or initramfs rebuild.
 Packages exclude enrollment, account data, private portraits and credentials.
 Downloaded SDKs live under `build_tools/runtime`; managed Windows launcher
 records live under `build_tools/data`.
