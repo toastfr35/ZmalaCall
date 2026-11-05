@@ -233,7 +233,7 @@ def verify(folder, expected_sha256):
     """Fail closed on missing, renamed, added or changed retained archives."""
     root = Path(folder)
     path = root/'packages.lock.json'
-    if (root.is_symlink() or path.is_symlink() or path.stat().st_size > 4*1024**2
+    if (root.is_symlink() or path.is_symlink() or not path.is_file() or path.stat().st_size > 4*1024**2
             or not re.fullmatch('[a-f0-9]{64}', expected_sha256) or digest(path) != expected_sha256):
         raise ValueError('Invalid package lock file')
     value = json.loads(path.read_text())
@@ -263,12 +263,13 @@ def verify(folder, expected_sha256):
         raise ValueError('Incomplete retained trust keyrings')
     for name, checksum in value['keyrings'].items():
         key = root/'keyrings'/(name+'.gpg')
-        if key.is_symlink() or key.stat().st_size > 4*1024**2 or digest(key) != checksum:
+        if key.is_symlink() or not key.is_file() or key.stat().st_size > 4*1024**2 or digest(key) != checksum:
             raise ValueError('Retained archive trust changed')
     if len(value['repositories']) != len(RELEASES) or {r['file'] for r in value['repositories']} != set(RELEASES):
         raise ValueError('Retained repository set changed')
     for record in value['repositories']:
         release = root/'apt/lists'/record['file']
-        if release.is_symlink() or release.stat().st_size > 4*1024**2 or digest(release) != record['sha256']:
+        if (release.is_symlink() or not release.is_file()
+                or release.stat().st_size > 4*1024**2 or digest(release) != record['sha256']):
             raise ValueError('Retained signed repository metadata changed')
     return value

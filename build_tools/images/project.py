@@ -104,6 +104,7 @@ def package_locks():
     if (index['schema'] != 1 or index['purpose'] != 'requested-package-closure'
             or index['image_qualified'] is not False or set(index['roles']) != {'server', 'terminal'}):
         raise ValueError('Unknown role package lock index')
+    common_base(index)
     for role, record in index['roles'].items():
         if record['file'] != role+'.json':
             raise ValueError('Unexpected role lock filename')
@@ -122,3 +123,47 @@ def package_locks():
                 or sum(p['bytes'] for p in manifest['packages']) != record['archive_bytes']):
             raise ValueError('Package intent and reviewed closure disagree; refresh intake through review')
     return index
+
+
+def common_base(index=None):
+    """Anchor observed base intent and closure without accepting a live inventory.
+
+    The ledger hash identifies a reviewed clean pre-boot probe; it is not evidence
+    of every future image package. Toolchain and full builder consumption remain
+    separate qualification gates.
+    """
+    from . import base_intent, sources
+    folder = ROOT/'build_tools/images/locks'
+    if index is None:
+        index = json.loads((folder/'index.json').read_text())
+    record = index['base']
+    values = []
+    for key, filename in (('intent', 'base-intent.json'), ('lock', 'base.json')):
+        path = folder/filename
+        if (record[key+'_file'] != filename or path.is_symlink() or not path.is_file()
+                or path.stat().st_size > 4*1024**2):
+            raise ValueError('Invalid common-base input')
+        body = path.read_bytes()
+        if hashlib.sha256(body).hexdigest() != record[key+'_sha256']:
+            raise ValueError('Common-base input digest changed')
+        values.append(json.loads(body))
+    intent, lock = values
+    requested = intent['requested']
+    if (intent['schema'] != 1 or intent['purpose'] != 'observed-common-base-intent'
+            or intent['architecture'] != 'arm64' or intent['distribution'] != 'trixie'
+            or intent['image_qualified'] is not False
+            or intent['imagegen_commit'] != sources.pins()['imagegen']['commit']
+            or not re.fullmatch('[a-f0-9]{64}', intent['ledger_sha256'])
+            or not 0 < len(requested) <= 5000 or requested != sorted(set(requested))
+            or not all(re.fullmatch(base_intent.NAME+'='+base_intent.VERSION, p) for p in requested)
+            or len({p.split('=')[0] for p in requested}) != len(requested)
+            or lock['schema'] != 1 or lock['purpose'] != 'requested-package-closure'
+            or lock['architecture'] != 'arm64' or lock['distribution'] != 'trixie'
+            or lock['image_qualified'] is not False or lock['requested'] != requested
+            or len(lock['packages']) != record['archives']
+            or sum(p['bytes'] for p in lock['packages']) != record['archive_bytes']):
+        raise ValueError('Common-base intent and reviewed closure disagree')
+    installed = {p['package']+'='+p['version'] for p in lock['packages']}
+    if not set(requested) <= installed:
+        raise ValueError('Common-base closure is missing installed selections')
+    return intent

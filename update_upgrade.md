@@ -370,6 +370,40 @@ pinned bootloader probe build inputs:
   still requires its own runtime requirements, owning trace comments and LLT/HLT.
 
 
+5 November 2026 — [#155](https://github.com/toastfr35/ZmalaCall/issues/155),
+common-base input locking and local build repositories:
+
+- Captured the selected clean pre-boot image's installed package ledger, with
+  matching A/B copies and an externally anchored ledger digest. The strict parser
+  retains exact installed versions, including a package whose desired action was
+  purge; it rejects unfinished states, ambiguous/duplicate records, other
+  architectures, scalar continuations and linked/special/oversized input files.
+  The earlier private 258-selection inventory omitted that still-installed
+  package and is superseded by the reviewed 259-selection capture.
+- Authenticated and retained all 259 exact base selections and their 259-archive
+  closure (164,614,914 bytes), using signed Debian/Raspberry Pi metadata and the
+  same download-only isolation as role intake. Public intent and lock metadata
+  are anchored in `locks/index.json`; raw ledgers/archives remain private.
+  CI checks base/source/closure synchronization without downloading packages.
+- Added build-only local file-repository assembly from externally hash-anchored
+  caches, with combined budgets, conflict rejection, copied-archive readback and
+  generated-index identity/hash/path checks. Failure never emits its completion
+  marker. No private signing key or host APT configuration is involved; the local
+  unsigned repository must remain a read-only build input, not a deployed or
+  remotely served package source.
+- Combined base/role inputs produced 312 server and 805 terminal archives. Actual
+  isolated, file-only APT download runs consumed every exact selection for both
+  roles; host dpkg database hashes were unchanged. This is APT consumer evidence,
+  not complete image-builder consumption. The native `probe-config` still uses
+  upstream resolution. Full builder/toolchain/npm/model inputs, remote retention,
+  narrow persistent mounts, provisioning and the runtime coordinator remain
+  unfinished. Stages 0/1 and role qualification remain incomplete.
+- Reviewed impact: these are build tools, excluded from the runtime requirement
+  baseline and tested under `tests/adhoc/`. Existing runtime requirements,
+  implementation trace comments and end-user installation guides remain accurate;
+  no deployed workflow or production image/update behavior changed. The image
+  development guide and general implementation guide describe the new limits.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
