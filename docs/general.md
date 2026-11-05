@@ -61,7 +61,7 @@ calls. Family members use Zmala Phone on Android or another Pi terminal.
 
 The proposed replacement with ready-to-flash Pi images and recoverable automatic
 OS/package upgrades is detailed in [the system update plan](../update_upgrade.md).
-It is planning work; the current installation and application-update behavior
+It is under development; the current installation and application-update behavior
 remains as documented here until the corresponding implementation is qualified.
 Initial [image development tools](../build_tools/images/README.md) provide pinned
 source acquisition, minimal boot-probe profiles, a read-only Pi inventory and an
@@ -80,6 +80,12 @@ file repositories can combine the base and role caches without host installs;
 isolated APT consumption has been exercised. Complete image-builder consumption
 and toolchain freezing remain unfinished. CI rejects intent/lock drift without
 downloading or installing packages; see the image-tool guide for these boundaries.
+An experimental `build-root` path now constructs a root tar from those exact
+inputs inside unprivileged user/mount/network/PID namespaces. It inhibits service
+starts, removes selected factory identities/build sources and checks the final
+package ledger without extracting the archive. It is not an application image,
+bootable A/B installer, production persistence policy or automatic OS updater.
+Its host toolchain and hardware behavior remain unqualified.
 The separate bootloader probe tooling now fetches a pinned U-Boot candidate and
 emits/audits its Kconfig subset and bounded watchdog handoff examples. It does not
 replace the native `probe-config`, install a backend or produce a qualified image;

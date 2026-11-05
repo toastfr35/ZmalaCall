@@ -15,6 +15,7 @@ FORBIDDEN = (
     'var/lib/bluetooth/*', 'etc/letsencrypt/accounts/*', 'etc/letsencrypt/live/*',
     'root/.ssh/*', 'home/*/.ssh/*', 'var/lib/zmalacall/*',
     'var/lib/zmalacall-server/*', 'opt/zmalacall-updates/*',
+    'var/lib/systemd/random-seed', 'var/lib/urandom/random-seed', 'var/lib/NetworkManager/secret_key',
     '**/google-services.json', '**/*service-account*.json', '**/*.keystore',
     '**/*.jks', '**/.git', '**/.env',
 )

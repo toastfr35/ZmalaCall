@@ -404,6 +404,43 @@ common-base input locking and local build repositories:
   no deployed workflow or production image/update behavior changed. The image
   development guide and general implementation guide describe the new limits.
 
+5 November 2026 — [#157](https://github.com/toastfr35/ZmalaCall/issues/157),
+isolated locked OS-root construction:
+
+- Added an explicitly unqualified ARM64 root-tar build path using only externally
+  anchored common/role archive caches and exact installed selections. Builds run
+  as an ordinary Linux user in subordinate-ID user/mount/network/PID namespaces,
+  with no external network interfaces or host APT mutation. Service starts are
+  inhibited. Copied public inputs need not weaken private cache/home permissions.
+- Added a build-only, disposable-marker-gated factory cleanup hook: generated
+  SSH keys, machine/build-host identity, entropy/network seeds, copied resolver and local APT sources
+  are removed; factory passwords must be locked. Package state remains in its
+  root slot. Known EEPROM/APT timers are masked only in this experimental root;
+  this is not a production maintenance policy or runtime coordinator.
+- Added non-extracting archive acceptance with raw-header/extended-header/member
+  budgets, selected real-parent/ownership checks, factory identity/mask checks,
+  and exact final package-version/architecture agreement. Incomplete builds have
+  no READY record. The hook is emitted with LF endings on Windows checkouts.
+  Successful records explicitly keep application, toolchain, production mounts
+  and hardware qualification false. Scratch/log inputs remain private pending
+  review; no factory root or SD image is published by these tools.
+- A first disposable ARM64 server-root experiment completed with exactly 312
+  reviewed installed selections and unchanged host dpkg state. The stricter
+  network-isolated/cleaned server build also passed, producing a 765,826,560-byte
+  root tar; the latest public archive/privacy audit passed against it as well.
+  The public terminal-root build also passed with exactly 805 installed packages,
+  producing a 2,366,328,320-byte tar. Both retained tar hashes and the latest public
+  archive/privacy audits passed; host dpkg hashes remained unchanged. These tar
+  sizes are not filesystem/partition budgets. Tool regressions pass on
+  Linux (67) and Windows (52 passed, 15 explicit Linux-only skips).
+- Runtime requirement/trace and user-guide impact was reviewed: this is offline
+  experimental build tooling, tested under `tests/adhoc/`, not an installed
+  service or a changed supported installation workflow. Production adoption of
+  host storage/update policies still requires synchronized normative items and
+  direct LLT/HLT plans before qualification. Technical guides describe the
+  experimental boundary. Stages 0/1 remain incomplete; full role/application
+  assembly, selected persistent mounts and provisioning are not implemented.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
