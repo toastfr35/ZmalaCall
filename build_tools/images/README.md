@@ -389,8 +389,9 @@ The runtime helper is requirement-traced under experimental `PROD017` with direc
 server/terminal LLT/HLT plans. Its real mount-namespace integration scenarios use
 only temporary ext4 file images; see `docs/general.md`. Build/archive regressions
 remain ad-hoc tooling checks. The current SSH installers do not launch this
-helper. Data-device selection, initramfs packaging/invocation, complete role
-setup and the update coordinator are separate unfinished stages.
+helper. Experimental same-parent data discovery and initramfs packaging are now
+available below; complete role setup, assembled image boot qualification and the
+update coordinator remain unfinished.
 
 ## Empty factory data and first-device identity
 
@@ -421,7 +422,63 @@ The helper does not generate SSH keys, expand data, claim the server owner or
 start services. Current installers never call it. Direct LLT/HLT plans exercise
 both roles, including process exits at eight real synchronization boundaries on
 temporary ext4 file images. Those are process-interruption checks, not physical
-power-loss or full boot qualification. Actual early-boot wiring remains pending.
+power-loss or full boot qualification. The experimental early-boot path below now
+invokes this helper after validating its data partition.
+
+## Experimental early-boot component
+
+`boot_layout` describes the current experimental six-partition format, not a
+frozen production layout. The runtime accepts exactly one `rauc.slot=A` or `B`
+and a canonical `root=PARTUUID=...`. It checks the mounted read-only root's kernel
+major/minor, GPT entry, filesystem metadata and selected slot, then locates only
+partition 6 under that same kernel parent. It does not use a global label lookup
+or assume a name such as `mmcblk0`. Missing, ambiguous or mismatched state fails
+before data initialization. No filesystem is formatted or expanded.
+
+The helper mounts the validated data, initializes identity, prepares bounded
+views, and writes the selected root's read-only mount entry into the RAM `fstab`.
+Partial failures attempt reverse owned cleanup and preserve committed identity;
+data is retained when dependent views remain. The early entry blocks on failure.
+A separate required PID1 gate checks current-boot RAM records, mounted views,
+fixed bindings and identity before `sysinit.target`; missing/killed early
+preparation does not silently allow ordinary services to start.
+
+`prepare-root` includes these runtime sources, role/policy and PID1 unit/drop-in.
+Its data mountpoint must be empty. The root's stock initramfs still needs rebuilding:
+
+```sh
+python3 -m build_tools.images build-initramfs server \
+  --source /path/to/reviewed/server-storage-root/root.tar \
+  --expected-root-sha256 <digest-from-prepared-root-record> \
+  --base-cache /path/to/reviewed/base-intake \
+  --role-cache /path/to/reviewed/server-intake \
+  --output /path/to/new/outside-checkout/server-initramfs
+python3 -m unittest tests.adhoc.test_image_initramfs -v
+```
+
+Use an ordinary Linux user with subordinate UID/GID mappings, user/mount/PID/network
+namespaces, GNU tar, mount/chroot tools and configured ARM64 binfmt/QEMU support.
+Retained package caches and a reviewed prepared-root digest are required. Keep at
+least 32 GiB free. The worker refuses the caller's original namespaces and uses a
+new target root; it receives only fixed harmless character devices, not host disks
+or USB devices. Temporary target `/var` reconstructs the slot-local package seed;
+build `/tmp` and `/run` are bounded RAM mounts. Only root `/dev` entries are omitted
+from extraction, preserving kernel driver directories also named `dev`.
+
+The target's own `mkinitramfs` builds the component. Its hook copies the bounded
+Python 3.13 tree, ELF extension dependencies and authored runtime, plus fixed
+private mount/probe binaries with special permission bits removed. The entry runs
+in `local-bottom`, before `init-bottom` moves `/dev`. The output audit accepts the
+locked extractor's direct or `main` layout, checks exact runtime/tool bytes and
+modes, and executes target Python imports and the entry's `prereqs` in the
+extracted initramfs. No data initialization or ordinary services run during build.
+
+`READY.json` appears only after successful checks and worker cleanup. A failed
+inspection can retain `initramfs.pending.img` for diagnosis without accepting it.
+Outputs explicitly remain incomplete, hardware-unverified and production-unqualified.
+This command does not assemble slot boot files, generate a flashable card, install
+an updater, publish artifacts or change existing Pi installations. Whole-system
+boot/watchdog and power-loss qualification are still separate gates.
 
 ## Bootloader probe inputs and configuration audit
 

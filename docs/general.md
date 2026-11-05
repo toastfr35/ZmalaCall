@@ -93,10 +93,16 @@ paths. `prepare-root` packages that helper and its seed/profile into a new archi
 without extraction. `device_identity` now supplies the separate first-device
 identity prerequisite on explicitly marked factory data: kernel entropy, ordered
 file/directory synchronization, atomic identity publication and resumable final
-marker creation. Existing committed identities are never regenerated. This is not
-an initramfs hook or disk-selection/formatting tool. Early-boot invocation, data
-expansion and complete role provisioning remain absent; current SSH-installed
-hosts remain unchanged.
+marker creation. Existing committed identities are never regenerated.
+The experimental boot path now checks the selected read-only root and discovers
+data as its declared GPT sibling on the same kernel device parent, then runs
+identity/storage preparation. It generates a read-only root mount entry in the
+volatile configuration. An early entry and a separately required PID1 gate block
+normal startup without complete current-boot storage. The isolated initramfs
+builder packages the locked target's Python/runtime/tool closure and checks its
+actual ARM64 imports. This is a boot-component experiment; complete image
+assembly, physical boot qualification, data expansion and role provisioning remain
+pending. Current SSH-installed hosts remain unchanged.
 The separate bootloader probe tooling now fetches a pinned U-Boot candidate and
 emits/audits its Kconfig subset and bounded watchdog handoff examples. It does not
 replace the native `probe-config`, install a backend or produce a qualified image;
@@ -140,7 +146,7 @@ dependencies; ordinary calls do not download code or models.
 | `zmala_phone/` | Android application, resources and native SDK adapter |
 | `tests/android/{LLT,HLT}/` | Android JVM/device verification plans and assertions |
 | `zmala_server/` | Node server, administration source and SIP transport |
-| `zmala_system/` | Shared experimental image-managed host layout, storage and first-device identity policy; no UI or media dependency |
+| `zmala_system/` | Shared experimental image-managed layout, identity, early-boot storage and startup gate; no UI or media dependency |
 | `zmala_terminal/common/` | Shared Python controllers, UI, assets and translations |
 | `tests/server/{LLT,HLT}/` | Server unit and system/integration test plans and implementations |
 | `tests/terminal/{LLT,HLT}/` | Pi terminal unit and system/integration test plans and implementations |
@@ -367,6 +373,21 @@ identity and saved application bytes, validate private ownership/modes and refus
 application-owned identity without changing it. Ordinary LLTs separately inject
 write, rename and sync errors and control entropy/mount/ownership facts. Process
 termination leaves the kernel running; it is not a physical power-loss test.
+
+Early-boot storage has a GPT-partitioned-image scenario too:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_boot_storage_linux tests.terminal.HLT.test_boot_storage_linux -v
+```
+
+It creates a new sparse regular file, attaches only that file as a partitioned
+loop device, and formats only its guarded fixture partitions. Real sysfs, block
+probes and mounts identify each root's same-parent data. Controlled kernel
+arguments select both roots; assertions cover identity/data preservation, root
+mount configuration, readiness gating and owned cleanup after injected failures.
+The parent removes fixture files after the worker namespace exits. The scenario
+requires `sfdisk`, `losetup`, `mkfs.ext4`, `blkid` and mount tools; CI installs them
+explicitly. It does not execute a real initramfs or PID1 boot.
 
 New product regressions belong in LLT/HLT. `tests/adhoc/` is for non-RBT work,
 including development-tool self-tests and Windows-only terminal compatibility

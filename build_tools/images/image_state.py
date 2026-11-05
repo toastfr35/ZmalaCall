@@ -12,12 +12,14 @@ from pathlib import Path, PurePosixPath
 import re
 import tarfile
 
-from zmala_system import host_layout as layout
+from zmala_system import boot_layout, host_layout as layout
 from . import base_intent, inspect_root, package_lock, root_build
 
 RUNTIME = Path(layout.__file__).parent
 INSTALLED = 'usr/lib/python3/dist-packages/zmala_system'
 JOURNAL = 'etc/systemd/journald.conf.d/50-zmala-volatile.conf'
+BOOT_GATE = 'usr/lib/systemd/system/zmala-host-storage.service'
+BOOT_DEPENDENCY = 'usr/lib/systemd/system/sysinit.target.d/50-zmala-host-storage.conf'
 
 
 def name(value):
@@ -40,12 +42,18 @@ def relocate(value):
 
 
 def payloads(role):
-    result = {layout.PROFILE: (json.dumps(layout.profile(role), indent=2)+'\n').encode()}
-    for filename in ('__init__.py', 'host_layout.py', 'host_storage.py', 'device_identity.py', 'journald.conf'):
+    result = {layout.PROFILE: (json.dumps(layout.profile(role), indent=2)+'\n').encode(),
+              boot_layout.PROFILE: (json.dumps(boot_layout.profile(role), indent=2)+'\n').encode(),
+              'usr/lib/zmala/role': (role+'\n').encode()}
+    special = {'journald.conf': JOURNAL, 'zmala-host-storage.service': BOOT_GATE,
+               'sysinit-storage.conf': BOOT_DEPENDENCY}
+    for filename in ('__init__.py', 'host_layout.py', 'host_storage.py', 'device_identity.py',
+                     'boot_layout.py', 'boot_devices.py', 'boot_storage.py', 'boot_entry.py', 'boot_gate.py',
+                     *special):
         source = RUNTIME/filename
         if source.is_symlink() or not source.is_file() or source.stat().st_size > 128*1024:
             raise ValueError('Expected a bounded authored storage runtime file')
-        target = JOURNAL if filename == 'journald.conf' else INSTALLED+'/'+filename
+        target = special.get(filename, INSTALLED+'/'+filename)
         result[target] = source.read_text(encoding='utf-8').replace('\r\n', '\n').encode()
     return result
 
@@ -82,10 +90,16 @@ def audit(path, role, selected, expected_payloads):
                 raise ValueError('Unsupported prepared-root ownership or mode')
             nodes[current] = (member.isdir(), member.isfile(), member.size,
                               member.uid, member.gid, member.mode)
+            if current == '.' and (not member.isdir() or member.uid or member.gid or member.mode != 0o755):
+                raise ValueError('Invalid prepared-root directory entry')
             if member.islnk():
                 hardlinks[current] = name(member.linkname)
             if current.startswith('var/'):
                 raise ValueError('Prepared variable state remains outside its seed')
+            if current.startswith('data/'):
+                raise ValueError('The image data mountpoint must not contain saved state')
+            if current == 'data' and (not member.isdir() or member.uid or member.gid or member.mode != 0o755):
+                raise ValueError('Invalid image data mountpoint')
             logical = ('var'+current[len(layout.VAR_SEED):]
                        if current.startswith(layout.VAR_SEED+'/') else current)
             if any(fnmatch.fnmatchcase(logical, pattern)
@@ -134,7 +148,7 @@ def audit(path, role, selected, expected_payloads):
     if seed_bytes > layout.MAX_SEED_BYTES:
         raise ValueError('Prepared hard links exceed the variable-state RAM budget')
     if (set(found) != set(expected_payloads) or not package_link or status is None
-            or not {'var', layout.VAR_SEED, layout.PACKAGE_DB} <= seen):
+            or not {'data', 'var', layout.VAR_SEED, layout.PACKAGE_DB} <= seen):
         raise ValueError('Prepared host-storage root is incomplete')
     layout.decode_profile(found[layout.PROFILE], role)
     expected = sorted(key+'='+identity[0] for key, (identity, _, _) in selected.items())
@@ -173,7 +187,7 @@ def prepare(source, expected_sha256, selected, role, output):
                 raise ValueError('Prepared archive path collision')
             seen.add(member.name)
             outgoing.addfile(member, incoming.extractfile(original) if original.isfile() else None)
-        additions = {**{path: None for path in ('var', 'usr/lib/zmala', layout.VAR_SEED,
+        additions = {**{path: None for path in ('data', 'var', 'usr/lib/zmala', layout.VAR_SEED,
                                                 layout.VAR_SEED+'/lib', INSTALLED)}, **content}
         for path in content:
             for parent in PurePosixPath(path).parents:
@@ -195,6 +209,7 @@ def prepare(source, expected_sha256, selected, role, output):
                   root_tar_bytes=target.stat().st_size, runtime_storage_helper_packaged=True,
                   runtime_payload_sha256={name: hashlib.sha256(body).hexdigest() for name, body in content.items()},
                   device_initializer_packaged=True,
+                  early_boot_policy_packaged=True, pid1_storage_gate_packaged=True,
                   early_boot_integration_installed=False, device_data_initialized=False,
                   application_installed=False, toolchain_fully_locked=False,
                   hardware_boot_verified=False, production_qualified=False)

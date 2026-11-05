@@ -530,6 +530,59 @@ durable first-device identity prerequisite:
   need no workflow revision yet. Stage-2 initialization remains open until those
   integration and physical gates are met.
 
+5 November 2026 — [#163](https://github.com/toastfr35/ZmalaCall/issues/163),
+experimental early-boot storage integration:
+
+- Added experimental boot HLRs and four direct LLRs per role, with owning code
+  anchors and direct LLT/HLT plans. The fixed experimental layout is not a frozen
+  production format. The helper accepts a marked read-only ext4 root and exactly
+  one supported slot and canonical kernel root PARTUUID.
+- Native discovery binds the actual root major/minor to kernel sysfs topology,
+  GPT entry, filesystem identity and geometry. Data is only the unique declared
+  sibling on that same parent. No global label search, guessed `mmcblk0` path,
+  formatter, expansion or imported commands are used.
+- The helper mounts only validated data, initializes compatible identity and
+  prepares views in order. It generates a selected-root read-only `fstab` entry
+  in the RAM overlay before publishing complete current-boot readiness. Cleanup
+  preserves the input root, committed identity and original failure, retaining
+  data if dependent views remain.
+- The early Python entry blocks failure without printing saved/private values.
+  A separate PID1 gate required before `sysinit.target` checks private current-boot
+  records, mounted views, fixed bindings and committed identity; killed or missing
+  early preparation cannot silently admit ordinary services. Actual PID1 boot is
+  still a qualification gate, not proven by authoring unit dependencies.
+- Forty direct Linux LLTs passed policy/argument parsing, native topology models,
+  bounded probe processes, admission, ordered operations, dependency failures,
+  cleanup and startup refusal. Two real GPT/loop namespace scenarios passed both
+  root slots, same-parent data, stable identity/application bytes, root mount
+  configuration, missing-readiness/binding gate refusal and injected mount failures.
+  These use controlled boot command lines; they are not physical boot or power cuts.
+- `prepare-root` packages the boot policy, role, runtime and PID1 gate, with an
+  empty data mountpoint. The separate isolated `build-initramfs` path consumes a
+  reviewed prepared-root hash and locked caches. Its worker refuses original host
+  namespaces, uses only fixed harmless character-device binds, and creates
+  temporary RAM state rather than starting services or initializing device data.
+- The target's own initramfs tool copies bounded Python plus extension ELF
+  dependencies and private mount/probe tools. Actual target import checks caught
+  and resolved a missing extension dependency caused by copy ordering. Rootless
+  extraction omits only anchored root `/dev` entries, preserving kernel driver
+  subdirectories also called `dev`. The entry runs in `local-bottom`, before the
+  locked Debian init script moves `/dev` away in `init-bottom`.
+- Both ARM64 components built successfully: server 29,306,767 compressed bytes and
+  terminal 33,750,541. Each checked ten copied runtime/role files and exact target
+  executables, executed target Python imports plus entry `prereqs` inside its
+  extracted image, and passed offline verification against the role's actual
+  vendor-unit graph. Final combined checks passed 182 cases on Linux; Windows
+  completed 176 cases with 64 explicit Linux-only skips. Requirements validation
+  found 307 mapped source files, 291 code anchors, 274 test plans and no unmapped
+  requirements. Failed build/audit outputs have no accepted marker; a pending
+  image may remain for diagnosis.
+- Complete role/card assembly, physical boot/watchdog qualification, data
+  expansion, host keys, application/service provisioning, owner claim, signed
+  update coordination and migration remain unfinished. Legacy deployed hosts and
+  supported installation/user workflows are unchanged; no unqualified component
+  is published as a system image or update candidate.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
@@ -1659,11 +1712,13 @@ migration yet.
 
 ### Stage 1 — Common image foundation and artifact pipeline
 
-- [ ] Create locked common/role layers and offline image inspection tools.
+- [x] Retain authenticated common/role package closures and exact input locks.
+- [x] Build and audit isolated locked OS-root archives for both roles.
+- [ ] Complete factory application/host provisioning in the common/role layers.
 - [ ] Extract reusable provisioning from current installation scripts.
 - [ ] Establish read-only root, selected persistent mounts and low-write policy.
-      Shared runtime/archive preparation is namespace-tested; early-boot wiring
-      and physical role enforcement remain pending.
+      Shared runtime, early-boot discovery and archive preparation are
+      namespace-tested; actual complete-image boot/role enforcement remains pending.
 - [ ] Package the common maintenance runtime, units and public trust.
 - [ ] Generate and sanitize both first-install images and slot payloads.
 - [ ] Add provenance, notices, public digest/signature handling and ad-hoc checks.
@@ -1675,8 +1730,9 @@ partition and permissions inspection passes; original deployment is untouched.
 ### Stage 2 — First boot and migration tooling
 
 - [ ] Implement durable per-device initialization and resumable data expansion.
-      Identity helper and namespace process-interruption checks exist; boot
-      invocation, expansion, keys and physical power-loss qualification are pending.
+      Identity helper, boot invocation and namespace interruption checks exist;
+      complete-image boot, expansion, keys and physical power-loss qualification
+      are pending.
 - [ ] Reuse terminal remote/camera/Wi-Fi/enrollment stages from the installed image.
 - [ ] Implement server local claim, fresh setup and validated migration import.
 - [ ] Add selected host-secret/config export/import separate from app backup.

@@ -400,9 +400,20 @@ marker; interrupted retries preserve a committed identity. Invalid saved state
 fails without factory reset. Real ext4 process-interruption tests exercise this
 ordering, but do not establish physical power-cut or boot recovery.
 
-Early-boot
-integration, first-owner setup, service/provisioning integration and physical
-qualification remain pending. Current installers/services use the layout and
+The experimental early-boot path (`HLR-SRV-HOST-017`) now validates its marked
+read-only root, kernel slot/PARTUUID, actual GPT/ext4 metadata and kernel device
+topology. It discovers data only as the declared sibling on the same parent,
+without a global label lookup or assumed device name. It mounts that data,
+initializes compatible identity, prepares views and writes a read-only selected
+root entry into the volatile `fstab`. Complete private RAM readiness is required
+both by the early entry and a PID1 service required before `sysinit.target`.
+The latter also refuses missing preparation if the early helper is killed.
+
+The offline image tools generate a candidate initramfs and validate target Python
+imports and copied bytes. Namespace integration is separate from actual initramfs
+and PID1 boot qualification. Complete image assembly, first-owner setup,
+service/provisioning integration and physical qualification remain pending.
+Current installers/services use the layout and
 64 MiB journal policy described above; this experiment does not change them.
 
 ## Administration and authentication
