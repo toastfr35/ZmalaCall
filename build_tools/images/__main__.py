@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import tarfile
 
-from . import base_intent, bootloader, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources
+from . import base_intent, bootloader, image_state, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources
 
 
 def main():
@@ -54,6 +54,13 @@ def main():
     root.add_argument('--base-cache', required=True, type=Path)
     root.add_argument('--role-cache', required=True, type=Path)
     root.add_argument('--output', required=True, type=Path)
+    state = sub.add_parser('prepare-root', help='Package experimental host storage into a new root tar; no extraction')
+    state.add_argument('role', choices=('server', 'terminal'))
+    state.add_argument('--source', required=True, type=Path)
+    state.add_argument('--expected-root-sha256', required=True)
+    state.add_argument('--base-cache', required=True, type=Path)
+    state.add_argument('--role-cache', required=True, type=Path)
+    state.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     try:
         if args.command == 'check':
@@ -100,6 +107,12 @@ def main():
             print(json.dumps(local_repo.emit(args.cache, args.output), indent=2))
         elif args.command == 'build-root':
             print(json.dumps(root_build.build(args.role, args.base_cache, args.role_cache, args.output), indent=2))
+        elif args.command == 'prepare-root':
+            index = project.package_locks()
+            selected, _ = local_repo.inputs([(args.base_cache, index['base']['lock_sha256']),
+                                            (args.role_cache, index['roles'][args.role]['sha256'])])
+            print(json.dumps(image_state.prepare(args.source, args.expected_root_sha256, selected,
+                                                args.role, args.output), indent=2))
         else:
             result = inspect_root.audit(args.root)
             print(json.dumps(result, indent=2))

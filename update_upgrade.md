@@ -441,6 +441,56 @@ isolated locked OS-root construction:
   experimental boundary. Stages 0/1 remain incomplete; full role/application
   assembly, selected persistent mounts and provisioning are not implemented.
 
+5 November 2026 — [#159](https://github.com/toastfr35/ZmalaCall/issues/159),
+experimental shared host storage and offline root preparation:
+
+- Added experimental image-managed product scope (`PROD017`) separately from the
+  legacy application-only policy. Server HOST and terminal MAINT storage items
+  have direct component LLT/HLT plans and owning shared-runtime `@llr` anchors.
+  `zmala_system` is included in runtime source inventory; its installed policy is
+  not hidden as installer tooling. Existing supported deployments are unchanged.
+- Implemented a UI/media-independent shared helper accepting a marked read-only
+  ext4 root, separate prevalidated writable ext4 data and RAM work. It checks
+  bounded exact role/profile records, initialized identity, owners, modes, links,
+  mount facts and a bounded variable-state seed before preparing mutable views.
+  Physical data-device selection and first identity creation remain caller
+  preconditions, not features claimed by this helper.
+- Fresh `/etc` uses a private 64 MiB RAM upper area; `/var` and `/tmp` use bounded
+  128 MiB RAM mounts. Package status/alternatives stay in the selected immutable
+  slot. Fixed bindings preserve app, network/Bluetooth, host keys, operator and
+  server certificate state. Only the operator subdirectory is bound under
+  `/etc/zmalacall`, leaving new product defaults visible. Journals have a volatile
+  32 MiB/4 MiB template. Existing incompatible state is rejected, not bulk-chowned.
+- Preparation is serialized in private RAM; readiness is published atomically only
+  after its complete status is flushed and closed. Status-sync, mount-inspection
+  and marker-cleanup failures are exercised explicitly.
+  Failures preserve the original error and attempt reverse cleanup of owned
+  mounts, including a command that fails after actually mounting. Input root/data
+  volumes are retained. No package, service, TV or media helper is invoked.
+- Direct LLTs cover controlled data/metadata and operation failures. Real Linux
+  root HLTs use new 32 MiB regular ext4 file images in private mount/network/PID
+  namespaces. Both roles passed two synthetic root generations, app UID 1000
+  permissions, stable selected bytes, fresh defaults, slot package/alternative
+  state, actual RAM capacities, readonly identity, private keys and pre/post-mount
+  failure cleanup. These are not physical boot, reboot or power-cut passes.
+- Added portable `prepare-root` archive rewriting without extraction/mounting.
+  It verifies reviewed raw-root bytes and package input, moves package state and
+  the remaining variable-state seed into immutable slot paths, and packages the
+  exact authored helper/profile/journal policy. Graph/parent/hard-link, ownership,
+  privacy, byte and RAM-seed checks gate readiness; runtime payload hashes record
+  the copied source. Build/packaging regressions stay under `tests/adhoc/`.
+- Both actual role roots were prepared and re-audited: server 312 packages with
+  133 seed entries / 3,713,014 bytes; terminal 805 with 404 / 3,902,775 bytes. Raw
+  source archives remained unchanged. Output explicitly keeps early-boot
+  integration, data initialization, app installation and hardware/production
+  qualification false; no root archive or private data is published.
+- Technical guides and CI root-namespace checks now describe/exercise this helper.
+  Current end-user guides and SSH installers remain accurate because supported
+  installation and user workflows have not changed. Remaining stage-1 work
+  includes early-boot wiring, complete role provisioning and immutable build/source
+  retention; stage 2 still owns initial identity/claim and migration. No new
+  factory image or automatic system updater is claimed; stages 0/1 remain open.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
@@ -1573,6 +1623,8 @@ migration yet.
 - [ ] Create locked common/role layers and offline image inspection tools.
 - [ ] Extract reusable provisioning from current installation scripts.
 - [ ] Establish read-only root, selected persistent mounts and low-write policy.
+      Shared runtime/archive preparation is namespace-tested; early-boot wiring
+      and physical role enforcement remain pending.
 - [ ] Package the common maintenance runtime, units and public trust.
 - [ ] Generate and sanitize both first-install images and slot payloads.
 - [ ] Add provenance, notices, public digest/signature handling and ad-hoc checks.

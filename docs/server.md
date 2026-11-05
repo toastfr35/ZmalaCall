@@ -372,6 +372,29 @@ clears them. Installer recovery logs are retained separately.
 failure and 200 after its commit succeeds. Neither proves registration, call
 quality, free disk space or full backup consistency.
 
+### Experimental image-managed storage
+
+The replacement SD-image work now has a shared `zmala_system` storage helper
+(experimental `HLR-SRV-HOST-008` and its LLRs). It accepts a marked read-only root,
+prevalidated ext4 data with initialized identity, and RAM work. Package status and
+alternatives remain under the selected root's `/usr/lib/zmala/slot-dpkg`; a small
+vendor `/var` seed populates a fresh 128 MiB RAM view. `/etc` uses a fresh overlay
+with a 64 MiB RAM upper area, and `/tmp` uses a separate 128 MiB RAM mount.
+
+The fixed server bindings preserve application state, NetworkManager profiles and
+identity, Bluetooth state, SSH keys, certificates and product operator settings.
+Only `/etc/ssh/keys` and `/etc/zmalacall/operator` are bound for those settings;
+SSH and product defaults stay with the selected root. Identity/hostname bindings
+are read-only. The authored image journald policy selects volatile storage capped
+at 32 MiB with 4 MiB files. Existing directories with incompatible ownership,
+permissions or links are rejected; the helper never bulk-converts imported state.
+
+This code has unit and real isolated-namespace evidence. The archive preparation
+tool packages it without starting it or initializing device data. Early-boot
+integration, first-owner setup, service/provisioning integration and physical
+qualification remain pending. Current installers/services use the layout and
+64 MiB journal policy described above; this experiment does not change them.
+
 ## Administration and authentication
 
 Open the server's LAN address/HTTP port; `127.0.0.1:8080` works only on the server

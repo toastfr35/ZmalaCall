@@ -23,7 +23,7 @@ from test_trace import audit_tests, write_test_report
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOTS = (
-    'zmala_server', 'zmala_terminal/common', 'zmala_terminal/linux', 'zmala_phone/app/src/main',
+    'zmala_server', 'zmala_terminal/common', 'zmala_terminal/linux', 'zmala_phone/app/src/main', 'zmala_system',
     'build_tools/linux', 'build_tools/windows_installer', 'build_tools/server_installer',
 )
 # Runtime helpers outside the component trees still belong in trace and coverage.

@@ -86,6 +86,12 @@ starts, removes selected factory identities/build sources and checks the final
 package ledger without extracting the archive. It is not an application image,
 bootable A/B installer, production persistence policy or automatic OS updater.
 Its host toolchain and hardware behavior remain unqualified.
+The shared experimental `zmala_system` runtime now prepares image-managed storage
+from a marked read-only root, prevalidated ext4 data and RAM work. It keeps package
+state in the selected slot, creates fresh RAM views and binds a fixed set of saved
+paths. `prepare-root` packages that helper and its seed/profile into a new archive
+without extraction. Early-boot invocation, data/identity initialization and complete
+role provisioning are still absent; current SSH-installed hosts remain unchanged.
 The separate bootloader probe tooling now fetches a pinned U-Boot candidate and
 emits/audits its Kconfig subset and bounded watchdog handoff examples. It does not
 replace the native `probe-config`, install a backend or produce a qualified image;
@@ -129,6 +135,7 @@ dependencies; ordinary calls do not download code or models.
 | `zmala_phone/` | Android application, resources and native SDK adapter |
 | `tests/android/{LLT,HLT}/` | Android JVM/device verification plans and assertions |
 | `zmala_server/` | Node server, administration source and SIP transport |
+| `zmala_system/` | Shared experimental image-managed host layout/storage policy; no UI or media dependency |
 | `zmala_terminal/common/` | Shared Python controllers, UI, assets and translations |
 | `tests/server/{LLT,HLT}/` | Server unit and system/integration test plans and implementations |
 | `tests/terminal/{LLT,HLT}/` | Pi terminal unit and system/integration test plans and implementations |
@@ -327,6 +334,21 @@ packets addressed to the Ethernet IP. Run them with `sudo python -m unittest
 tests.server.HLT.test_ssh_guard_linux tests.terminal.HLT.test_ssh_guard_linux`.
 They need `iproute2` and `nftables`; CI runs this step explicitly so a non-root
 skip cannot stand in for firewall verification.
+
+The image-storage HLTs also run explicitly with root in private mount/network/PID
+namespaces:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_appliance_storage_linux tests.terminal.HLT.test_appliance_storage_linux -v
+```
+
+They format only new 32 MiB regular fixture files, mount them as ext4 loop images,
+and compare two synthetic read-only roots with shared data and bounded RAM views.
+They exercise chroot/app-UID permissions, default/package separation and failed
+operation cleanup. The parent removes fixture files only after the worker namespace
+exits. `unshare`, mount tools, `mkfs.ext4` and loop-file support are required; CI
+does not treat a non-root skip as successful integration. These runs do not count
+as physical boot, reboot, power-cut, media or complete updater qualification.
 
 New product regressions belong in LLT/HLT. `tests/adhoc/` is for non-RBT work,
 including development-tool self-tests and Windows-only terminal compatibility

@@ -353,6 +353,45 @@ state: the cleaned server tar contains exactly 312 locked packages and is
 Both retained hashes and the current archive acceptance checks passed. These are
 raw tar sizes, not partition-capacity measurements or boot/call qualification.
 
+## Preparing experimental image-managed storage
+
+`prepare-root` consumes a reviewed `build-root` tar and the matching verified
+base/role caches. It rewrites a **new tar without extracting or mounting it**:
+
+```sh
+python3 -m build_tools.images prepare-root server \
+  --source /path/to/server-root-build/root.tar \
+  --expected-root-sha256 <digest-from-reviewed-root-build-record> \
+  --base-cache /path/to/reviewed/base-intake \
+  --role-cache /path/to/reviewed/server-intake \
+  --output /path/to/new/server-storage-root
+python3 -m unittest tests.adhoc.test_image_state -v
+```
+
+Use `terminal` and its role cache for that root. The tool checks source bytes,
+package versions/architecture and the raw factory privacy subset first. It moves
+`/var/lib/dpkg` into `/usr/lib/zmala/slot-dpkg`, moves the remaining `/var` into a
+small immutable seed, and inserts the seed's package-db link. Runtime Python
+files, the exact fixed role profile and the bounded volatile-journal template are
+copied from authored `zmala_system` sources with LF endings. It does not import
+operator/device data or create accounts/keys. The original archive is unchanged.
+
+Archive acceptance checks unique canonical paths and real directory parents,
+hard-link targets/metadata, ownership ranges, complete runtime bytes, slot package
+identity and the variable-state RAM budget. Seed aliases into unlisted `/data`
+paths are refused. Incomplete output has no `READY.json`. The success record
+includes both root digests and runtime payload hashes, while explicitly keeping
+early-boot integration, device initialization, application installation, hardware
+qualification and production eligibility false. Retain those boundaries: this
+archive is not a ready-to-flash image or update candidate.
+
+The runtime helper is requirement-traced under experimental `PROD017` with direct
+server/terminal LLT/HLT plans. Its real mount-namespace integration scenarios use
+only temporary ext4 file images; see `docs/general.md`. Build/archive regressions
+remain ad-hoc tooling checks. The current SSH installers do not launch this
+helper. Data-device selection, initial identities, initramfs packaging/invocation,
+complete role setup and the update coordinator are separate unfinished stages.
+
 ## Bootloader probe inputs and configuration audit
 
 `bootloader-config` emits a Kconfig fragment, raw-environment settings and the
