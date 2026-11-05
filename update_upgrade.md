@@ -148,6 +148,34 @@ boot-state qualification in progress:
   complete role qualification remain unfinished. The next hardware run requires
   the spare card back in the reader and an arranged terminal test window.
 
+5 November 2026 — further offline evidence for #149:
+
+- The real ARM64 environment tools also passed a multi-variable batch update
+  against ordinary files, with both copies retaining valid CRCs. This selected
+  tool version's script format is `key=value`; space-separated lines would be
+  ignored. The test checks read-back values as well as command completion.
+- Built a separate host-only U-Boot sandbox to exercise the command interpreter.
+  Found a lab-script bug: `setexpr` stores hexadecimal text, while `test` uses
+  automatic-base integer parsing. An initial `10` became `f`, which the later
+  comparison treated as zero. Prepared a corrected script using the standard
+  small attempt count of three. Its image header and payload CRCs are verified.
+  Five selection/counter cases pass in the actual interpreter: initial A, trial
+  B, exhausted B falling back to A, a manual B count reset, and no attempts left.
+  Filesystem loading, state persistence and reset commands were stubbed; none of
+  these cases is a hardware boot or production health-confirmation result.
+- On reinserting the previously booted spare card, its exact-preimage guard
+  stopped before writing. Read-only comparison found changes confined to valid
+  ext4 superblock write-time, written-KiB accounting and checksum fields among
+  the eight compared 1 MiB ranges. All other compared bytes matched; this is not
+  a whole-filesystem comparison. Reviewed and pinned those post-boot range
+  hashes before retrying. A read-only mounted root should not be assumed to have
+  a bit-identical raw image after startup filesystem handling.
+- The new base image is being written and read-back verified. It must receive
+  the corrected boot script before first boot; the original compressed lab
+  artifact is retained as an explicitly superseded base. No new hardware boot
+  or power-cut result is claimed. The original terminal installation remains
+  running separately.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
