@@ -390,7 +390,17 @@ at 32 MiB with 4 MiB files. Existing directories with incompatible ownership,
 permissions or links are rejected; the helper never bulk-converts imported state.
 
 This code has unit and real isolated-namespace evidence. The archive preparation
-tool packages it without starting it or initializing device data. Early-boot
+tool packages it without starting it or initializing device data. The separate
+`zmala_system.device_identity` helper (`HLR-SRV-HOST-013`) can initialize identity
+on prevalidated marked factory data. It requires Linux UID/GID 0, an ext4 mount
+with root-private permissions and a matching factory record. A persistent
+nonblocking lock serializes initialization. Kernel-generated identity and default
+hostname are synchronized and published together before the initialized-data
+marker; interrupted retries preserve a committed identity. Invalid saved state
+fails without factory reset. Real ext4 process-interruption tests exercise this
+ordering, but do not establish physical power-cut or boot recovery.
+
+Early-boot
 integration, first-owner setup, service/provisioning integration and physical
 qualification remain pending. Current installers/services use the layout and
 64 MiB journal policy described above; this experiment does not change them.

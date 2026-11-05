@@ -389,8 +389,39 @@ The runtime helper is requirement-traced under experimental `PROD017` with direc
 server/terminal LLT/HLT plans. Its real mount-namespace integration scenarios use
 only temporary ext4 file images; see `docs/general.md`. Build/archive regressions
 remain ad-hoc tooling checks. The current SSH installers do not launch this
-helper. Data-device selection, initial identities, initramfs packaging/invocation,
-complete role setup and the update coordinator are separate unfinished stages.
+helper. Data-device selection, initramfs packaging/invocation, complete role
+setup and the update coordinator are separate unfinished stages.
+
+## Empty factory data and first-device identity
+
+```sh
+python3 -m build_tools.images factory-data server --output /path/to/new/server-data
+python3 -m build_tools.images factory-data terminal --output /path/to/new/terminal-data
+python3 -m unittest tests.adhoc.test_image_factory_data -v
+```
+
+This emits a deterministic `data.tar` containing only a root-owned private data
+directory and the role's `.zmala-factory.json` record. The adjacent status explicitly
+reports that no device identity exists and data initialization/production
+qualification remain false. It never formats, mounts or opens a device. The
+archive is an input to future image assembly, not a migration archive.
+
+`prepare-root` also packages `zmala_system.device_identity`. Its Linux-root CLI
+accepts `--data` and `--role`, but must only be invoked by boot integration after
+the correct separate writable ext4 volume has been validated. It accepts marked
+factory data or fully initialized compatible state, never arbitrary existing
+data. A nonblocking persistent lock prevents competing initializers. Blocking
+kernel entropy supplies a 128-bit machine identifier and derived default hostname.
+The helper synchronizes a private staging directory and its files, publishes
+identity atomically, synchronizes its parent, then publishes the initialized-data
+marker. Retries validate and retain committed identity, including when its final
+marker was interrupted; unexpected state is rejected without resetting it.
+
+The helper does not generate SSH keys, expand data, claim the server owner or
+start services. Current installers never call it. Direct LLT/HLT plans exercise
+both roles, including process exits at eight real synchronization boundaries on
+temporary ext4 file images. Those are process-interruption checks, not physical
+power-loss or full boot qualification. Actual early-boot wiring remains pending.
 
 ## Bootloader probe inputs and configuration audit
 
