@@ -147,6 +147,6 @@ class BootStateNamespaceScenario(unittest.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fixture', required=True, type=Path)
-    parser.add_argument('--role', required=True, choices=('server', 'terminal'))
+    parser.add_argument('--role', required=True, choices=('server', 'terminal', 'combined'))
     args = parser.parse_args()
     worker(args.fixture, args.role)

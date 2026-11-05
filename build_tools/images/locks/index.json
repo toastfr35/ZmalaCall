@@ -14,6 +14,12 @@
       "sha256": "3722a3ede0e9cd451a2dd16278e1bee125f0e2262404ec75467a99969344c6a4",
       "archives": 723,
       "archive_bytes": 528581052
+    },
+    "combined": {
+      "file": "combined.json",
+      "sha256": "2116e2a8586aecbb43a30ae386bdac3d842f7b48836fa04e1d164f791e5f6f3a",
+      "archives": 738,
+      "archive_bytes": 541568108
     }
   },
   "base": {

@@ -103,7 +103,7 @@ def worker(parent, role):
         fixture.mount_stage()
         try:
             assert device_identity.saved_identity(fixture.stage) == saved
-            assert (fixture.stage/'state'/role/'boot-fixture').read_bytes() == b'state from first slot'
+            assert (fixture.stage/'state'/('terminal' if role == 'combined' else role)/'boot-fixture').read_bytes() == b'state from first slot'
         finally:
             command(['umount', fixture.stage])
         print(json.dumps({'role': role, 'selected_roots': 2, 'failure_cases': 4, 'passed': True}))
@@ -134,6 +134,6 @@ class BootStorageNamespaceScenario(unittest.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fixture', required=True, type=Path)
-    parser.add_argument('--role', required=True, choices=('server', 'terminal'))
+    parser.add_argument('--role', required=True, choices=('server', 'terminal', 'combined'))
     args = parser.parse_args()
     worker(args.fixture, args.role)

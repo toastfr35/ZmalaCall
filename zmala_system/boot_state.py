@@ -7,6 +7,8 @@ from dataclasses import dataclass, replace
 import json
 import re
 
+from .host_layout import ROLES
+
 KEYS = ('zm_schema', 'zm_role', 'zm_confirmed', 'zm_trial', 'zm_left',
         'zm_a_good', 'zm_b_good', 'zm_transaction', 'zm_generation')
 MAX_BYTES = 4096
@@ -14,16 +16,16 @@ LIMIT = 2**64-1
 PROFILE = 'usr/lib/zmala/boot-control.json'
 
 
-# @llr LLR-SRV-HOST-027, LLR-TERM-MAINT-054
+# @llr LLR-SRV-HOST-027, LLR-TERM-MAINT-054, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def policy(role):
-    if role not in ('server', 'terminal'):
+    if role not in ROLES:
         raise ValueError('Unsupported boot role')
     return {'schema': 1, 'role': role, 'contract': 'zmala-confirmed-trial-v1',
             'activate_installed': False, 'automatic_confirmation': False,
             'pid1_startup_watchdog_seconds': 0, 'health_handover_implemented': False}
 
 
-# @llr LLR-SRV-HOST-026, LLR-SRV-HOST-027, LLR-TERM-MAINT-053, LLR-TERM-MAINT-054
+# @llr LLR-SRV-HOST-026, LLR-SRV-HOST-027, LLR-TERM-MAINT-053, LLR-TERM-MAINT-054, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def decode_policy(body, role):
     from .host_layout import unique_fields
     if not isinstance(body, bytes) or not 0 < len(body) <= MAX_BYTES:
@@ -59,9 +61,9 @@ class State:
     transaction: str = '-'
     generation: int = 0
 
-    # @llr LLR-SRV-HOST-023, LLR-TERM-MAINT-050
+    # @llr LLR-SRV-HOST-023, LLR-TERM-MAINT-050, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
     def __post_init__(self):
-        if self.role not in ('server', 'terminal'):
+        if self.role not in ROLES:
             raise ValueError('Unsupported boot role')
         slot(self.confirmed)
         if (type(self.left) is not int or self.left not in (0, 1)
@@ -134,7 +136,7 @@ class State:
         return self.changed(trial='-', left=0)
 
 
-# @llr LLR-SRV-HOST-023, LLR-TERM-MAINT-050
+# @llr LLR-SRV-HOST-023, LLR-TERM-MAINT-050, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def decode(body, role):
     if (not isinstance(body, bytes) or not 0 < len(body) <= MAX_BYTES
             or b'\0' in body or b'\r' in body or not body.endswith(b'\n')):

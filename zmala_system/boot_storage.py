@@ -163,7 +163,7 @@ def prepare(root, role, area=Path('/run/zmala-host'), system=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True)
-    parser.add_argument('--role', choices=('server', 'terminal'), required=True)
+    parser.add_argument('--role', choices=host_layout.ROLES, required=True)
     args = parser.parse_args()
     try:
         prepare(args.root, args.role)

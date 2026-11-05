@@ -108,6 +108,18 @@ emits/audits its Kconfig subset and bounded watchdog handoff examples. It does n
 replace the native `probe-config`, install a backend or produce a qualified image;
 see the image-tool guide for source-specific budgets and build instructions.
 
+
+The experimental `combined` image role (**Zmala Terminal + Server**) uses the same
+host identity and A/B boot contract, with terminal UID/GID 1000 and server UID/GID
+1001. Their application trees remain separate mode-0700 bindings. Operator
+configuration binds `/etc/zmalacall/operator/terminal` and
+`/etc/zmalacall/operator/server` as root-owned mode-0750 directories readable only
+by their respective groups. SSH and certificate state remain root-private.
+Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
+initialized data and boot records reject role substitution; conversion needs a
+separate migration. This implements storage and boot policy, not combined service
+provisioning, onboarding, coordinated updates or a qualified flashable image.
+
 Windows server hosting, the serial-keypad project and CAD models are retired.
 Other cameras/boards and direct GPIO controls are not established terminal
 deployments. Passing portable tests does not qualify a new TV, USB setup or

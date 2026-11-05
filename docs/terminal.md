@@ -1082,6 +1082,18 @@ operator settings; `/etc/ssh/keys` and `/etc/zmalacall/operator` are distinct fr
 new slot defaults. Saved identity/hostname are exposed read-only. Only declared
 mount operations are invoked; no TV, camera, media, package or service helper runs.
 
+
+The experimental `combined` image role (**Zmala Terminal + Server**) uses the same
+host identity and A/B boot contract, with terminal UID/GID 1000 and server UID/GID
+1001. Their application trees remain separate mode-0700 bindings. Operator
+configuration binds `/etc/zmalacall/operator/terminal` and
+`/etc/zmalacall/operator/server` as root-owned mode-0750 directories readable only
+by their respective groups. SSH and certificate state remain root-private.
+Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
+initialized data and boot records reject role substitution; conversion needs a
+separate migration. This implements storage and boot policy, not combined service
+provisioning, onboarding, coordinated updates or a qualified flashable image.
+
 Unit and real private-namespace tests cover this storage helper. The offline
 archive tool packages its profile, variable-state seed and runtime without
 extracting or booting the result. The separate `device_identity` helper

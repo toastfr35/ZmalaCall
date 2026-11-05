@@ -36,12 +36,13 @@ def ext4(parent, name):
     return target
 
 
-def probe(root, role, value):
+def probe(root, role, value, component=None):
     """Chroot the already loaded interpreter, then exercise app UID 1000.
 
     The fixture needs no binaries or host library copies in its synthetic root.
     Every returned value belongs to this synthetic test, never a real account.
     """
+    component = component or role
     read_fd, write_fd = os.pipe()
     child = os.fork()
     if child == 0:
@@ -62,14 +63,32 @@ def probe(root, role, value):
                 result['identity_readonly'] = error.errno == errno.EROFS
             else:
                 result['identity_readonly'] = False
-            os.setgroups([]); os.setgid(1000); os.setuid(1000)
+            uid = 1001 if role == 'combined' and component == 'server' else 1000
+            os.setgroups([]); os.setgid(uid); os.setuid(uid)
             result['identity'] = Path('/etc/machine-id').read_bytes().decode()
             result['hostname'] = Path('/etc/hostname').read_bytes().decode()
-            app = Path('/var/lib/zmalacall-server' if role == 'server' else '/var/lib/zmalacall')
+            app = Path('/var/lib/zmalacall-server' if component == 'server' else '/var/lib/zmalacall')
             record = app/'probe.json'
             result['previous'] = json.loads(record.read_text()) if record.exists() else None
             with os.fdopen(os.open(record, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w') as stream:
                 json.dump({'value': value}, stream); stream.flush(); os.fsync(stream.fileno())
+            if role == 'combined':
+                own = Path('/etc/zmalacall/operator')/component/'private-fixture'
+                assert own.read_text() == component
+                other = 'server' if component == 'terminal' else 'terminal'
+                forbidden = [Path('/etc/zmalacall/operator')/other/'private-fixture',
+                             Path('/var/lib/zmalacall-server' if other == 'server' else '/var/lib/zmalacall')/'probe.json',
+                             Path('/etc/letsencrypt/private-fixture')]
+                for private in forbidden:
+                    for mode in ('rb', 'wb'):
+                        try:
+                            with private.open(mode):
+                                pass
+                        except PermissionError:
+                            pass
+                        else:
+                            raise AssertionError('Cross-component private access accepted')
+                result['component_isolation'] = True
             try:
                 Path('/etc/ssh/keys/private-fixture').read_bytes()
             except PermissionError:
@@ -109,6 +128,7 @@ def worker(parent, role):
         data = ext4(parent, 'data'); owned.append(data); fixture.data(data, role)
         (data/'host').mkdir(mode=0o700); (data/'host/ssh').mkdir(mode=0o700)
         fixture.file(data/'host/ssh/private-fixture', b'synthetic private fixture', 0o600)
+        components = ('terminal', 'server') if role == 'combined' else (role,)
         roots, lowers = [], []
         for generation in ('A', 'B'):
             root = ext4(parent, 'root-'+generation); owned.append(root)
@@ -176,7 +196,18 @@ def worker(parent, role):
                     pass
                 else:
                     raise AssertionError('Active preparation repeated')
-                result = probe(root, role, 'from-'+str(number))
+                if role == 'combined':
+                    for component, gid in (('terminal', 1000), ('server', 1001)):
+                        private = root/'etc/zmalacall/operator'/component/'private-fixture'
+                        fixture.file(private, component.encode(), 0o640)
+                        os.chown(private, 0, gid)
+                    fixture.file(root/'etc/letsencrypt/private-fixture', b'private certificate fixture', 0o600)
+                    server = probe(root, role, 'from-'+str(number), 'server')
+                    assert server['component_isolation']
+                    assert server['previous'] == (None if number == 0 else {'value': 'from-0'})
+                result = probe(root, role, 'from-'+str(number), components[0])
+                if role == 'combined':
+                    assert result['component_isolation']
                 assert result['vendor'] == 'factory-'+('A' if number == 0 else 'B')
                 assert result['package'] == 'slot-package-'+('A' if number == 0 else 'B')
                 assert result['alternative'] == 'alternative-'+('A' if number == 0 else 'B')
@@ -186,7 +217,7 @@ def worker(parent, role):
                 assert result['identity_readonly'] and result['host_keys_private']
                 assert result['previous'] == (None if number == 0 else {'value': 'from-0'})
                 assert not result['only_a'] and not result['var_a'] and not result['tmp_a']
-                app_file = data/'state'/role/'probe.json'
+                app_file = data/'state'/components[0]/'probe.json'
                 assert (app_file.stat().st_uid, app_file.stat().st_gid) == (1000, 1000)
                 if number == 0:
                     (root/'etc/vendor.conf').write_text('RAM override')
@@ -203,7 +234,11 @@ def worker(parent, role):
             finally:
                 prepared.close()
             assert set(storage.NativeMounts.facts()) == initial
-        assert json.loads((data/'state'/role/'probe.json').read_text()) == {'value': 'from-1'}
+        for component in components:
+            saved = data/'state'/component/'probe.json'
+            assert json.loads(saved.read_text()) == {'value': 'from-1'}
+            uid = 1001 if role == 'combined' and component == 'server' else 1000
+            assert (saved.stat().st_uid, saved.stat().st_gid) == (uid, uid)
         print(json.dumps({'role': role, 'root_generations': 2, 'failure_modes': 4, 'passed': True}), flush=True)
     finally:
         # Fixture volumes are separate from the helper's owned mutable views.
@@ -238,6 +273,6 @@ class StorageNamespaceScenario(unittest.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fixture', required=True, type=Path)
-    parser.add_argument('--role', choices=('server', 'terminal'), required=True)
+    parser.add_argument('--role', choices=('server', 'terminal', 'combined'), required=True)
     args = parser.parse_args()
     worker(args.fixture, args.role)

@@ -324,7 +324,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', required=True, type=Path)
     parser.add_argument('--data', required=True, type=Path)
-    parser.add_argument('--role', required=True, choices=('server', 'terminal'))
+    parser.add_argument('--role', required=True, choices=layout.ROLES)
     parser.add_argument('--runtime-area', type=Path, default=Path('/run/zmala-host'))
     args = parser.parse_args()
     try:

@@ -650,6 +650,24 @@ experimental confirmed/trial boot-control helper implementation:
   user guide has changed. Complete card assembly, product provisioning, health,
   signed coordination, migration and release qualification remain unfinished.
 
+5 November 2026 — continuation of [#167](https://github.com/toastfr35/ZmalaCall/issues/167):
+
+- Added an explicit combined package/runtime role with a separately authenticated
+  738-archive closure and 52 requested packages. Shared archive identities and the
+  observed base remain unchanged.
+- Combined terminal UID/GID 1000 and server UID/GID 1001 have separate private
+  application and operator bindings. One combined host/boot identity is shared;
+  exact policies reject implicit role conversion. Host keys remain root-private.
+- Direct component LLT/HLT plans and CI cover combined identity, storage, GPT
+  startup and boot-state transitions. Eight combined namespace HLTs, 240 runtime
+  LLTs and 83 image-tool tests passed on Linux. Windows skips remain explicit.
+- The previously pending standalone terminal root completed with 807 exact
+  selections. Its updated initramfs passed target ARM64 checks. Combined
+  root/component building is underway; neither result is a full application image.
+- Service provisioning, matched loader/card assembly, onboarding and joint
+  coordinator/health remain pending. Existing installation workflows and user
+  guides remain accurate. No live host or card was changed.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
@@ -672,13 +690,15 @@ experimental confirmed/trial boot-control helper implementation:
 
 ## 1. Outcome and agreed direction
 
-Replace the normal SSH-based installation process with two complete, public,
+Replace the normal SSH-based installation process with three complete, public,
 ready-to-flash SD-card images:
 
 - **Zmala Terminal:** Raspberry Pi OS, terminal application, media runtime,
   supported hardware integration, setup UI and automatic system maintenance.
 - **Zmala Server:** Raspberry Pi OS, server application, required services,
   local first-run administration and automatic system maintenance.
+- **Zmala Terminal + Server:** both components on one Pi and one OS, with separate
+  application identities and one host maintenance transaction.
 
 The installation experience becomes: download the correct image, flash and verify
 the card with Raspberry Pi Imager, insert it into the Pi, power on, and complete
@@ -756,7 +776,7 @@ possible; do not transplant assumptions from application-only updates unchanged.
 
 Both current Pi installers target Raspberry Pi OS Lite 64-bit, Debian 13 Trixie.
 Terminal installation accepts Pi 4 Model B. Server installation accepts Pi 3 Model
-B/B+ and Pi 4 Model B. This plan initially qualifies Pi 4 for both roles; Pi 3
+B/B+ and Pi 4 Model B. This plan initially qualifies Pi 4 for all three image roles; Pi 3
 server support is a separate explicit qualification gate, not silently withdrawn
 or assumed from portable tests. Public compatibility labels must distinguish
 legacy installer support from qualified new-image support.
@@ -841,7 +861,7 @@ Avoid one large root script and avoid frameworks that obscure boot decisions.
 
 ### 5.1 Proposed layout
 
-Use one versioned partition schema for both roles, with role-specific contents.
+Use one versioned partition schema for all three image roles, with role-specific contents.
 The following is an initial sizing budget for a nominal 32 GB card, not a measured
 fit guarantee:
 
@@ -855,7 +875,7 @@ fit guarantee:
 | Data | Remaining usable space | Identities, selected host state, application data, bounded update metadata/cache/checkpoints |
 
 A nominal 32 GB card provides about 29.8 GiB before layout/filesystem overhead;
-this example leaves roughly 12 GiB for data. Measure both images, the largest
+this example leaves roughly 12 GiB for data. Measure all three images, the largest
 supported portrait/photo collection, bundle staging, migration checkpoints and
 free-space reserve. Adjust budgets before freezing schema v1. Reject cards below
 the measured minimum byte capacity even when their label says 32 GB.
@@ -1122,7 +1142,7 @@ Separate build-time package acquisition from first boot:
    compliance. Verify redistributability of every image component.
 8. Sanitize entropy seeds, machine IDs, SSH host keys, pairing data, enrollment,
    credentials, logs, local paths and private development content.
-9. Assemble both role images and matching slot payloads. Initially seed both slots
+9. Assemble all three role images and matching slot payloads. Initially seed both slots
    with the same factory release so a newly installed device has a coherent fallback.
 10. Inspect the mounted image offline and boot-test the exact assembled artifact.
 
@@ -1218,6 +1238,28 @@ subnets, and the separate tunnel endpoint unable to grant a server shell. The
 public update download endpoint grants no administration capability. First-run
 setup must enforce the same network boundary even before a domain is configured.
 
+### 8.6 Combined appliance
+
+Issue [#167](https://github.com/toastfr35/ZmalaCall/issues/167) adds the explicit
+`combined` profile, displayed as **Zmala Terminal + Server**. Its authenticated
+package intent is the union of the standalone roles against the same observed
+base; shared archives stay identical across role locks. Role conversion is a
+separate migration, never a normal candidate update.
+
+One machine identity, network/Bluetooth configuration, boot selector and data
+partition serve both components. Terminal UID/GID 1000 and server UID/GID 1001
+own separate private application trees; standalone roles retain 1000. Operator
+configuration is split by component. Root-private host SSH and server TLS keys
+are not made readable by the terminal UI. The storage/boot policy implements
+these boundaries; actual system-user and service provisioning remains pending.
+
+Combined first boot needs both LAN-only server first-owner setup and normal
+terminal QR enrollment, with host networking configured once. Qualify secure
+local terminal-to-local-server registration with the correct TLS authority
+without router NAT loopback. Review listener and account collisions, including
+tunnel listeners versus developer shell access. Keeping the television in
+standby or restarting the terminal UI must not stop the server.
+
 ## 9. Automatic maintenance policy and call protection
 
 ### 9.1 Proposed scheduling defaults
@@ -1299,6 +1341,16 @@ dependent terminal activates, but use bounded scheduling and backward-compatible
 protocol ranges so neither waits forever for the other. Compatibility manifests
 define bridge releases when an upgrade order matters. The server cannot authorize
 an unsigned release merely by forwarding a feed.
+
+### 9.5 Combined admission and health
+
+One coordinator owns RAUC and reboot. Activation waits for both terminal safe-idle
+admission and server admission, including global SIP/TURN activity and protected
+persistence operations. Calls win the final admission race. Confirmation covers
+both local components, including valid unclaimed-server and terminal-setup waiting
+states; external outages do not alone imply a broken candidate. No health probe
+wakes camera or TV. Preserve both application data generations and TV restoration
+state in the same transaction. These coordinator and health paths remain pending.
 
 ## 10. Progress, health and recovery experience
 
@@ -1726,7 +1778,7 @@ artifacts. Use separate test devices/cards where interruption risks data.
 
 | Area | Minimum physical scenarios |
 | --- | --- |
-| Factory installation | Both roles; fresh 32 GB card; minimum measured capacity; flash verification; interrupted first boot; unique identities across two cards |
+| Factory installation | All three image roles; fresh 32 GB card; minimum measured capacity; flash verification; interrupted first boot; unique identities across two cards |
 | Board coverage | Pi 4 supported revisions; Pi 3 server only when explicitly retaining that image support |
 | A/B transitions | A→B and B→A; repeated successful upgrades; already staged candidate; no-op release |
 | Power interruption | Random and targeted cuts during download, each inactive write, data checkpoint/migration, reboot request, trial boot and selector/confirmation commit |
@@ -1760,7 +1812,7 @@ after required Verify checks are clean. Do not push or mirror commits onto `main
 
 ### Stage 0 — Feasibility and safety decisions
 
-- [ ] Inventory shipped OS/boot/host state and service writes for both roles.
+- [ ] Inventory shipped OS/boot/host state and service writes for all three image roles.
 - [ ] Measure root sizes, data/checkpoint/cache budgets and minimum card capacity.
 - [x] Boot a minimal `rpi-image-gen` A/B common-base probe on a spare card in an
       available Pi 4; A → trial B → ordinary A demonstrated. Complete role images
@@ -1780,18 +1832,19 @@ migration yet.
 ### Stage 1 — Common image foundation and artifact pipeline
 
 - [x] Retain authenticated common/role package closures and exact input locks.
-- [x] Build and audit isolated locked OS-root archives for both roles.
+- [x] Build and audit isolated locked OS-root archives for both standalone roles.
+- [ ] Complete and record the combined OS-root/component build.
 - [ ] Complete factory application/host provisioning in the common/role layers.
 - [ ] Extract reusable provisioning from current installation scripts.
 - [ ] Establish read-only root, selected persistent mounts and low-write policy.
       Shared runtime, early-boot discovery and archive preparation are
       namespace-tested; actual complete-image boot/role enforcement remains pending.
 - [ ] Package the common maintenance runtime, units and public trust.
-- [ ] Generate and sanitize both first-install images and slot payloads.
+- [ ] Generate and sanitize all three first-install images and slot payloads.
 - [ ] Add provenance, notices, public digest/signature handling and ad-hoc checks.
 - [ ] Demonstrate reproducible inputs and document remaining output nondeterminism.
 
-Exit: both roles flash and boot on spare cards; no shared identities/secrets;
+Exit: all three image roles flash and boot on spare cards; no shared identities/secrets;
 partition and permissions inspection passes; original deployment is untouched.
 
 ### Stage 2 — First boot and migration tooling
@@ -1850,6 +1903,8 @@ without replayed work; old and new terminal types coexist safely.
 
 ### Stage 6 — Major upgrades and full failure qualification
 
+- [ ] Measure combined 32 GB fit, RAM, CPU, thermals and calls under server relay load.
+
 - [ ] Exercise a real different-major-OS candidate, not merely a new package label.
 - [ ] Qualify media ABI and host config/network/Bluetooth/TLS migrations.
 - [ ] Implement or explicitly reject incompatible data-generation transitions.
@@ -1890,7 +1945,7 @@ and the first real fleet updates have supporting evidence.
 
 This work is complete only when all of the following have evidence:
 
-1. A user can prepare Terminal and Server cards from the published downloads and
+1. A user can prepare Terminal, Server and Terminal + Server cards from the published downloads and
    guides without an SSH installation procedure.
 2. Installed devices retain unique identities, enrollment, network/pairing state,
    private keys and application data across both update directions.

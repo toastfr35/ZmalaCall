@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import re
 
+from zmala_system.host_layout import ROLES
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -12,7 +14,7 @@ def profiles():
     if (value['schema'] != 1 or value['architecture'] != 'arm64'
             or value['distribution'] != 'trixie' or value['board'] != 'pi4'
             or value['qualification'] != 'development-only'
-            or set(value['roles']) != {'server', 'terminal'}):
+            or set(value['roles']) != set(ROLES)):
         raise ValueError('Unknown or unqualified build profile')
     return value
 
@@ -20,6 +22,10 @@ def profiles():
 def packages(role):
     profile = profiles()
     config = profile['roles'][role]
+    if role == 'combined':
+        if config.get('components') != ['terminal', 'server'] or config['extra_packages']:
+            raise ValueError('Combined package intent must be the exact standalone union')
+        return sorted(set(packages('terminal')) | set(packages('server')))
     result = {'rauc='+profile['rauc_version'], 'dbus', 'systemd', 'ca-certificates',
               'libubootenv-tool'}
     if 'packages_file' in config:
@@ -103,9 +109,10 @@ def package_locks():
     folder = ROOT/'build_tools/images/locks'
     index = json.loads((folder/'index.json').read_text())
     if (index['schema'] != 1 or index['purpose'] != 'requested-package-closure'
-            or index['image_qualified'] is not False or set(index['roles']) != {'server', 'terminal'}):
+            or index['image_qualified'] is not False or set(index['roles']) != set(ROLES)):
         raise ValueError('Unknown role package lock index')
     common_base(index)
+    shared = {}
     for role, record in index['roles'].items():
         if record['file'] != role+'.json':
             raise ValueError('Unexpected role lock filename')
@@ -123,6 +130,12 @@ def package_locks():
                 or len(manifest['packages']) != record['archives']
                 or sum(p['bytes'] for p in manifest['packages']) != record['archive_bytes']):
             raise ValueError('Package intent and reviewed closure disagree; refresh intake through review')
+        for package in manifest['packages']:
+            key = package['package']
+            identity = (package['version'], package['architecture'], package['sha256'])
+            if key in shared and shared[key] != identity:
+                raise ValueError('Shared role package identities disagree; review the closures together')
+            shared[key] = identity
     return index
 
 

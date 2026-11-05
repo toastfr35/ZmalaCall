@@ -137,7 +137,7 @@ class RetainedPackageTests(unittest.TestCase):
                 shutil.copyfile(project.ROOT/name, target)
             shutil.copytree(project.ROOT/'build_tools/images/locks', root/'build_tools/images/locks')
             with patch.object(project, 'ROOT', root):
-                self.assertEqual(set(project.package_locks()['roles']), {'server', 'terminal'})
+                self.assertEqual(set(project.package_locks()['roles']), {'server', 'terminal', 'combined'})
                 path = root/'build_tools/images/profiles.json'
                 profile = json.loads(path.read_text())
                 profile['roles']['server']['extra_packages'].append('unexpected-dependency')
@@ -198,3 +198,12 @@ class RetainedPackageTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class CombinedIntentTests(unittest.TestCase):
+    def test_combined_resolves_exact_union_and_reviewed_shared_versions(self):
+        from build_tools.images import project
+        self.assertEqual(project.packages('combined'),
+                         sorted(set(project.packages('terminal')) | set(project.packages('server'))))
+        index = project.package_locks()
+        self.assertEqual(set(index['roles']), {'server', 'terminal', 'combined'})

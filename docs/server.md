@@ -389,6 +389,18 @@ are read-only. The authored image journald policy selects volatile storage cappe
 at 32 MiB with 4 MiB files. Existing directories with incompatible ownership,
 permissions or links are rejected; the helper never bulk-converts imported state.
 
+
+The experimental `combined` image role (**Zmala Terminal + Server**) uses the same
+host identity and A/B boot contract, with terminal UID/GID 1000 and server UID/GID
+1001. Their application trees remain separate mode-0700 bindings. Operator
+configuration binds `/etc/zmalacall/operator/terminal` and
+`/etc/zmalacall/operator/server` as root-owned mode-0750 directories readable only
+by their respective groups. SSH and certificate state remain root-private.
+Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
+initialized data and boot records reject role substitution; conversion needs a
+separate migration. This implements storage and boot policy, not combined service
+provisioning, onboarding, coordinated updates or a qualified flashable image.
+
 This code has unit and real isolated-namespace evidence. The archive preparation
 tool packages it without starting it or initializing device data. The separate
 `zmala_system.device_identity` helper (`HLR-SRV-HOST-013`) can initialize identity

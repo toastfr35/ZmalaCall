@@ -14,6 +14,7 @@ MAX_SEED_BYTES = 32*1024**2
 MAX_SEED_ENTRIES = 10000
 VAR_MIB = 128
 TMP_MIB = 128
+ROLES = ('server', 'terminal', 'combined')
 
 
 @dataclass(frozen=True)
@@ -27,10 +28,14 @@ class Binding:
     readonly: bool = False
 
 
-# @llr LLR-SRV-HOST-009, LLR-TERM-MAINT-036
+# @llr LLR-SRV-HOST-009, LLR-TERM-MAINT-036, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def profile(role):
-    if role not in ('server', 'terminal'):
+    if role not in ROLES:
         raise ValueError('Unsupported image role')
+    if role == 'combined':
+        return {'schema': 1, 'role': role, 'terminal_uid': 1000, 'terminal_gid': 1000,
+                'server_uid': 1001, 'server_gid': 1001,
+                'package_database': PACKAGE_DB, 'variable_seed': VAR_SEED}
     return {'schema': 1, 'role': role, 'application_uid': 1000, 'application_gid': 1000,
             'package_database': PACKAGE_DB, 'variable_seed': VAR_SEED}
 
@@ -44,7 +49,7 @@ def unique_fields(pairs):
     return result
 
 
-# @llr LLR-SRV-HOST-009, LLR-TERM-MAINT-036
+# @llr LLR-SRV-HOST-009, LLR-TERM-MAINT-036, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def decode_profile(body, role, data=False):
     selected = profile(role)
     if not 0 < len(body) <= MAX_PROFILE_BYTES:
@@ -57,7 +62,7 @@ def decode_profile(body, role, data=False):
     return value
 
 
-# @llr LLR-SRV-HOST-011, LLR-TERM-MAINT-038
+# @llr LLR-SRV-HOST-011, LLR-TERM-MAINT-038, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 def bindings(role):
     profile(role)
     result = [
@@ -67,11 +72,19 @@ def bindings(role):
         Binding('var/lib/NetworkManager', 'network/state'),
         Binding('var/lib/bluetooth', 'bluetooth'),
         Binding('etc/ssh/keys', 'host/ssh'),
-        Binding('etc/zmalacall/operator', 'host/operator', gid=1000, mode=0o750),
-        Binding('var/lib/zmalacall-server' if role == 'server' else 'var/lib/zmalacall',
-                'state/'+role, uid=1000, gid=1000),
     ]
-    if role == 'server':
+    if role == 'combined':
+        result.extend((
+            Binding('etc/zmalacall/operator/terminal', 'host/operator/terminal', gid=1000, mode=0o750),
+            Binding('etc/zmalacall/operator/server', 'host/operator/server', gid=1001, mode=0o750),
+            Binding('var/lib/zmalacall', 'state/terminal', uid=1000, gid=1000),
+            Binding('var/lib/zmalacall-server', 'state/server', uid=1001, gid=1001),
+        ))
+    else:
+        result.extend((Binding('etc/zmalacall/operator', 'host/operator', gid=1000, mode=0o750),
+                       Binding('var/lib/zmalacall-server' if role == 'server' else 'var/lib/zmalacall',
+                               'state/'+role, uid=1000, gid=1000)))
+    if role in ('server', 'combined'):
         result.append(Binding('etc/letsencrypt', 'host/certificates'))
     return tuple(result)
 

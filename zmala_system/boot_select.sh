@@ -1,11 +1,11 @@
 # Experimental U-Boot hush selector; also executable with POSIX shell test adapters.
 # No kernel is launched here. The caller may load only a nonempty zm_selected.
 # Compiled fallback environments MUST omit all zm_* contract fields.
-# @llr LLR-SRV-HOST-025, LLR-TERM-MAINT-052
+# @llr LLR-SRV-HOST-025, LLR-TERM-MAINT-052, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 setenv zm_selected
 setenv zm_is_trial 0
 if test "${zm_schema}" = "1"; then
-    if test "${zm_role}" = "terminal" || test "${zm_role}" = "server"; then
+    if test "${zm_role}" = "terminal" || test "${zm_role}" = "server" || test "${zm_role}" = "combined"; then
         if test "${zm_a_good}" = "0" || test "${zm_a_good}" = "1"; then
             if test "${zm_b_good}" = "0" || test "${zm_b_good}" = "1"; then
                 if test "${zm_confirmed}" = "A" && test "${zm_a_good}" = "1"; then

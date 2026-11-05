@@ -55,7 +55,7 @@ class ToolEnvironment:
     def __init__(self, directory, role, tools=None):
         self.directory, self.role = Path(directory), role
         self.tools = tools if tools is not None else TOOLS
-        if (role not in ('server', 'terminal') or set(self.tools) != set(TOOLS)
+        if (role not in host_layout.ROLES or set(self.tools) != set(TOOLS)
                 or any(not PurePosixPath(path).is_absolute() for path in self.tools.values())):
             raise ValueError('Invalid environment tool interface')
 
@@ -129,7 +129,7 @@ def medium(system, root, data, root_uuid, selected, *, model_path=Path('/proc/de
     return node
 
 
-# @llr LLR-SRV-HOST-026, LLR-TERM-MAINT-053
+# @llr LLR-SRV-HOST-026, LLR-TERM-MAINT-053, LLR-SRV-HOST-029, LLR-TERM-MAINT-056
 @contextmanager
 def open_control():
     if platform.system() != 'Linux' or os.geteuid() != 0:
