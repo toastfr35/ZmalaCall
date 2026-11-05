@@ -299,6 +299,7 @@ def prepare(root, data, area, role, mounts=None):
         # A failed write/fsync must never leave a parseable success marker.
         staging = current.area/'ready.next'
         with staging.open('x', encoding='utf-8') as stream:
+            os.fchmod(stream.fileno(), 0o600)
             json.dump(status, stream)
             stream.flush()
             os.fsync(stream.fileno())

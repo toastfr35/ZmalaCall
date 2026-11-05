@@ -5,7 +5,8 @@ from pathlib import Path
 import subprocess
 import tarfile
 
-from . import base_intent, bootloader, factory_data, image_state, inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources
+from . import (base_intent, bootloader, factory_data, image_state, initramfs_build,
+              inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources)
 
 
 def main():
@@ -64,6 +65,13 @@ def main():
     factory = sub.add_parser('factory-data', help='Emit an empty marked data tar; no formatting or device access')
     factory.add_argument('role', choices=('server', 'terminal'))
     factory.add_argument('--output', required=True, type=Path)
+    initrd = sub.add_parser('build-initramfs', help='Build an unqualified initramfs from a reviewed root (Linux)')
+    initrd.add_argument('role', choices=('server', 'terminal'))
+    initrd.add_argument('--source', required=True, type=Path)
+    initrd.add_argument('--expected-root-sha256', required=True)
+    initrd.add_argument('--base-cache', required=True, type=Path)
+    initrd.add_argument('--role-cache', required=True, type=Path)
+    initrd.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     try:
         if args.command == 'check':
@@ -118,6 +126,9 @@ def main():
                                                 args.role, args.output), indent=2))
         elif args.command == 'factory-data':
             print(json.dumps(factory_data.emit(args.role, args.output), indent=2))
+        elif args.command == 'build-initramfs':
+            print(json.dumps(initramfs_build.build(args.role, args.source, args.expected_root_sha256,
+                                                  args.base_cache, args.role_cache, args.output), indent=2))
         else:
             result = inspect_root.audit(args.root)
             print(json.dumps(result, indent=2))

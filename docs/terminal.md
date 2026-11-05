@@ -1093,10 +1093,20 @@ first boot to resume without changing a committed identity. Unknown or corrupt
 saved state is rejected without resetting data. It never selects/formats disks,
 generates SSH keys, operates TV/USB devices or starts terminal services.
 
-Direct LLTs and isolated ext4 process-interruption HLTs cover both roles. Early-boot
-integration, data expansion, onboarding/service integration and physical
-qualification remain pending. The
-current manual installer and its 64 MiB journal policy remain as described below.
+The experimental early-boot path (`HLR-TERM-MAINT-044`) validates selected slot and
+root PARTUUID against actual read-only ext4/GPT/kernel topology, and finds data
+only as its declared same-parent sibling. It then initializes identity and views,
+generates a read-only selected-root entry in the RAM `fstab`, and publishes complete
+current-boot readiness. A separate PID1 gate is required before `sysinit.target`,
+so killed or missing early preparation cannot admit ordinary services. It does
+not operate TV, camera, remote or application services.
+
+Direct LLTs and real GPT/loop namespace HLTs cover both roles. The offline
+initramfs builder checks copied runtime/tool bytes and actual ARM64 imports, but
+does not qualify physical initramfs/PID1 boot. Complete image assembly, data
+expansion, onboarding/service integration and physical qualification remain
+pending. The current manual installer and its 64 MiB journal policy remain as
+described below.
 
 ```sh
 sudo systemctl status zmalacall-terminal zmalacall-display zmalacall-pairing
