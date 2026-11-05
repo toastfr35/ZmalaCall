@@ -1116,6 +1116,24 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libubootenv-tool_0.3.5-0.1+b2_arm64.deb",
+      "bytes": 8656,
+      "package": "libubootenv-tool",
+      "sha256": "8a01328023abedaa45f8ed30be05c0ae351f413589e7ecc57695ba89d6cfada8",
+      "uri": "https://deb.debian.org/debian/pool/main/libu/libubootenv/libubootenv-tool_0.3.5-0.1%2bb2_arm64.deb",
+      "version": "0.3.5-0.1+b2"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libubootenv0.1_0.3.5-0.1+b2_arm64.deb",
+      "bytes": 13908,
+      "package": "libubootenv0.1",
+      "sha256": "4f487333a1d0010b87db9b9642e50bfbd4761192d8c298c6da47847b1cb3397e",
+      "uri": "https://deb.debian.org/debian/pool/main/libu/libubootenv/libubootenv0.1_0.3.5-0.1%2bb2_arm64.deb",
+      "version": "0.3.5-0.1+b2"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libunistring5_1.3-2_arm64.deb",
       "bytes": 452856,
       "package": "libunistring5",
@@ -1203,6 +1221,15 @@
       "sha256": "b200a559a4ae1b4ebcee4fb0fcaef6a16ef01abbe3da8887de15e800b1a6440d",
       "uri": "https://deb.debian.org/debian/pool/main/i/iptables/libxtables12_1.8.11-2_arm64.deb",
       "version": "1.8.11-2"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libyaml-0-2_0.2.5-2_arm64.deb",
+      "bytes": 49164,
+      "package": "libyaml-0-2",
+      "sha256": "c81500b4c93e29ac28cdded7ec5bf9950c75f8c76c386669ccb6fb854c4daf72",
+      "uri": "https://deb.debian.org/debian/pool/main/liby/libyaml/libyaml-0-2_0.2.5-2_arm64.deb",
+      "version": "0.2.5-2"
     },
     {
       "architecture": "arm64",
@@ -1549,21 +1576,21 @@
     },
     {
       "file": "deb.debian.org_debian_dists_trixie-updates_InRelease",
-      "sha256": "24dae4eaaecbbae43cd3c8b2e67c4ae7df201c2c65183e47959533a3b4dcb57d",
+      "sha256": "6f8e53876ffe1a49b7cbeab52fa5012a97cc84e0dae6c86405efe52474368f7a",
       "signers": [
         "4CB50190207B4758A3F73A796ED0E7B82643E131"
       ]
     },
     {
       "file": "deb.debian.org_debian-security_dists_trixie-security_InRelease",
-      "sha256": "4d7df385855d45fb61ae79c9f2e8dffee69adf4cc67f95bdab09ff016b811aa1",
+      "sha256": "d0dbede32d80c3e9462e037ede87b138bdd5e44be10145acf46c9f643388836d",
       "signers": [
         "B0CAB9266E8C3929798B3EEEBDE6D2B9216EC7A8"
       ]
     },
     {
       "file": "archive.raspberrypi.com_debian_dists_trixie_InRelease",
-      "sha256": "16f263141ceb08750a56fac213bc7f8d18a603a50ae43e91be3f63302f74f3ac",
+      "sha256": "dc7dafc38f68d1ef3eb55e5ec80b4a0f170f6a2eab86ffabe5b5ef53fdb1ea44",
       "signers": [
         "CF8A1AF502A2AA2D763BAE7E82B129927FA3303E"
       ]
@@ -1573,6 +1600,7 @@
     "avahi-daemon",
     "ca-certificates",
     "dbus",
+    "libubootenv-tool",
     "nftables",
     "nodejs",
     "python3",

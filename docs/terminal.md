@@ -1105,7 +1105,25 @@ Direct LLTs and real GPT/loop namespace HLTs cover both roles. The offline
 initramfs builder checks copied runtime/tool bytes and actual ARM64 imports, but
 does not qualify physical initramfs/PID1 boot. Complete image assembly, data
 expansion, onboarding/service integration and physical qualification remain
-pending. The current manual installer and its 64 MiB journal policy remain as
+pending. The experimental confirmed/trial controller (`HLR-TERM-MAINT-049`)
+adds one durably consumed candidate attempt and explicit current-slot,
+transaction/generation confirmation. RAUC eligibility is separate from product
+health; unqualified `set-primary` is refused and automatic installed-slot
+activation is disabled by the packaged policy. The later coordinator must stage
+only a completely installed inactive boot/root pair after safe admission.
+
+Native raw environment access requires marked current-boot readiness, the Pi 4
+SD parent, both GPT copies, exact selected root/data topology and the fixed raw
+gap. Root-private configuration, bounded fixed tools, empty defaults, lock/CAS
+and readback prevent ambiguous mutations from being reported as successful.
+The authored selector and real Linux environment tools are tested on new regular
+GPT fixtures. Actual U-Boot/Pi interpretation, physical interruption, bounded
+kernel watchdog handoff and product-health takeover remain pending. PID1 runtime
+watchdog ownership stays disabled until that separate handover is integrated;
+otherwise PID1 could keep an unhealthy trial alive indefinitely. No current
+terminal service or hardware behavior changes through this experiment.
+
+The current manual installer and its 64 MiB journal policy remain as
 described below.
 
 ```sh

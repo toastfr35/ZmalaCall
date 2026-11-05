@@ -86,9 +86,10 @@ def read_record(root, name, mode, limit):
     return body
 
 
+# @llr LLR-SRV-HOST-021, LLR-TERM-MAINT-048
 def canonical(path):
     path = Path(path)
-    if (not path.is_absolute() or not re.fullmatch(r'/[A-Za-z0-9_./-]+', path.as_posix())
+    if (not path.is_absolute() or not re.fullmatch(r'/[A-Za-z0-9_./-]*', path.as_posix())
             or path.resolve() != path):
         raise ValueError('Expected a simple canonical absolute image path')
     return path

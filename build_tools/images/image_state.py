@@ -12,7 +12,7 @@ from pathlib import Path, PurePosixPath
 import re
 import tarfile
 
-from zmala_system import boot_layout, host_layout as layout
+from zmala_system import boot_layout, boot_state, host_layout as layout
 from . import base_intent, inspect_root, package_lock, root_build
 
 RUNTIME = Path(layout.__file__).parent
@@ -20,6 +20,7 @@ INSTALLED = 'usr/lib/python3/dist-packages/zmala_system'
 JOURNAL = 'etc/systemd/journald.conf.d/50-zmala-volatile.conf'
 BOOT_GATE = 'usr/lib/systemd/system/zmala-host-storage.service'
 BOOT_DEPENDENCY = 'usr/lib/systemd/system/sysinit.target.d/50-zmala-host-storage.conf'
+BOOT_BACKEND = 'usr/lib/zmala/bin/boot-backend'
 
 
 def name(value):
@@ -44,17 +45,22 @@ def relocate(value):
 def payloads(role):
     result = {layout.PROFILE: (json.dumps(layout.profile(role), indent=2)+'\n').encode(),
               boot_layout.PROFILE: (json.dumps(boot_layout.profile(role), indent=2)+'\n').encode(),
+              boot_state.PROFILE: (json.dumps(boot_state.policy(role), indent=2)+'\n').encode(),
               'usr/lib/zmala/role': (role+'\n').encode()}
     special = {'journald.conf': JOURNAL, 'zmala-host-storage.service': BOOT_GATE,
-               'sysinit-storage.conf': BOOT_DEPENDENCY}
+               'sysinit-storage.conf': BOOT_DEPENDENCY,
+               'trial-watchdog.conf': 'usr/lib/systemd/system.conf.d/99-zmala-trial.conf'}
     for filename in ('__init__.py', 'host_layout.py', 'host_storage.py', 'device_identity.py',
                      'boot_layout.py', 'boot_devices.py', 'boot_storage.py', 'boot_entry.py', 'boot_gate.py',
+                     'boot_state.py', 'boot_media.py', 'boot_environment.py', 'boot_backend.py',
+                     'boot_select.sh',
                      *special):
         source = RUNTIME/filename
         if source.is_symlink() or not source.is_file() or source.stat().st_size > 128*1024:
             raise ValueError('Expected a bounded authored storage runtime file')
         target = special.get(filename, INSTALLED+'/'+filename)
         result[target] = source.read_text(encoding='utf-8').replace('\r\n', '\n').encode()
+    result[BOOT_BACKEND] = result[INSTALLED+'/boot_backend.py']
     return result
 
 
@@ -63,7 +69,7 @@ def added_member(value, body=None, link=None):
     member.uid = member.gid = 0
     member.uname = member.gname = 'root'
     member.mtime = int(root_build.SOURCE_DATE_EPOCH)
-    member.mode = 0o644
+    member.mode = 0o755 if value == BOOT_BACKEND else 0o644
     if body is not None:
         member.size = len(body)
     elif link is not None:
@@ -125,7 +131,7 @@ def audit(path, role, selected, expected_payloads):
                     raise ValueError('Invalid prepared runtime/package record')
                 body = archive.extractfile(member).read(limit+1)
                 if current in expected_payloads:
-                    if member.mode != 0o644 or body != expected_payloads[current]:
+                    if member.mode != (0o755 if current == BOOT_BACKEND else 0o644) or body != expected_payloads[current]:
                         raise ValueError('Prepared runtime/configuration bytes changed')
                     found[current] = body
                 else:

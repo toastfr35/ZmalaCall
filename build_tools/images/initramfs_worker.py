@@ -65,6 +65,40 @@ def inspect_initramfs(root, extracted, role):
     return main, expected, hashes
 
 
+def check_target_environment_tools(root, role):
+    """Exercise target ARM64 tools using only new worker RAM /tmp and /run files.
+
+    This emulated build check is separate from actual Pi transport admission,
+    bootloader interpretation and physical power-loss qualification.
+    """
+    script = '''from pathlib import Path
+import os, struct, sys, tempfile, zlib
+from zmala_system import boot_environment, boot_media, boot_state
+Path('/run/lock').mkdir(mode=0o700, exist_ok=True)
+state = boot_state.State(sys.argv[1], 'A')
+with tempfile.TemporaryDirectory(prefix='zmala-env-check-') as folder:
+    directory = Path(folder)
+    image = directory/'new.img'
+    data = boot_state.encode(state).replace(b'\\n', b'\\0')+b'\\0'
+    data += b'\\xff'*(boot_media.ENV_BYTES-5-len(data))
+    with image.open('xb') as stream:
+        stream.truncate(8*1024**2)
+        for offset, flag in zip(boot_media.ENV_OFFSETS, (1, 0)):
+            stream.seek(offset)
+            stream.write(struct.pack('<I', zlib.crc32(data))+bytes([flag])+data)
+        stream.flush(); os.fsync(stream.fileno())
+    boot_environment.private_file(directory/'fw_env.config', ''.join(
+        f'{image} {offset:#x} {boot_media.ENV_BYTES:#x}\\n' for offset in boot_media.ENV_OFFSETS).encode())
+    boot_environment.private_file(directory/'no-default-env', b'')
+    environment = boot_environment.ToolEnvironment(directory, sys.argv[1])
+    assert environment.read() == state
+    candidate = state.stage('A', 'B', '1'*64)
+    assert environment.commit(state, candidate) == candidate
+    assert environment.read() == candidate
+'''
+    command(['chroot', root, '/usr/bin/python3', '-IB', '-c', script, role])
+
+
 def worker(request_file):
     if os.geteuid() != 0:
         raise ValueError('Expected namespace root, not a host-user invocation')
@@ -132,14 +166,16 @@ def worker(request_file):
         command(['chroot', root, '/usr/bin/unmkinitramfs', '/tmp/zmala-initramfs.img', '/tmp/inspection'])
         main, expected, hashes = inspect_initramfs(root, root/'tmp/inspection', request['role'])
         command(['chroot', main, '/usr/bin/python3', '-IB', '-c',
-                 'import fcntl,ctypes,zlib,bz2,lzma; import zmala_system.boot_entry,zmala_system.boot_gate'])
+                 'import fcntl,ctypes,zlib,bz2,lzma; import zmala_system.boot_entry,zmala_system.boot_gate,zmala_system.boot_backend'])
         command(['chroot', main, '/scripts/local-bottom/zmala-host', 'prereqs'])
+        check_target_environment_tools(root, request['role'])
         pending.replace(output/'initramfs.img')
         result = {'schema': 1, 'role': request['role'], 'source_root_sha256': request['sha256'],
                   'kernel_version': version, 'initramfs_sha256': package_lock.digest(output/'initramfs.img'),
                   'initramfs_bytes': generated.stat().st_size, 'runtime_files_checked': len(expected),
                   'target_binary_sha256': hashes, 'target_imports_checked': True, 'target_prereqs_checked': True,
                   'target_unit_graph_checked': True,
+                  'target_environment_tools_checked': True,
                   'hardware_boot_verified': False, 'complete_image': False, 'production_qualified': False,
                   'toolchain_fully_locked': False}
         (output/'worker-result.json').write_text(json.dumps(result, indent=2)+'\n', encoding='utf-8')

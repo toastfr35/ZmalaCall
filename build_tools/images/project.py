@@ -20,7 +20,8 @@ def profiles():
 def packages(role):
     profile = profiles()
     config = profile['roles'][role]
-    result = {'rauc='+profile['rauc_version'], 'dbus', 'systemd', 'ca-certificates'}
+    result = {'rauc='+profile['rauc_version'], 'dbus', 'systemd', 'ca-certificates',
+              'libubootenv-tool'}
     if 'packages_file' in config:
         result.update(line.strip() for line in (ROOT/config['packages_file']).read_text().splitlines()
                       if line.strip() and not line.startswith('#'))

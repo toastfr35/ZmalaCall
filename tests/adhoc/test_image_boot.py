@@ -52,6 +52,7 @@ def disk(path, sector):
         stream.truncate(sector*sectors)
         mbr = bytearray(512)
         mbr[450] = 0xee
+        struct.pack_into('<2I', mbr, 454, 1, sectors-1)
         mbr[510:512] = b'\x55\xaa'
         stream.write(mbr)
         for current, other, rows in ((1, sectors-1, 2), (sectors-1, 1, sectors-33)):

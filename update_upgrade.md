@@ -583,6 +583,73 @@ experimental early-boot storage integration:
   supported installation/user workflows are unchanged; no unqualified component
   is published as a system image or update candidate.
 
+5 November 2026 — [#165](https://github.com/toastfr35/ZmalaCall/issues/165),
+experimental confirmed/trial boot-control helper implementation:
+
+- Added explicit confirmed/trial state, eligibility, a single remaining attempt,
+  transaction identity and bounded generation. Linux parsing rejects incomplete,
+  corrupt, duplicate, mismatched or inconsistent records without factory guesses.
+  Staging is inactive-only from the confirmed system; confirmation requires the
+  consumed current trial and matching transaction/generation. Generic eligibility
+  changes cannot confirm product health.
+- Authored a small shell-compatible U-Boot selector. It clears stale outputs and
+  saves trial consumption before selecting the candidate. Save failure and a
+  subsequent boot with no remaining attempt select the confirmed system. The
+  caller must refuse an empty selection; common-loader/payload integration and
+  actual U-Boot interpreter qualification remain pending.
+- Added root-controlled Linux raw-environment transport, gated by current image
+  readiness, exact role policy, Pi 4 SD topology, primary/backup GPT integrity,
+  selected root/data identities and geometry, and fixed disjoint raw ranges.
+  A private generated configuration, empty tool defaults, persistent lock inode,
+  complete-state comparison, fixed bounded commands and exact readback fence
+  mutations. No command accepts a disk, offset or arbitrary environment key.
+- Integration review also caught and corrected a path-admission defect in the
+  earlier startup gate: its actual default `/` root was rejected by a helper
+  that had only been exercised with temporary root directories. A direct Linux
+  regression now reaches policy validation using the installed default path;
+  unsafe paths remain refused. This correction is still not a physical PID1 boot
+  qualification.
+- Added the custom backend and explicit stage/confirm/cancel operations. RAUC's
+  unqualified `set-primary` is deliberately refused; eventual installation must
+  disable automatic activation and the coordinator must stage only after its
+  complete-pair, durable-transaction and admission checks. This is a helper API,
+  not a functioning whole-system update coordinator or health evaluator.
+- Packaged experimental policy and PID1 startup runtime-watchdog zero. Taking
+  over a loader-armed watchdog at early PID1 startup would indefinitely pet a
+  failed trial. The supported complete image must qualify a nonzero bounded
+  kernel open deadline and later authenticated product-health transfer before
+  enabling PID1 ownership. Neither handover nor physical recovery is claimed.
+- Retained authenticated ARM64 environment-tool packages in both role closures.
+  Fresh role resolution also selected newer Mesa userspace and Linux development
+  headers for the terminal; these are unqualified build inputs, not deployed
+  updates. The observed common-base intent and its exact package lock remain
+  unchanged. The server root passed its audit with 314 exact installed selections;
+  rebuilding the new terminal root is separate from runtime helper verification.
+- Direct role LLTs cover typed contracts, transitions, authored selector adapters,
+  block/transport refusal, serialization and command failures. Native Linux HLTs
+  passed both roles on NEW regular GPT files: trial consumption, fallback,
+  explicit confirmation in both directions, cancellation/stale-state refusal,
+  one/two damaged copies, and unchanged bytes outside the environment ranges.
+  These run actual `fw_printenv`/`fw_setenv`, with POSIX shell for the authored
+  selector. A further 24 decision cases passed under the pinned U-Boot hush
+  interpreter with `saveenv` explicitly substituted; this does not combine actual
+  U-Boot with SD persistence. Actual Pi transport, boot loading, watchdog and
+  physical power cuts remain separate gates.
+- Final focused checks passed 78 runtime LLTs and all eight isolated HLTs on
+  Linux. Offline image-tool regressions passed 82 cases on Linux; Windows
+  completed those 82 with 18 platform-specific skips. Requirements validation
+  found 313 mapped sources, 301 code anchors, 278 test plans and no unmapped
+  requirements. The initial required portable, Windows and Android Verify jobs
+  all passed; final PR/release evidence is recorded independently.
+- The new server initramfs passed with 15 exact copied runtime/role files, target
+  imports and entry execution, actual vendor-unit graph verification, and actual
+  ARM64 Python/environment-tool read/write checks on new RAM-backed files. This
+  is emulated component validation, not a complete image or physical boot pass.
+  New terminal and combined image artifacts require their own recorded checks.
+- No live Pi, original card, TV, USB device, supported installation workflow or
+  user guide has changed. Complete card assembly, product provisioning, health,
+  signed coordination, migration and release qualification remain unfinished.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
@@ -1748,6 +1815,9 @@ usable. Secure-call configuration is fully accounted for.
 - [ ] Implement role/layout/source/data compatibility checks and trusted feed use.
 - [ ] Install only inactive slot groups with durable transaction records.
 - [ ] Implement trial boot, bounded health, watchdog integration and confirmation.
+      The experimental state/selector/native-backend boundary exists; complete
+      loader integration, qualified health/watchdog handover and actual Pi trial
+      qualification remain pending. Generic RAUC mark-good cannot bypass health.
 - [ ] Implement deterministic recovery for every interrupted state.
 - [ ] Implement quarantine, bounded cache/history and supported repair path.
 - [ ] Validate normal and interrupted A→B→A transitions on spare hardware.

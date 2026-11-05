@@ -1530,12 +1530,12 @@
     },
     {
       "architecture": "arm64",
-      "archive": "libegl-mesa0_26.2.2-1~bpo13+0~rpt1_arm64.deb",
-      "bytes": 164716,
+      "archive": "libegl-mesa0_26.2.6-1~bpo13+0~rpt1_arm64.deb",
+      "bytes": 164870,
       "package": "libegl-mesa0",
-      "sha256": "d53b4297db3a794034d387293b7d234be728640042d18e8be4ce736f6470ab21",
-      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libegl-mesa0_26.2.2-1%7ebpo13%2b0%7erpt1_arm64.deb",
-      "version": "26.2.2-1~bpo13+0~rpt1"
+      "sha256": "15e4a99fec22ed1f55da3df079273a7d591e2620b8c903385cecbd702fb79315",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libegl-mesa0_26.2.6-1%7ebpo13%2b0%7erpt1_arm64.deb",
+      "version": "26.2.6-1~bpo13+0~rpt1"
     },
     {
       "architecture": "arm64",
@@ -1755,12 +1755,12 @@
     },
     {
       "architecture": "arm64",
-      "archive": "libgbm1_26.2.2-1~bpo13+0~rpt1_arm64.deb",
-      "bytes": 65196,
+      "archive": "libgbm1_26.2.6-1~bpo13+0~rpt1_arm64.deb",
+      "bytes": 65314,
       "package": "libgbm1",
-      "sha256": "c8cd3a21f350bfe4b3ac7a1754c01a4a993537d2af9fcb6df414cfa6959d63f2",
-      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libgbm1_26.2.2-1%7ebpo13%2b0%7erpt1_arm64.deb",
-      "version": "26.2.2-1~bpo13+0~rpt1"
+      "sha256": "deab38356bbfe703316a0040f4a0b8fcf9750dd34e1e26661e29526ee2a59fbd",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libgbm1_26.2.6-1%7ebpo13%2b0%7erpt1_arm64.deb",
+      "version": "26.2.6-1~bpo13+0~rpt1"
     },
     {
       "architecture": "arm64",
@@ -1917,12 +1917,12 @@
     },
     {
       "architecture": "arm64",
-      "archive": "libgl1-mesa-dri_26.2.2-1~bpo13+0~rpt1_arm64.deb",
-      "bytes": 53198,
+      "archive": "libgl1-mesa-dri_26.2.6-1~bpo13+0~rpt1_arm64.deb",
+      "bytes": 53446,
       "package": "libgl1-mesa-dri",
-      "sha256": "6d88cce6edb8b2266f366140f73a5fee8c31b014b47135d8504eb6709356feb1",
-      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libgl1-mesa-dri_26.2.2-1%7ebpo13%2b0%7erpt1_arm64.deb",
-      "version": "26.2.2-1~bpo13+0~rpt1"
+      "sha256": "5be492ffa90dddfd699b9c95594bebc8f252de6c68f0b30c6acb3990be202192",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libgl1-mesa-dri_26.2.6-1%7ebpo13%2b0%7erpt1_arm64.deb",
+      "version": "26.2.6-1~bpo13+0~rpt1"
     },
     {
       "architecture": "arm64",
@@ -2034,12 +2034,12 @@
     },
     {
       "architecture": "arm64",
-      "archive": "libglx-mesa0_26.2.2-1~bpo13+0~rpt1_arm64.deb",
-      "bytes": 151696,
+      "archive": "libglx-mesa0_26.2.6-1~bpo13+0~rpt1_arm64.deb",
+      "bytes": 151990,
       "package": "libglx-mesa0",
-      "sha256": "4a658281fb3c8126fbde7947b3311bd6cf1c44834f2ef170af7194757ceba44a",
-      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libglx-mesa0_26.2.2-1%7ebpo13%2b0%7erpt1_arm64.deb",
-      "version": "26.2.2-1~bpo13+0~rpt1"
+      "sha256": "23bd8e06bdd8794e1fc8347cff4ecfae4d52bdfd54f06a91490eac50f581d1d4",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/libglx-mesa0_26.2.6-1%7ebpo13%2b0%7erpt1_arm64.deb",
+      "version": "26.2.6-1~bpo13+0~rpt1"
     },
     {
       "architecture": "arm64",
@@ -4599,6 +4599,24 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libubootenv-tool_0.3.5-0.1+b2_arm64.deb",
+      "bytes": 8656,
+      "package": "libubootenv-tool",
+      "sha256": "8a01328023abedaa45f8ed30be05c0ae351f413589e7ecc57695ba89d6cfada8",
+      "uri": "https://deb.debian.org/debian/pool/main/libu/libubootenv/libubootenv-tool_0.3.5-0.1%2bb2_arm64.deb",
+      "version": "0.3.5-0.1+b2"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libubootenv0.1_0.3.5-0.1+b2_arm64.deb",
+      "bytes": 13908,
+      "package": "libubootenv0.1",
+      "sha256": "4f487333a1d0010b87db9b9642e50bfbd4761192d8c298c6da47847b1cb3397e",
+      "uri": "https://deb.debian.org/debian/pool/main/libu/libubootenv/libubootenv0.1_0.3.5-0.1%2bb2_arm64.deb",
+      "version": "0.3.5-0.1+b2"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libubsan1_14.2.0-19_arm64.deb",
       "bytes": 1038924,
       "package": "libubsan1",
@@ -5544,12 +5562,12 @@
     },
     {
       "architecture": "all",
-      "archive": "linux-libc-dev_1%3a6.18.50-1+rpt1_all.deb",
-      "bytes": 2410412,
+      "archive": "linux-libc-dev_1%3a6.18.60-1+rpt1_all.deb",
+      "bytes": 2412416,
       "package": "linux-libc-dev",
-      "sha256": "85c6187d8eb14f7289dbb3e6d6ceee321d621d9394dfd623c40e21cf4b9f3e80",
-      "uri": "https://archive.raspberrypi.com/debian/pool/main/l/linux/linux-libc-dev_6.18.50-1%2brpt1_all.deb",
-      "version": "1:6.18.50-1+rpt1"
+      "sha256": "a87c1d6e14744688627c3191da27e0372c6a1a35586433637874d4dea32cf344",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/l/linux/linux-libc-dev_6.18.60-1%2brpt1_all.deb",
+      "version": "1:6.18.60-1+rpt1"
     },
     {
       "architecture": "all",
@@ -5634,12 +5652,12 @@
     },
     {
       "architecture": "arm64",
-      "archive": "mesa-libgallium_26.2.2-1~bpo13+0~rpt1_arm64.deb",
-      "bytes": 16668376,
+      "archive": "mesa-libgallium_26.2.6-1~bpo13+0~rpt1_arm64.deb",
+      "bytes": 16678086,
       "package": "mesa-libgallium",
-      "sha256": "a493e062b2b3834a2843d5d4ff83c11330e47bff95ea8b980dc953a2ca363089",
-      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/mesa-libgallium_26.2.2-1%7ebpo13%2b0%7erpt1_arm64.deb",
-      "version": "26.2.2-1~bpo13+0~rpt1"
+      "sha256": "243b672cd6c63e6ae5c798fb68a86e56a56ab07355fbeb12e22bdfa6d1d278e4",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/m/mesa/mesa-libgallium_26.2.6-1%7ebpo13%2b0%7erpt1_arm64.deb",
+      "version": "26.2.6-1~bpo13+0~rpt1"
     },
     {
       "architecture": "arm64",
@@ -6508,21 +6526,21 @@
     },
     {
       "file": "deb.debian.org_debian_dists_trixie-updates_InRelease",
-      "sha256": "24dae4eaaecbbae43cd3c8b2e67c4ae7df201c2c65183e47959533a3b4dcb57d",
+      "sha256": "6f8e53876ffe1a49b7cbeab52fa5012a97cc84e0dae6c86405efe52474368f7a",
       "signers": [
         "4CB50190207B4758A3F73A796ED0E7B82643E131"
       ]
     },
     {
       "file": "deb.debian.org_debian-security_dists_trixie-security_InRelease",
-      "sha256": "4d7df385855d45fb61ae79c9f2e8dffee69adf4cc67f95bdab09ff016b811aa1",
+      "sha256": "d0dbede32d80c3e9462e037ede87b138bdd5e44be10145acf46c9f643388836d",
       "signers": [
         "B0CAB9266E8C3929798B3EEEBDE6D2B9216EC7A8"
       ]
     },
     {
       "file": "archive.raspberrypi.com_debian_dists_trixie_InRelease",
-      "sha256": "16f263141ceb08750a56fac213bc7f8d18a603a50ae43e91be3f63302f74f3ac",
+      "sha256": "dc7dafc38f68d1ef3eb55e5ec80b4a0f170f6a2eab86ffabe5b5ef53fdb1ea44",
       "signers": [
         "CF8A1AF502A2AA2D763BAE7E82B129927FA3303E"
       ]
@@ -6544,6 +6562,7 @@
     "libglew-dev",
     "liblinphone-dev",
     "libmediastreamer-dev",
+    "libubootenv-tool",
     "libzbar0",
     "mediastreamer2-plugin-msqogl",
     "mediastreamer2-plugin-openh264",

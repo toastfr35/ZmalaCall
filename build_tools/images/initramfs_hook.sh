@@ -32,10 +32,11 @@ done
 mkdir -p "$DESTDIR/usr/lib"
 cp -a "$stdlib" "$DESTDIR/usr/lib/"
 
-for module in __init__ host_layout host_storage device_identity boot_layout boot_devices boot_storage boot_entry boot_gate; do
+for module in __init__ host_layout host_storage device_identity boot_layout boot_devices boot_storage boot_entry boot_gate boot_state boot_media boot_environment boot_backend; do
     test -f "$runtime/$module.py" && test ! -L "$runtime/$module.py"
     copy_file config "$runtime/$module.py"
 done
+copy_file config "$runtime/boot_select.sh"
 copy_file config /usr/lib/zmala/role
 
 # Private names avoid whichever busybox mount/umount applets other hooks add.

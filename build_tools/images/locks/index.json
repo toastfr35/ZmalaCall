@@ -5,15 +5,15 @@
   "roles": {
     "server": {
       "file": "server.json",
-      "sha256": "37a886ca4f10b08449b19468a64e8e945a69ff65f2641cc7d095b77b95c478bf",
-      "archives": 170,
-      "archive_bytes": 77056328
+      "sha256": "864c27fb917e6509a6a4bf76e787dc79b087170391758c30f674672918db7c8f",
+      "archives": 173,
+      "archive_bytes": 77128056
     },
     "terminal": {
       "file": "terminal.json",
-      "sha256": "f81616d560f6502b0a44995cda312e4a19544e718cf9dbbbd3c8f12416e372b3",
-      "archives": 721,
-      "archive_bytes": 528545960
+      "sha256": "3722a3ede0e9cd451a2dd16278e1bee125f0e2262404ec75467a99969344c6a4",
+      "archives": 723,
+      "archive_bytes": 528581052
     }
   },
   "base": {
