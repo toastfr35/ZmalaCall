@@ -259,6 +259,42 @@ boot-state qualification in progress:
   EEPROM operation, camera test or product call was performed in this sequence.
 
 
+
+5 November 2026 — watchdog handoff probe preparation for #149:
+
+- Restored the original terminal installation and verified its pinned host and
+  physical identity, absence of the lab marker and active terminal service. All
+  three Verify jobs passed for the preceding feasibility/tooling commit.
+- Cross-compiled a separate private U-Boot candidate with resolved `WDT`,
+  `WDT_BCM2835`, `WATCHDOG`, `WATCHDOG_AUTOSTART` and `CMD_WDT` enabled and a
+  15,000 ms timeout. The successful non-watchdog loader and its evidence remain
+  retained. This candidate has not yet demonstrated watchdog operation on hardware.
+- Inspected the exact offline probe kernel configuration: the BCM2835 driver and
+  boot-enabled watchdog handling are built in, but its userspace-open timeout
+  defaults to zero. [Kernel watchdog documentation](https://docs.kernel.org/watchdog/watchdog-parameters.html)
+  defines that as an unlimited wait. Prepared a lab handoff using an explicit
+  60-second kernel open deadline and PID 1 ownership with a 15-second runtime
+  watchdog. Product health confirmation remains a separate, unimplemented check.
+- Prepared an optional, bounded 120-second initramfs stall for a later fault test.
+  This initramfs sources an explicit hook `ORDER` list, so an arbitrary new file
+  would not run. Verified that only the existing ordered premount hook changes,
+  that its prerequisite-query exit remains intact, its shell syntax is valid,
+  and its sleep command resolves to an included executable. The fault is **not**
+  installed in either boot slot; the first check must be a healthy watchdog boot.
+- The handoff script passed eight actual hush cases with hardware operations
+  stubbed. Offline root filesystem checks passed. Reviewed the ten affected
+  1 MiB card ranges; differences from the reference were confined to valid
+  superblock write-time, lifetime-written-KiB and checksum fields. Rechecked
+  pinned device/partition/source identities and exact reviewed preimages before
+  applying and read-back verifying the small root/loader/script correction.
+  Both raw environment copies were preserved. This lab-only card patching is
+  not the proposed production update transaction or a power-loss test.
+- After renewed availability approval and a fresh idle check, the original Pi
+  accepted shutdown for the next spare-card boot. The healthy watchdog test is
+  pending the physical swap; reset, handoff and stalled-boot recovery remain
+  unqualified. No production watchdog or system updater was deployed.
+
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
