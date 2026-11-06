@@ -14,37 +14,52 @@ passed on its final head. Release v0.3.91 was verified at that merge with all
 eleven expected nonempty assets; do not keep monitoring that completed release.
 
 Current work uses issue #170 and branch `codex/appliance-image-assembly` for a
-cohesive offline application/loader/disk-assembly milestone. All three roles have
-application-bearing ARM64 roots. Terminal and combined roots also have checked
-storage-aware initramfs components. The server root includes NetworkManager in
+cohesive offline application/loader/disk-assembly milestone, submitted as
+[PR #171](https://github.com/toastfr35/ZmalaCall/pull/171). All three roles have
+application-bearing ARM64 roots. The server root includes NetworkManager in
 its revised authenticated closure (333 installed selections); its target Node
 startup, service-UID access, bootstrap publication and HTTP readiness passed with
 isolated networking and temporary RAM data. Native terminal video/audio/TURN
-builds, TURN regressions, ARM64 imports and service-graph checks passed. Inputs
+builds, TURN regressions, ARM64 imports and service-graph checks passed. The real
+terminal core also started, iterated and closed under UID 1000 without hardware;
+combined server readiness passed under its separate UID 1001. Inputs
 record application source commit `1ddf834`; development artifacts are not releases.
 
 The public tooling now includes committed-source/dependency intake, offline
 application provisioning, pinned loader compilation and regular-file A/B media
 assembly. Actual assembly exposed and corrected Pi-specific overlay processing
-and ext4 factory-root permission handling. No successful complete image is
-claimed until its final READY record and digest exist. No physical Pi/card has
+and ext4 factory-root permission handling. Accept a complete image only when its
+final READY record and independently checked digest exist. No physical Pi/card has
 been touched in this continuation. Testing uses QEMU user-mode ARM64 execution,
 Linux namespaces and regular-file filesystems, not a full Pi board simulator.
 
 Build interruption: concurrent retained outputs filled the Windows volume backing
 the WSL VHD, causing a read-only filesystem. The existing `Ubuntu-24.04` distro
-is being relocated intact from its registered C: location to
-`D:\ZmalaBuild\WSL\Ubuntu-24.04` using `wsl --manage --move`. Preserve artifacts
-and logs; verify recovery and input digests before resuming. Builders now check
+was relocated intact from its registered C: location to
+`D:\ZmalaBuild\WSL\Ubuntu-24.04` using `wsl --manage --move`. Linux recovered
+writable and C: regained approximately 150 GB. One server application tar failed
+its retained digest after the interruption and was rebuilt from verified package
+root/application inputs. Preserve artifacts and logs; never accept a READY file
+without checking its recorded input/output hashes. Builders now check
 physical WSL backing-volume free space as well as Linux free space. Private
 `build_tools/tmp/*-application-root.json`, `*-app-prepared.json`,
 `*-app-initramfs.json` and `current-*-image.json` record exact artifact locations.
-Failed outputs have no READY and must not be accepted. Reuse completed source
-roots; do not repeat package installation unnecessarily.
+Failed or damaged outputs must not be accepted. Reuse completed, hash-verified
+source roots; do not repeat package installation unnecessarily.
 
-Remaining gates include successful complete-image assembly, final local/CI
-checks and PR merge, followed by first-owner/TLS onboarding, joint health and
-update coordination, physical boot/power-cut/media qualification and supported
+This source checkpoint precedes final asynchronous component/image and CI results.
+Read PR #171 for the final head, exact three-role artifacts, Verify/merge and
+release evidence; the private `ROLE-complete-image.json` catalogs retain complete
+local manifests. Linux ran 98 image-tool tests successfully; Windows ran 98 with
+21 explicit platform skips. The initial Windows CI found an 8.3 temporary-path
+alias in a new fixture; the fixture now resolves its path without weakening the
+assembler's canonical-path check. Requirements validation retains 313 mapped
+sources, 303 anchored LLRs and 282 plans with no missing test links. The complete
+boot script passed 42 pinned U-Boot hush decision cases with hardware/persistence
+commands substituted; this is not a physical boot test.
+
+Remaining qualification gates include first-owner/TLS onboarding, joint health
+and update coordination, physical boot/power-cut/media qualification and supported
 distribution. The development confirmed boot deliberately stops the loader
 watchdog because qualified health transfer is absent. It is not an automatic
 updater or supported installation release. Existing Word user guides remain

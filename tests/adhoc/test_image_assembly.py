@@ -55,7 +55,8 @@ class ImageAssemblyTests(unittest.TestCase):
 
     def test_component_digest_and_link_are_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
-            root = Path(folder); marker = root/'READY.json'; marker.write_text('{"schema":1}')
+            # Windows runners may expose TEMP through an 8.3 path alias.
+            root = Path(folder).resolve(); marker = root/'READY.json'; marker.write_text('{"schema":1}')
             checksum = package_lock.digest(marker)
             self.assertEqual(image_assembly.component(root, checksum), {'schema': 1})
             with self.assertRaises(ValueError):

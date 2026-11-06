@@ -673,7 +673,9 @@ user with subordinate UID/GID namespaces and ARM64 binfmt support on x86 hosts.
 The worker has separate network, mount, PID and user namespaces. It installs
 existing application service templates declaratively, compiles the native
 video/audio/TURN libraries, runs the TURN regressions and checks target imports
-and the systemd unit graph. Server builds also start target Node under the service
+and the systemd unit graph. The terminal core also starts, iterates and closes
+under its service UID with deferred media and throwaway RAM data. Server builds
+start target Node under the service
 UID on isolated loopback, check `/ready` and bootstrap publication, and discard
 all smoke-test data from a temporary RAM filesystem before packaging.
 
