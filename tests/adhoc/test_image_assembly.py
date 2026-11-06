@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch
 import zlib
 
-from build_tools.images import build_space, image_assembly, image_payload, image_state, image_worker, package_lock
+from zmala_images import build_space, image_assembly, image_payload, image_state, image_worker, package_lock
 from tests.adhoc.test_image_root_build import SELECTED
 from tests.adhoc.test_image_state import fixture
 from zmala_system import boot_media, boot_state

@@ -53,7 +53,7 @@ jobs:
       - name: Development-tool regression checks (not product RBT)
         run: xvfb-run -a make test-adhoc
       - name: Appliance image development profiles (no image publication)
-        run: python3 -m build_tools.images check
+        run: python3 -m zmala_images check
       - name: Requirements
         run: make requirements
       - name: Requirements report

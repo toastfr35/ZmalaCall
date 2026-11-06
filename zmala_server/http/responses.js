@@ -2,9 +2,9 @@
 'use strict';
 // Shared HTTP response encoding and bounded JSON request parsing.
 
+// @llr LLR-SRV-AUTH-024
 /** @param {import('node:http').ServerResponse} res @param {number} status
  * @param {unknown} value @param {string} [type] */
-// @llr LLR-SRV-AUTH-024
 function send(res, status, value, type = 'application/json', cache = 'no-store') {
   res.writeHead(status, {
     'Content-Type': type,

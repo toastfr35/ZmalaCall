@@ -1,20 +1,23 @@
 # Developer information
 
-[Back to the product overview](README.md)
+[Back to the product overview](../README.md)
 
-Start with the [development setup and checks](docs/general.md#development-tools-and-checks).
+Start with the [development setup and checks](general.md#development-tools-and-checks).
 The implementation guides cover the current code and its component boundaries:
 
-- [System overview](docs/general.md): architecture, networking, builds and verification.
-- [Server](docs/server.md): web administration, APIs, SIP/media, persistence and recovery.
-- [Terminal](docs/terminal.md): user functions, controllers, native media and Pi hardware.
-- [Android](docs/android.md): QR enrollment, calls, incoming alerts and release signing.
+- [System overview](general.md): architecture, networking, builds and verification.
+- [Server](server.md): web administration, APIs, SIP/media, persistence and recovery.
+- [Terminal](terminal.md): user functions, controllers, native media and Pi hardware.
+- [Android](android.md): QR enrollment, calls, incoming alerts and release signing.
+- [SD image builder](../zmala_images/README.md): offline inputs, build stages and development media.
+- [Source ownership](general.md#source-and-persistent-state): where code, shared policies and tests belong.
 
 After installing the development dependencies, run these from the repository root:
 
 ```sh
 make lint            # Static checks and generated-asset consistency
 make test            # Portable requirement-based unit and integration tests
+make test-adhoc      # Installer and SD image tooling regressions
 make requirements    # Validate traces and build the searchable requirements report
 make coverage-llt    # Measure unit-test coverage separately from other tests
 ```
@@ -25,22 +28,22 @@ the Android SDK and JDK as described in the Android guide.
 
 ## Requirements and verification
 
-[Doorstop records](requirements/) are the source of product requirements.
+[Doorstop records](../requirements/) are the source of product requirements.
 Product items lead to themed server, Pi-terminal and Android high-level requirements,
 then low-level requirements linked to code and tests. Tests live in
-[`tests/server/`](tests/server/), [`tests/terminal/`](tests/terminal/) and
-[`tests/android/`](tests/android/), with
+[`tests/server/`](../tests/server/), [`tests/terminal/`](../tests/terminal/) and
+[`tests/android/`](../tests/android/), with
 separate `LLT` unit tests and `HLT` system/integration scenarios.
 
 `make requirements` writes the report to `requirements/output/index.html`.
 The [Verify workflow](https://github.com/toastfr35/ZmalaCall/actions/workflows/verify.yml)
-also publishes it as the `zmala-requirements` artifact. See the
-[requirement rewrite method](howto_rewrite_requirements.md) for the process and
-[astra.md](astra.md) for remaining engineering work.
+also publishes it as the `zmala-requirements` artifact. See the [requirements workflow](general.md#doorstop-requirements) for editing,
+reviewing and validating the baseline. The [review record](reviews/2026-11-06.md)
+records the scope, changes and remaining qualification work from the repository review.
 
 ## Android builds
 
-The Android companion lives in `zmala_phone/`. See [Android setup and development](docs/android.md). It uses App-only QR enrollment and the terminal visual identity, with LAN or encrypted server-relayed video calls and Firebase incoming-call alerts when the app is closed.
+The Android companion lives in `zmala_phone/`. See [Android setup and development](android.md). It uses App-only QR enrollment and the terminal visual identity, with LAN or encrypted server-relayed video calls and Firebase incoming-call alerts when the app is closed.
 
 For a signed APK, use `python build_tools/android/release.py` with private release
 signing and Firebase configuration as described in the Android guide. Signing keys,
@@ -74,7 +77,7 @@ input must match the committed version. Published releases are never replaced.
 A failed upload leaves a draft: inspect it and remove only that unpublished
 draft/tag before retrying the same commit. For an older failed merge, rerun its
 original workflow so the intended source commit is retained. See the
-[distribution guide](docs/general.md#distribution-and-third-party-components)
+[distribution guide](general.md#distribution-and-third-party-components)
 for build tooling and the Android guide for private signing inputs.
 
 Editable user-guide sources are retained in `docs/`: `server_prep.docx`,

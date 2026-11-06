@@ -16,7 +16,7 @@ REQUIREMENTS_PYTHON ?= $(if $(wildcard build_tools/runtime/doorstop/Scripts/pyth
 .DEFAULT_GOAL := help
 
 help:
-	@$(NODE) -e "console.log('make lint: JavaScript/Python/native lint, shell syntax, formatting and generated assets\nmake lint-powershell: parse Windows scripts without executing them\nmake test: server and platform-independent terminal tests\nSee README.md for tool installation and overrides.')"
+	@$(NODE) -e "console.log('make lint: JavaScript/Python/native lint, shell syntax, formatting and generated assets\nmake lint-powershell: parse Windows scripts without executing them\nmake test: server and platform-independent terminal tests\nSee docs/development.md for tool installation and overrides.')"
 	@echo "make clean: remove caches, scratch files and build outputs (preview: make clean CLEAN_FLAGS=--dry-run)"
 	@echo "make requirements: validate coverage and publish requirements/output/index.html"
 	@echo "make requirements-check: validate requirements without publishing"

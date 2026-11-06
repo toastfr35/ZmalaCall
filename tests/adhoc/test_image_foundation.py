@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_tools.images import inspect_root, inventory, project, sources
+from zmala_images import inspect_root, inventory, project, sources
 
 
 def archive(path, entries):

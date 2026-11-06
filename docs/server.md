@@ -1,24 +1,3 @@
-## Temporary call photos
-
-`call-photo.js` handles `/api/call/photo?call_id=…` through the existing enrolled-device
-route. Only peers of a connected App/Terminal or App/App SIP dialog can read it; only an app
-can claim an idle share; the sender alone can upload (`PUT`), stop (`DELETE`) or renew (`POST` with `revision`). `GET` returns
-revision and lease status; `GET` with `image=1&revision=…` returns a private,
-non-cacheable JPEG. Configurations advertise `call_photo_sharing`; app contacts
-include `account_type` so the control is shown only for terminal calls.
-
-Uploads are capped at 2 MiB and decoded outside the Node event loop by
-`call_photo.py` (Pillow, already installed for portrait conversion). JPEG/PNG
-input is limited to 16 million pixels, oriented, reduced to 1600 pixels per side
-and stripped of metadata. A single dialog permits one decode; the server permits
-two concurrently. Temporary decode files are removed in `finally`.
-
-The dialog owns the normalized bytes, outside portrait storage and backups.
-Stop increments a revision to invalidate late uploads; completion rechecks both
-enrollments and dialog identity. A 12-second sender lease bounds stale display;
-status/image access expires it, and dialog closure releases all photo state.
-No SIP or audio/video negotiation changes are made by photo operations.
-
 # Zmala Server implementation
 
 The administration uses A1 dark; setup PDFs and guide footers use A1 light.
@@ -31,7 +10,7 @@ For user-facing installation and account setup, use `ZmalaServer-Installation.pd
 and `ZmalaServer-Guide.pdf` beside the release installer. Their retained Word
 source is `server_prep.docx`; terminal setup uses `terminal_config.docx`.
 Network and build conventions are in
-[general.md](general.md); client behavior is in [terminal.md](terminal.md).
+[system overview](general.md); client behavior is in [terminal.md](terminal.md).
 
 The [three-network Docker lab](general.md#three-network-docker-lab) exercises this
 server with two native terminal call engines behind separate NAT gateways. It
@@ -236,7 +215,7 @@ alone proves call quality or hardware compatibility.
 
 The proposed SD-card replacement and system-maintenance stages are tracked in
 [the update/upgrade plan](../update_upgrade.md). The initial
-[image tools](../build_tools/images/README.md) include a read-only server inventory
+[image tools](../zmala_images/README.md) include a read-only server inventory
 and development boot profile; they do not replace the installation path below yet.
 Probe builds use the emitted project as imagegen's `-S` directory so its offline
 EEPROM-service mask hook runs. The image tools document inspection and the
@@ -511,6 +490,15 @@ password files, not the dedicated installer's Linux data-partition file.
 
 ## Accounts, groups and terminal settings
 
+`validation.js` owns the account/group field boundary. `AccountStore` validates
+an entire patch before changing accounts, profiles, credentials or the revision.
+Omitted optional fields preserve their values; an empty password preserves an
+existing password or generates one during account creation. Portrait fields are
+empty strings or local hash-named paths. This is separate from `photos.js`, which
+validates uploaded image bytes. Code traces sit beside each owning validator so
+identity rules and atomic account edits can be reviewed directly from Doorstop.
+
+
 The responsive English administration has Overview, Accounts, Groups, Terminals,
 Callbacks and Activity pages. Accounts owns SIP usernames/passwords, names,
 pictures, types and email addresses; Groups owns contact permissions. Two
@@ -638,6 +626,27 @@ have an unknown execution outcome and are not replayed automatically. History
 survives restart. Account deletion/conversion retires its queued/running work
 before acknowledgement; every saved transition caps completed history at 200.
 Standalone detached-child cleanup remains an acceptance gap.
+
+## Temporary call photos
+
+`call-photo.js` handles `/api/call/photo?call_id=…` through the existing enrolled-device
+route. Only peers of a connected App/Terminal or App/App SIP dialog can read it; only an app
+can claim an idle share; the sender alone can upload (`PUT`), stop (`DELETE`) or renew (`POST` with `revision`). `GET` returns
+revision and lease status; `GET` with `image=1&revision=…` returns a private,
+non-cacheable JPEG. Configurations advertise `call_photo_sharing`; app contacts
+include `account_type` so the control is shown only for terminal calls.
+
+Uploads are capped at 2 MiB and decoded outside the Node event loop by
+`call_photo.py` (Pillow, already installed for portrait conversion). JPEG/PNG
+input is limited to 16 million pixels, oriented, reduced to 1600 pixels per side
+and stripped of metadata. A single dialog permits one decode; the server permits
+two concurrently. Temporary decode files are removed in `finally`.
+
+The dialog owns the normalized bytes, outside portrait storage and backups.
+Stop increments a revision to invalidate late uploads; completion rechecks both
+enrollments and dialog identity. A 12-second sender lease bounds stale display;
+status/image access expires it, and dialog closure releases all photo state.
+No SIP or audio/video negotiation changes are made by photo operations.
 
 ## SIP and media internals
 
@@ -838,10 +847,11 @@ legacy ID lookup selects a primary successor for older tooling.
 All server LLRs have direct LLT plans and implementation anchors; all HLRs have
 direct HLT plans. System coverage
 is separate: a planned trace does not prove that a scenario passed or that all
-conditions in its requirement were tested. The local
-[server rewrite report](../tests/coverage/server-rebaseline/index.html) records
-execution results, LLT-only coverage, missing system plans and environment limits.
-Regenerate published requirements with `make requirements`.
+conditions in its requirement were tested. Historical rewrite evidence used the local generated path
+`tests/coverage/server-rebaseline/index.html`; it is not distributed with a fresh
+checkout. Generate current LLT execution evidence with `make coverage-llt` and
+current trace/plan reports with `make requirements`. See the
+[verification workflow](general.md#development-tools-and-checks) for platform limits.
 
 The Linux HLTs now include real UDP Digest-authenticated text delivery, real
 portrait conversion through HTTP and Pillow, and a disposable production process

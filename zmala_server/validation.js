@@ -3,6 +3,9 @@
 // Validate untrusted configuration fields before they reach persistent state or derived API responses.
 /** @param {object} object @param {PropertyKey} key */
 const own = (object, key) => Object.hasOwn(object, key);
+// @llr LLR-SRV-DIR-021
+// Account IDs also become SIP usernames and object keys. Keep the allowlist and
+// prototype-name exclusion shared by creation, rename and backup admission.
 /** @param {unknown} id @returns {id is string} */
 const accountId = (id) =>
   typeof id === 'string' &&
@@ -33,13 +36,19 @@ function validateGroup(update, users) {
     members: [...update.members],
   };
 }
-/** @param {unknown} photo @returns {photo is string} */
+// @llr LLR-SRV-DIR-022
+/** Stored portraits are local content paths, never arbitrary URLs or filenames.
+ * @param {unknown} photo @returns {photo is string} */
 function validPhoto(photo) {
   return (
     typeof photo === 'string' && (!photo || /^\/photos\/[a-f0-9]+\.(png|jpg|gif)$/.test(photo))
   );
 }
-/** @param {import('./types/contracts').JsonObject} update
+// @llr LLR-SRV-DIR-022
+/** Construct a validated patch before AccountStore mutates state. Omitted
+ * optional fields retain their existing values; an explicit invalid value fails
+ * the entire edit. Blank passwords are handled by AccountStore as "keep/generate".
+ * @param {import('./types/contracts').JsonObject} update
  * @returns {import('./types/contracts').AccountFields} */
 function accountFields(update) {
   if (typeof update.name !== 'string' || !update.name.trim() || update.name.length > 80)

@@ -9,14 +9,16 @@ import tarfile
 import tempfile
 import unittest
 
-from build_tools.images import application_inputs as inputs, application_provision as provision, project
+from zmala_images import application_inputs as inputs, application_provision as provision, project
 
 
 class ApplicationInputTests(unittest.TestCase):
     def test_tar_rejects_links_traversal_duplicates_and_file_parents(self):
         for names, link in ((['../escape'], False), (['/absolute'], False),
                             (['ok', 'ok'], False), (['parent', 'parent/child'], False),
-                            (['linked'], True)):
+                            (['linked'], True), (['C:/outside'], False),
+                            (['file:stream'], False), (['parent./child'], False),
+                            (['parent /child'], False)):
             with self.subTest(names=names), tempfile.TemporaryDirectory() as folder:
                 path = Path(folder)/'input.tar'
                 with tarfile.open(path, 'w') as archive:

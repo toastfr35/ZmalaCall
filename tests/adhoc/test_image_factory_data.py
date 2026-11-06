@@ -7,7 +7,7 @@ import tarfile
 import tempfile
 import unittest
 
-from build_tools.images import factory_data, image_state, package_lock
+from zmala_images import factory_data, image_state, package_lock
 from zmala_system import device_identity as identity
 
 

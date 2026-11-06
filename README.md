@@ -249,6 +249,6 @@ Use the PDFs supplied with your release:
 
 ---
 
-[Developer information](for_developpers.md)
+[Developer information](docs/development.md)
 
 The Raspberry Pi terminal also supports the Nuroum C10 as an alternative to the C20. Connect one device; its camera, microphone and speaker are selected automatically.

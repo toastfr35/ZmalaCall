@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 import unittest
 
-from build_tools.images import eeprom_policy, inspect_root, project
+from zmala_images import eeprom_policy, inspect_root, project
 
 
 class EepromBuildPolicyTests(unittest.TestCase):

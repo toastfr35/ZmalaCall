@@ -1,7 +1,8 @@
 """Offline archive preparation for experimental host storage; never mount/extract.
 
-This packages the runtime helper and rearranges trusted OS-package roots. Boot
-integration, application provisioning and device/data initialization remain absent.
+This packages the shared host runtime, role seed and startup gate into a trusted
+OS/application root. It does not execute the runtime or initialize a device;
+initramfs construction and disk assembly are separate build stages.
 """
 import copy
 import fnmatch
