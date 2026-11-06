@@ -1123,7 +1123,15 @@ generates SSH keys, operates TV/USB devices or starts terminal services.
 
 The experimental early-boot path (`HLR-TERM-MAINT-044`) validates selected slot and
 root PARTUUID against actual read-only ext4/GPT/kernel topology, and finds data
-only as its declared same-parent sibling. It then initializes identity and views,
+only as its declared same-parent sibling. Compact-policy roots first run the
+factory capacity check (`HLR-TERM-MAINT-057`): the 14,001,635,328-byte layout has
+two 4 GiB system slots and fixed 4 GiB data. On larger supported Pi 4 SD cards,
+backup GPT metadata is relocated with durable readback before identity creation.
+Partition sizes and boot state remain unchanged; extra space is unallocated.
+Unknown or initialized media needing repair is fenced. An interrupted metadata
+commit can retry from a complete original GPT pair or a complete new backup
+matching the unchanged primary array. Physical interruption is not qualified.
+The path then initializes identity and views,
 generates a read-only selected-root entry in the RAM `fstab`, and publishes complete
 current-boot readiness. A separate PID1 gate is required before `sysinit.target`,
 so killed or missing early preparation cannot admit ordinary services. It does

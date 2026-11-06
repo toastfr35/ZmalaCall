@@ -32,7 +32,7 @@ done
 mkdir -p "$DESTDIR/usr/lib"
 cp -a "$stdlib" "$DESTDIR/usr/lib/"
 
-for module in __init__ host_layout host_storage device_identity boot_layout boot_devices boot_storage boot_entry boot_gate boot_state boot_media boot_environment boot_backend; do
+for module in __init__ host_layout host_storage device_identity boot_layout boot_devices boot_storage boot_entry boot_gate boot_state boot_media boot_capacity boot_environment boot_backend; do
     test -f "$runtime/$module.py" && test ! -L "$runtime/$module.py"
     copy_file config "$runtime/$module.py"
 done

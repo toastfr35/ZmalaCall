@@ -12,7 +12,7 @@ import platform
 import stat
 import subprocess
 
-from . import boot_devices, boot_layout, device_identity, host_layout, host_storage
+from . import boot_capacity, boot_devices, boot_layout, device_identity, host_layout, host_storage
 
 READY = 'boot-ready.json'
 NEXT = 'boot-ready.next'
@@ -119,7 +119,7 @@ class PreparedBoot:
             raise errors[0]
 
 
-# @llr LLR-SRV-HOST-018, LLR-SRV-HOST-019, LLR-SRV-HOST-020, LLR-TERM-MAINT-045, LLR-TERM-MAINT-046, LLR-TERM-MAINT-047
+# @llr LLR-SRV-HOST-018, LLR-SRV-HOST-019, LLR-SRV-HOST-020, LLR-TERM-MAINT-045, LLR-TERM-MAINT-046, LLR-TERM-MAINT-047, LLR-SRV-HOST-031, LLR-TERM-MAINT-058
 def prepare(root, role, area=Path('/run/zmala-host'), system=None):
     if platform.system() != 'Linux' or os.geteuid() != 0 or os.getegid() != 0:
         raise ValueError('Early-boot storage requires Linux root with root group')
@@ -127,7 +127,7 @@ def prepare(root, role, area=Path('/run/zmala-host'), system=None):
     initial = system.facts()
     root, data, area, policy = admit(root, area, role, initial)
     slot, root_uuid = system.boot_arguments()
-    _, partition = boot_devices.discover(system, policy, slot, root_uuid, initial[root].device)
+    selected, partition = boot_devices.discover(system, policy, slot, root_uuid, initial[root].device)
     if any(mount.device == partition.device for mount in initial.values()):
         raise ValueError('Selected data is already mounted')
     result = PreparedBoot(root, data, area, system, initial, partition.device)
@@ -137,6 +137,7 @@ def prepare(root, role, area=Path('/run/zmala-host'), system=None):
         if (not mounted or mounted.device != partition.device
                 or mounted.filesystem != 'ext4' or 'rw' not in mounted.flags):
             raise ValueError('Selected data mount was not established')
+        boot_capacity.prepare(root, data, role, system, selected, partition, root_uuid)
         device_identity.initialize(data, role, system)
         result.views = host_storage.prepare(root, data, area, role, system)
         # PID1's ordinary remount service must keep the selected root read-only.

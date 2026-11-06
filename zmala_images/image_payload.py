@@ -5,10 +5,10 @@ from pathlib import Path
 import struct
 import zlib
 
-from zmala_system import boot_media, boot_state
+from zmala_system import boot_capacity, boot_media, boot_state
 
 MIB = 1024**2
-SIZES = (32*MIB, 512*MIB, 512*MIB, 8192*MIB, 8192*MIB, 4096*MIB)
+SIZES = boot_capacity.SIZES
 
 
 def disk_bytes(capacity=None):
