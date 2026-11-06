@@ -50,13 +50,14 @@ source roots; do not repeat package installation unnecessarily.
 This source checkpoint precedes final asynchronous component/image and CI results.
 Read PR #171 for the final head, exact three-role artifacts, Verify/merge and
 release evidence; the private `ROLE-complete-image.json` catalogs retain complete
-local manifests. Linux ran 98 image-tool tests successfully; Windows ran 98 with
-21 explicit platform skips. The initial Windows CI found an 8.3 temporary-path
+local manifests. Linux ran 99 image-tool tests successfully; Windows ran 99 with
+22 explicit platform skips. The initial Windows CI found an 8.3 temporary-path
 alias in a new fixture; the fixture now resolves its path without weakening the
 assembler's canonical-path check. Requirements validation retains 313 mapped
 sources, 303 anchored LLRs and 282 plans with no missing test links. The complete
 boot script passed 42 pinned U-Boot hush decision cases with hardware/persistence
-commands substituted; this is not a physical boot test.
+commands substituted; 36 shell-adapter handoff/failure cases now run in the
+repository's Linux ad-hoc suite. These are not physical boot tests.
 
 Remaining qualification gates include first-owner/TLS onboarding, joint health
 and update coordination, physical boot/power-cut/media qualification and supported

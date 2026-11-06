@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import struct
+import subprocess
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -17,6 +18,43 @@ from zmala_system import boot_media, boot_state
 
 
 class ImageAssemblyTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == 'posix', 'POSIX command adapters; actual hush evidence is separate')
+    def test_boot_script_pairs_slots_and_fails_closed_before_handoff(self):
+        adapters = '''setenv() { key=$1; shift; if [ "$#" -eq 0 ]; then unset "$key"; else export "$key=$*"; fi; }
+saveenv() { test "$SAVE" = 1; }
+part() { setenv zm_rootuuid fixture-uuid; }
+fatload() { test "$LOAD" = 1 || return 1; setenv filesize 1234; }
+fdt() { true; }
+wdt() { echo "WATCHDOG=$*"; test "$WATCHDOG" = 1; }
+booti() { echo "BOOT=$zm_selected,$zm_bootpart,$zm_rootpart ARGS=$bootargs HANDOFF=$*"; exit 0; }
+reset() { echo RESET; exit 0; }
+'''
+        for role in ('terminal', 'server', 'combined'):
+            for confirmed, candidate in (('A', 'B'), ('B', 'A')):
+                state = boot_state.State(role, confirmed)
+                trial = state.stage(confirmed, candidate, '1'*64)
+                cases = [(state.fields(), '1', '1', '1', confirmed, 'stop'),
+                         (trial.fields(), '1', '1', '1', candidate, 'start 15000'),
+                         (trial.fields(), '0', '1', '1', confirmed, 'stop'),
+                         (state.fields(), '1', '0', '1', None, None),
+                         (state.fields(), '1', '1', '0', None, None),
+                         ({**state.fields(), 'zm_schema': 'bad'}, '1', '1', '1', None, None)]
+                for fields, save, load, watchdog, selected, action in cases:
+                    with self.subTest(role=role, confirmed=confirmed, selected=selected, load=load, watchdog=watchdog):
+                        result = subprocess.run(['/bin/sh', '-c', adapters+image_payload.boot_script()],
+                                                env={**fields, 'SAVE': save, 'LOAD': load, 'WATCHDOG': watchdog},
+                                                capture_output=True, text=True, check=True, timeout=5)
+                        if selected:
+                            pair = ',2,4' if selected == 'A' else ',3,5'
+                            self.assertIn('BOOT='+selected+pair, result.stdout)
+                            self.assertIn('root=PARTUUID=fixture-uuid', result.stdout)
+                            self.assertIn('rauc.slot='+selected, result.stdout)
+                            self.assertIn('HANDOFF=0x00080000 0x02100000:1234 0x05600000', result.stdout)
+                            self.assertIn('WATCHDOG='+action, result.stdout)
+                        else:
+                            self.assertNotIn('BOOT=', result.stdout)
+                            self.assertIn('RESET', result.stdout)
+
     def test_wsl_capacity_is_limited_by_physical_backing_volume(self):
         with patch.object(build_space.shutil, 'disk_usage', return_value=SimpleNamespace(free=10**12)), \
                 patch.object(build_space.Path, 'is_file', return_value=True), \
