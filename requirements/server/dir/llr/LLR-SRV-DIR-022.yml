@@ -9,6 +9,8 @@ links:
 normative: true
 ref: ''
 references:
+- path: zmala_server/validation.js
+  type: file
 - path: tests/server/LLT/directory-policy.test.js
   type: file
 - path: tests/server/LLT/store-auth.test.js
@@ -22,6 +24,17 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Account edits shall validate name, type, SIP password, picture and supplied email fields before mutation. Names shall contain 1 to 80 characters. Passwords shall contain at most 128 characters and exclude line breaks and NUL.
+  Account edits shall validate all supplied fields before changing account state.
+  Names shall be nonblank strings of at most 80 characters, stored without leading
+  or trailing whitespace. Account type shall be app or terminal.
+
+  A supplied SIP password shall be a string of at most 128 characters without
+  line breaks or NUL. An omitted or empty password shall preserve the current
+  password on edit; account creation shall generate a password when none is supplied.
+
+  A supplied picture shall be an empty string or a local /photos/<hash>.<extension>
+  path, with a nonempty lowercase hexadecimal hash and png, jpg or gif extension.
+  Supplied email fields shall pass the account email validation before mutation.
 verification: |
-  Supply valid and invalid combinations. Check rejected edits preserve credentials and all accepted fields.
+  Supply valid and invalid combinations. Check omitted and empty passwords, portrait types and paths, and name boundaries.
+  Rejected edits shall preserve credentials, fields and the configuration revision.

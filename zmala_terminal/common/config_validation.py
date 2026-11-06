@@ -7,12 +7,16 @@ from zmala_terminal.common.video_settings import FRAME_RATES
 
 # @llr LLR-TERM-COM-004
 def validate(config, device_id):
+    """Return a complete admitted response or raise before any cache/model mutation."""
     if not isinstance(config, dict):
         raise ValueError('Configuration must be an object')
     # @llr LLR-TERM-AUDIO-009
     from zmala_terminal.common.ringtones import validate_catalog
     validate_catalog(config)
-    if config.get('schema_version') != 1 or config.get('device_id') != device_id:
+    # Python equates True and 1.0 with 1; the wire schema requires an integer,
+    # not a value that merely compares equal after JSON decoding.
+    if (type(config.get('schema_version')) is not int or config['schema_version'] != 1
+            or config.get('device_id') != device_id):
         raise ValueError('Configuration schema or device identity mismatch')
     if type(config.get('configuration_version')) is not int or config['configuration_version'] < 1:
         raise ValueError('Invalid configuration version')
@@ -84,8 +88,10 @@ def validate_contacts(contacts, sip):
             raise ValueError('Invalid contact availability')
         if c['auto_answer'] and not c['can_receive']:
             raise ValueError('Invalid auto-answer permission')
-        if c.get('photo') and (not isinstance(c['photo'], str) or
-                              not re.fullmatch(r'/photos/[a-f0-9]+\.(png|jpg|gif)', c['photo'])):
+        # Only an omitted path or an empty string means "no portrait". Testing
+        # truthiness would admit null, false, zero and empty collections.
+        photo = c.get('photo', '')
+        if not isinstance(photo, str) or (photo and not re.fullmatch(r'/photos/[a-f0-9]+\.(png|jpg|gif)', photo)):
             raise ValueError('Invalid photo path')
 
 

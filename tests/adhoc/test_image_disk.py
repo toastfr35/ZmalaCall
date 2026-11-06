@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from build_tools.images import inspect_disk
+from zmala_images import inspect_disk
 
 
 from tests.support.gpt_fixture import image

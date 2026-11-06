@@ -9,7 +9,7 @@ import stat
 import tarfile
 import urllib.request
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 MAX_ARCHIVE = 32*1024*1024
 MAX_TREE = 160*1024*1024
 MAX_MEMBERS = 10000
@@ -20,7 +20,7 @@ BOOTLOADER_LIMITS = {'archive': 64*1024*1024, 'tree': 384*1024*1024, 'members': 
 
 
 def pins():
-    value = json.loads((ROOT/'build_tools/images/sources.lock.json').read_text())
+    value = json.loads((ROOT/'zmala_images/sources.lock.json').read_text())
     if value['schema'] != 1 or set(value) != {'schema', *SOURCE_NAMES}:
         raise ValueError('Unknown source lock schema')
     for name in SOURCE_NAMES:

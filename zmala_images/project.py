@@ -6,11 +6,11 @@ import re
 
 from zmala_system.host_layout import ROLES
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def profiles():
-    value = json.loads((ROOT/'build_tools/images/profiles.json').read_text())
+    value = json.loads((ROOT/'zmala_images/profiles.json').read_text())
     if (value['schema'] != 1 or value['architecture'] != 'arm64'
             or value['distribution'] != 'trixie' or value['board'] != 'pi4'
             or value['qualification'] != 'development-only'
@@ -106,7 +106,7 @@ def emit_lab(role, output):
 
 def package_locks():
     """Verify reviewed intent/lock synchronization without network or binaries."""
-    folder = ROOT/'build_tools/images/locks'
+    folder = ROOT/'zmala_images/locks'
     index = json.loads((folder/'index.json').read_text())
     if (index['schema'] != 1 or index['purpose'] != 'requested-package-closure'
             or index['image_qualified'] is not False or set(index['roles']) != set(ROLES)):
@@ -147,7 +147,7 @@ def common_base(index=None):
     separate qualification gates.
     """
     from . import base_intent, sources
-    folder = ROOT/'build_tools/images/locks'
+    folder = ROOT/'zmala_images/locks'
     if index is None:
         index = json.loads((folder/'index.json').read_text())
     record = index['base']

@@ -1,7 +1,7 @@
 // @test S-LLT-038
 // @requirements LLR-SRV-DIR-021, LLR-SRV-DIR-022, LLR-SRV-DIR-023, LLR-SRV-DIR-029
 // @environment portable
-// @plan Use an isolated Store to accept boundary-length account/group fields and reject invalid identifiers, duplicates and over-capacity collections. Check blank-password preservation, mandatory email validation, group membership bounds and unchanged state after rejection. Seed only large collection preconditions directly; execute the real mutation and validation methods.
+// @plan Use an isolated Store to accept boundary-length account/group fields and reject invalid identifiers, duplicates and over-capacity collections. Check blank-password preservation, mandatory email and local portrait validation, group membership bounds and unchanged state after rejection. Seed only large collection preconditions directly; execute the real mutation and validation methods.
 // @pass The last permitted item must succeed, the next must fail, and rejected edits must preserve the complete state and revision.
 
 'use strict';
@@ -38,6 +38,12 @@ test('account bounds reject invalid edits without altering the accepted record',
     { password: 'a\nb' },
     { password: 'a\rb' },
     { password: 'a\0b' },
+    { photo: false },
+    { photo: null },
+    { photo: [] },
+    { photo: {} },
+    { photo: 'https://other.test/photo.png' },
+    { photo: '/photos/../private.png' },
     { emails: [] },
     { emails: null },
     { emails: ['a@example.test', 'A@EXAMPLE.TEST'] },

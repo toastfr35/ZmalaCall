@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_tools.images import root_build, root_cleanup
+from zmala_images import root_build, root_cleanup
 
 LEDGER = ('Package: example\nVersion: 1.0\nArchitecture: arm64\nStatus: install ok installed\n\n')
 SHADOW = b'root:!:1:0:99999:7:::\n'

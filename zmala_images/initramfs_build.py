@@ -35,7 +35,7 @@ def build(role, source, expected, base_cache, role_cache, output):
     if (output.exists() or output.resolve() != output
             or not re.fullmatch(r'/[A-Za-z0-9_./-]+', output.as_posix())):
         raise ValueError('Use a new simple absolute Linux output directory')
-    if output.resolve().is_relative_to(Path(__file__).resolve().parents[2]):
+    if output.resolve().is_relative_to(Path(__file__).resolve().parents[1]):
         raise ValueError('Keep the disposable target-root build outside the checkout')
     for name in ('unshare', 'mount', 'umount', 'tar', 'chroot'):
         if not shutil.which(name):
@@ -45,7 +45,7 @@ def build(role, source, expected, base_cache, role_cache, output):
         raise ValueError('Insufficient free space for the disposable target-root build')
     output.mkdir()
     request = {'schema': 1, 'role': role, 'source': str(source), 'sha256': expected,
-               'output': str(output), 'checkout': str(Path(__file__).resolve().parents[2]),
+               'output': str(output), 'checkout': str(Path(__file__).resolve().parents[1]),
                'host_namespaces': {name: os.readlink('/proc/self/ns/'+name)
                                    for name in ('user', 'mnt', 'pid', 'net')}}
     request_file = output/'request.json'
@@ -53,7 +53,7 @@ def build(role, source, expected, base_cache, role_cache, output):
     request_file.chmod(0o600)
     command = ['unshare', '--user', '--map-root-user', '--map-auto', '--net', '--mount', '--pid',
                '--fork', '--kill-child=TERM', '--mount-proc', sys.executable,
-               '-m', 'build_tools.images.initramfs_worker', str(request_file)]
+               '-m', 'zmala_images.initramfs_worker', str(request_file)]
     with (output/'build.log').open('w', encoding='utf-8') as stream:
         subprocess.run(command, check=True, stdout=stream, stderr=subprocess.STDOUT, timeout=900,
                        cwd=request['checkout'], env={'PATH': '/usr/sbin:/usr/bin:/sbin:/bin',

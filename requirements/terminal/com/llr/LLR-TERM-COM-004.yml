@@ -26,7 +26,8 @@ references:
 reviewed: null
 scope: Core
 text: |
-  Configuration shall use schema 1, the enrolled device ID and a positive integer
+  Configuration shall use the JSON integer schema version 1 (not a Boolean,
+  string or fractional number), the enrolled device ID and a positive integer
   revision. It shall contain no more than 40 unique valid contacts. Each contact URI
   shall match its account and the configured SIP domain.
 verification: |

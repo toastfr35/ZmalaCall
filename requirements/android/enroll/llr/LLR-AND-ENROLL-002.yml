@@ -34,8 +34,41 @@ references:
   type: file
 reviewed: null
 scope: Experimental
-text: 'The app shall validate QR type, version, App discriminator, device ID and token; bind received configuration to that identity; bound HTTP response sizes and timeouts; reject redirects, malformed secure-call configurations, malformed contact entries and duplicate contact identities, and secure mode over HTTP enrollment; and store only enrollment in application-private no-backup storage. The app shall rely on Android Clear storage / Clear app data to remove enrollment and terminate its process; reopening shall return to QR setup. Setup shall support a local QR image through Android''s document picker without broad storage permission, copying the image to disk or uploading it. Image input shall be bounded to 20 MiB and 64 million source pixels, with sampled decoding at no more than 1800 pixels per side. Imported text shall use the same QR validation and explicit server confirmation as camera scanning. Cancellation shall preserve setup. Account portrait downloads shall accept PNG/JPEG
-  up to 2 MiB and GIF up to 16 MiB from same-origin authenticated photo paths without following redirects.
+text: |
+  The app shall accept a family-call-server QR with integer version 1, the App
+  account discriminator and valid device ID/token. The server URL shall be an
+  HTTP(S) origin without user information, query or fragment, with an omitted
+  port or a port in 1–65535. Received configuration shall use integer schema
+  version 1 and match the enrolled device ID, App type and call authentication key.
+  String, Boolean and fractional versions shall be rejected without coercion.
 
-  '
-verification: Test malformed or mismatched QR/configuration and redirects; exercise enrollment persistence, Android app-data clearing and return to QR setup. Inspect manifest and no-backup storage policy. Reject null/non-object contacts, invalid or duplicate IDs, and missing, non-string or blank names before rendering or reconciling notices. Generate QR and non-QR images and verify decoded text, malformed/oversized rejection and stream closure.
+  Configuration shall contain at most 40 contact objects with unique valid account
+  IDs, nonblank string names of at most 80 characters, SIP URIs matching each ID
+  and the configured domain, and Boolean can_call/can_receive permissions.
+  A missing or empty-string portrait shall mean no portrait. Other portraits shall
+  be string /photos/<hash>.<extension> paths with a nonempty lowercase hexadecimal
+  hash and png, jpg or gif extension. Malformed entries shall be rejected before
+  rendering or notice reconciliation. Malformed secure-call configurations and
+  secure mode over HTTP enrollment shall be rejected.
+
+  Authenticated HTTP requests shall bound response sizes and timeouts and reject
+  redirects. Account portraits shall be downloaded only from same-origin paths,
+  with PNG/JPEG bounded to 2 MiB and GIF to 16 MiB.
+
+  Only enrollment shall be stored in application-private no-backup storage.
+  Android Clear storage / Clear app data shall remove enrollment and terminate
+  the process; reopening shall return to QR setup.
+
+  Setup shall support a local QR image through Android's document picker without
+  broad storage permission, copying the image to disk or uploading it. Image input
+  shall be bounded to 20 MiB and 64 million source pixels, with sampled decoding
+  at no more than 1800 pixels per side. Imported text shall use the camera QR
+  validation and explicit server confirmation. Cancellation shall preserve setup.
+verification: |
+  Test malformed/mismatched QR and configuration, strict version types and port
+  boundaries. Reject malformed contacts, duplicate IDs, oversized/blank names,
+  mismatched SIP addresses, non-Boolean permissions and non-string/unsafe photos.
+  Accept valid boundary names, permissions and portrait formats. Exercise response
+  limits and redirects without forwarding credentials. Test persistence and Android
+  app-data clearing; inspect manifest and no-backup policy. Decode QR/non-QR images,
+  reject oversized input and check stream closure and cancellation.

@@ -6,7 +6,7 @@ import unittest
 import uuid
 import zlib
 
-from build_tools.images import inspect_boot
+from zmala_images import inspect_boot
 
 
 def fat_header(kind='FAT16', *, undersized=False):

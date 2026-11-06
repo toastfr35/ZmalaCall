@@ -39,7 +39,7 @@ def build(role, source, expected_root, applications, expected_applications, base
     before = package_lock.digest('/var/lib/dpkg/status')
     command = ['unshare', '--user', '--map-root-user', '--map-auto', '--mount', '--net', '--pid',
                '--fork', '--kill-child=TERM', '--mount-proc', sys.executable,
-               '-m', 'build_tools.images.application_worker', str(request_path)]
+               '-m', 'zmala_images.application_worker', str(request_path)]
     with (output/'build.log').open('x') as log:
         subprocess.run(command, check=True, timeout=1800, cwd=project.ROOT,
                        env={'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'LC_ALL': 'C',
