@@ -122,7 +122,7 @@ def worker(request_file):
         marker = seed/device_identity.FACTORY
         marker.write_bytes(factory_data.content(request['role'])); marker.chmod(0o600)
         image = output/'appliance.img'
-        size = boot_media.FIRST_PARTITION_BYTES+sum(image_payload.SIZES)+image_payload.MIB
+        size = image_payload.disk_bytes(request['media_bytes'])
         with image.open('xb') as stream:
             stream.truncate(size)
         offset = boot_media.FIRST_PARTITION_BYTES
@@ -182,6 +182,7 @@ def worker(request_file):
                   'initramfs_manifest_sha256': request['initramfs_manifest'],
                   'loader_manifest_sha256': request['loader_manifest'], 'kernel_version': version,
                   'image_bytes': size, 'image_sha256': package_lock.digest(image), 'partitions': rows,
+                  'required_device_bytes': size, 'automatic_media_expansion': False,
                   'boot_payloads': payload_hashes, 'geometry': geometry, 'application_installed': True,
                   'complete_disk_layout': True, 'hardware_boot_verified': False,
                   'joint_health_implemented': False, 'confirmed_boot_watchdog_enabled': False,

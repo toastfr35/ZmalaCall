@@ -123,6 +123,8 @@ installs the existing service templates and compiles the terminal's ARM64 native
 libraries. Server dependencies come from integrity-checked package-lock archives
 without package lifecycle scripts. Assembly requires matching application-bearing
 root, checked initramfs and pinned loader manifests. Its development factory boot
+requires media whose exact capacity matches the image GPT; the builder's explicit
+capacity option is documented in the image-tool guide. Its development boot
 disables the loader watchdog because joint health transfer is not implemented;
 trial boot retains the bounded watchdog. These candidates are not released or
 qualified installation media. See the image-tool guide for the full build order

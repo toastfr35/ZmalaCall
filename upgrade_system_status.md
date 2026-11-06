@@ -29,7 +29,11 @@ The public tooling now includes committed-source/dependency intake, offline
 application provisioning, pinned loader compilation and regular-file A/B media
 assembly. Actual assembly exposed and corrected Pi-specific overlay processing
 and ext4 factory-root permission handling. Accept a complete image only when its
-final READY record and independently checked digest exist. No physical Pi/card has
+final READY record and independently checked digest exist. Default media are
+22,591,569,920-byte test geometry. The explicit `--media-bytes` option places backup
+GPT at an independently measured exact card capacity; writing the smaller default
+to a larger card is insufficient because runtime admission checks the device end.
+Automatic card expansion/flashing remains unfinished. No physical Pi/card has
 been touched in this continuation. Testing uses QEMU user-mode ARM64 execution,
 Linux namespaces and regular-file filesystems, not a full Pi board simulator.
 
@@ -50,7 +54,7 @@ source roots; do not repeat package installation unnecessarily.
 This source checkpoint precedes final asynchronous component/image and CI results.
 Read PR #171 for the final head, exact three-role artifacts, Verify/merge and
 release evidence; the private `ROLE-complete-image.json` catalogs retain complete
-local manifests. Linux ran 99 image-tool tests successfully; Windows ran 99 with
+local manifests. Linux ran 100 image-tool tests successfully; Windows ran 100 with
 22 explicit platform skips. The initial Windows CI found an 8.3 temporary-path
 alias in a new fixture; the fixture now resolves its path without weakening the
 assembler's canonical-path check. Requirements validation retains 313 mapped

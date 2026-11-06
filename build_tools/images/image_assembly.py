@@ -8,7 +8,7 @@ import stat
 import subprocess
 import sys
 
-from . import bootloader, build_space, image_state, initramfs_build, local_repo, package_lock, project, sources
+from . import bootloader, build_space, image_payload, image_state, initramfs_build, local_repo, package_lock, project, sources
 
 
 def regular(path, expected):
@@ -29,9 +29,11 @@ def component(folder, expected):
 
 
 def build(role, source, expected, initramfs, initramfs_manifest, loader, loader_manifest,
-          base_cache, role_cache, output):
+          base_cache, role_cache, output, media_bytes=None):
     if platform.system() != 'Linux' or os.geteuid() == 0:
         raise ValueError('Use an ordinary Linux user with subordinate UID/GID mappings')
+    media_bytes = image_payload.disk_bytes(media_bytes)
+    builders = {path.name: package_lock.digest(path) for path in sorted(Path(__file__).parent.glob('*.py'))}
     index = project.package_locks()
     selected, _ = local_repo.inputs([(base_cache, index['base']['lock_sha256']),
                                     (role_cache, index['roles'][role]['sha256'])])
@@ -69,7 +71,7 @@ def build(role, source, expected, initramfs, initramfs_manifest, loader, loader_
     output.mkdir()
     request = {'role': role, 'source': str(source), 'sha256': expected, 'output': str(output),
                'initramfs': str(initramfs), 'initramfs_manifest': initramfs_manifest,
-               'loader': str(loader), 'loader_manifest': loader_manifest,
+               'loader': str(loader), 'loader_manifest': loader_manifest, 'media_bytes': media_bytes,
                'host_namespaces': {name: os.readlink('/proc/self/ns/'+name) for name in ('user', 'mnt', 'pid', 'net')}}
     request_file = output/'request.json'
     request_file.write_text(json.dumps(request)); request_file.chmod(0o600)
@@ -81,6 +83,9 @@ def build(role, source, expected, initramfs, initramfs_manifest, loader, loader_
                                          'LC_ALL': 'C', 'SOURCE_DATE_EPOCH': '1793836800'},
                        check=True, timeout=1800, stdout=log, stderr=subprocess.STDOUT)
     result = json.loads((output/'worker-result.json').read_text())
+    current = {path.name: package_lock.digest(path) for path in sorted(Path(__file__).parent.glob('*.py'))}
+    if current != builders or result.get('builder_sha256') != builders:
+        raise ValueError('Image builder sources changed during assembly; no READY accepted')
     regular(source, expected)
     regular(output/'appliance.img', result['image_sha256'])
     image_state.audit(source, role, selected, image_state.payloads(role))

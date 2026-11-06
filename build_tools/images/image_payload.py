@@ -11,6 +11,15 @@ MIB = 1024**2
 SIZES = (32*MIB, 512*MIB, 512*MIB, 8192*MIB, 8192*MIB, 4096*MIB)
 
 
+def disk_bytes(capacity=None):
+    minimum = boot_media.FIRST_PARTITION_BYTES+sum(SIZES)+MIB
+    if capacity is None:
+        return minimum
+    if type(capacity) is not int or capacity % 512 or not minimum <= capacity <= 128*1024**3:
+        raise ValueError('Media capacity must be sector-aligned, fit the layout and be at most 128 GiB')
+    return capacity
+
+
 def kernel_image(body):
     if body[:2] == b'\x1f\x8b':
         with gzip.GzipFile(fileobj=io.BytesIO(body)) as stream:

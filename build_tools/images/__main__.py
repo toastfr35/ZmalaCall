@@ -17,6 +17,7 @@ def main():
     sub.add_parser('check', help='Validate checked-in source pins and role package intent')
     assembly = sub.add_parser('assemble-image', help='Assemble new regular-file development media; never flash a device')
     assembly.add_argument('role', choices=ROLES)
+    assembly.add_argument('--media-bytes', type=int, help='Exact target byte capacity; default is minimal test geometry')
     for name in ('source', 'initramfs', 'loader', 'base-cache', 'role-cache', 'output'):
         assembly.add_argument('--'+name, required=True, type=Path)
     for name in ('expected-root-sha256', 'initramfs-manifest-sha256', 'loader-manifest-sha256'):
@@ -112,7 +113,8 @@ def main():
         elif args.command == 'assemble-image':
             print(json.dumps(image_assembly.build(args.role, args.source, args.expected_root_sha256,
                              args.initramfs, args.initramfs_manifest_sha256, args.loader,
-                             args.loader_manifest_sha256, args.base_cache, args.role_cache, args.output), indent=2))
+                             args.loader_manifest_sha256, args.base_cache, args.role_cache, args.output,
+                             args.media_bytes), indent=2))
         elif args.command == 'build-loader':
             print(json.dumps(loader_build.build(args.output), indent=2))
         elif args.command == 'provision-applications':

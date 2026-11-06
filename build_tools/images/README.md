@@ -711,6 +711,16 @@ factory state explicitly confirms A in two CRC-protected raw environment copies;
 the compiled fallback cannot fabricate it. Factory data is mode 0700 with a
 mode-0600 role marker and no device identity. Data expansion is not implemented.
 
+The default 22,591,569,920-byte image is **test geometry**, not a generic 32 GB
+card image. For a card-bound candidate, pass `--media-bytes EXACT_CAPACITY` using
+an independently measured target capacity. Assembly then puts the backup GPT at
+that exact end and leaves remaining space unallocated. The runtime deliberately
+rejects a GPT whose backup is not at the actual device end; merely writing the
+smaller default image to a larger card is insufficient. This tool neither
+measures a physical device nor repairs/expands a card after writing. The result
+records `required_device_bytes`; exact-capacity preparation is still separate
+from physical boot qualification and the eventual user-facing flashing flow.
+
 The assembler bounds the uncompressed ARM64 Image to 32 MiB at `0x00080000`,
 initramfs to 48 MiB at `0x02100000`, and expanded device tree to 2 MiB at
 `0x05600000`. It checks FAT payload readback, ext4 marker content/ownership,

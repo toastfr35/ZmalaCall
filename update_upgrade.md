@@ -685,6 +685,11 @@ offline applications and regular-file media assembly:
   Pi-specific overlay handling, factory privacy, redundant explicit boot state,
   bounded payload memory windows and filesystem readback gate artifact readiness.
   No physical-device argument or flashing operation is provided.
+- Default artifacts use minimal test geometry. An explicit exact-capacity option
+  puts backup GPT at an independently measured target device end; merely writing
+  a smaller GPT image to a larger card would fail the existing runtime admission
+  checks. Automatic capacity discovery, card writing and data expansion remain
+  outside this builder. Builder-source changes during assembly reject readiness.
 - The development factory/confirmed path stops the loader watchdog because joint
   health transfer is absent; trials retain the bounded early-boot watchdog. This
   deliberately incomplete policy cannot qualify supported media or automatic

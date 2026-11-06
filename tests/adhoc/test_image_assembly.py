@@ -18,6 +18,14 @@ from zmala_system import boot_media, boot_state
 
 
 class ImageAssemblyTests(unittest.TestCase):
+    def test_exact_media_capacity_is_bounded_and_sector_aligned(self):
+        minimum = image_payload.disk_bytes()
+        self.assertEqual(minimum, 22591569920)
+        self.assertEqual(image_payload.disk_bytes(32*1024**3), 32*1024**3)
+        for capacity in (True, '32000000000', minimum-512, minimum+1, 129*1024**3):
+            with self.assertRaises(ValueError):
+                image_payload.disk_bytes(capacity)
+
     @unittest.skipUnless(os.name == 'posix', 'POSIX command adapters; actual hush evidence is separate')
     def test_boot_script_pairs_slots_and_fails_closed_before_handoff(self):
         adapters = '''setenv() { key=$1; shift; if [ "$#" -eq 0 ]; then unset "$key"; else export "$key=$*"; fi; }
