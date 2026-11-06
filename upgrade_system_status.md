@@ -5,6 +5,76 @@ resumption. The sections below retain the original checkpoint evidence; the
 continuation entry supersedes its pending-build and unsupported-combined statements.
 This document is a handoff, not a claim of completion.
 
+## Autonomous continuation — 6 November 2026
+
+The user authorized continued autonomous work while asleep. This entry supersedes
+the historical pause instructions below. PR #169 merged through GitHub at
+`1ddf834e6796904e34f7c545072139905e3a70ac` after all three required Verify checks
+passed on its final head. Release v0.3.91 was verified at that merge with all
+eleven expected nonempty assets; do not keep monitoring that completed release.
+
+Current work uses issue #170 and branch `codex/appliance-image-assembly` for a
+cohesive offline application/loader/disk-assembly milestone, submitted as
+[PR #171](https://github.com/toastfr35/ZmalaCall/pull/171). All three roles have
+application-bearing ARM64 roots. The server root includes NetworkManager in
+its revised authenticated closure (333 installed selections); its target Node
+startup, service-UID access, bootstrap publication and HTTP readiness passed with
+isolated networking and temporary RAM data. Native terminal video/audio/TURN
+builds, TURN regressions, ARM64 imports and service-graph checks passed. The real
+terminal core also started, iterated and closed under UID 1000 without hardware;
+combined server readiness passed under its separate UID 1001. Inputs
+record application source commit `1ddf834`; development artifacts are not releases.
+
+The public tooling now includes committed-source/dependency intake, offline
+application provisioning, pinned loader compilation and regular-file A/B media
+assembly. Actual assembly exposed and corrected Pi-specific overlay processing
+and ext4 factory-root permission handling. Accept a complete image only when its
+final READY record and independently checked digest exist. Default media are
+22,591,569,920-byte test geometry. The explicit `--media-bytes` option places backup
+GPT at an independently measured exact card capacity; writing the smaller default
+to a larger card is insufficient because runtime admission checks the device end.
+Automatic card expansion/flashing remains unfinished. No physical Pi/card has
+been touched in this continuation. Testing uses QEMU user-mode ARM64 execution,
+Linux namespaces and regular-file filesystems, not a full Pi board simulator.
+
+Build interruption: concurrent retained outputs filled the Windows volume backing
+the WSL VHD, causing a read-only filesystem. The existing `Ubuntu-24.04` distro
+was relocated intact from its registered C: location to
+`D:\ZmalaBuild\WSL\Ubuntu-24.04` using `wsl --manage --move`. Linux recovered
+writable and C: regained approximately 150 GB. One server application tar failed
+its retained digest after the interruption and was rebuilt from verified package
+root/application inputs. Preserve artifacts and logs; never accept a READY file
+without checking its recorded input/output hashes. Builders now check
+physical WSL backing-volume free space as well as Linux free space. Private
+`build_tools/tmp/*-application-root.json`, `*-app-prepared.json`,
+`*-app-initramfs.json` and `current-*-image.json` record exact artifact locations.
+Failed or damaged outputs must not be accepted. Reuse completed, hash-verified
+source roots; do not repeat package installation unnecessarily.
+
+This source checkpoint precedes final asynchronous component/image and CI results.
+Read PR #171 for the final head, exact three-role artifacts, Verify/merge and
+release evidence; the private `ROLE-complete-image.json` catalogs retain complete
+local manifests. Linux ran 100 image-tool tests successfully; Windows ran 100 with
+22 explicit platform skips. The initial Windows CI found an 8.3 temporary-path
+alias in a new fixture; the fixture now resolves its path without weakening the
+assembler's canonical-path check. Requirements validation retains 313 mapped
+sources, 303 anchored LLRs and 282 plans with no missing test links. The complete
+boot script passed 42 pinned U-Boot hush decision cases with hardware/persistence
+commands substituted; 36 shell-adapter handoff/failure cases now run in the
+repository's Linux ad-hoc suite. These are not physical boot tests.
+
+Remaining qualification gates include first-owner/TLS onboarding, joint health
+and update coordination, physical boot/power-cut/media qualification and supported
+distribution. The development confirmed boot deliberately stops the loader
+watchdog because qualified health transfer is absent. It is not an automatic
+updater or supported installation release. Existing Word user guides remain
+accurate for the unchanged supported installers.
+
+Preserve unrelated working-tree deletions of `app_improvements.md`, `astra.md`,
+`howto_rewrite_requirements.md`, `server_improvements.md` and
+`terminal_improvements.md`; they are not part of this change. Also preserve
+private/untracked `.codex-attachments/`, `CAD/`, `hw_setup.md` and build scratch.
+
 ## Resumed work — 5 November 2026
 
 Work resumed on `codex/combined-appliance-image`, using issue #167 for combined

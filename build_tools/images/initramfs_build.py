@@ -12,7 +12,7 @@ import shutil
 import subprocess
 import sys
 
-from . import image_state, local_repo, package_lock, project, root_build
+from . import build_space, image_state, local_repo, package_lock, project, root_build
 
 
 def checked_source(source, expected, selected, role):
@@ -41,7 +41,7 @@ def build(role, source, expected, base_cache, role_cache, output):
         if not shutil.which(name):
             raise ValueError('Missing isolated initramfs build tool: '+name)
     output.parent.mkdir(parents=True, exist_ok=True)
-    if shutil.disk_usage(output.parent).free < root_build.MIN_BUILD_FREE_BYTES:
+    if build_space.available(output.parent) < root_build.MIN_BUILD_FREE_BYTES:
         raise ValueError('Insufficient free space for the disposable target-root build')
     output.mkdir()
     request = {'schema': 1, 'role': role, 'source': str(source), 'sha256': expected,

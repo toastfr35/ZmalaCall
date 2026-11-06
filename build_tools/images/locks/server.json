@@ -126,6 +126,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "ethtool_1%3a6.14.2-1_arm64.deb",
+      "bytes": 210872,
+      "package": "ethtool",
+      "sha256": "e7edbfc8ac5f00d6d33b1252ad4d0091a2051cc4e9b1ae07440eaa55c07a86af",
+      "uri": "https://deb.debian.org/debian/pool/main/e/ethtool/ethtool_6.14.2-1_arm64.deb",
+      "version": "1:6.14.2-1"
+    },
+    {
+      "architecture": "arm64",
       "archive": "gcc-14-base_14.2.0-19_arm64.deb",
       "bytes": 49444,
       "package": "gcc-14-base",
@@ -150,6 +159,15 @@
       "sha256": "269c7986f982a8a9a0c4fcad1fdd6e2f52c76fc659fa1c6dc46e3276169419f1",
       "uri": "https://deb.debian.org/debian/pool/main/i/inotify-tools/inotify-tools_4.23.9.0-2%2bb1_arm64.deb",
       "version": "4.23.9.0-2+b1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "iproute2_6.15.0-1_arm64.deb",
+      "bytes": 1049804,
+      "package": "iproute2",
+      "sha256": "6750637e683afeef92690c7a136bace6c277066d644aa0da0adc08e2d6785af6",
+      "uri": "https://deb.debian.org/debian/pool/main/i/iproute2/iproute2_6.15.0-1_arm64.deb",
+      "version": "6.15.0-1"
     },
     {
       "architecture": "arm64",
@@ -243,6 +261,24 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libbluetooth3_5.82-1.1+rpt2_arm64.deb",
+      "bytes": 122750,
+      "package": "libbluetooth3",
+      "sha256": "0b59cef42710b79b08c5d7c99c42cd21674e9732422e1e23a68c1d4ac029e2b6",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/b/bluez/libbluetooth3_5.82-1.1%2brpt2_arm64.deb",
+      "version": "5.82-1.1+rpt2"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libbpf1_1%3a1.5.0-3_arm64.deb",
+      "bytes": 158596,
+      "package": "libbpf1",
+      "sha256": "1ca7f600fb8e723a41d6b8220370a6e441f91a1ac513cd59cfeaf4eb2f5136ec",
+      "uri": "https://deb.debian.org/debian/pool/main/libb/libbpf/libbpf1_1.5.0-3_arm64.deb",
+      "version": "1:1.5.0-3"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libbrotli1_1.1.0-2+deb13u1_arm64.deb",
       "bytes": 293896,
       "package": "libbrotli1",
@@ -285,6 +321,15 @@
       "sha256": "eb6da83296e4710a8600c1426692ed9b9eadcab7ebd36dbabc2a562b5c1ab691",
       "uri": "https://deb.debian.org/debian/pool/main/libc/libcap-ng/libcap-ng0_0.8.5-4%2bb1_arm64.deb",
       "version": "0.8.5-4+b1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libcap2-bin_1%3a2.75-10+deb13u1+b3_arm64.deb",
+      "bytes": 35552,
+      "package": "libcap2-bin",
+      "sha256": "13f824b9d3dd08aabfd3374c04b80da79f6be2cc94329d4fca3c098799662bcd",
+      "uri": "https://deb.debian.org/debian/pool/main/libc/libcap2/libcap2-bin_2.75-10%2bdeb13u1%2bb3_arm64.deb",
+      "version": "1:2.75-10+deb13u1+b3"
     },
     {
       "architecture": "arm64",
@@ -384,6 +429,15 @@
       "sha256": "496c31df89fac9cb7e98102fcc21daf887376dcd9914f6322c86dd5bd4360ff1",
       "uri": "https://deb.debian.org/debian/pool/main/libe/libedit/libedit2_3.1-20250104-1_arm64.deb",
       "version": "3.1-20250104-1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libelf1t64_0.192-4_arm64.deb",
+      "bytes": 189080,
+      "package": "libelf1t64",
+      "sha256": "815b4265c7d6c89c5bbad456bdeed7af893da6912c9d16cf4c581001927c0e37",
+      "uri": "https://deb.debian.org/debian/pool/main/e/elfutils/libelf1t64_0.192-4_arm64.deb",
+      "version": "0.192-4"
     },
     {
       "architecture": "arm64",
@@ -639,6 +693,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libkmod2_34.2-2_arm64.deb",
+      "bytes": 59708,
+      "package": "libkmod2",
+      "sha256": "01d2bf4ead7f6da5aca7f1ecc108cbe858a349ca55368742ead758fa7383e10a",
+      "uri": "https://deb.debian.org/debian/pool/main/k/kmod/libkmod2_34.2-2_arm64.deb",
+      "version": "34.2-2"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libkrb5-3_1.21.3-5+deb13u1_arm64.deb",
       "bytes": 308256,
       "package": "libkrb5-3",
@@ -702,6 +765,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libmm-glib0_1.24.0-1+deb13u1_arm64.deb",
+      "bytes": 232516,
+      "package": "libmm-glib0",
+      "sha256": "28c804fb8436302f375495c47ef3529769fe4c2ce3c896fe83230037c14a91e2",
+      "uri": "https://deb.debian.org/debian/pool/main/m/modemmanager/libmm-glib0_1.24.0-1%2bdeb13u1_arm64.deb",
+      "version": "1.24.0-1+deb13u1"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libmnl0_1.0.5-3_arm64.deb",
       "bytes": 11852,
       "package": "libmnl0",
@@ -729,12 +801,39 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libndp0_1.9-1+b1_arm64.deb",
+      "bytes": 12552,
+      "package": "libndp0",
+      "sha256": "3b9a803ea6f328b620c2637d60051980b414f75208baf500842a797fb76e4cec",
+      "uri": "https://deb.debian.org/debian/pool/main/libn/libndp/libndp0_1.9-1%2bb1_arm64.deb",
+      "version": "1.9-1+b1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libnetplan1_1.1.2-7+rpt1_arm64.deb",
+      "bytes": 115104,
+      "package": "libnetplan1",
+      "sha256": "9057b387f4b9b89d93265f1e8e89acf585705bd711a7d686b4fe06d000c44624",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/n/netplan.io/libnetplan1_1.1.2-7%2brpt1_arm64.deb",
+      "version": "1.1.2-7+rpt1"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libnettle8t64_3.10.1-1_arm64.deb",
       "bytes": 310548,
       "package": "libnettle8t64",
       "sha256": "16107ce5a7b522da021fa8aba42d42af9c5e90ddabfcda3710aff6ea95808ee0",
       "uri": "https://deb.debian.org/debian/pool/main/n/nettle/libnettle8t64_3.10.1-1_arm64.deb",
       "version": "3.10.1-1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libnewt0.52_0.52.25-1_arm64.deb",
+      "bytes": 56912,
+      "package": "libnewt0.52",
+      "sha256": "1b163dc089895f2a5ca849d6a526f33b268fbfc7f5fc6db8f12bd1e6d5a6c62c",
+      "uri": "https://deb.debian.org/debian/pool/main/n/newt/libnewt0.52_0.52.25-1_arm64.deb",
+      "version": "0.52.25-1"
     },
     {
       "architecture": "arm64",
@@ -807,6 +906,15 @@
       "sha256": "5455099e4ae9a013a44bce245678b50c84b93f9983cd3005f49e6a94d14e30ee",
       "uri": "https://deb.debian.org/debian/pool/main/libn/libnl3/libnl-genl-3-200_3.7.0-2_arm64.deb",
       "version": "3.7.0-2"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libnm0_1.52.1-1+rpt4_arm64.deb",
+      "bytes": 425516,
+      "package": "libnm0",
+      "sha256": "3e007f8a6e5093b1777a077dfd4124851bd326be1303fc29526e624a8c1aacf3",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/n/network-manager/libnm0_1.52.1-1%2brpt4_arm64.deb",
+      "version": "1.52.1-1+rpt4"
     },
     {
       "architecture": "arm64",
@@ -1026,6 +1134,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libslang2_2.3.3-5+b2_arm64.deb",
+      "bytes": 506348,
+      "package": "libslang2",
+      "sha256": "ac285fde2e049ef3397c427d93d9fc7c08c688ef2643e4a6b2d5468957ca9100",
+      "uri": "https://deb.debian.org/debian/pool/main/s/slang2/libslang2_2.3.3-5%2bb2_arm64.deb",
+      "version": "2.3.3-5+b2"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libsmartcols1_2.41.5-0+deb13u1_arm64.deb",
       "bytes": 139452,
       "package": "libsmartcols1",
@@ -1098,6 +1215,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libteamdctl0_1.31-1+b2_arm64.deb",
+      "bytes": 11444,
+      "package": "libteamdctl0",
+      "sha256": "5027afee985e68ba68ca3efb7cbb407d3b173734f1738968bfefcd5307527d61",
+      "uri": "https://deb.debian.org/debian/pool/main/libt/libteam/libteamdctl0_1.31-1%2bb2_arm64.deb",
+      "version": "1.31-1+b2"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libtiff6_4.7.0-3+deb13u3_arm64.deb",
       "bytes": 325232,
       "package": "libtiff6",
@@ -1113,6 +1239,24 @@
       "sha256": "2a747f7fff3c2347c357387a7133df997410f07ba1b1df1a1461a97bd7fbc2fc",
       "uri": "https://deb.debian.org/debian/pool/main/n/ncurses/libtinfo6_6.5%2b20250216-2_arm64.deb",
       "version": "6.5+20250216-2"
+    },
+    {
+      "architecture": "all",
+      "archive": "libtirpc-common_1.3.6+ds-1_all.deb",
+      "bytes": 11004,
+      "package": "libtirpc-common",
+      "sha256": "300f582e2c9151a8d329568c705cadc76252c417147312fe331c4560d2c7a6c3",
+      "uri": "https://deb.debian.org/debian/pool/main/libt/libtirpc/libtirpc-common_1.3.6%2bds-1_all.deb",
+      "version": "1.3.6+ds-1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libtirpc3t64_1.3.6+ds-1_arm64.deb",
+      "bytes": 79084,
+      "package": "libtirpc3t64",
+      "sha256": "ae390ce96435829f0d5252305fb9b22001f5bcc85477e452373ddb2a4fa4dbc1",
+      "uri": "https://deb.debian.org/debian/pool/main/libt/libtirpc/libtirpc3t64_1.3.6%2bds-1_arm64.deb",
+      "version": "1.3.6+ds-1"
     },
     {
       "architecture": "arm64",
@@ -1131,6 +1275,15 @@
       "sha256": "4f487333a1d0010b87db9b9642e50bfbd4761192d8c298c6da47847b1cb3397e",
       "uri": "https://deb.debian.org/debian/pool/main/libu/libubootenv/libubootenv0.1_0.3.5-0.1%2bb2_arm64.deb",
       "version": "0.3.5-0.1+b2"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "libudev1_257.13-1~deb13u1_arm64.deb",
+      "bytes": 144536,
+      "package": "libudev1",
+      "sha256": "459b1c9c17cc3c586e90d13d2a991715d498c6eed6c046cabf321021167bc380",
+      "uri": "https://deb.debian.org/debian/pool/main/s/systemd/libudev1_257.13-1%7edeb13u1_arm64.deb",
+      "version": "257.13-1~deb13u1"
     },
     {
       "architecture": "arm64",
@@ -1287,6 +1440,33 @@
     },
     {
       "architecture": "arm64",
+      "archive": "netplan-generator_1.1.2-7+rpt1_arm64.deb",
+      "bytes": 74804,
+      "package": "netplan-generator",
+      "sha256": "222edf65ca379a8d6b40f18a81e4df1c5273846d9e56f1d0c9f37390c5128c8c",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/n/netplan.io/netplan-generator_1.1.2-7%2brpt1_arm64.deb",
+      "version": "1.1.2-7+rpt1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "netplan.io_1.1.2-7+rpt1_arm64.deb",
+      "bytes": 82080,
+      "package": "netplan.io",
+      "sha256": "1297a39ce7301fadf956c52362e34d8ea3aca1825b4ae4dc41577c270933f6cf",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/n/netplan.io/netplan.io_1.1.2-7%2brpt1_arm64.deb",
+      "version": "1.1.2-7+rpt1"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "network-manager_1.52.1-1+rpt4_arm64.deb",
+      "bytes": 2053348,
+      "package": "network-manager",
+      "sha256": "50717dccae05dcc6e091d4f9a57503a969836cbeaa5f87afd54bbbe9beb6e801",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/n/network-manager/network-manager_1.52.1-1%2brpt4_arm64.deb",
+      "version": "1.52.1-1+rpt4"
+    },
+    {
+      "architecture": "arm64",
       "archive": "nftables_1.1.3-1_arm64.deb",
       "bytes": 75728,
       "package": "nftables",
@@ -1431,6 +1611,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "python3-cffi-backend_1.17.1-3_arm64.deb",
+      "bytes": 92952,
+      "package": "python3-cffi-backend",
+      "sha256": "e11e59b2bd2d17a6ac5a37b63c806518563ee5a436152a91284c5514b94d67af",
+      "uri": "https://deb.debian.org/debian/pool/main/p/python-cffi/python3-cffi-backend_1.17.1-3_arm64.deb",
+      "version": "1.17.1-3"
+    },
+    {
+      "architecture": "arm64",
       "archive": "python3-minimal_3.13.5-1_arm64.deb",
       "bytes": 27244,
       "package": "python3-minimal",
@@ -1440,12 +1629,30 @@
     },
     {
       "architecture": "arm64",
+      "archive": "python3-netplan_1.1.2-7+rpt1_arm64.deb",
+      "bytes": 36372,
+      "package": "python3-netplan",
+      "sha256": "a934df7db5ad14cde1f12dd5401133532d408235fcb262b39364454460d5b7e7",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/n/netplan.io/python3-netplan_1.1.2-7%2brpt1_arm64.deb",
+      "version": "1.1.2-7+rpt1"
+    },
+    {
+      "architecture": "arm64",
       "archive": "python3-pil_11.1.0-5+deb13u4_arm64.deb",
       "bytes": 495140,
       "package": "python3-pil",
       "sha256": "ad294f2932ceb9115eece925337b19a6beae3164be9ebb7a4d80057c472fd788",
       "uri": "https://deb.debian.org/debian/pool/main/p/pillow/python3-pil_11.1.0-5%2bdeb13u4_arm64.deb",
       "version": "11.1.0-5+deb13u4"
+    },
+    {
+      "architecture": "arm64",
+      "archive": "python3-yaml_6.0.2-1+b2_arm64.deb",
+      "bytes": 121812,
+      "package": "python3-yaml",
+      "sha256": "b83a9ccdc2d1d1f2e36c7c333d36b0151cc89f1d45568e28bcab1f00c72a3498",
+      "uri": "https://deb.debian.org/debian/pool/main/p/pyyaml/python3-yaml_6.0.2-1%2bb2_arm64.deb",
+      "version": "6.0.2-1+b2"
     },
     {
       "architecture": "arm64",
@@ -1557,6 +1764,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "udev_257.13-1~deb13u1_arm64.deb",
+      "bytes": 1397196,
+      "package": "udev",
+      "sha256": "eed77ec245475039937d5c2d5ae3bbd7241420f21277a2edbb28c60cf9fec1ca",
+      "uri": "https://deb.debian.org/debian/pool/main/s/systemd/udev_257.13-1%7edeb13u1_arm64.deb",
+      "version": "257.13-1~deb13u1"
+    },
+    {
+      "architecture": "arm64",
       "archive": "zlib1g_1%3a1.3.dfsg+really1.3.1-1+b1_arm64.deb",
       "bytes": 85116,
       "package": "zlib1g",
@@ -1576,7 +1792,7 @@
     },
     {
       "file": "deb.debian.org_debian_dists_trixie-updates_InRelease",
-      "sha256": "6f8e53876ffe1a49b7cbeab52fa5012a97cc84e0dae6c86405efe52474368f7a",
+      "sha256": "b76c9a9837b04f1a89981a5bb0b1cfe84c84bc77081222703886511be33c73ec",
       "signers": [
         "4CB50190207B4758A3F73A796ED0E7B82643E131"
       ]
@@ -1590,7 +1806,7 @@
     },
     {
       "file": "archive.raspberrypi.com_debian_dists_trixie_InRelease",
-      "sha256": "dc7dafc38f68d1ef3eb55e5ec80b4a0f170f6a2eab86ffabe5b5ef53fdb1ea44",
+      "sha256": "fd365addd9c8b017b391b20ed0f82b40d6768d2bc273073ba3821c415febbd2c",
       "signers": [
         "CF8A1AF502A2AA2D763BAE7E82B129927FA3303E"
       ]
@@ -1601,6 +1817,7 @@
     "ca-certificates",
     "dbus",
     "libubootenv-tool",
+    "network-manager",
     "nftables",
     "nodejs",
     "python3",

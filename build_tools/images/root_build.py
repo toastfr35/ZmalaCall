@@ -14,7 +14,7 @@ import subprocess
 import tarfile
 import tempfile
 
-from . import base_intent, inspect_root, local_repo, package_lock, project
+from . import base_intent, build_space, inspect_root, local_repo, package_lock, project
 
 MAX_ROOT_BYTES = 8*1024**3
 MAX_MEMBERS = 200000
@@ -148,7 +148,7 @@ def build(role, base_cache, role_cache, output):
     output.mkdir(parents=True)
     # Repository copies, bootstrap caches, expanded root and final tar can
     # coexist. Check both filesystems; /tmp need not share the output mount.
-    if any(shutil.disk_usage(path).free < MIN_BUILD_FREE_BYTES for path in (output, Path('/tmp'))):
+    if any(build_space.available(path) < MIN_BUILD_FREE_BYTES for path in (output, Path('/tmp'))):
         raise ValueError('At least 32 GiB free is required on both build and /tmp filesystems')
     scratch = Path(tempfile.mkdtemp(prefix='zmala-locked-root-', dir='/tmp'))
     # Only authenticated public archives and build hooks enter this workspace.

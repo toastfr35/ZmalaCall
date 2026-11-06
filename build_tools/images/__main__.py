@@ -7,14 +7,36 @@ import tarfile
 
 from zmala_system.host_layout import ROLES
 
-from . import (base_intent, bootloader, factory_data, image_state, initramfs_build,
-              inspect_boot, inspect_disk, inspect_root, local_repo, package_lock, project, root_build, sources)
+from . import (application_build, application_inputs, base_intent, bootloader, factory_data, image_assembly, image_state, initramfs_build,
+              inspect_boot, inspect_disk, inspect_root, loader_build, local_repo, package_lock, project, root_build, sources)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
     sub.add_parser('check', help='Validate checked-in source pins and role package intent')
+    assembly = sub.add_parser('assemble-image', help='Assemble new regular-file development media; never flash a device')
+    assembly.add_argument('role', choices=ROLES)
+    assembly.add_argument('--media-bytes', type=int, help='Exact target byte capacity; default is minimal test geometry')
+    for name in ('source', 'initramfs', 'loader', 'base-cache', 'role-cache', 'output'):
+        assembly.add_argument('--'+name, required=True, type=Path)
+    for name in ('expected-root-sha256', 'initramfs-manifest-sha256', 'loader-manifest-sha256'):
+        assembly.add_argument('--'+name, required=True)
+    loader = sub.add_parser('build-loader', help='Compile the pinned experimental Pi 4 loader (Linux)')
+    loader.add_argument('--output', required=True, type=Path)
+    applications = sub.add_parser('application-inputs', help='Retain committed source and pinned script-free JS dependencies')
+    applications.add_argument('role', choices=ROLES)
+    applications.add_argument('--output', required=True, type=Path)
+    applications.add_argument('--commit', default='HEAD')
+    app_root = sub.add_parser('provision-applications', help='Build and check applications in an isolated offline root')
+    app_root.add_argument('role', choices=ROLES)
+    app_root.add_argument('--source', required=True, type=Path)
+    app_root.add_argument('--expected-root-sha256', required=True)
+    app_root.add_argument('--applications', required=True, type=Path)
+    app_root.add_argument('--expected-applications-sha256', required=True)
+    app_root.add_argument('--base-cache', required=True, type=Path)
+    app_root.add_argument('--role-cache', required=True, type=Path)
+    app_root.add_argument('--output', required=True, type=Path)
     fetch = sub.add_parser('fetch', help='Download and hash-check a pinned source into a new cache tree')
     fetch.add_argument('source', choices=sources.SOURCE_NAMES)
     fetch.add_argument('--cache', required=True, type=Path)
@@ -86,6 +108,19 @@ def main():
                 print(role+': '+str(len(project.packages(role)))+' requested packages; '
                       +str(locks['roles'][role]['archives'])+' locked dependency archives')
             print('Source pins, profiles and intent locks valid; no image is qualified.')
+        elif args.command == 'application-inputs':
+            print(json.dumps(application_inputs.emit(args.role, args.output, args.commit), indent=2))
+        elif args.command == 'assemble-image':
+            print(json.dumps(image_assembly.build(args.role, args.source, args.expected_root_sha256,
+                             args.initramfs, args.initramfs_manifest_sha256, args.loader,
+                             args.loader_manifest_sha256, args.base_cache, args.role_cache, args.output,
+                             args.media_bytes), indent=2))
+        elif args.command == 'build-loader':
+            print(json.dumps(loader_build.build(args.output), indent=2))
+        elif args.command == 'provision-applications':
+            print(json.dumps(application_build.build(args.role, args.source, args.expected_root_sha256,
+                             args.applications, args.expected_applications_sha256, args.base_cache,
+                             args.role_cache, args.output), indent=2))
         elif args.command == 'fetch':
             print(sources.acquire(args.source, args.cache))
         elif args.command == 'probe-config':
