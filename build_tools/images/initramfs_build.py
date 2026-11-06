@@ -61,6 +61,7 @@ def build(role, source, expected, base_cache, role_cache, output):
                        'SOURCE_DATE_EPOCH': root_build.SOURCE_DATE_EPOCH})
     result = json.loads((output/'worker-result.json').read_text())
     if (result.get('role') != role or result.get('source_root_sha256') != expected
+            or result.get('target_dispatch_checked') is not True
             or package_lock.digest(source) != expected
             or package_lock.digest(output/'initramfs.img') != result.get('initramfs_sha256')):
         raise ValueError('Initramfs result differs from its source/output record')

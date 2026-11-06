@@ -1119,8 +1119,12 @@ so killed or missing early preparation cannot admit ordinary services. It does
 not operate TV, camera, remote or application services.
 
 Direct LLTs and real GPT/loop namespace HLTs cover both roles. The offline
-initramfs builder checks copied runtime/tool bytes and actual ARM64 imports, but
-does not qualify physical initramfs/PID1 boot. Regular-file A/B assembly now
+initramfs builder checks copied runtime/tool bytes and actual ARM64 imports. It
+also requires the registered storage entry in the generated execution list and
+traces its harmless prerequisite call through the target dispatcher. The first
+physical development boot exposed a missing dispatch entry (issue #174); the
+startup gate blocked ordinary services as intended. These build checks
+do not qualify physical initramfs/PID1 boot. Regular-file A/B assembly now
 requires matched application root, initramfs and pinned loader manifests. The
 development factory boot stops the loader watchdog until joint health transfer
 exists. Data expansion, onboarding and physical qualification remain pending.

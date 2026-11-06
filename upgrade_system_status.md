@@ -5,6 +5,33 @@ resumption. The sections below retain the original checkpoint evidence; the
 continuation entry supersedes its pending-build and unsupported-combined statements.
 This document is a handoff, not a claim of completion.
 
+## Physical boot diagnosis — 6 November 2026
+
+The user booted the verified, exact-capacity terminal development card after
+PR #171. Linux reached PID1 but `zmala-host-storage.service` failed and fenced
+ordinary services into emergency mode. The locked root account prevented an
+interactive recovery login. Photos also show undervoltage and Bluetooth errors;
+those observations do not establish their cause or successful peripheral operation.
+
+Inspection of the exact initramfs found an empty `scripts/local-bottom/ORDER`,
+despite the copied Python entry being present. The vendor ordering generator
+requires a registered executable shell source; the hook-only Python copy was
+never scheduled. Issue #174 fixes source registration with a shell dispatcher,
+checks the extracted execution list and traces the actual target dispatcher in
+harmless `prereqs` mode. Earlier import/presence checks missed this integration
+failure. A corrected build still needs a new physical boot; no hardware pass is
+claimed by the fix or by a verified card write.
+
+The user also requested a subsequent 16 GB-compatible candidate. Measured current
+system filesystem allocations are about 2.40 GiB terminal, 0.99 GiB server and
+2.51 GiB combined per slot, including filesystem overhead. Two 4 GiB system slots
+are a sizing candidate, not a qualified minimum. Larger-card preparation,
+upgrade/data headroom and interruption recovery remain separate work. Private
+`build_tools/tmp/image-storage-measurements.json`, `next-image-capacity-plan.json`
+and `card5-terminal-write-verified.json` preserve measurement and write evidence.
+PR #173 relocates the builder to `zmala_images`; incorporate its merge when
+continuing and preserve unchanged, hash-verified package caches.
+
 ## Autonomous continuation — 6 November 2026
 
 The user authorized continued autonomous work while asleep. This entry supersedes
