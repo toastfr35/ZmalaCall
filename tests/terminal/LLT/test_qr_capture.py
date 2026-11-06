@@ -3,6 +3,7 @@
 # @environment portable
 # @plan Stub V4L2, X11, ZBar and Tk at their API boundaries while executing the real Linux QR capture/decoder. Check 640x480/15fps requests, wrapper embedding and bounded preview, independent frame/decode throttles, repeated-code suppression and exact UTF-8 symbol bounds. Inject missing camera/display/tree, invalid image/UTF-8 and capture/decode failures; assert acquired resources are released on startup failure and close.
 # Check display-only positioning guides on real light/dark images at portrait/landscape sizes; assert centred square bounds, four corners, a clear centre and unchanged original image/decoder input.
+# Check detected guides turn amber in the decoded frame, remain amber for 1.5 seconds, then return to mint without changing decode cadence or exposing QR contents.
 # @pass Decode and cleanup assertions pass without a camera/display or native libraries. Pixel quality and real USB/X11 interoperability remain system tests.
 import ctypes as C
 import importlib.util
@@ -27,7 +28,7 @@ class QRNativeTests(unittest.TestCase):
         root=Mock(); root.winfo_id.return_value=21
         for patcher in (patch.object(self.qr.tk,'Tk',return_value=root),patch.object(self.qr.tk,'Label'),
                         patch.object(self.qr,'QRDecoder'),patch.object(self.qr.ImageTk,'PhotoImage'),
-                        patch.object(self.qr,'scan_guides',side_effect=lambda image: image),
+                        patch.object(self.qr,'scan_guides',side_effect=lambda image, detected=False: image),
                         patch.object(self.qr.Image,'fromarray')):
             patcher.start(); self.addCleanup(patcher.stop)
         return root
@@ -59,7 +60,7 @@ class QRNativeTests(unittest.TestCase):
         root.geometry.assert_called_with('320x180+0+0')
         self.qr.Image.fromarray.return_value.thumbnail.assert_called_once_with((320,180),self.qr.Image.Resampling.BILINEAR)
         scanner.decoder.decode.assert_called_once_with(scanner.capture.read.return_value[1])
-        self.qr.scan_guides.assert_called_once_with(self.qr.Image.fromarray.return_value)
+        self.qr.scan_guides.assert_called_once_with(self.qr.Image.fromarray.return_value,False)
         scanner.close(); x.XCloseDisplay.assert_called_once_with(1)
         self.cv.VideoCapture.return_value.release.assert_called_once()
 
@@ -102,6 +103,22 @@ class QRNativeTests(unittest.TestCase):
         callback.assert_called_with('new-code')
         self.cv.imread.return_value=None
         with self.assertRaisesRegex(RuntimeError,'unavailable'): scanner.set_static_picture('missing')
+        scanner.close()
+
+    def test_detected_guides_change_immediately_and_expire(self):
+        image = Image.new('RGB',(640,480),'white')
+        mint = self.qr.scan_guides(image)
+        amber = self.qr.scan_guides(image,True)
+        self.assertNotEqual(mint.tobytes(),amber.tobytes())
+        self.assertIn((255,202,102),amber.getdata())
+        self.assertEqual(image.getpixel((160,78)),(255,255,255))
+        self.widgets()
+        scanner = self.qr.NativeQRScanner(Mock(),camera='StaticImage: Static picture')
+        scanner.set_static_picture('qr.png')
+        scanner.decoder.decode.return_value = ['private QR']
+        for now,detected in ((10,True),(11,True),(11.6,False)):
+            with patch.object(self.qr.time,'monotonic',return_value=now): scanner.iterate()
+            self.assertEqual(self.qr.scan_guides.call_args.args[1],detected)
         scanner.close()
 
     def test_capture_failure_and_initialization_failure_release_camera(self):

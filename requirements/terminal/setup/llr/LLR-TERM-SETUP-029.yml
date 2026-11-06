@@ -9,6 +9,10 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/LLT/test_wifi_feedback.py
+  type: file
+- path: zmala_terminal/common/setup_feedback.py
+  type: file
 - path: tests/terminal/LLT/test_display_states.py
   type: file
 - path: tests/terminal/LLT/test_setup_ownership.py
@@ -35,6 +39,15 @@ text: |
   Normal setup shall complete a Wi-Fi join before showing a ten-second success page.
   It shall not skip that page. Ethernet connectivity alone shall not complete this
   stage.
+  Failed joins shall remain at the Wi-Fi stage and show an actionable explanation
+  for recognized missing-network, authentication, permission, adapter, address and
+  timeout failures. Unknown failures shall use a generic retry message. Authentication
+  feedback shall suggest checking the password and router security without claiming
+  that an incorrect password is the only possible cause. Raw diagnostics and
+  credentials shall not be displayed. A fresh valid scan shall replace old failure
+  feedback with progress; stale-generation results shall not overwrite current feedback.
 verification: |
   Supply Ethernet alone, a failed Wi-Fi join and a successful join. Check that server
   enrollment follows the full success interval.
+  Inject each recognized failure and an unknown/private error; check safe visible
+  explanations, retained stage, cleanup, fresh progress and stale-result rejection.
