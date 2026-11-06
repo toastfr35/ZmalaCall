@@ -47,8 +47,23 @@ partition sizes. Direct tests cover both selected slots on sparse 16 GB/32 GB
 files, modeled partial/complete writes, repeat no-op, native GPT verification and
 preservation of partition IDs/extents and boot-state sentinels. Larger-card space
 remains unallocated; filesystem expansion is deliberately deferred for the next
-hardware attempt. Full rebuilt-image and physical qualification, update/data
-headroom and physical power-loss recovery remain separate work. Private
+hardware attempt. The terminal image was rebuilt from source `dc6cd0d`, including
+PR #173's application changes and the dispatch fix. Its raw size is
+14,001,635,328 bytes and SHA-256 is
+`b627dd7ef75a9e30677b715b91201794d2de9819c4808dfb137e17e04b2ac43d`.
+Copies of that actual image passed relocation on 16,000,000,000-byte and
+32,000,000,000-byte regular files, native GPT/FAT checks, both-slot repeat no-op
+and byte-for-byte preservation from offset 1024 through the original image end.
+The new system filesystem has 1,804,566,528 bytes free per slot; data has
+4,143,648,768 bytes free. The target ARM64 application/core, initramfs imports,
+unit graph, environment tools and real prerequisite dispatcher also passed.
+These are build/file tests: physical compact-card and Bluetooth qualification,
+update/data headroom and physical power-loss recovery remain separate work.
+The compact image still uses the ordinary slot DTB; the separate firmware-DTB
+Bluetooth diagnostic on the existing 32 GB-layout card must not be mistaken for
+a confirmed fix in this rebuilt image. PR #177 remains a draft stacked on
+PR #173 and #175. Private `build_tools/tmp/terminal-compact-image.json`,
+`terminal-compact-capacity-checks.json`,
 `build_tools/tmp/four-gib-slot-measurements.json`,
 `card5-ui-after-dispatch-repair.json`,
 `build_tools/tmp/image-storage-measurements.json`, `next-image-capacity-plan.json`
