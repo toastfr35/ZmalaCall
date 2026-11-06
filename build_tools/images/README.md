@@ -553,8 +553,8 @@ boot with no attempt remaining falls back without writing. Compiled fallback
 environments must contain **none** of the `zm_*` contract fields. Runtime readers
 use an empty explicit default file and never initialize corrupt environments.
 Factory creation must seed both redundant copies explicitly, retaining the
-reviewed loader's unrelated default addresses/settings. That complete factory
-assembler is not implemented yet.
+reviewed loader's unrelated default addresses/settings. The development
+`assemble-image` command now performs that seeding in a new regular image file.
 
 Raw access is unavailable on legacy installations. Admission requires complete
 current image readiness, a marked exact role contract, the supported Pi 4 SD
@@ -650,7 +650,77 @@ never substitute a terminal or server cache or relabel an existing prepared root
 Combined runtime storage uses terminal UID/GID 1000 and server UID/GID 1001,
 separate private application and operator bindings, and one host identity and
 confirmed/trial boot record. Exact role checks reject standalone data/boot records.
-The profile and archive tools do not yet create system users, provision both
-applications, assemble a flashable card or implement joint health/admission.
+Offline application provisioning now creates the service users and installs both
+applications; regular-file assembly supplies a complete development disk layout.
+Joint health/admission and hardware boot qualification remain unfinished.
 Current installer workflows and release downloads are unchanged; user-guide
 changes belong with the eventual qualified installation workflow.
+
+## Offline applications and development media
+
+`application-inputs ROLE --commit COMMIT --output NEW_DIR` snapshots committed
+Git blobs, not worktree/private data. It retains the exact public npm archives
+named by the v3 lock and verifies SHA-512 integrity; no npm lifecycle scripts run.
+Terminal input intake also retains the two TURN SDK source files against the
+existing build script's SHA-256 pins. Downloads happen only during input intake.
+Reject linked, traversal, duplicate, oversized or unsupported dependency inputs.
+
+After `build-root`, run `provision-applications ROLE --source ROOT_TAR
+--expected-root-sha256 SHA256 --applications APPLICATIONS_TAR
+--expected-applications-sha256 SHA256 --base-cache BASE --role-cache ROLE_CACHE
+--output NEW_DIR`. Like the root/initramfs builders, this needs an ordinary Linux
+user with subordinate UID/GID namespaces and ARM64 binfmt support on x86 hosts.
+The worker has separate network, mount, PID and user namespaces. It installs
+existing application service templates declaratively, compiles the native
+video/audio/TURN libraries, runs the TURN regressions and checks target imports
+and the systemd unit graph. Server builds also start target Node under the service
+UID on isolated loopback, check `/ready` and bootstrap publication, and discard
+all smoke-test data from a temporary RAM filesystem before packaging.
+
+Combined releases have separate `/opt/zmalacall` and `/opt/zmalacall-server`
+source trees. The server's sibling terminal-bootstrap path points to its own
+private `bootstrap` directory, never the terminal's application state. All roles
+use NetworkManager; the server intent/lock includes it explicitly. SSH and legacy
+application updaters are masked. Secure relay/TLS onboarding and first-owner
+claim are not supplied by this development provisioning path.
+
+Pass the resulting application root through `prepare-root`, then
+`build-initramfs`. `build-loader --output NEW_DIR` acquires the pinned U-Boot
+source, compiles the Pi 4 ARM64 loader and host `mkimage`, and audits resolved
+configuration plus compiled defaults. Its compiled fallback must have no `zm_*`
+state. Toolchain freezing remains incomplete.
+
+`assemble-image ROLE --source PREPARED_ROOT_TAR --expected-root-sha256 SHA256
+--initramfs INITRAMFS_DIR --initramfs-manifest-sha256 READY_SHA256
+--loader LOADER_DIR --loader-manifest-sha256 READY_SHA256
+--base-cache BASE --role-cache ROLE_CACHE --output NEW_DIR` writes only new
+regular files outside the checkout. Supply independently retained digests for
+the root and both component READY manifests. It rejects an OS-only root or an
+initramfs belonging to a different role/root. No command accepts a device path,
+flashes a card or alters a running Pi.
+
+The six GPT partitions are 32 MiB common FAT16, two 512 MiB FAT32 boot slots,
+two 8 GiB ext4 system slots and 4 GiB ext4 factory data, preceded by the fixed
+8 MiB boot-state gap. Each slot has its matched kernel, checked initramfs and
+Pi 4 device tree. The locked target `dtmerge` applies the Pi-specific KMS overlay;
+generic `fdtoverlay` cannot substitute for Raspberry Pi dormant-fragment handling.
+The pinned loader copies firmware fixups into the selected slot's tree. Initial
+factory state explicitly confirms A in two CRC-protected raw environment copies;
+the compiled fallback cannot fabricate it. Factory data is mode 0700 with a
+mode-0600 role marker and no device identity. Data expansion is not implemented.
+
+The assembler bounds the uncompressed ARM64 Image to 32 MiB at `0x00080000`,
+initramfs to 48 MiB at `0x02100000`, and expanded device tree to 2 MiB at
+`0x05600000`. It checks FAT payload readback, ext4 marker content/ownership,
+partition-copy extents, GPT/boot geometry and the final image digest. These
+checks do not prove firmware, graphics/CMA or physical boot compatibility.
+The development confirmed/factory path stops the loader watchdog; a trial keeps
+it armed with the kernel's 60-second userspace-open limit. PID1 health transfer,
+joint confirmation and automatic update coordination are still absent. Do not
+publish these candidates as supported installation/update media.
+
+Allow at least 32 GiB free scratch space per active builder, plus retained
+outputs. On WSL, check free space on the Windows volume holding the VHD as well
+as Linux `df`: the virtual capacity can exceed physical free space. Keep the VHD
+on a sufficiently large volume before starting concurrent builds. A failed build
+has no READY marker; preserve its log and use a new output directory after repair.

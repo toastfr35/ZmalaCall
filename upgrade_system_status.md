@@ -5,6 +5,56 @@ resumption. The sections below retain the original checkpoint evidence; the
 continuation entry supersedes its pending-build and unsupported-combined statements.
 This document is a handoff, not a claim of completion.
 
+## Autonomous continuation — 6 November 2026
+
+The user authorized continued autonomous work while asleep. This entry supersedes
+the historical pause instructions below. PR #169 merged through GitHub at
+`1ddf834e6796904e34f7c545072139905e3a70ac` after all three required Verify checks
+passed on its final head. Release v0.3.91 was verified at that merge with all
+eleven expected nonempty assets; do not keep monitoring that completed release.
+
+Current work uses issue #170 and branch `codex/appliance-image-assembly` for a
+cohesive offline application/loader/disk-assembly milestone. All three roles have
+application-bearing ARM64 roots. Terminal and combined roots also have checked
+storage-aware initramfs components. The server root includes NetworkManager in
+its revised authenticated closure (333 installed selections); its target Node
+startup, service-UID access, bootstrap publication and HTTP readiness passed with
+isolated networking and temporary RAM data. Native terminal video/audio/TURN
+builds, TURN regressions, ARM64 imports and service-graph checks passed. Inputs
+record application source commit `1ddf834`; development artifacts are not releases.
+
+The public tooling now includes committed-source/dependency intake, offline
+application provisioning, pinned loader compilation and regular-file A/B media
+assembly. Actual assembly exposed and corrected Pi-specific overlay processing
+and ext4 factory-root permission handling. No successful complete image is
+claimed until its final READY record and digest exist. No physical Pi/card has
+been touched in this continuation. Testing uses QEMU user-mode ARM64 execution,
+Linux namespaces and regular-file filesystems, not a full Pi board simulator.
+
+Build interruption: concurrent retained outputs filled the Windows volume backing
+the WSL VHD, causing a read-only filesystem. The existing `Ubuntu-24.04` distro
+is being relocated intact from its registered C: location to
+`D:\ZmalaBuild\WSL\Ubuntu-24.04` using `wsl --manage --move`. Preserve artifacts
+and logs; verify recovery and input digests before resuming. Builders now check
+physical WSL backing-volume free space as well as Linux free space. Private
+`build_tools/tmp/*-application-root.json`, `*-app-prepared.json`,
+`*-app-initramfs.json` and `current-*-image.json` record exact artifact locations.
+Failed outputs have no READY and must not be accepted. Reuse completed source
+roots; do not repeat package installation unnecessarily.
+
+Remaining gates include successful complete-image assembly, final local/CI
+checks and PR merge, followed by first-owner/TLS onboarding, joint health and
+update coordination, physical boot/power-cut/media qualification and supported
+distribution. The development confirmed boot deliberately stops the loader
+watchdog because qualified health transfer is absent. It is not an automatic
+updater or supported installation release. Existing Word user guides remain
+accurate for the unchanged supported installers.
+
+Preserve unrelated working-tree deletions of `app_improvements.md`, `astra.md`,
+`howto_rewrite_requirements.md`, `server_improvements.md` and
+`terminal_improvements.md`; they are not part of this change. Also preserve
+private/untracked `.codex-attachments/`, `CAD/`, `hw_setup.md` and build scratch.
+
 ## Resumed work — 5 November 2026
 
 Work resumed on `codex/combined-appliance-image`, using issue #167 for combined

@@ -100,9 +100,10 @@ identity/storage preparation. It generates a read-only root mount entry in the
 volatile configuration. An early entry and a separately required PID1 gate block
 normal startup without complete current-boot storage. The isolated initramfs
 builder packages the locked target's Python/runtime/tool closure and checks its
-actual ARM64 imports. This is a boot-component experiment; complete image
-assembly, physical boot qualification, data expansion and role provisioning remain
-pending. Current SSH-installed hosts remain unchanged.
+actual ARM64 imports. Offline application provisioning and regular-file A/B media
+assembly are now available in the image tools. Physical boot qualification, data
+expansion, onboarding and automatic system updates remain pending. Current
+SSH-installed hosts remain unchanged.
 The separate bootloader probe tooling now fetches a pinned U-Boot candidate and
 emits/audits its Kconfig subset and bounded watchdog handoff examples. It does not
 replace the native `probe-config`, install a backend or produce a qualified image;
@@ -117,8 +118,15 @@ configuration binds `/etc/zmalacall/operator/terminal` and
 by their respective groups. SSH and certificate state remain root-private.
 Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
 initialized data and boot records reject role substitution; conversion needs a
-separate migration. This implements storage and boot policy, not combined service
-provisioning, onboarding, coordinated updates or a qualified flashable image.
+separate migration. Offline provisioning now creates both locked service users,
+installs the existing service templates and compiles the terminal's ARM64 native
+libraries. Server dependencies come from integrity-checked package-lock archives
+without package lifecycle scripts. Assembly requires matching application-bearing
+root, checked initramfs and pinned loader manifests. Its development factory boot
+disables the loader watchdog because joint health transfer is not implemented;
+trial boot retains the bounded watchdog. These candidates are not released or
+qualified installation media. See the image-tool guide for the full build order
+and remaining onboarding, coordination and hardware gates.
 
 Windows server hosting, the serial-keypad project and CAD models are retired.
 Other cameras/boards and direct GPIO controls are not established terminal

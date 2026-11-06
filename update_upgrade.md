@@ -668,6 +668,37 @@ experimental confirmed/trial boot-control helper implementation:
   coordinator/health remain pending. Existing installation workflows and user
   guides remain accurate. No live host or card was changed.
 
+6 November 2026 — [#170](https://github.com/toastfr35/ZmalaCall/issues/170),
+offline applications and regular-file media assembly:
+
+- Added committed-source application intake with bounded archives, exact npm
+  integrity verification without lifecycle scripts, and pinned TURN source intake.
+  Offline builders create locked role users and separate combined releases,
+  compile native terminal libraries and validate target imports/service units.
+  Server startup/readiness checks use its service UID, isolated loopback and RAM
+  data; no factory credentials or initialized application data are retained.
+- The server package intent now explicitly includes NetworkManager. Its revised
+  authenticated root contains 333 installed selections; terminal and combined
+  roots contain 807 and 822. Shared package identities remain consistent.
+- Added pinned Pi 4 loader compilation and new regular-file six-partition assembly
+  from exact root/initramfs/loader identities. Matching kernel/module/DT inputs,
+  Pi-specific overlay handling, factory privacy, redundant explicit boot state,
+  bounded payload memory windows and filesystem readback gate artifact readiness.
+  No physical-device argument or flashing operation is provided.
+- The development factory/confirmed path stops the loader watchdog because joint
+  health transfer is absent; trials retain the bounded early-boot watchdog. This
+  deliberately incomplete policy cannot qualify supported media or automatic
+  updates. Hardware, graphics/CMA, power-cut, major-OS and data compatibility
+  qualification remain required, as do secure owner onboarding and coordination.
+- ARM64 execution here is QEMU user-mode CPU emulation with Linux namespaces,
+  not board emulation. Build artifacts and exact check evidence are retained
+  privately and summarized in `upgrade_system_status.md` and the implementation
+  PR. A WSL backing-volume exhaustion interrupted assembly; physical-volume
+  capacity is now checked in addition to Linux virtual free space.
+- These changes concern build/packaging tooling and reuse existing runtime
+  contracts and service templates. No new runtime requirement is claimed. User
+  installers/workflows remain unchanged, so their Word guides remain accurate.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)

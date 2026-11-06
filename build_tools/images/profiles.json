@@ -30,7 +30,8 @@
         "python3-pil",
         "nftables",
         "avahi-daemon",
-        "rpi-swap"
+        "rpi-swap",
+        "network-manager"
       ]
     },
     "combined": {

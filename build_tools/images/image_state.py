@@ -85,6 +85,7 @@ def audit(path, role, selected, expected_payloads):
     seed_count, seed_bytes = 0, 0
     status = None
     package_link = False
+    application = None
     with tarfile.open(path, 'r:') as archive:
         for member in archive:
             current = name(member.name)
@@ -96,6 +97,17 @@ def audit(path, role, selected, expected_payloads):
                 raise ValueError('Unsupported prepared-root ownership or mode')
             nodes[current] = (member.isdir(), member.isfile(), member.size,
                               member.uid, member.gid, member.mode)
+            if current == 'usr/lib/zmala-application-build.json':
+                if not member.isfile() or member.size > 32768 or member.uid or member.gid or member.mode != 0o644:
+                    raise ValueError('Invalid application build record')
+                body = archive.extractfile(member).read()
+                application = json.loads(body)
+                if (application.get('schema') != 1 or application.get('role') != role
+                        or application.get('application_installed') is not True
+                        or application.get('target_application_imports_checked') is not True
+                        or application.get('target_unit_graph_checked') is not True
+                        or application.get('joint_health_implemented') is not False):
+                    raise ValueError('Incomplete or mismatched application build record')
             if current == '.' and (not member.isdir() or member.uid or member.gid or member.mode != 0o755):
                 raise ValueError('Invalid prepared-root directory entry')
             if member.islnk():
@@ -163,7 +175,8 @@ def audit(path, role, selected, expected_payloads):
     for record in package_lock.paragraphs(status):
         if record['Architecture'] != selected[record['Package']][0][1]:
             raise ValueError('Prepared package architecture changed')
-    return {'packages': len(expected), 'variable_seed_entries': seed_count, 'variable_seed_bytes': seed_bytes}
+    return {'packages': len(expected), 'variable_seed_entries': seed_count, 'variable_seed_bytes': seed_bytes,
+            'application_installed': application is not None}
 
 
 def prepare(source, expected_sha256, selected, role, output):
@@ -217,7 +230,7 @@ def prepare(source, expected_sha256, selected, role, output):
                   device_initializer_packaged=True,
                   early_boot_policy_packaged=True, pid1_storage_gate_packaged=True,
                   early_boot_integration_installed=False, device_data_initialized=False,
-                  application_installed=False, toolchain_fully_locked=False,
+                  toolchain_fully_locked=False,
                   hardware_boot_verified=False, production_qualified=False)
     (output/'READY.json').write_text(json.dumps(result, indent=2)+'\n', encoding='utf-8')
     return result

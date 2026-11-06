@@ -1091,8 +1091,13 @@ configuration binds `/etc/zmalacall/operator/terminal` and
 by their respective groups. SSH and certificate state remain root-private.
 Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
 initialized data and boot records reject role substitution; conversion needs a
-separate migration. This implements storage and boot policy, not combined service
-provisioning, onboarding, coordinated updates or a qualified flashable image.
+separate migration. Offline image provisioning now creates the locked terminal
+account, installs the existing display/application/pairing/CEC/compositor units
+and compiles the video, audio and TURN libraries from retained public inputs.
+ARM64 library loads and TURN regressions are checked without opening hardware
+devices. Combined server sources and bootstrap state remain separate. SSH and
+legacy application updates are masked in these development roots. Onboarding,
+coordinated updates and qualified installation media remain pending.
 
 Unit and real private-namespace tests cover this storage helper. The offline
 archive tool packages its profile, variable-state seed and runtime without
@@ -1115,9 +1120,11 @@ not operate TV, camera, remote or application services.
 
 Direct LLTs and real GPT/loop namespace HLTs cover both roles. The offline
 initramfs builder checks copied runtime/tool bytes and actual ARM64 imports, but
-does not qualify physical initramfs/PID1 boot. Complete image assembly, data
-expansion, onboarding/service integration and physical qualification remain
-pending. The experimental confirmed/trial controller (`HLR-TERM-MAINT-049`)
+does not qualify physical initramfs/PID1 boot. Regular-file A/B assembly now
+requires matched application root, initramfs and pinned loader manifests. The
+development factory boot stops the loader watchdog until joint health transfer
+exists. Data expansion, onboarding and physical qualification remain pending.
+The experimental confirmed/trial controller (`HLR-TERM-MAINT-049`)
 adds one durably consumed candidate attempt and explicit current-slot,
 transaction/generation confirmation. RAUC eligibility is separate from product
 health; unqualified `set-primary` is refused and automatic installed-slot

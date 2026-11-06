@@ -398,8 +398,14 @@ configuration binds `/etc/zmalacall/operator/terminal` and
 by their respective groups. SSH and certificate state remain root-private.
 Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
 initialized data and boot records reject role substitution; conversion needs a
-separate migration. This implements storage and boot policy, not combined service
-provisioning, onboarding, coordinated updates or a qualified flashable image.
+separate migration. Offline image provisioning now installs the existing server
+unit and its locked service account. Its source release and private bootstrap
+directory are separate from terminal state. Integrity-checked JS dependencies
+are retained without npm lifecycle scripts; target Node starts under its service
+UID in an isolated network with temporary RAM data to check HTTP readiness.
+NetworkManager is included explicitly in the server package lock. SSH and the
+legacy updater remain masked in these development roots. Secure relay/TLS and
+first-owner onboarding, coordinated updates and qualified media remain pending.
 
 This code has unit and real isolated-namespace evidence. The archive preparation
 tool packages it without starting it or initializing device data. The separate
@@ -423,8 +429,10 @@ The latter also refuses missing preparation if the early helper is killed.
 
 The offline image tools generate a candidate initramfs and validate target Python
 imports and copied bytes. Namespace integration is separate from actual initramfs
-and PID1 boot qualification. Complete image assembly, first-owner setup,
-service/provisioning integration and physical qualification remain pending.
+and PID1 boot qualification. The assembler now produces new regular-file A/B
+development media from matched root/initramfs/loader manifests; it does not flash
+devices. Its confirmed factory boot stops the loader watchdog until joint health
+transfer exists. First-owner setup and physical qualification remain pending.
 Current installers/services use the layout and
 64 MiB journal policy described above; this experiment does not change them.
 
