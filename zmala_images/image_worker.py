@@ -11,7 +11,7 @@ import sys
 import uuid
 
 from zmala_system import boot_media, device_identity, host_storage
-from . import factory_data, image_assembly, image_payload, inspect_boot, package_lock
+from . import factory_data, image_assembly, image_case, image_payload, inspect_boot, package_lock
 from .initramfs_worker import unpack_root
 
 
@@ -82,6 +82,7 @@ def worker(request_file):
     root = output/'root'; root.mkdir(mode=0o700)
     try:
         unpack_root(source, root)
+        argon_one = image_case.selected(root, request['role'])
         common = output/'common'; common.mkdir()
         slot = output/'slot'; slot.mkdir()
         version = init['kernel_version']
@@ -106,6 +107,7 @@ def worker(request_file):
         (staging/'overlay.dtbo').write_bytes(overlay)
         run(['chroot', root, '/usr/bin/dtmerge', '/tmp/zmala-image-dtb/base.dtb',
              '/tmp/zmala-image-dtb/board.dtb', '/tmp/zmala-image-dtb/overlay.dtbo'])
+        image_case.configure_tree(root, staging, argon_one, run)
         shutil.copyfile(staging/'board.dtb', slot/'board.dtb')
         shutil.rmtree(staging)
         if (slot/'board.dtb').stat().st_size+65536 > 2*image_payload.MIB:
@@ -114,7 +116,8 @@ def worker(request_file):
             (common/name).write_bytes(payload(root, 'usr/lib/raspi-firmware/'+name, 8*image_payload.MIB))
         shutil.copyfile(loader/'u-boot.bin', common/'u-boot.bin')
         (common/'config.txt').write_text('arm_64bit=1\nenable_uart=1\nauto_initramfs=0\nkernel=u-boot.bin\n'
-                                       'dtoverlay=vc4-kms-v3d-pi4\nmax_framebuffers=2\n')
+                                       'dtoverlay=vc4-kms-v3d-pi4\nmax_framebuffers=2\n'
+                                       + image_case.boot_parameters(argon_one))
         (output/'boot.cmd').write_text(image_payload.boot_script())
         run([loader/'mkimage', '-A', 'arm64', '-O', 'linux', '-T', 'script', '-C', 'none',
              '-n', 'Zmala development A/B', '-d', output/'boot.cmd', common/'boot.scr'])
@@ -178,7 +181,8 @@ def worker(request_file):
         geometry = inspect_boot.audit(image)
         with image.open('rb') as stream:
             boot_media.environment_ranges(boot_media.inspect(stream, size))
-        result = {'schema': 1, 'role': request['role'], 'source_root_sha256': request['sha256'],
+        result = {'schema': 1, 'role': request['role'], 'argon_one': argon_one,
+                  'source_root_sha256': request['sha256'],
                   'initramfs_manifest_sha256': request['initramfs_manifest'],
                   'loader_manifest_sha256': request['loader_manifest'], 'kernel_version': version,
                   'image_bytes': size, 'image_sha256': package_lock.digest(image), 'partitions': rows,

@@ -28,13 +28,32 @@ connection and a DHCP address. Neither the backend nor the feedback patch is
 persistent on this test card, and no reboot-survival claim is made.
 
 The next enrollment failure came from an old server QR pointing to this PC's
-HTTP development endpoint, not the Pi server, which requires HTTPS. The user is
-obtaining a fresh server QR. This is separate from Wi-Fi. The running firmware
+HTTP development endpoint, not the Pi server, which requires HTTPS. The user
+scanned a fresh server QR and confirmed success; the saved HTTPS bootstrap was
+also verified remotely. This is separate from Wi-Fi. The running firmware
 device tree was retained privately: compared with the static slot tree, its
 Bluetooth UART pin configuration also includes RTS/CTS pins 30/31 and their pulls.
 This is a candidate explanation for the Bluetooth fix, not yet an isolated
 hardware test. The broader firmware-tree differences and slot compatibility still
 need review before adopting a production A/B loader correction.
+
+The user then reported a continuously running fan and confirmed the case is an
+Argon ONE Pi 4 V2. Live read-only inspection found the image's fan flag disabled,
+no I2C group membership/device, and disabled I2C1 in the running device tree.
+The user clarified that terminal and terminal+server images always use this case;
+it is not optional. Issue #182 therefore provisions Argon support automatically
+for both roles and rejects incomplete root/boot configuration. Server-only images
+do not enable this controller. The existing call-only policy (LLR-TERM-POWER-011), implementation
+and runtime test plans remain unchanged. Packaging checks belong in ad-hoc tests;
+this image-build correction does not change the distributed user installation
+workflow or its Word guide. The next compact candidate includes it automatically.
+No physical idle/call/hangup fan test has passed yet, and the current live Pi has
+not been changed for this fan investigation.
+Linux image-tool regressions passed (108 cases), as did the nine existing fan
+policy unit cases. The running Pi's target `dtmerge` successfully enabled I2C1
+in a disposable copy of the static slot tree, and its I2C device kernel module
+was present. That check did not apply an overlay to the running system or control
+the physical fan.
 
 The user booted the verified, exact-capacity terminal development card after
 PR #171. Linux reached PID1 but `zmala-host-storage.service` failed and fenced

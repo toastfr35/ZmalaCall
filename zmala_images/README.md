@@ -730,6 +730,18 @@ start target Node under the service
 UID on isolated loopback, check `/ready` and bootstrap publication, and discard
 all smoke-test data from a temporary RAM filesystem before packaging.
 
+Terminal and combined appliances always use the Argon ONE Pi 4 V2 case.
+`provision-applications` automatically enables the existing call-only fan
+controller, adds the terminal to the I2C group, loads `i2c-dev` and restricts bus 1
+access to that group. There is no optional case flag. Assembly requires this root configuration
+and applies `i2c_arm=on` with the locked target `dtmerge`, verifying the bus 1
+alias is enabled in the resulting slot tree. Both slots use that tree; firmware
+configuration receives the same parameter. The hardware configuration is recorded
+in both application and image manifests. Missing or disabled Argon configuration
+in a terminal/combined root is rejected. Server-only images do not enable this
+fan controller. No vendor power daemon is installed.
+Physical idle/call/hangup fan transitions still require hardware qualification.
+
 Combined releases have separate `/opt/zmalacall` and `/opt/zmalacall-server`
 source trees. The server's sibling terminal-bootstrap path points to its own
 private `bootstrap` directory, never the terminal's application state. All roles
