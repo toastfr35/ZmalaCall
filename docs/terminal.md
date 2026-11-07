@@ -723,6 +723,32 @@ manual enable/disable choice. Developer-helper failures do not prevent normal
 configuration or calling. Installation uses `install-developer-access.py terminal
 --user <service-user>` after that user has been created.
 
+Appliance images install these services declaratively. Ordinary `ssh.service`
+and `ssh.socket` remain masked. The dedicated shell admits the separate `zmala`
+operator account using a device-specific public key, with password authentication
+disabled; it does not admit the `zmalaterminal` application account. The operator
+has passwordless sudo for diagnostics. Store authorized public keys in the
+root-owned persistent `/etc/ssh/keys/authorized_keys`; the fixed root-owned key
+reader supplies them to sshd without making the private key directory readable
+by the operator. Generic image artifacts contain no authorized keys or shared
+passwords. A private test image needs its operator public key provisioned before
+flashing; enabling Developer Access alone does not provision that credential.
+
+The preparation service generates the per-device Ed25519 host identity under
+`/etc/ssh/keys` after persistent storage mounts. Only a fresh server setting starts
+the shell and tunnel. Combined hosts route the narrow helper by the authenticated
+sudo service identity, keeping terminal and server activation state separate.
+The image builder checks the target SSH configuration, operator authentication,
+key rejection and listener shutdown in a private network namespace. This is not
+a physical server-admin enable/disable qualification.
+
+The image also installs the Zmala Plymouth theme and artwork, selects the theme
+in `plymouthd.conf`, and sets quiet splash arguments in the U-Boot-generated
+kernel command line for terminal and combined roles. Initramfs acceptance checks
+the actual theme bytes and script plugin. The legacy `cmdline.txt` branding
+installer is not used by image assembly. Physical logo visibility remains a
+card-boot check.
+
 For TV plugin development, point the C20 at the television and inspect its video
 while trying a driver. This provides visual evidence in addition to TV status
 reports. Avoid replacing/restarting software during a call, preserve the existing

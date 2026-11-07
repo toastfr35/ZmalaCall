@@ -1,7 +1,7 @@
 # @test T-LLT-087
 # @requirements LLR-TERM-NET-009
 # @environment portable
-# @plan Apply live developer settings with mocked sudo/systemd; reject wrong enrollment, non-HTTPS and alternate host; validate fixed ports and pinned key; confirm cache redaction, tunnel restart on credential changes and deactivation removing runtime secrets. Inspect the SSH command for loopback-only forwarding and strict host-key checking.
+# @plan Apply live developer settings with mocked sudo/systemd; reject wrong enrollment, non-HTTPS and alternate host; validate fixed ports and pinned key; confirm cache redaction, tunnel restart on credential changes and deactivation removing runtime secrets. Inspect the SSH command for loopback-only forwarding and strict host-key checking. Check appliance caller separation and unique first-boot host-key preparation without a factory secret.
 # @pass No real tunnel is opened. Assertions cover credential scope and process configuration; HLT establishes remote-shell behaviour.
 import json
 from pathlib import Path
@@ -14,6 +14,29 @@ from zmala_terminal.common.configuration import stable_configuration
 
 
 class DeveloperTerminalTests(unittest.TestCase):
+    def test_image_role_selection_and_private_identity_preparation(self):
+        helper = module('developer-access')
+        legacy = {'role': 'terminal'}
+        self.assertEqual(helper.image_settings(legacy, 'apply', None), legacy)
+        settings = {'role': 'combined', 'image': True}
+        self.assertEqual(helper.image_settings(settings, 'apply', 'zmalaterminal')['role'], 'terminal')
+        for caller in (None, 'zmala', 'other'):
+            with self.assertRaises(PermissionError):
+                helper.image_settings(settings, 'apply', caller)
+        with self.assertRaises(PermissionError):
+            helper.image_settings({'role': 'server', 'image': True}, 'apply', 'zmalaterminal')
+        self.assertEqual(helper.image_settings(settings, 'prepare', None), settings)
+        with tempfile.TemporaryDirectory() as folder, patch.object(helper, 'run') as run:
+            helper.HOST_KEY = Path(folder)/'keys/ssh_host_ed25519_key'
+            self.assertEqual(helper.prepare({'role': 'terminal', 'image': True}), {'prepared': True})
+            self.assertEqual(run.call_args.args, ('ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(helper.HOST_KEY)))
+            helper.HOST_KEY.write_text('test fixture')
+            run.reset_mock()
+            helper.prepare({'role': 'terminal', 'image': True})
+            run.assert_not_called()
+            with self.assertRaises(ValueError):
+                helper.prepare(legacy)
+
     def setUp(self):
         developer_access._applied = None
 

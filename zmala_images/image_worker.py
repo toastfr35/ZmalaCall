@@ -116,7 +116,7 @@ def worker(request_file):
             (common/name).write_bytes(payload(root, 'usr/lib/raspi-firmware/'+name, 8*image_payload.MIB))
         shutil.copyfile(loader/'u-boot.bin', common/'u-boot.bin')
         (common/'config.txt').write_text('arm_64bit=1\nenable_uart=1\nauto_initramfs=0\nkernel=u-boot.bin\n'
-                                       'dtoverlay=vc4-kms-v3d-pi4\nmax_framebuffers=2\n'
+                                        'dtoverlay=vc4-kms-v3d-pi4\nmax_framebuffers=2\ndisable_splash=1\n'
                                        + image_case.boot_parameters(argon_one))
         (output/'boot.cmd').write_text(image_payload.boot_script())
         run([loader/'mkimage', '-A', 'arm64', '-O', 'linux', '-T', 'script', '-C', 'none',
