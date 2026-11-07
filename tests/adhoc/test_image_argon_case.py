@@ -1,4 +1,5 @@
-"""Offline image case-selection regressions; physical fan behavior is separate."""
+"""Required appliance case configuration; physical fan behavior is separate."""
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -16,17 +17,16 @@ class ArgonImageTests(unittest.TestCase):
         return {'passwd': 'root:x:0:0:root:/root:/bin/sh\n', 'group': 'root:x:0:\n',
                 'shadow': 'root:!:1:0:99999:7:::\n', 'gshadow': 'root:!::\n'}
 
-    def test_opt_in_is_typed_and_limited_to_terminal_roles(self):
-        for role in ('terminal', 'combined', 'server'):
-            self.assertFalse(provision.case_selection(role, False))
-        for role, value in [('server', True), ('terminal', 1), ('combined', 'true')]:
-            with self.assertRaises(ValueError):
-                provision.accounts(self.ledgers(), role, value)
+    def test_terminal_roles_always_receive_argon_access_and_server_does_not(self):
+        self.assertFalse(provision.uses_argon('server'))
+        self.assertNotIn('i2c:', provision.accounts(self.ledgers(), 'server')['group'])
+        with self.assertRaises(ValueError):
+            provision.uses_argon('unknown')
         for role in ('terminal', 'combined'):
-            groups = provision.accounts(self.ledgers(), role, True)['group']
+            self.assertTrue(provision.uses_argon(role))
+            groups = provision.accounts(self.ledgers(), role)['group']
             row = next(row for row in groups.splitlines() if row.startswith('i2c:'))
             self.assertEqual(row.split(':')[3], 'zmalaterminal')
-            self.assertNotIn('i2c:', provision.accounts(self.ledgers(), role)['group'])
 
     @unittest.skipIf(os.name == 'nt', 'Offline Unix roots require Linux symlinks')
     def test_case_provisioning_and_assembly_agree_for_both_terminal_roles(self):
@@ -36,40 +36,50 @@ class ArgonImageTests(unittest.TestCase):
         names.update(('build_tools/linux/low-wear-swap.conf', 'build_tools/linux/70-zmalacall-presenter.rules',
                       'zmala_terminal/linux/99-zmalacall-c20.rules'))
         records = {name: ((project.ROOT/name).read_bytes(), False) for name in names}
-        for role in ('terminal', 'combined'):
-            for selected in (False, True):
-                with self.subTest(role=role, selected=selected), tempfile.TemporaryDirectory() as folder:
-                    root = Path(folder)
-                    (root/'etc').mkdir()
-                    for name, body in self.ledgers().items():
-                        (root/'etc'/name).write_text(body)
-                    units = root/'usr/lib/systemd/system'
-                    units.mkdir(parents=True)
-                    (units/'NetworkManager.service').write_text('[Service]\nExecStart=/bin/true\n')
-                    result = provision.provision(root, records, role, selected)
-                    self.assertIs(result['argon_one'], selected)
-                    self.assertIs(image_case.selected(root, role), selected)
-                    with self.assertRaises(ValueError):
-                        image_case.selected(root, 'server')
-                    module = root/'etc/modules-load.d/zmala-i2c.conf'
-                    self.assertIs(module.exists(), selected)
-                    rules = root/'etc/udev/rules.d/99-zmalacall-i2c.rules'
-                    self.assertIs(rules.exists(), selected)
+        for role in ('terminal', 'combined', 'server'):
+            selected = role != 'server'
+            with self.subTest(role=role, selected=selected), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                (root/'etc').mkdir()
+                for name, body in self.ledgers().items():
+                    (root/'etc'/name).write_text(body)
+                units = root/'usr/lib/systemd/system'
+                units.mkdir(parents=True)
+                (units/'NetworkManager.service').write_text('[Service]\nExecStart=/bin/true\n')
+                result = provision.provision(root, records, role)
+                self.assertIs(result['argon_one'], selected)
+                self.assertIs(image_case.selected(root, role), selected)
+                with self.assertRaises(ValueError):
+                    image_case.selected(root, 'server' if role != 'server' else 'terminal')
+                module = root/'etc/modules-load.d/zmala-i2c.conf'
+                self.assertIs(module.exists(), selected)
+                rules = root/'etc/udev/rules.d/99-zmalacall-i2c.rules'
+                self.assertIs(rules.exists(), selected)
+                if selected:
                     self.assertIn('ExecStopPost=-/usr/bin/python3 /usr/local/lib/zmalacall-terminal-host/argon_fan.py',
                                   (units/'zmalacall-terminal.service').read_text())
-                    if selected:
-                        for path in (module, rules, root/'etc/group'):
-                            before = path.read_text()
-                            path.write_text('')
-                            with self.assertRaises(ValueError):
-                                image_case.selected(root, role)
-                            path.write_text(before)
+                    for path in (module, rules, root/'etc/group'):
+                        before = path.read_text()
+                        path.write_text('')
+                        with self.assertRaises(ValueError):
+                            image_case.selected(root, role)
+                        path.write_text(before)
                     config = root/'etc/zmalacall/terminal.conf'
-                    config.write_text('ZMALA_ARGON_ONE_FAN='+str(int(not selected))+'\n')
+                    before = config.read_text()
+                    config.write_text('ZMALA_ARGON_ONE_FAN=0\n')
+                    with self.assertRaises(ValueError):
+                        image_case.selected(root, role)
+                    config.write_text(before)
+                else:
+                    self.assertFalse((root/'etc/zmalacall/terminal.conf').exists())
+                marker = root/'usr/lib/zmala-application-build.json'
+                original = json.loads(marker.read_text())
+                for value in (not selected, int(selected), None):
+                    marker.write_text(json.dumps({**original, 'argon_one': value}))
                     with self.assertRaises(ValueError):
                         image_case.selected(root, role)
 
-    def test_generic_boot_keeps_i2c_unchanged_and_selected_boot_checks_alias(self):
+    def test_server_boot_keeps_i2c_unchanged_and_terminal_boot_checks_alias(self):
         run = Mock()
         image_case.configure_tree(Path('/root'), Path('/staging'), False, run)
         run.assert_not_called()

@@ -40,11 +40,13 @@ need review before adopting a production A/B loader correction.
 The user then reported a continuously running fan and confirmed the case is an
 Argon ONE Pi 4 V2. Live read-only inspection found the image's fan flag disabled,
 no I2C group membership/device, and disabled I2C1 in the running device tree.
-Issue #182 adds an explicit Argon image-build option and consistent root/boot
-configuration. The existing call-only policy (LLR-TERM-POWER-011), implementation
+The user clarified that terminal and terminal+server images always use this case;
+it is not optional. Issue #182 therefore provisions Argon support automatically
+for both roles and rejects incomplete root/boot configuration. Server-only images
+do not enable this controller. The existing call-only policy (LLR-TERM-POWER-011), implementation
 and runtime test plans remain unchanged. Packaging checks belong in ad-hoc tests;
-the developer build option does not change the distributed user installation
-workflow or its Word guide. The next compact candidate must select this option.
+this image-build correction does not change the distributed user installation
+workflow or its Word guide. The next compact candidate includes it automatically.
 No physical idle/call/hangup fan test has passed yet, and the current live Pi has
 not been changed for this fan investigation.
 Linux image-tool regressions passed (108 cases), as did the nine existing fan

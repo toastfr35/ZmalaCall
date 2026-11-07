@@ -1,15 +1,17 @@
-"""Keep explicit case selection consistent between the root and both boot slots."""
+"""Enforce the terminal roles' Argon case configuration in root and boot slots."""
 import json
 
 from zmala_system import host_storage
-from .application_provision import case_selection
+from .application_provision import uses_argon
 
 
 def selected(root, role):
     metadata = json.loads(host_storage.safe(root, 'usr/lib/zmala-application-build.json').read_text())
     if metadata.get('role') != role:
         raise ValueError('Application case metadata has a different role')
-    argon_one = case_selection(role, metadata.get('argon_one', False))
+    argon_one = uses_argon(role)
+    if metadata.get('argon_one') is not argon_one:
+        raise ValueError('Application case metadata differs from the required role hardware')
     if role in ('terminal', 'combined'):
         settings = host_storage.safe(root, 'etc/zmalacall/terminal.conf').read_text().splitlines()
         flags = [line for line in settings if line.startswith('ZMALA_ARGON_ONE_FAN=')]

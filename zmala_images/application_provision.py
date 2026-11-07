@@ -54,16 +54,14 @@ def enable(root, unit):
     link(root, 'etc/systemd/system/multi-user.target.wants/'+unit, '/usr/lib/systemd/system/'+unit)
 
 
-def case_selection(role, argon_one):
+def uses_argon(role):
     host_layout.profile(role)
-    if type(argon_one) is not bool or (argon_one and role == 'server'):
-        raise ValueError('Argon ONE selection requires a terminal or combined image')
-    return argon_one
+    return role in ('terminal', 'combined')
 
 
-def accounts(records, role, argon_one=False):
+def accounts(records, role):
     """Return fixed locked service identities, rejecting UID/name collisions."""
-    case_selection(role, argon_one)
+    argon_one = uses_argon(role)
     parsed = {}
     for name, width in (('passwd', 7), ('group', 4), ('shadow', 9), ('gshadow', 4)):
         parsed[name] = [line.split(':') for line in records[name].splitlines()]
@@ -97,14 +95,14 @@ def accounts(records, role, argon_one=False):
     return {name: ''.join(':'.join(row)+'\n' for row in rows) for name, rows in parsed.items()}
 
 
-def provision(root, records, role, argon_one=False):
-    case_selection(role, argon_one)
+def provision(root, records, role):
+    argon_one = uses_argon(role)
     root = Path(root)
     if root.is_symlink() or not root.is_dir() or root.resolve() != root or root == Path('/'):
         raise ValueError('Expected a new absolute disposable offline root')
     host_layout.profile(role)
     ledgers = {name: host_storage.safe(root, 'etc/'+name).read_text() for name in ('passwd', 'group', 'shadow', 'gshadow')}
-    changed = accounts(ledgers, role, argon_one)
+    changed = accounts(ledgers, role)
     for name, body in changed.items():
         path = host_storage.safe(root, 'etc/'+name)
         # Retain the distribution's root/shadow group ownership and restrictive modes.
