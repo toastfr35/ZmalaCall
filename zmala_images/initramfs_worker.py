@@ -45,9 +45,20 @@ def inspect_initramfs(root, extracted, role):
     entry = main/'scripts/local-bottom/zmala-host'
     host_storage.safe(main, 'scripts/local-bottom/zmala-host')
     host_layout.metadata(entry.lstat(), mode=0o755)
-    body = payload[image_state.INSTALLED+'/boot_entry.py']
+    body = Path(__file__).with_name('initramfs_entry.sh').read_bytes()
     if entry.stat().st_size != len(body) or entry.read_bytes() != body:
         raise ValueError('Invalid executable early-boot entry')
+    order = host_storage.safe(main, 'scripts/local-bottom/ORDER')
+    host_layout.metadata(order.lstat(), mode=0o644)
+    if not 0 < order.stat().st_size <= 65536:
+        raise ValueError('Missing or oversized early-boot dispatch')
+    lines = order.read_text().splitlines()
+    invocation = '/scripts/local-bottom/zmala-host "$@"'
+    parameter_reload = '[ -e /conf/param.conf ] && . /conf/param.conf'
+    if (lines.count(invocation) != 1 or any(
+            line != parameter_reload and not re.fullmatch(r'/scripts/local-bottom/[A-Za-z0-9_.-]+ "\$@"', line)
+            for line in lines)):
+        raise ValueError('Early-boot entry is not dispatched exactly once')
     binaries = {'python3.13': ('usr/bin/python3.13', root/'usr/bin/python3.13')}
     for name in ('mount', 'umount', 'blkid'):
         paths = [host_storage.safe(root, folder+'/'+name) for folder in ('usr/bin', 'usr/sbin')]
@@ -63,6 +74,16 @@ def inspect_initramfs(root, extracted, role):
             raise ValueError('Copied target executable changed or retained special mode bits')
         hashes[name] = package_lock.digest(copied)
     return main, expected, hashes
+
+
+def check_target_dispatch(main):
+    """Trace the real vendor dispatcher with the entry's harmless prereqs mode."""
+    result = subprocess.run(['chroot', str(main), '/bin/sh', '-xc',
+                             '. /scripts/functions; run_scripts /scripts/local-bottom prereqs; :'],
+                            check=True, capture_output=True, text=True, timeout=30,
+                            env={'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'LC_ALL': 'C'})
+    if result.stderr.splitlines().count('+ /scripts/local-bottom/zmala-host prereqs') != 1:
+        raise ValueError('Vendor dispatcher did not execute the storage entry exactly once')
 
 
 def check_target_environment_tools(root, role):
@@ -148,6 +169,12 @@ def worker(request_file):
         hook.parent.mkdir(parents=True, exist_ok=True)
         hook.write_text(Path(__file__).with_name('initramfs_hook.sh').read_text(encoding='utf-8'),
                         encoding='utf-8', newline='\n'); hook.chmod(0o755)
+        entry = host_storage.safe(root, 'etc/initramfs-tools/scripts/local-bottom/zmala-host')
+        if entry.exists() or entry.is_symlink():
+            raise ValueError('Refusing a preexisting boot entry')
+        entry.parent.mkdir(parents=True, exist_ok=True)
+        entry.write_text(Path(__file__).with_name('initramfs_entry.sh').read_text(encoding='utf-8'),
+                         encoding='utf-8', newline='\n'); entry.chmod(0o755)
         modules = root/'usr/lib/modules'
         versions = [path.name for path in modules.iterdir() if path.is_dir()]
         if len(versions) != 1 or not re.fullmatch('[A-Za-z0-9._+-]{1,96}', versions[0]):
@@ -168,6 +195,7 @@ def worker(request_file):
         command(['chroot', main, '/usr/bin/python3', '-IB', '-c',
                  'import fcntl,ctypes,zlib,bz2,lzma; import zmala_system.boot_entry,zmala_system.boot_gate,zmala_system.boot_backend'])
         command(['chroot', main, '/scripts/local-bottom/zmala-host', 'prereqs'])
+        check_target_dispatch(main)
         check_target_environment_tools(root, request['role'])
         pending.replace(output/'initramfs.img')
         result = {'schema': 1, 'role': request['role'], 'source_root_sha256': request['sha256'],
@@ -175,6 +203,7 @@ def worker(request_file):
                   'initramfs_bytes': generated.stat().st_size, 'runtime_files_checked': len(expected),
                   'target_binary_sha256': hashes, 'target_imports_checked': True, 'target_prereqs_checked': True,
                   'target_unit_graph_checked': True,
+                  'target_dispatch_checked': True,
                   'target_environment_tools_checked': True,
                   'hardware_boot_verified': False, 'complete_image': False, 'production_qualified': False,
                   'toolchain_fully_locked': False}

@@ -504,11 +504,19 @@ from extraction, preserving kernel driver directories also named `dev`.
 
 The target's own `mkinitramfs` builds the component. Its hook copies the bounded
 Python 3.13 tree, ELF extension dependencies and authored runtime, plus fixed
-private mount/probe binaries with special permission bits removed. The entry runs
-in `local-bottom`, before `init-bottom` moves `/dev`. The output audit accepts the
+private mount/probe binaries with special permission bits removed. Before invoking
+`mkinitramfs`, the worker registers a shell entry in
+`/etc/initramfs-tools/scripts/local-bottom/zmala-host`; it delegates to the isolated
+Python runtime. The vendor ordering generator resolves source entries and checks
+shell syntax, so copying a Python file only into the generated tree is insufficient.
+The entry runs in `local-bottom`, before `init-bottom` moves `/dev`. The output audit accepts the
 locked extractor's direct or `main` layout, checks exact runtime/tool bytes and
-modes, and executes target Python imports and the entry's `prereqs` in the
-extracted initramfs. No data initialization or ordinary services run during build.
+modes, requires exactly one invocation in the generated `ORDER`, and executes
+target Python imports and the entry's `prereqs` through the real vendor dispatcher
+in the extracted initramfs. `target_dispatch_checked` records that limited check.
+No data initialization or ordinary services run during build. Issue #174 records
+the first physical boot failure caused by an omitted dispatch entry; earlier
+presence/import-only audits do not establish that the entry ran during boot.
 
 `READY.json` appears only after successful checks and worker cleanup. A failed
 inspection can retain `initramfs.pending.img` for diagnosis without accepting it.

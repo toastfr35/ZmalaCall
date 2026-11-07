@@ -47,8 +47,5 @@ for tool in mount umount blkid; do
 done
 manual_add_modules overlay ext4
 
-# local-bottom runs after root mounting and before init-bottom's udev script
-# moves /dev away. Kernel sysfs and data block nodes are still available here.
-mkdir -p "$DESTDIR/scripts/local-bottom"
-cp "$runtime/boot_entry.py" "$DESTDIR/scripts/local-bottom/zmala-host"
-chmod 0755 "$DESTDIR/scripts/local-bottom/zmala-host"
+# The worker registers the shell entry in /etc/initramfs-tools/scripts before
+# mkinitramfs. Copying an entry only into DESTDIR would omit it from ORDER.
