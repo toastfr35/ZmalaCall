@@ -19,14 +19,53 @@ requires a registered executable shell source; the hook-only Python copy was
 never scheduled. Issue #174 fixes source registration with a shell dispatcher,
 checks the extracted execution list and traces the actual target dispatcher in
 harmless `prereqs` mode. Earlier import/presence checks missed this integration
-failure. A corrected build still needs a new physical boot; no hardware pass is
-claimed by the fix or by a verified card write.
+failure. Both boot-slot initramfs files were replaced and their checksums verified.
+The next user photo shows the full-screen Zmala interface, confirming basic UI
+startup after this repair. It reports **Bluetooth is unavailable**; pairing,
+calls and complete peripheral operation have not passed. The exact root contains
+the Broadcom Bluetooth firmware, and the pinned loader includes clock/address
+fixups. Neither check establishes the controller timeout's cause. A private,
+reversible `boot.scr` diagnostic using the complete firmware-provided device
+tree was prepared and sandbox-checked, then installed on the freshly identified
+test card with checksum readback. The original script was backed up privately;
+the next physical result is pending. The user confirmed a full power-off boot
+with the usual supply, so a warm reboot does not explain the earlier failure.
+This diagnostic is not a
+slot-matched device-tree design for future A/B updates.
 
 The user also requested a subsequent 16 GB-compatible candidate. Measured current
 system filesystem allocations are about 2.40 GiB terminal, 0.99 GiB server and
 2.51 GiB combined per slot, including filesystem overhead. Two 4 GiB system slots
-are a sizing candidate, not a qualified minimum. Larger-card preparation,
-upgrade/data headroom and interruption recovery remain separate work. Private
+were subsequently checked by shrinking disposable copies of all three actual
+filesystems to 4 GiB and running full read-only filesystem checks afterward.
+All passed; combined retained 1,675,853,824 bytes free. Those are the existing
+0.3.91 application roots, not rebuilt PR #173 inputs or future update payloads.
+The proposed layout totals 14,001,635,328 bytes including the GPT end allowance.
+The user explicitly requires the next candidate to work on both 16 GB and 32 GB
+cards. Issue #176 now implements factory-only GPT metadata relocation with fixed
+partition sizes. Direct tests cover both selected slots on sparse 16 GB/32 GB
+files, modeled partial/complete writes, repeat no-op, native GPT verification and
+preservation of partition IDs/extents and boot-state sentinels. Larger-card space
+remains unallocated; filesystem expansion is deliberately deferred for the next
+hardware attempt. The terminal image was rebuilt from source `dc6cd0d`, including
+PR #173's application changes and the dispatch fix. Its raw size is
+14,001,635,328 bytes and SHA-256 is
+`b627dd7ef75a9e30677b715b91201794d2de9819c4808dfb137e17e04b2ac43d`.
+Copies of that actual image passed relocation on 16,000,000,000-byte and
+32,000,000,000-byte regular files, native GPT/FAT checks, both-slot repeat no-op
+and byte-for-byte preservation from offset 1024 through the original image end.
+The new system filesystem has 1,804,566,528 bytes free per slot; data has
+4,143,648,768 bytes free. The target ARM64 application/core, initramfs imports,
+unit graph, environment tools and real prerequisite dispatcher also passed.
+These are build/file tests: physical compact-card and Bluetooth qualification,
+update/data headroom and physical power-loss recovery remain separate work.
+The compact image still uses the ordinary slot DTB; the separate firmware-DTB
+Bluetooth diagnostic on the existing 32 GB-layout card must not be mistaken for
+a confirmed fix in this rebuilt image. PR #177 remains a draft stacked on
+PR #173 and #175. Private `build_tools/tmp/terminal-compact-image.json`,
+`terminal-compact-capacity-checks.json`,
+`build_tools/tmp/four-gib-slot-measurements.json`,
+`card5-ui-after-dispatch-repair.json`,
 `build_tools/tmp/image-storage-measurements.json`, `next-image-capacity-plan.json`
 and `card5-terminal-write-verified.json` preserve measurement and write evidence.
 PR #173 relocates the builder to `zmala_images`; incorporate its merge when

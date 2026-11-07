@@ -48,6 +48,7 @@ jobs:
           tests.server.HLT.test_appliance_storage_linux tests.terminal.HLT.test_appliance_storage_linux
           tests.server.HLT.test_device_identity_linux tests.terminal.HLT.test_device_identity_linux
           tests.server.HLT.test_boot_storage_linux tests.terminal.HLT.test_boot_storage_linux
+          tests.server.HLT.test_boot_capacity_linux tests.terminal.HLT.test_boot_capacity_linux
           tests.server.HLT.test_boot_state_linux tests.terminal.HLT.test_boot_state_linux
           tests.server.HLT.test_combined_appliance_linux tests.terminal.HLT.test_combined_appliance_linux -v
       - name: Development-tool regression checks (not product RBT)

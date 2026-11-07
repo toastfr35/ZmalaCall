@@ -13,7 +13,7 @@ from pathlib import Path, PurePosixPath
 import re
 import tarfile
 
-from zmala_system import boot_layout, boot_state, host_layout as layout
+from zmala_system import boot_capacity, boot_layout, boot_state, host_layout as layout
 from . import base_intent, inspect_root, package_lock, root_build
 
 RUNTIME = Path(layout.__file__).parent
@@ -47,13 +47,14 @@ def payloads(role):
     result = {layout.PROFILE: (json.dumps(layout.profile(role), indent=2)+'\n').encode(),
               boot_layout.PROFILE: (json.dumps(boot_layout.profile(role), indent=2)+'\n').encode(),
               boot_state.PROFILE: (json.dumps(boot_state.policy(role), indent=2)+'\n').encode(),
+              boot_capacity.PROFILE: (json.dumps(boot_capacity.profile(role), indent=2)+'\n').encode(),
               'usr/lib/zmala/role': (role+'\n').encode()}
     special = {'journald.conf': JOURNAL, 'zmala-host-storage.service': BOOT_GATE,
                'sysinit-storage.conf': BOOT_DEPENDENCY,
                'trial-watchdog.conf': 'usr/lib/systemd/system.conf.d/99-zmala-trial.conf'}
     for filename in ('__init__.py', 'host_layout.py', 'host_storage.py', 'device_identity.py',
                      'boot_layout.py', 'boot_devices.py', 'boot_storage.py', 'boot_entry.py', 'boot_gate.py',
-                     'boot_state.py', 'boot_media.py', 'boot_environment.py', 'boot_backend.py',
+                     'boot_state.py', 'boot_media.py', 'boot_capacity.py', 'boot_environment.py', 'boot_backend.py',
                      'boot_select.sh',
                      *special):
         source = RUNTIME/filename

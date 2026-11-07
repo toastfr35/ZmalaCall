@@ -183,6 +183,7 @@ def worker(request_file):
                   'loader_manifest_sha256': request['loader_manifest'], 'kernel_version': version,
                   'image_bytes': size, 'image_sha256': package_lock.digest(image), 'partitions': rows,
                   'required_device_bytes': size, 'automatic_media_expansion': False,
+                  'factory_gpt_relocation': True, 'data_partition_bytes': image_payload.SIZES[-1],
                   'boot_payloads': payload_hashes, 'geometry': geometry, 'application_installed': True,
                   'complete_disk_layout': True, 'hardware_boot_verified': False,
                   'joint_health_implemented': False, 'confirmed_boot_watchdog_enabled': False,

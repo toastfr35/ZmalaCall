@@ -353,6 +353,16 @@ quality, free disk space or full backup consistency.
 
 ### Experimental image-managed storage
 
+Compact-policy roots (`HLR-SRV-HOST-030`, including combined) use a
+14,001,635,328-byte layout with two 4 GiB system slots and fixed 4 GiB data.
+Before identity creation, early boot validates the selected Pi 4 SD parent,
+root/data UUIDs, kernel extents and factory-only state, then relocates backup GPT
+metadata to the card end with durable readback. Partition sizes and boot state
+remain unchanged; extra capacity is unallocated. Unknown or initialized media
+needing repair is fenced. Retry requires a complete original GPT pair or a
+complete new backup matching the unchanged primary array. Sparse-file 16 GB and
+32 GB tests do not qualify physical power interruption or Pi boot.
+
 The replacement SD-image work now has a shared `zmala_system` storage helper
 (experimental `HLR-SRV-HOST-008` and its LLRs). It accepts a marked read-only root,
 prevalidated ext4 data with initialized identity, and RAM work. Package status and
