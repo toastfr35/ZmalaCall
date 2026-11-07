@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 from zmala_system import host_storage
-from . import application_inputs, application_provision as provision, package_lock
+from . import application_inputs, application_provision as provision, application_ssh_check, package_lock
 from .initramfs_worker import command, unpack_root
 
 
@@ -158,6 +158,7 @@ def worker(request_path):
             path.touch()
             command(['mount', '--bind', '/dev/'+name, path])
         result = provision.provision(root, records, role)
+        application_ssh_check.check(root, role)
         native = {}
         if role in ('terminal', 'combined'):
             wifi_smoke(root)
@@ -195,6 +196,7 @@ def worker(request_path):
                       server_namespace_readiness_checked=role in ('server', 'combined'),
                       terminal_namespace_core_checked=role in ('terminal', 'combined'),
                       target_wifi_supplicant_checked=role in ('terminal', 'combined'),
+                      target_developer_ssh_checked=True,
                       hardware_services_started=False)
         provision.put(root, 'usr/lib/zmala-application-build.json', json.dumps(result, indent=2)+'\n')
         unmount(root)

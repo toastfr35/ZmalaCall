@@ -9,7 +9,7 @@ import tarfile
 import tempfile
 import unittest
 
-from zmala_images import application_inputs as inputs, application_provision as provision, project
+from zmala_images import application_inputs as inputs, application_provision as provision, application_host, project
 
 
 class ApplicationInputTests(unittest.TestCase):
@@ -112,6 +112,7 @@ class ApplicationProvisionTests(unittest.TestCase):
     @unittest.skipIf(os.name == 'nt', 'Offline Unix roots require Linux symlinks')
     def test_combined_release_paths_separate_server_bootstrap_and_terminal_state(self):
         names = set(provision.HOST_FILES.values())
+        names.update(application_host.SOURCES)
         names.update('build_tools/linux/zmalacall-'+name+'.service' for name in
                      ('terminal', 'display', 'pairing', 'cec', 'compositor', 'server'))
         names.update(('build_tools/linux/low-wear-swap.conf', 'build_tools/linux/70-zmalacall-presenter.rules',
@@ -131,7 +132,16 @@ class ApplicationProvisionTests(unittest.TestCase):
             wants.mkdir(parents=True)
             (wants/'NetworkManager.service').symlink_to('/usr/lib/systemd/system/NetworkManager.service')
             result = provision.provision(root, records, 'combined')
-            self.assertEqual(len(result['units']), 6)
+            self.assertTrue(result['developer_access_installed'])
+            self.assertTrue(result['boot_theme_installed'])
+            self.assertIn('zmalacall-developer-shell.service', result['units'])
+            self.assertFalse((wants/'zmalacall-developer-shell.service').exists())
+            self.assertFalse((wants/'zmalacall-developer-tunnel.service').exists())
+            self.assertIn('ListenAddress 127.0.0.1', (root/'etc/ssh/zmala-developer-terminal.conf').read_text())
+            self.assertIn('PasswordAuthentication no', (root/'etc/ssh/zmala-developer-terminal.conf').read_text())
+            self.assertFalse((root/'etc/ssh/keys').exists())
+            self.assertIn('zmala:*:', (root/'etc/shadow').read_text())
+            self.assertEqual((root/'usr/share/plymouth/themes/zmala/boot-family.png').read_bytes(), records[application_host.SOURCES[3]][0])
             self.assertEqual(str((root/provision.SERVER/'zmala_terminal/data').readlink()),
                              '/var/lib/zmalacall-server/bootstrap')
             self.assertEqual(str((root/provision.TERMINAL/'zmala_terminal/data').readlink()), '/var/lib/zmalacall')

@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from zmala_system import host_layout, host_storage
-from . import application_inputs
+from . import application_inputs, application_host
 
 TERMINAL = 'opt/zmalacall/releases/image'
 SERVER = 'opt/zmalacall-server/releases/image'
@@ -71,14 +71,18 @@ def accounts(records, role):
     users = [('zmalaterminal', 1000, '/var/lib/zmalacall')] if role in ('terminal', 'combined') else []
     if role in ('server', 'combined'):
         users.append(('zmalaserver', 1001 if role == 'combined' else 1000, '/var/lib/zmalacall-server'))
+        users.append(('terminal', 499, '/nonexistent'))
+    if role in ('terminal', 'combined'):
+        users.append(('zmala', 1002, '/tmp'))
     for name, uid, home in users:
         if any(row[0] == name or row[2] == str(uid) for row in parsed['passwd']+parsed['group']):
             raise ValueError('Application account collides with the package root')
         if any(row[0] == name for row in parsed['shadow']+parsed['gshadow']):
             raise ValueError('Application credential entry already exists')
-        parsed['passwd'].append([name, 'x', str(uid), str(uid), 'Zmala service', home, '/usr/sbin/nologin'])
+        parsed['passwd'].append([name, 'x', str(uid), str(uid), 'Zmala account', home,
+                                 '/bin/bash' if name == 'zmala' else '/usr/sbin/nologin'])
         parsed['group'].append([name, 'x', str(uid), ''])
-        parsed['shadow'].append([name, '!', '1', '0', '99999', '7', '', '', ''])
+        parsed['shadow'].append([name, '*' if name == 'zmala' else '!', '1', '0', '99999', '7', '', '', ''])
         parsed['gshadow'].append([name, '!', '', ''])
     if role in ('terminal', 'combined'):
         for group in ('audio', 'video', 'render', 'input') + (('i2c',) if argon_one else ()):
@@ -164,8 +168,9 @@ def provision(root, records, role):
             put(root, 'etc/X11/xorg.conf.d/21-zmalacall-pi4.conf', records['build_tools/linux/21-zmalacall-pi4.conf'][0])
     put(root, 'usr/lib/tmpfiles.d/zmala-appliance.conf', '\n'.join(tmpfiles)+'\n')
     put(root, 'etc/rpi/swap.conf.d/90-zmalacall-low-wear.conf', records['build_tools/linux/low-wear-swap.conf'][0])
-    # Only one network manager owns the persistent network bindings. SSH is
-    # deliberately disabled until its separate unique-key/developer path exists.
+    host_units = application_host.install(root, records, role)
+    # Only one network manager owns the persistent network bindings. Ordinary
+    # SSH stays off; the isolated developer listeners have their own lifecycle.
     for unit in ('ssh.service', 'ssh.socket', 'systemd-networkd.service', 'systemd-networkd.socket',
                  'systemd-networkd-wait-online.service', 'getty@tty1.service', 'getty@tty7.service',
                  'display-manager.service', 'zmalacall-updater.service', 'zmalacall-update-recover.service'):
@@ -183,7 +188,8 @@ def provision(root, records, role):
         path = target(root, 'etc/systemd/system/multi-user.target.wants/bluetooth.service')
         if not path.exists() and not path.is_symlink():
             path.symlink_to('/usr/lib/systemd/system/bluetooth.service')
-    result = {'role': role, 'units': units, 'argon_one': argon_one, 'legacy_app_updater_enabled': False,
+    result = {'role': role, 'units': units+host_units, 'argon_one': argon_one, 'legacy_app_updater_enabled': False,
+              'developer_access_installed': True, 'boot_theme_installed': role in ('terminal', 'combined'),
               'ssh_enabled': False, 'joint_health_implemented': False, 'secure_relay_configured': False}
     put(root, 'usr/lib/zmala-application-build.json', json.dumps(result, indent=2)+'\n')
     return result

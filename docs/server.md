@@ -323,6 +323,24 @@ changes. Missing addresses leave ordinary SSH blocked rather than allowing all
 sources. Terminal tunnel setup, TV commands and optional C20 viewing are described
 in the terminal technical guide. Pairing and physical TV tests remain separate.
 
+The experimental appliance builder installs the isolated developer services
+without running the live installer. It keeps ordinary SSH masked; the normal
+`ssh -J` example above therefore requires an already configured server-side
+operator entry point, such as the existing installed server. Complete standalone
+and combined-image operator onboarding remains a qualification gate. The image
+helper generates the per-device host key under root-private `/etc/ssh/keys` and
+retains a server activation in that directory's `developer-session.json`, outside
+account backups. On boot it restores the restricted account password from a
+validated retained activation before its listener starts. An absent activation
+does not start that listener. On combined hosts, the authenticated sudo service
+identity selects the server or terminal actions; the two applications cannot
+substitute for each other. Terminal-side loopback access uses a separately
+provisioned operator public key, not the generated tunnel password. The current
+private terminal test copy stores that public key in both immutable roots and
+uses an explicit fixed reader command, preserving factory data admission. This
+lab-only authorization is separate from future supported operator enrollment
+and is removed by a generic root-slot replacement.
+
 ## Service, SSH and storage
 
 ```sh

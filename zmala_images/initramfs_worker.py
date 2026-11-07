@@ -33,6 +33,14 @@ def inspect_initramfs(root, extracted, role):
     if len(candidates) != 1:
         raise ValueError('Missing or ambiguous extracted main initramfs payload')
     main = candidates[0]
+    if role in ('terminal', 'combined'):
+        for name in ('zmala.plymouth', 'zmala.script', 'boot-family.png'):
+            relative = 'usr/share/plymouth/themes/zmala/'+name
+            if (main/relative).read_bytes() != (root/relative).read_bytes():
+                raise ValueError('Boot theme was not retained in the real initramfs')
+        config = (main/'etc/plymouth/plymouthd.conf').read_text()
+        if 'Theme=zmala' not in config or not list(main.glob('usr/lib/*/plymouth/script.so')):
+            raise ValueError('Boot theme selection or script plugin is missing')
     payload = image_state.payloads(role)
     expected = {name: body for name, body in payload.items()
                 if name.startswith(image_state.INSTALLED+'/') or name == 'usr/lib/zmala/role'}

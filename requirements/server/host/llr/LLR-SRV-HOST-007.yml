@@ -35,6 +35,15 @@ text: |
   shell sessions. Deactivation shall stop all listener sessions, lock the account
   and remove its secret. Ordinary developer SSH shall accept only wired local
   source subnets for IPv4 and IPv6. Failures shall not silently claim success.
+  On image-managed hosts, server control actions shall admit only the server
+  service identity, including when a terminal shares the host. Host preparation
+  shall retain a per-device Ed25519 identity in private persistent storage. It
+  shall restore the restricted tunnel account's volatile password only from a
+  valid retained administrator activation; absent or invalid activation shall
+  not restore that credential.
 verification: |
   Exercise authorization, credential scope, process lifecycle and failure paths;
   verify the configured SSH and firewall boundaries and secret cleanup.
+  Check image-managed caller separation and the persistent identity/state paths.
+  Prepare with absent, valid and invalid activation records; assert that only a
+  valid record restores the restricted account password and invalid data fails.

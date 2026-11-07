@@ -24,17 +24,20 @@ build commands are documented in [zmala_images/README.md](zmala_images/README.md
   There is no optional image-build case flag. The fan policy remains off outside
   connected calls, 55% during calls and 100% at 65°C during calls. The image fix
   includes I2C access and boot configuration; physical fan transitions are unverified.
-- An earlier compact terminal image passed regular-file 16 GB/32 GB geometry and
-  filesystem checks. It predates the permanent Wi-Fi and fan corrections and is
-  not the next card-write candidate. No physical compact-card boot is recorded.
-- At this checkpoint the corrected locked Wi-Fi OS root is still building. Its
-  continuation pipeline waits for an accepted `READY.json`, then provisions the
-  mandatory Argon terminal and constructs the compact image. A running build is
-  not an accepted artifact; inspect its result before starting another one.
+- The corrected Wi-Fi OS root and a compact Wi-Fi/QR/mandatory-Argon baseline
+  image completed their acceptance checks. That baseline passed regular-file
+  16 GB/32 GB GPT relocation, payload preservation and repeat-boot checks. It is
+  **not the next card-write candidate**: the boot logo, Developer Access services
+  and working Bluetooth adjustment must be included and rechecked together.
+  No physical compact-card boot is recorded.
+- Issue #186 restores the image host services and boot theme. The next candidate
+  reuses the accepted OS root and rebuilds application/root/initramfs/media inputs.
+  A running build is not an accepted artifact; inspect the final READY manifests
+  and private adjustment record before announcing that it is ready to flash.
 
 ## 1. Finish the next terminal test candidate
 
-- [ ] Accept the corrected OS root only after its package-ledger audit, final
+- [x] Accept the corrected OS root only after its package-ledger audit, final
   `READY.json` and independently checked digest. Preserve failed logs and reject
   incomplete outputs. Reuse authenticated caches and unchanged accepted roots.
 - [ ] Complete application provisioning, storage preparation, initramfs and disk
@@ -45,6 +48,18 @@ build commands are documented in [zmala_images/README.md](zmala_images/README.md
   and activation unit, and that NetworkManager can start it on an ordinary boot.
 - [ ] Verify mandatory Argon configuration in the root, terminal account, module
   loading, device permissions, firmware configuration and both boot-slot trees.
+- [ ] Verify the Zmala theme/artwork and script plugin inside the final initramfs,
+  theme selection in the root and quiet splash arguments in the actual boot script.
+- [ ] Verify ordinary SSH stays masked and no temporary Ethernet diagnostic is
+  installed. Include the controlled Developer Access units/helper, unique
+  first-boot host identity and private operator public-key overlay for this lab
+  copy: the root-owned `/usr/lib/zmala-development-operator.pub` and matching fixed
+  SSH key-reader command in both system slots. Keep factory data byte-identical;
+  preseeding `host/ssh` there would fail first-identity admission. Verify the exact
+  private configuration and key ownership/modes, successful intended-key
+  authentication and rejection of an unrelated key. Generic image inputs must
+  remain free of login credentials. A future generic root-slot update removes
+  this temporary lab authorization; supported credential onboarding remains open.
 - [ ] Preserve the working Bluetooth behavior in a clearly labelled development
   candidate. If the private full-firmware-tree diagnostic is used again, retain
   the original script and record the changed image hash separately. It is not a
@@ -57,17 +72,26 @@ build commands are documented in [zmala_images/README.md](zmala_images/README.md
 
 ## 2. Run the next physical card test
 
-- [ ] Arrange the card return only when the complete candidate is ready. Preserve
-  the known working card/backup and freshly verify the reader's device identity,
-  exact capacity and intended target before any write. A previous drive letter
-  is not sufficient identification.
-- [ ] Flash and verify the exact candidate. Record the writer/tool, image hash,
-  actual medium capacity and readback result. Keep private diagnostics out of
-  any image intended for users.
+- [ ] Deliver the verified artifact, SHA-256 checksum and Raspberry Pi Imager
+  custom-image instructions. The user will flash the SD card manually; agent work
+  stops at artifact preparation and verification. Preserve the known working
+  card/backup and have the user confirm the actual target capacity and storage
+  selection before writing; a previous drive letter is not sufficient.
+- [ ] Have the user flash and verify the exact candidate with Imager. Record the
+  image hash, actual medium capacity and reported verification result. Keep
+  private diagnostics out of any image intended for public distribution.
 - [ ] Cold-boot **a real 16 GB card and a real 32 GB card**, recording each result.
   A sparse-file capacity test is not a physical SD-card or power-loss test.
 - [ ] Confirm setup without the temporary RAM repairs: Bluetooth pairing/remote,
   Wi-Fi join, a current HTTPS server QR, TV/display, camera, microphone and speaker.
+- [ ] Confirm the Zmala logo is visible during graphical boot.
+- [ ] Enable Developer Access from the existing server, connect with the intended
+  operator key, disable it and verify the existing session closes and reconnection
+  fails. Reboot and repeat. Keep ordinary Ethernet/Wi-Fi SSH closed throughout;
+  this is the main further-debugging path, not the expired temporary SSH window.
+  Run `sudo -n id -u` through that controlled connection and require output `0`.
+  ARM64 emulation checks key authentication and sudo configuration/file modes,
+  but cannot establish the actual setuid transition under the emulator.
 - [ ] Test the QR guide colour change and specific failure feedback for invalid
   QR, missing SSID and rejected credentials, then retry successfully. Do not
   treat every authentication failure as proof of a wrong password.
@@ -87,10 +111,14 @@ partition, two 512 MiB slot boot partitions, two 4 GiB root partitions and a fix
 4 GiB data partition, plus alignment/GPT allowances. Extra space on larger cards
 stays unallocated. GPT relocation does not expand a partition or filesystem.
 
-Earlier measurements are reference evidence only: the previous compact terminal
-root had **1,804,566,528 bytes free per slot**, and data had **4,143,648,768 bytes
-free**. Disposable older combined filesystems fitted 4 GiB with **1,675,853,824
-bytes free**. These do not measure the newly corrected candidate.
+The accepted Wi-Fi/QR/Argon baseline (source `7589fd8`, image SHA-256
+`b397645917f82a296b27eedd2c3243c68c3412f10d2cc195068e18bb5b3351e2`)
+has **2,494,590,976 allocated bytes including metadata** and **1,800,376,320
+free bytes per 4 GiB system slot**. Its 4 GiB data partition has **151,318,528
+allocated bytes** and **4,143,648,768 free bytes**. Evidence is retained privately
+in `terminal-fan-capacity-checks.json`. Disposable older combined filesystems
+fitted 4 GiB with **1,675,853,824 free bytes**. These are baseline measurements;
+repeat them after host-service, logo, Bluetooth and private-key adaptations.
 
 - [ ] Measure allocated/used/free bytes in every filesystem of each newly built
   terminal, server and combined artifact, including both root slots.

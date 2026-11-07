@@ -1,7 +1,7 @@
 # @test S-LLT-065
 # @requirements LLR-SRV-HOST-007
 # @environment portable
-# @plan Mock system commands and isolate persistent state; activate one terminal, reject a second, scope credentials to account and device, rotate passwords after deactivation, and assert daemon termination precedes password locking and secret removal. Generate IPv4/IPv6 subnet rules and verify only wired source prefixes permit ordinary SSH while tunnel port is separate.
+# @plan Mock system commands and isolate persistent state; activate one terminal, reject a second, scope credentials to account and device, rotate passwords after deactivation, and assert daemon termination precedes password locking and secret removal. Generate IPv4/IPv6 subnet rules and verify only wired source prefixes permit ordinary SSH while tunnel port is separate. Verify appliance server-caller isolation and reboot restoration only from a valid retained activation.
 # @pass Assertions pass without changing real users or firewall rules; live tunnel and subnet enforcement require HLT.
 from pathlib import Path
 import tempfile
@@ -13,6 +13,32 @@ from tests.support.developer_access import module
 
 
 class DeveloperAccessTests(unittest.TestCase):
+    def test_image_server_restore_requires_valid_retained_activation(self):
+        helper = module('developer-access')
+        settings = {'role': 'combined', 'image': True}
+        self.assertEqual(helper.image_settings(settings, 'status', 'zmalaserver')['role'], 'server')
+        self.assertEqual(helper.STATE.as_posix(), '/etc/ssh/keys/developer-session.json')
+        with self.assertRaises(PermissionError):
+            helper.image_settings({'role': 'terminal', 'image': True}, 'on', 'zmalaserver')
+        with tempfile.TemporaryDirectory() as folder, patch.object(helper, 'run') as run:
+            helper.HOST_KEY = Path(folder)/'host'
+            helper.HOST_KEY.touch()
+            helper.STATE = Path(folder)/'session.json'
+            helper.prepare(settings)
+            run.assert_not_called()
+            state = {'account_id': 'term2', 'terminal_id': 'serial', 'session_id': 'a'*32,
+                     'host': 'example.test', 'port': 2222, 'remote_port': 22001,
+                     'host_key': 'ssh-ed25519 '+'a'*68, 'password': 'b'*48}
+            helper.save(helper.STATE, state)
+            helper.prepare(settings)
+            self.assertEqual(run.call_args.args, ('chpasswd',))
+            self.assertEqual(run.call_args.kwargs['data'], 'terminal:'+'b'*48+'\n')
+            helper.save(helper.STATE, state | {'password': 'invalid'})
+            run.reset_mock()
+            with self.assertRaises(ValueError):
+                helper.prepare(settings)
+            run.assert_not_called()
+
     def test_exclusive_scoped_rotating_session_and_revocation(self):
         helper = module('developer-access')
         with tempfile.TemporaryDirectory() as folder, patch.object(helper, 'run') as run, patch.object(helper, 'connected', return_value=False):

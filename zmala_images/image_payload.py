@@ -68,6 +68,9 @@ if part uuid mmc 0:${zm_rootpart} zm_rootuuid; then
                 fdt addr ${fdt_addr_r}
                 if fdt resize 0x10000; then
                     setenv bootargs "console=tty1 root=PARTUUID=${zm_rootuuid} rootfstype=ext4 rootwait ro rauc.slot=${zm_selected} watchdog.handle_boot_enabled=1 watchdog.open_timeout=60"
+                    if test "${zm_role}" = "terminal" || test "${zm_role}" = "combined"; then
+                        setenv bootargs "root=PARTUUID=${zm_rootuuid} rootfstype=ext4 rootwait ro rauc.slot=${zm_selected} watchdog.handle_boot_enabled=1 watchdog.open_timeout=60 quiet splash plymouth.ignore-serial-consoles loglevel=3 logo.nologo vt.global_cursor_default=0"
+                    fi
                     if wdt dev watchdog@7e100000; then
                         if test "${zm_is_trial}" = "1"; then
                             if wdt start 15000; then

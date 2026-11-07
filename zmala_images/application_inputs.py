@@ -24,7 +24,7 @@ MAX_TOTAL = 256*1024**2
 MAX_FILES = 50000
 MARKER = 'ZMALA-APPLICATIONS.json'
 TEXT = {'.py', '.sh', '.js', '.cjs', '.json', '.service', '.conf', '.rules', '.txt',
-        '.c', '.cpp', '.h', '.md', '.svg', '.patch', '.html', '.css', '.ts', '.gradle'}
+        '.c', '.cpp', '.h', '.md', '.svg', '.patch', '.html', '.css', '.ts', '.gradle', '.script', '.plymouth'}
 
 
 def path_name(value):

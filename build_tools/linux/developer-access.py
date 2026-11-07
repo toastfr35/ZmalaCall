@@ -14,6 +14,45 @@ SETTINGS = Path('/etc/zmalacall/developer-access.json')
 STATE = Path('/var/lib/zmalacall-developer/session.json')
 RUNTIME = Path('/run/zmalacall-developer')
 UNIT = 'zmalacall-developer'
+HOST_KEY = Path('/etc/ssh/ssh_host_ed25519_key')
+
+
+# @llr LLR-TERM-NET-009
+# @llr LLR-SRV-HOST-007
+def image_settings(settings, action, caller):
+    """Use fixed persistent paths and separate service callers on appliance hosts."""
+    global STATE, HOST_KEY
+    if not settings.get('image'):
+        return settings
+    STATE = Path('/etc/ssh/keys/developer-session.json')
+    HOST_KEY = Path('/etc/ssh/keys/ssh_host_ed25519_key')
+    role = settings['role']
+    if action == 'prepare':
+        return settings
+    allowed = {'zmalaterminal': 'terminal', 'zmalaserver': 'server'}
+    selected = allowed.get(caller)
+    if selected is None or role not in (selected, 'combined'):
+        raise PermissionError('Invalid appliance service caller')
+    return dict(settings, role=selected)
+
+
+# @llr LLR-TERM-NET-009
+# @llr LLR-SRV-HOST-007
+def prepare(settings):
+    """Create a unique host key after persistent storage is mounted, never at build."""
+    if not settings.get('image'):
+        raise ValueError('Appliance preparation required')
+    HOST_KEY.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if not HOST_KEY.exists():
+        run('ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(HOST_KEY))
+    # Image /etc/shadow is volatile. Rehydrate only an explicitly retained
+    # server activation, before the isolated listener can accept connections.
+    if settings['role'] in ('server', 'combined'):
+        state = read(STATE)
+        if state:
+            validate({k: v for k, v in state.items() if k != 'account_id'})
+            run('chpasswd', data='terminal:' + state['password'] + '\n')
+    return {'prepared': True}
 
 
 def run(*args, data=None, check=True):
@@ -63,7 +102,7 @@ def server(action, request, settings):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]{0,252}', request.get('host', '')):
         raise ValueError('Invalid host')
     password = secrets.token_urlsafe(36)
-    key = Path('/etc/ssh/ssh_host_ed25519_key.pub').read_text().split()
+    key = HOST_KEY.with_suffix('.pub').read_text().split()
     device = request.get('device_id', '')
     if not isinstance(device, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', device):
         raise ValueError('Invalid device identity')
@@ -154,7 +193,10 @@ def main():
     if action == 'run':
         tunnel()
         return
-    settings = read(SETTINGS)
+    settings = image_settings(read(SETTINGS), action, os.environ.get('SUDO_USER'))
+    if action == 'prepare':
+        print(json.dumps(prepare(settings)))
+        return
     request = json.loads(sys.stdin.read(4096) or '{}')
     with open('/run/lock/zmalacall-developer.lock', 'a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
