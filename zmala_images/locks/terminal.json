@@ -3636,6 +3636,15 @@
     },
     {
       "architecture": "arm64",
+      "archive": "libpcsclite1_2.3.3-1_arm64.deb",
+      "bytes": 54996,
+      "package": "libpcsclite1",
+      "sha256": "e406cfd8f918cbe868c14a9d0dfbc0967f98861e679bcb0f30df6a49d80936f1",
+      "uri": "https://deb.debian.org/debian/pool/main/p/pcsc-lite/libpcsclite1_2.3.3-1_arm64.deb",
+      "version": "2.3.3-1"
+    },
+    {
+      "architecture": "arm64",
       "archive": "libperl5.40_5.40.1-6+deb13u1_arm64.deb",
       "bytes": 4137968,
       "package": "libperl5.40",
@@ -6362,6 +6371,15 @@
       "version": "1.30.1-1"
     },
     {
+      "architecture": "arm64",
+      "archive": "wpasupplicant_2%3a2.10-24+rpt3_arm64.deb",
+      "bytes": 1731252,
+      "package": "wpasupplicant",
+      "sha256": "bc6eab874f737b31608ed4f8869974d9883d8b6aab91b64c894249df25a7488e",
+      "uri": "https://archive.raspberrypi.com/debian/pool/main/w/wpa/wpasupplicant_2.10-24%2brpt3_arm64.deb",
+      "version": "2:2.10-24+rpt3"
+    },
+    {
       "architecture": "all",
       "archive": "x11-common_1%3a7.7+24+deb13u1_all.deb",
       "bytes": 216864,
@@ -6526,21 +6544,21 @@
     },
     {
       "file": "deb.debian.org_debian_dists_trixie-updates_InRelease",
-      "sha256": "6f8e53876ffe1a49b7cbeab52fa5012a97cc84e0dae6c86405efe52474368f7a",
+      "sha256": "80409bb43ea1d7c8f6799d0fdd42997a5b78937d214345620585d6a847b33e65",
       "signers": [
         "4CB50190207B4758A3F73A796ED0E7B82643E131"
       ]
     },
     {
       "file": "deb.debian.org_debian-security_dists_trixie-security_InRelease",
-      "sha256": "d0dbede32d80c3e9462e037ede87b138bdd5e44be10145acf46c9f643388836d",
+      "sha256": "2b357948f35f871794b6218240f034c53aa4a631f3d15bc4228dd070b765da5f",
       "signers": [
         "B0CAB9266E8C3929798B3EEEBDE6D2B9216EC7A8"
       ]
     },
     {
       "file": "archive.raspberrypi.com_debian_dists_trixie_InRelease",
-      "sha256": "dc7dafc38f68d1ef3eb55e5ec80b4a0f170f6a2eab86ffabe5b5ef53fdb1ea44",
+      "sha256": "a648354a68f03be959dc4dd8f5becd554a34c78f4870a361595d0f0bc2bd087b",
       "signers": [
         "CF8A1AF502A2AA2D763BAE7E82B129927FA3303E"
       ]
@@ -6591,6 +6609,7 @@
     "rpi-swap",
     "systemd",
     "v4l-utils",
+    "wpasupplicant",
     "x11-utils",
     "x11-xserver-utils",
     "xauth",

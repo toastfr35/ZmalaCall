@@ -443,6 +443,13 @@ credentials never become UI text or setup logs, and failed joins still clean up
 only their owned UUID. Temporary Ethernet debugging is separate from normal image
 SSH policy and does not bypass this Wi-Fi join stage.
 
+The offline terminal and combined images explicitly include `wpasupplicant`.
+Their package intake disables APT recommendations, so NetworkManager alone does
+not supply this backend. Application validation checks the target executable,
+shared-library loading, D-Bus activation/policy files and systemd unit before
+accepting a root. Without the backend, the radio can report enabled with firmware
+present while the device remains unavailable and every QR-based join fails.
+
 Both QR stages show mint corner guides with a dark
 outline around a centred square in the unmirrored camera picture. Hold the whole
 code inside the guides; the centre stays clear. Guides resize with the displayed

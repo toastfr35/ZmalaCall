@@ -11,15 +11,15 @@
     },
     "terminal": {
       "file": "terminal.json",
-      "sha256": "3722a3ede0e9cd451a2dd16278e1bee125f0e2262404ec75467a99969344c6a4",
-      "archives": 723,
-      "archive_bytes": 528581052
+      "sha256": "3d0eb0f637d83638080e6d511d52420dc273ea172a17145fc987fa6c6a4534cb",
+      "archives": 725,
+      "archive_bytes": 530367300
     },
     "combined": {
       "file": "combined.json",
-      "sha256": "2116e2a8586aecbb43a30ae386bdac3d842f7b48836fa04e1d164f791e5f6f3a",
-      "archives": 738,
-      "archive_bytes": 541568108
+      "sha256": "2989c84c53c07cb383b4c0f8f52588102f996216d5778560ce3e78dd86868ab3",
+      "archives": 740,
+      "archive_bytes": 543354356
     }
   },
   "base": {

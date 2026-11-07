@@ -90,7 +90,13 @@ archives must be regular files; FIFOs/devices/links are rejected before reading.
 
 `profiles.json` records the common base and role package **intent**, not a complete
 resolved package lock. The terminal intent reuses the existing dependency list;
-server npm/build dependencies and full secure-relay provisioning remain to be
+it explicitly includes `wpasupplicant` because the isolated APT intake disables
+recommendations. The combined role inherits that dependency. Offline application
+validation executes the target supplicant version command and checks its D-Bus
+activation/policy files and systemd unit, catching missing backend libraries
+before a root is accepted. These packaging checks do not claim a real Wi-Fi join.
+
+Server npm/build dependencies and full secure-relay provisioning remain to be
 separated into build/runtime sets. The selected RAUC package is Debian Trixie's
 `1.13-3+deb13u1`; its role dependency closures are now retained and reviewed.
 Complete builder/toolchain inputs and use of the locks in factory builds still
