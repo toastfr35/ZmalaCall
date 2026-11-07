@@ -5,6 +5,9 @@ resumption. The sections below retain the original checkpoint evidence; the
 continuation entry supersedes its pending-build and unsupported-combined statements.
 This document is a handoff, not a claim of completion.
 
+For a short explanation of implemented protections and remaining upgrade risks,
+see [safe updates and upgrades](safe_upgrade_system.md).
+
 For the current remaining-work checklist, including the next compact card test
 and Raspberry Pi Imager distribution, see [SD-card image work left](sd_card_imager_todo_left.md).
 The dated entries below retain historical evidence and may describe older states.
