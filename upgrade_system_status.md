@@ -5,6 +5,10 @@ resumption. The sections below retain the original checkpoint evidence; the
 continuation entry supersedes its pending-build and unsupported-combined statements.
 This document is a handoff, not a claim of completion.
 
+For the current remaining-work checklist, including the next compact card test
+and Raspberry Pi Imager distribution, see [SD-card image work left](sd_card_imager_todo_left.md).
+The dated entries below retain historical evidence and may describe older states.
+
 ## Physical boot diagnosis — 6 November 2026
 
 ### Live Wi-Fi repair — 7 November 2026

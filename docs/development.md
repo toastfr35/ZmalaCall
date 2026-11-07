@@ -10,6 +10,7 @@ The implementation guides cover the current code and its component boundaries:
 - [Terminal](terminal.md): user functions, controllers, native media and Pi hardware.
 - [Android](android.md): QR enrollment, calls, incoming alerts and release signing.
 - [SD image builder](../zmala_images/README.md): offline inputs, build stages and development media.
+- [SD image work left](../sd_card_imager_todo_left.md): current candidate, hardware-test and Imager delivery checklist.
 - [Source ownership](general.md#source-and-persistent-state): where code, shared policies and tests belong.
 
 After installing the development dependencies, run these from the repository root:
