@@ -11,3 +11,8 @@ the central logo by 20%, layered over the words.
 Plymouth scales the complete composition to fit the display while preserving its
 aspect ratio, with a navy background filling any remaining space. The installer
 copies it to the theme and rebuilds the initramfs when the image changes.
+
+The version is a separate Plymouth text overlay at the bottom right, supplied after
+local filesystems mount from the confirmed installed release metadata. It is not
+part of this image and follows confirmed application updates and rollback boots
+without rebuilding the initramfs.

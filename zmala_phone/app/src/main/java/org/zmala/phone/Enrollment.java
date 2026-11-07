@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 // @llr LLR-AND-ENROLL-002, LLR-AND-CALL-006
+/** Validated enrollment identity and admission checks for whole configuration snapshots.
+ * No network or UI work happens here; callers publish a snapshot only after validation succeeds. */
 public final class Enrollment {
   public final URI server;
   public final String deviceId, token;
@@ -18,7 +20,7 @@ public final class Enrollment {
     if (text.length() > 8192) throw new IllegalArgumentException("QR code is too large.");
     JSONObject data = new JSONObject(text);
     if (!"family-call-server".equals(data.optString("type"))
-        || data.optInt("version") != 1
+        || !versionOne(data.opt("version"))
         || !"app".equals(data.optString("account_type")))
       throw new IllegalArgumentException("Scan an App account QR code from ZmalaCall.");
     URI uri = new URI(data.getString("server_url"));
@@ -27,6 +29,7 @@ public final class Enrollment {
         || uri.getUserInfo() != null
         || uri.getQuery() != null
         || uri.getFragment() != null
+        || (uri.getPort() != -1 && (uri.getPort() < 1 || uri.getPort() > 65535))
         || !(uri.getPath().isEmpty() || uri.getPath().equals("/")))
       throw new IllegalArgumentException("Invalid server address.");
     deviceId = data.getString("device_id");
@@ -41,8 +44,13 @@ public final class Enrollment {
     return qr;
   }
 
+  /** optInt coerces strings and truncates fractions; neither is a wire version. */
+  private static boolean versionOne(Object value) {
+    return (value instanceof Integer || value instanceof Long) && ((Number) value).longValue() == 1;
+  }
+
   public JSONObject validate(JSONObject config) throws Exception {
-    if (config.optInt("schema_version") != 1
+    if (!versionOne(config.opt("schema_version"))
         || !"app".equals(config.optString("account_type"))
         || !deviceId.equals(config.optString("device_id"))
         || !token.equals(config.optString("call_auth_key")))
@@ -68,8 +76,19 @@ public final class Enrollment {
         throw new IllegalArgumentException("Invalid contact configuration.");
       String id = contact.getString("id");
       if (!id.matches("[a-z][a-z0-9_-]{0,30}") || !ids.add(id)
-          || contact.getString("name").trim().isEmpty())
+          || contact.getString("name").trim().isEmpty() || contact.getString("name").length() > 80
+          || !contact.getString("sip_uri").equals("sip:" + id + "@" + sip.getString("domain")))
         throw new IllegalArgumentException("Invalid contact configuration.");
+      // UI and incoming-call checks use these permissions directly. Do not let
+      // JSONObject's permissive optBoolean convert a string into permission.
+      for (String key : new String[]{"can_call", "can_receive"}) {
+        if (!(contact.get(key) instanceof Boolean))
+          throw new IllegalArgumentException("Invalid contact permission.");
+      }
+      Object photo = contact.opt("photo");
+      if (contact.has("photo") && (!(photo instanceof String)
+          || !((String) photo).matches("(?:|/photos/[a-f0-9]+\\.(png|jpg|gif))")))
+        throw new IllegalArgumentException("Invalid contact picture.");
     }
     return config;
   }

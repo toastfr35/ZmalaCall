@@ -19,7 +19,8 @@ boundaries, networking, persistent state, build tooling and verification.
 [Server implementation](server.md) covers the Node services and deployment;
 [terminal implementation](terminal.md) covers state ownership, native media and
 Pi hardware integration. [Android implementation](android.md) covers Zmala Phone. Product requirements exist only in
-[Doorstop records](../requirements/). [astra.md](../astra.md) tracks engineering gaps.
+[Doorstop records](../requirements/). Start with [development setup](development.md);
+see the [repository review](reviews/2026-11-06.md) for reviewed boundaries and open qualification work.
 
 The Pi and Android SDK adapters share the bounded TURN TLS write helper under
 `zmala_terminal/common/native/`; each adapter is pinned to its SDK's native ABI.
@@ -59,24 +60,33 @@ calls. Family members use Zmala Phone on Android or another Pi terminal.
 | Development compatibility terminal | 64-bit Windows with Tk/Liblinphone and server-selected camera/audio devices |
 | Installers | Windows executables deploying over Ethernet SSH; graphical and headless modes |
 
-The proposed replacement with ready-to-flash Pi images and recoverable automatic
-OS/package upgrades is detailed in [the system update plan](../update_upgrade.md).
-It is planning work; the current installation and application-update behavior
-remains as documented here until the corresponding implementation is qualified.
-Initial [image development tools](../build_tools/images/README.md) provide pinned
-source acquisition, minimal boot-probe profiles, a read-only Pi inventory and an
-offline privacy inspector. They do not yet produce a production installer or
-enable system updates on deployed devices.
-Probe builds require the emitted project's `-S` source directory so its offline
-EEPROM-service mask hook runs. The root inspector rejects an unmasked known
-updater; this narrow check is not full boot-firmware qualification.
-The offline `inspect-bootfs` command also checks GPT and the three boot-volume
-FAT footprints, including rejection of undersized forced FAT32 volumes. It does
-not establish firmware selection, file integrity or successful hardware boot.
-Download-only package intake now retains authenticated archive closures and
-reviewed per-role lock metadata. This covers dependency intent; the entire image
-base/toolchain is not yet frozen. CI rejects intent/lock drift without downloading
-or installing packages.
+### SD images and shared Pi runtime
+
+The released Pi installers still deploy over SSH. The separate
+[`zmala_images/` builder](../zmala_images/README.md) produces experimental offline
+ARM64 roots and regular-file A/B media for `terminal`, `server` and `combined`
+roles. It is not a supported SD installer or an automatic OS-update service.
+Use its [build sequence](../zmala_images/README.md#build-sequence-and-ownership)
+for the current commands; the [system-update plan](../update_upgrade.md) retains
+the design decisions and historical evidence.
+
+`zmala_system/` owns the installed image-managed host policies: role-specific
+layout, first-device identity, read-only root admission, persistent data/RAM
+mounts, confirmed/trial boot state and the startup gate. Image tooling packages
+these policies; it does not own their runtime implementation. Shared host
+behavior has server and terminal requirements and direct tests in both components.
+
+The combined role uses one host identity and boot contract, with terminal
+UID/GID 1000 and server UID/GID 1001. Application state and operator configuration
+remain separate; standalone roles retain UID/GID 1000. Role substitution is
+rejected rather than treated as a migration.
+
+Source/package locks, archive inspection, isolated application builds, initramfs
+checks and disk assembly provide development evidence. Physical boot, power-loss
+recovery, media capacity/expansion, first-owner/TLS onboarding, joint health and
+update coordination remain qualification work. Development confirmed boots stop
+the loader watchdog because joint health transfer is unfinished; trial boots
+retain the bounded watchdog. These images are not published by the release workflow.
 
 Windows server hosting, the serial-keypad project and CAD models are retired.
 Other cameras/boards and direct GPIO controls are not established terminal
@@ -116,6 +126,7 @@ dependencies; ordinary calls do not download code or models.
 | `zmala_phone/` | Android application, resources and native SDK adapter |
 | `tests/android/{LLT,HLT}/` | Android JVM/device verification plans and assertions |
 | `zmala_server/` | Node server, administration source and SIP transport |
+| `zmala_system/` | Shared experimental image-managed layout, identity, early-boot storage and startup gate; no UI or media dependency |
 | `zmala_terminal/common/` | Shared Python controllers, UI, assets and translations |
 | `tests/server/{LLT,HLT}/` | Server unit and system/integration test plans and implementations |
 | `tests/terminal/{LLT,HLT}/` | Pi terminal unit and system/integration test plans and implementations |
@@ -123,14 +134,26 @@ dependencies; ordinary calls do not download code or models.
 | `tests/adhoc/` | Exploratory probes, tooling regressions and Windows compatibility checks |
 | `zmala_terminal/windows/` | Windows native loading, rendering, WLAN and process adapters |
 | `zmala_terminal/linux/` | Pi adapters, native media, Bluetooth, CEC and peripheral control |
-| `build_tools/` | Packaging, installers, launchers, source checks and hardware probes |
+| `zmala_images/` | Offline SD image input locks, builders and inspectors; development tools only |
+| `build_tools/` | Existing installers, release packaging, launchers, source checks and hardware probes |
 | `requirements/` | Doorstop product (`PROD`), themed server (`*-SRV-*`), Pi terminal (`*-TERM-*`) and Android (`*-AND-*`) records |
-| `docs/` | Four implementation guides and six Word user-guide sources |
+| `docs/` | Developer entry point, implementation guides, review records and six Word user-guide sources |
+
+The component directories are ownership boundaries, not independently deployable
+repositories. `zmala_terminal/common/` is shared by the Pi and Windows terminal
+adapters; it is not a general utility directory for every product. Existing
+cross-component assets (languages, sounds, approved logos and the bounded TURN
+write helper) retain explicit consumers and packaging references. New shared Pi
+host policy belongs in `zmala_system/`; offline assembly belongs in `zmala_images/`.
+Keep verification in the top-level `tests/` tree, organized by component and level.
 
 Source launches keep state in component `data/` directories. Pi installations
 link those paths to private `/var/lib/zmalacall` or `/var/lib/zmalacall-server`;
 root-owned code lives under `/opt/zmalacall/releases` or
 `/opt/zmalacall-server/releases`. Do not edit an installed release to store data.
+The terminal boot theme receives a bottom-right version label from the durable
+confirmed application metadata after local filesystems mount. A stable host helper
+supplies it each boot, so application updates need no artwork or initramfs rebuild.
 Packages exclude enrollment, account data, private portraits and credentials.
 Downloaded SDKs live under `build_tools/runtime`; managed Windows launcher
 records live under `build_tools/data`.
@@ -312,6 +335,64 @@ tests.server.HLT.test_ssh_guard_linux tests.terminal.HLT.test_ssh_guard_linux`.
 They need `iproute2` and `nftables`; CI runs this step explicitly so a non-root
 skip cannot stand in for firewall verification.
 
+The image-storage HLTs also run explicitly with root in private mount/network/PID
+namespaces:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_appliance_storage_linux tests.terminal.HLT.test_appliance_storage_linux -v
+```
+
+They format only new 32 MiB regular fixture files, mount them as ext4 loop images,
+and compare two synthetic read-only roots with shared data and bounded RAM views.
+They exercise chroot/app-UID permissions, default/package separation and failed
+operation cleanup. The parent removes fixture files only after the worker namespace
+exits. `unshare`, mount tools, `mkfs.ext4` and loop-file support are required; CI
+does not treat a non-root skip as successful integration. These runs do not count
+as physical boot, reboot, power-cut, media or complete updater qualification.
+
+First-device identity has separate root HLTs:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_device_identity_linux tests.terminal.HLT.test_device_identity_linux -v
+```
+
+These create fresh ext4 file images and terminate initializer child processes at
+eight actual synchronization boundaries per role. Retrying must retain committed
+identity and saved application bytes, validate private ownership/modes and refuse
+application-owned identity without changing it. Ordinary LLTs separately inject
+write, rename and sync errors and control entropy/mount/ownership facts. Process
+termination leaves the kernel running; it is not a physical power-loss test.
+
+Early-boot storage has a GPT-partitioned-image scenario too:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_boot_storage_linux tests.terminal.HLT.test_boot_storage_linux -v
+```
+
+It creates a new sparse regular file, attaches only that file as a partitioned
+loop device, and formats only its guarded fixture partitions. Real sysfs, block
+probes and mounts identify each root's same-parent data. Controlled kernel
+arguments select both roots; assertions cover identity/data preservation, root
+mount configuration, readiness gating and owned cleanup after injected failures.
+The parent removes fixture files after the worker namespace exits. The scenario
+requires `sfdisk`, `losetup`, `mkfs.ext4`, `blkid` and mount tools; CI installs them
+explicitly. It does not execute a real initramfs or PID1 boot.
+
+Confirmed/trial boot-control integration has a separate fixture:
+
+```sh
+sudo python3 -m unittest tests.server.HLT.test_boot_state_linux tests.terminal.HLT.test_boot_state_linux -v
+```
+
+It requires `libubootenv-tool`, `sfdisk`, `unshare` and mount tools. Each role uses
+a new regular GPT file, a private native-tool lock mount and fixed raw environment
+ranges. Actual `fw_printenv`/`fw_setenv` transactions and the authored selector
+under POSIX shell exercise one-shot trials, fallback, explicit confirmation,
+cancellation, stale state, corrupt copies and unchanged surrounding bytes.
+Linux LLTs separately control production block topology/admission and command
+failures. These are not actual U-Boot interpretation, Pi boot, physical power-cut
+or product-health/watchdog qualification. Windows skips are reported separately.
+
 New product regressions belong in LLT/HLT. `tests/adhoc/` is for non-RBT work,
 including development-tool self-tests and Windows-only terminal compatibility
 outside the Pi baseline. Its maintained `test_*.py` and `*.test.js` checks run via
@@ -354,7 +435,7 @@ LLRs in the same component/theme**: `HLR-TERM-VIDEO-012` cannot coexist with
 `LLR-TERM-VIDEO-012`. Other component/theme groups have independent sequences.
 Product IDs remain `PROD001` etc.; LLT/HLT test IDs are unchanged.
 
-Folders follow `requirements/<server|terminal>/<theme>/<hlr|llr>/`.
+Folders follow `requirements/<server|terminal|android>/<theme>/<hlr|llr>/`.
 The migration lookup in `requirements/id-migration.json` preserves the old-to-new
 ID correspondence; old IDs are no longer accepted in code/test trace comments.
 The component rewrites also keep complete one-to-many successors in
@@ -370,8 +451,8 @@ items; LLRs link to HLRs in their component/theme and reference implementation a
 files relative to the repository root. `area` identifies a narrower topic within the theme, `scope`
 distinguishes Core/Optional/Experimental, and `verification` describes a proposed
 check, not its result. Review stamps cover these fields as well as requirement
-text. The scope includes the Raspberry Pi server, shared/Pi terminal runtime and
-their Linux host policies. Installers, packaging and deployment verification are
+text. The scope includes the Raspberry Pi server, shared/Pi terminal runtime,
+Android app and their runtime host policies. Installers, packaging and deployment verification are
 outside the requirements baseline, as are the Windows terminal runtime and retired
 keypad/CAD work. Installer regression tests remain under
 `tests/adhoc/server_installer/` and `tests/adhoc/terminal_installer/`, run in CI,

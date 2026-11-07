@@ -1,7 +1,7 @@
 # @test T-LLT-069
 # @requirements LLR-TERM-START-003, LLR-TERM-START-004, LLR-TERM-START-005, LLR-TERM-UI-018, LLR-TERM-UI-019
 # @environment portable
-# @plan Invoke kiosk session and launcher helpers with temporary files and mocked subprocess, signal and proc boundaries. Check bounded X11 readiness, supported outputs, owned-child cleanup, profile locking and PID reuse. Read a process start timestamp from a proc fixture whose command contains spaces and parentheses. Inspect Plymouth artwork and Pi 4 presentation configuration; verify private Xauthority ownership without executing real host commands.
+# @plan Invoke kiosk session and launcher helpers with temporary files and mocked subprocess, signal and proc boundaries. Check bounded X11 readiness, supported outputs, owned-child cleanup, profile locking and PID reuse. Read a process start timestamp from a proc fixture whose command contains spaces and parentheses. Inspect Plymouth artwork, bottom-right text positioning and boot-unit ordering. Feed the boot label confirmed/trial metadata, invalid records and unavailable/timed-out Plymouth; assert confirmed-version selection, exact bounded command and startup continuation. Verify private Xauthority ownership without executing real host commands.
 # @pass File contents, command arguments, lock behavior and shutdown assertions pass. Launcher tests require Linux and are reported as skips elsewhere.
 import contextlib
 import io
@@ -41,9 +41,68 @@ class LinuxLifecycleTests(unittest.TestCase):
         script = (ROOT/'build_tools/linux/zmala.script').read_text()
         self.assertIn('Image("boot-family.png")', script)
         self.assertIn('Math.Min(Window.GetWidth()', script)
+        self.assertIn('Plymouth.SetDisplayMessageFunction(display_version)', script)
+        self.assertIn('text.SubString(0, 7) != "Zmala v"', script)
+        self.assertIn('Window.GetWidth() - image.GetWidth() - margin', script)
+        self.assertIn('Window.GetHeight() - image.GetHeight() - margin', script)
+        unit = configparser.ConfigParser()
+        unit.read(ROOT/'build_tools/linux/zmalacall-boot-version.service')
+        self.assertEqual(unit['Unit']['DefaultDependencies'], 'no')
+        self.assertIn('local-fs.target', unit['Unit']['After'].split())
+        self.assertIn('plymouth-quit.service', unit['Unit']['Before'].split())
+        self.assertIn('plymouth-quit-wait.service', unit['Unit']['Before'].split())
+        self.assertNotIn('zmalacall-update-recover.service', unit['Unit']['After'])
+        self.assertIn('/usr/local/lib/zmalacall-terminal-host/boot-version.py', unit['Service']['ExecStart'])
+        self.assertEqual(unit['Service']['TimeoutStartSec'], '5')
         driver = (ROOT/'build_tools/linux/21-zmalacall-pi4.conf').read_text()
         self.assertIn('Driver "modesetting"', driver)
         self.assertIn('Option "AccelMethod" "msdri3"', driver)
+
+    def test_boot_version_reads_confirmed_metadata_and_bounds_plymouth(self):
+        boot = module('boot-version')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            slot = root/'slots/good'; slot.mkdir(parents=True)
+            (slot/'update-release.json').write_text('{"version":"1.2.3"}')
+            (root/'confirmed.json').write_text('{"slot":"good"}')
+            # An interrupted trial/selected slot must not override confirmation.
+            (root/'pending.json').write_text('{"state":"trial","candidate":"other"}')
+            run = Mock()
+            self.assertTrue(boot.main(root, run))
+            run.assert_called_once_with(['plymouth', 'display-message', '--text=Zmala v1.2.3'],
+                                        check=True, capture_output=True, text=True, timeout=2)
+            for failure in (FileNotFoundError(), subprocess.CalledProcessError(1, 'plymouth'),
+                            subprocess.TimeoutExpired('plymouth', 2)):
+                with self.subTest(failure=failure):
+                    self.assertFalse(boot.main(root, Mock(side_effect=failure)))
+
+    def test_boot_version_omits_missing_or_malformed_identity_without_guessing(self):
+        boot = module('boot-version')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); run = Mock()
+            self.assertFalse(boot.main(root, run))
+            for record in ('{', 'null', '[]', '{}', '{"slot":7}', '{"slot":"../escape"}'):
+                (root/'confirmed.json').write_text(record)
+                self.assertFalse(boot.main(root, run), record)
+            slot = root/'slots/good'; slot.mkdir(parents=True)
+            (root/'confirmed.json').write_text('{"slot":"good"}')
+            for record in ('{', 'null', '[]', '{}', '{"version":7}', '{"version":"1.2.3\\nBAD"}'):
+                (slot/'update-release.json').write_text(record)
+                self.assertFalse(boot.main(root, run), record)
+            run.assert_not_called()
+
+    @unittest.skipUnless(sys.platform == 'linux', 'Linux slot symlink boundary')
+    def test_boot_version_rejects_symlinked_confirmed_slot(self):
+        boot = module('boot-version')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root/'slots').mkdir()
+            outside = root/'outside'; outside.mkdir()
+            (outside/'update-release.json').write_text('{"version":"9.9.9"}')
+            (root/'slots/good').symlink_to(outside)
+            (root/'confirmed.json').write_text('{"slot":"good"}')
+            run = Mock()
+            self.assertFalse(boot.main(root, run))
+            run.assert_not_called()
 
     def test_display_cookie_is_private_owned_and_created_before_xauth(self):
         pwd = Mock()

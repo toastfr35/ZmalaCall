@@ -1,24 +1,3 @@
-## Temporary call photos
-
-`call-photo.js` handles `/api/call/photo?call_id=…` through the existing enrolled-device
-route. Only peers of a connected App/Terminal or App/App SIP dialog can read it; only an app
-can claim an idle share; the sender alone can upload (`PUT`), stop (`DELETE`) or renew (`POST` with `revision`). `GET` returns
-revision and lease status; `GET` with `image=1&revision=…` returns a private,
-non-cacheable JPEG. Configurations advertise `call_photo_sharing`; app contacts
-include `account_type` so the control is shown only for terminal calls.
-
-Uploads are capped at 2 MiB and decoded outside the Node event loop by
-`call_photo.py` (Pillow, already installed for portrait conversion). JPEG/PNG
-input is limited to 16 million pixels, oriented, reduced to 1600 pixels per side
-and stripped of metadata. A single dialog permits one decode; the server permits
-two concurrently. Temporary decode files are removed in `finally`.
-
-The dialog owns the normalized bytes, outside portrait storage and backups.
-Stop increments a revision to invalidate late uploads; completion rechecks both
-enrollments and dialog identity. A 12-second sender lease bounds stale display;
-status/image access expires it, and dialog closure releases all photo state.
-No SIP or audio/video negotiation changes are made by photo operations.
-
 # Zmala Server implementation
 
 The administration uses A1 dark; setup PDFs and guide footers use A1 light.
@@ -31,7 +10,7 @@ For user-facing installation and account setup, use `ZmalaServer-Installation.pd
 and `ZmalaServer-Guide.pdf` beside the release installer. Their retained Word
 source is `server_prep.docx`; terminal setup uses `terminal_config.docx`.
 Network and build conventions are in
-[general.md](general.md); client behavior is in [terminal.md](terminal.md).
+[system overview](general.md); client behavior is in [terminal.md](terminal.md).
 
 The [three-network Docker lab](general.md#three-network-docker-lab) exercises this
 server with two native terminal call engines behind separate NAT gateways. It
@@ -236,7 +215,7 @@ alone proves call quality or hardware compatibility.
 
 The proposed SD-card replacement and system-maintenance stages are tracked in
 [the update/upgrade plan](../update_upgrade.md). The initial
-[image tools](../build_tools/images/README.md) include a read-only server inventory
+[image tools](../zmala_images/README.md) include a read-only server inventory
 and development boot profile; they do not replace the installation path below yet.
 Probe builds use the emitted project as imagegen's `-S` directory so its offline
 EEPROM-service mask hook runs. The image tools document inspection and the
@@ -372,6 +351,88 @@ clears them. Installer recovery logs are retained separately.
 failure and 200 after its commit succeeds. Neither proves registration, call
 quality, free disk space or full backup consistency.
 
+### Experimental image-managed storage
+
+The replacement SD-image work now has a shared `zmala_system` storage helper
+(experimental `HLR-SRV-HOST-008` and its LLRs). It accepts a marked read-only root,
+prevalidated ext4 data with initialized identity, and RAM work. Package status and
+alternatives remain under the selected root's `/usr/lib/zmala/slot-dpkg`; a small
+vendor `/var` seed populates a fresh 128 MiB RAM view. `/etc` uses a fresh overlay
+with a 64 MiB RAM upper area, and `/tmp` uses a separate 128 MiB RAM mount.
+
+The fixed server bindings preserve application state, NetworkManager profiles and
+identity, Bluetooth state, SSH keys, certificates and product operator settings.
+Only `/etc/ssh/keys` and `/etc/zmalacall/operator` are bound for those settings;
+SSH and product defaults stay with the selected root. Identity/hostname bindings
+are read-only. The authored image journald policy selects volatile storage capped
+at 32 MiB with 4 MiB files. Existing directories with incompatible ownership,
+permissions or links are rejected; the helper never bulk-converts imported state.
+
+
+The experimental `combined` image role (**Zmala Terminal + Server**) uses the same
+host identity and A/B boot contract, with terminal UID/GID 1000 and server UID/GID
+1001. Their application trees remain separate mode-0700 bindings. Operator
+configuration binds `/etc/zmalacall/operator/terminal` and
+`/etc/zmalacall/operator/server` as root-owned mode-0750 directories readable only
+by their respective groups. SSH and certificate state remain root-private.
+Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
+initialized data and boot records reject role substitution; conversion needs a
+separate migration. Offline image provisioning now installs the existing server
+unit and its locked service account. Its source release and private bootstrap
+directory are separate from terminal state. Integrity-checked JS dependencies
+are retained without npm lifecycle scripts; target Node starts under its service
+UID in an isolated network with temporary RAM data to check HTTP readiness.
+NetworkManager is included explicitly in the server package lock. SSH and the
+legacy updater remain masked in these development roots. Secure relay/TLS and
+first-owner onboarding, coordinated updates and qualified media remain pending.
+
+This code has unit and real isolated-namespace evidence. The archive preparation
+tool packages it without starting it or initializing device data. The separate
+`zmala_system.device_identity` helper (`HLR-SRV-HOST-013`) can initialize identity
+on prevalidated marked factory data. It requires Linux UID/GID 0, an ext4 mount
+with root-private permissions and a matching factory record. A persistent
+nonblocking lock serializes initialization. Kernel-generated identity and default
+hostname are synchronized and published together before the initialized-data
+marker; interrupted retries preserve a committed identity. Invalid saved state
+fails without factory reset. Real ext4 process-interruption tests exercise this
+ordering, but do not establish physical power-cut or boot recovery.
+
+The experimental early-boot path (`HLR-SRV-HOST-017`) now validates its marked
+read-only root, kernel slot/PARTUUID, actual GPT/ext4 metadata and kernel device
+topology. It discovers data only as the declared sibling on the same parent,
+without a global label lookup or assumed device name. It mounts that data,
+initializes compatible identity, prepares views and writes a read-only selected
+root entry into the volatile `fstab`. Complete private RAM readiness is required
+both by the early entry and a PID1 service required before `sysinit.target`.
+The latter also refuses missing preparation if the early helper is killed.
+
+The offline image tools generate a candidate initramfs and validate target Python
+imports and copied bytes. Namespace integration is separate from actual initramfs
+and PID1 boot qualification. The assembler now produces new regular-file A/B
+development media from matched root/initramfs/loader manifests; it does not flash
+devices. Its confirmed factory boot stops the loader watchdog until joint health
+transfer exists. First-owner setup and physical qualification remain pending.
+Current installers/services use the layout and
+64 MiB journal policy described above; this experiment does not change them.
+
+The experimental confirmed/trial controller (`HLR-SRV-HOST-022`) now has a
+closed redundant environment contract. A distinct eligible candidate receives
+one attempt, durably consumed before selection; subsequent selection falls back
+to the confirmed slot until an explicit current-slot, transaction and generation
+confirmation succeeds. RAUC eligibility changes never confirm product health.
+Automatic installed-slot activation remains disabled by the packaged policy.
+The custom adapter refuses unqualified `set-primary`; the future coordinator
+must use explicit `stage` after its complete-pair installation/admission checks.
+
+Linux raw access requires the existing startup gate, marked boot policy, Pi 4
+SD topology, current-root and sibling-data identities, both GPT copies and fixed
+environment ranges outside partition metadata/filesystems. Fixed bounded tools
+run with private configuration, empty fallback defaults, a persistent lock inode
+and exact state readback. Corruption never initializes factory state. The package
+keeps PID1 runtime watchdog ownership disabled during trial startup; bounded
+kernel handoff and qualified product-health transfer remain integration gates.
+These components are not installed on the existing server by this experiment.
+
 ## Administration and authentication
 
 Open the server's LAN address/HTTP port; `127.0.0.1:8080` works only on the server
@@ -428,6 +489,15 @@ Windows access to the SD boot partition can reset only legacy boot-partition
 password files, not the dedicated installer's Linux data-partition file.
 
 ## Accounts, groups and terminal settings
+
+`validation.js` owns the account/group field boundary. `AccountStore` validates
+an entire patch before changing accounts, profiles, credentials or the revision.
+Omitted optional fields preserve their values; an empty password preserves an
+existing password or generates one during account creation. Portrait fields are
+empty strings or local hash-named paths. This is separate from `photos.js`, which
+validates uploaded image bytes. Code traces sit beside each owning validator so
+identity rules and atomic account edits can be reviewed directly from Doorstop.
+
 
 The responsive English administration has Overview, Accounts, Groups, Terminals,
 Callbacks and Activity pages. Accounts owns SIP usernames/passwords, names,
@@ -556,6 +626,27 @@ have an unknown execution outcome and are not replayed automatically. History
 survives restart. Account deletion/conversion retires its queued/running work
 before acknowledgement; every saved transition caps completed history at 200.
 Standalone detached-child cleanup remains an acceptance gap.
+
+## Temporary call photos
+
+`call-photo.js` handles `/api/call/photo?call_id=…` through the existing enrolled-device
+route. Only peers of a connected App/Terminal or App/App SIP dialog can read it; only an app
+can claim an idle share; the sender alone can upload (`PUT`), stop (`DELETE`) or renew (`POST` with `revision`). `GET` returns
+revision and lease status; `GET` with `image=1&revision=…` returns a private,
+non-cacheable JPEG. Configurations advertise `call_photo_sharing`; app contacts
+include `account_type` so the control is shown only for terminal calls.
+
+Uploads are capped at 2 MiB and decoded outside the Node event loop by
+`call_photo.py` (Pillow, already installed for portrait conversion). JPEG/PNG
+input is limited to 16 million pixels, oriented, reduced to 1600 pixels per side
+and stripped of metadata. A single dialog permits one decode; the server permits
+two concurrently. Temporary decode files are removed in `finally`.
+
+The dialog owns the normalized bytes, outside portrait storage and backups.
+Stop increments a revision to invalidate late uploads; completion rechecks both
+enrollments and dialog identity. A 12-second sender lease bounds stale display;
+status/image access expires it, and dialog closure releases all photo state.
+No SIP or audio/video negotiation changes are made by photo operations.
 
 ## SIP and media internals
 
@@ -756,10 +847,11 @@ legacy ID lookup selects a primary successor for older tooling.
 All server LLRs have direct LLT plans and implementation anchors; all HLRs have
 direct HLT plans. System coverage
 is separate: a planned trace does not prove that a scenario passed or that all
-conditions in its requirement were tested. The local
-[server rewrite report](../tests/coverage/server-rebaseline/index.html) records
-execution results, LLT-only coverage, missing system plans and environment limits.
-Regenerate published requirements with `make requirements`.
+conditions in its requirement were tested. Historical rewrite evidence used the local generated path
+`tests/coverage/server-rebaseline/index.html`; it is not distributed with a fresh
+checkout. Generate current LLT execution evidence with `make coverage-llt` and
+current trace/plan reports with `make requirements`. See the
+[verification workflow](general.md#development-tools-and-checks) for platform limits.
 
 The Linux HLTs now include real UDP Digest-authenticated text delivery, real
 portrait conversion through HTTP and Pillow, and a disposable production process

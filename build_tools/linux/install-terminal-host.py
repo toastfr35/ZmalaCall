@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 
 FILES = {
+    'boot-version.py': 'build_tools/linux/boot-version.py',
     'prepare-display.py': 'build_tools/linux/prepare-display.py',
     'pair-presenter.py': 'build_tools/linux/pair-presenter.py',
     'picom.conf': 'build_tools/linux/picom.conf',

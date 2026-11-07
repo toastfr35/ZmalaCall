@@ -1,18 +1,3 @@
-## Photos during calls
-
-When server configuration advertises `call_photo_sharing`, `common/call_photo.py`
-polls the authenticated current SIP Call-ID while IN_CALL. Network and JPEG decode
-run off Tk; Tk owns the full-window, aspect-preserving black-backed image layer.
-It covers received video and self-view while retaining both native surfaces and
-the voice call. Remote volume/hangup controls remain available. The app sender
-stops sharing; call end/change and expired leases also remove the layer.
-
-The receiver accepts only bounded JPEGs (2 MiB, 1600 pixels per side), checks
-revision and owner identity, and never extends its local deadline after a failed
-request. Old servers without the capability flag are not polled. Display-fixture
-tests cover resizing and retained surfaces; physical audio/video continuity must
-be qualified separately on the deployed Pi.
-
 # Zmala Terminal implementation
 
 A1 dark supplies the terminal/window mark and updated family-word-cloud boot artwork.
@@ -30,7 +15,7 @@ sources generate all supported terminal languages and folded A4 print layouts;
 normal end user setup uses Wi-Fi without an Ethernet cable.
 Releases include all language editions in `ZmalaTerminal-Leaflets.zip`, with
 reading copies, folded A4 print copies and printing notes.
-See [general.md](general.md) for build/network conventions and [server.md](server.md)
+See [system overview](general.md) for build/network conventions and [server.md](server.md)
 for the authenticated configuration and SIP services.
 
 Contents: [purpose and functions](#terminal-purpose-and-functions),
@@ -395,10 +380,34 @@ enrollment; OS/package changes are not automatically rolled back.
 | `--bootstrap PATH` | Administrator-supplied connection JSON instead of server QR |
 | `--wifi-mode existing-link` | Development-only bypass of joining the scanned Wi-Fi |
 
+The Plymouth boot screen overlays `Zmala vX.Y.Z` in the bottom-right corner, with
+text size and inset scaled to the display. `zmalacall-boot-version.service` runs
+after local filesystems mount and before Plymouth quits. Its installer-owned helper
+reads `/opt/zmalacall-updates/confirmed.json` and the confirmed slot's
+`update-release.json`; an interrupted trial therefore shows the recovery target's
+version. Later confirmed application updates and rollbacks need no artwork edit or
+initramfs rebuild. The early initramfs frames show the artwork alone. Missing or
+invalid release metadata or an unavailable Plymouth daemon leaves the label absent
+and startup continues. Existing hosts need a trusted installer run to provision the
+helper, unit and updated theme; `--no-splash` leaves their boot presentation alone.
+Portable tests check metadata and the command boundary; actual Pi/TV rendering
+and readability still require a boot check at 720p and 1080p.
+
 Use the system Python on Pi: apt-installed GI, Cairo, Tk and OpenCV are not
 automatically visible in a pip virtual environment. The installer supplies Xorg,
 Openbox, Picom, BlueZ, NetworkManager, Liblinphone 5.3, native media plugins,
 framing runtime/model and fonts. Linux packages include shared/Linux source only.
+
+## Configuration validation
+
+`common/config_validation.py` validates the complete server reply before it reaches
+the model or persistent configuration cache. Schema version 1 and the revision
+are JSON integers; Python's equality between `True`, `1.0` and `1` is not used
+as a type check. Contact permissions are Boolean, SIP addresses match the account
+and configured domain, and names and collections are bounded. An omitted portrait
+or empty string means no picture; null, numbers, Booleans and collections are
+invalid even when empty. Nonempty paths identify local hash-named PNG/JPEG/GIF files.
+Polling and settings responses share these checks through `Configuration`.
 
 ## Onboarding and reset state
 
@@ -855,6 +864,21 @@ mid-call. Check TV input, cable, EDID, display service and observer selection be
 forcing HDMI boot modes. A fresh supported image is preferable to Pi 3 migration
 settings, which can retain obsolete display and Bluetooth configuration.
 
+## Photos during calls
+
+When server configuration advertises `call_photo_sharing`, `common/call_photo.py`
+polls the authenticated current SIP Call-ID while IN_CALL. Network and JPEG decode
+run off Tk; Tk owns the full-window, aspect-preserving black-backed image layer.
+It covers received video and self-view while retaining both native surfaces and
+the voice call. Remote volume/hangup controls remain available. The app sender
+stops sharing; call end/change and expired leases also remove the layer.
+
+The receiver accepts only bounded JPEGs (2 MiB, 1600 pixels per side), checks
+revision and owner identity, and never extends its local deadline after a failed
+request. Old servers without the capability flag are not polled. Display-fixture
+tests cover resizing and retained surfaces; physical audio/video continuity must
+be qualified separately on the deployed Pi.
+
 ## Video and audio
 
 Fresh profiles use 720p at 15 fps. Each terminal independently selects 480p
@@ -1056,13 +1080,87 @@ Source archives omit downloaded models/runtime; calls never download them.
 ## Appliance services, storage and peripherals
 
 The proposed image-installed system update path is tracked in
-[the update/upgrade plan](../update_upgrade.md). Initial
-[image tools](../build_tools/images/README.md) collect read-only sizing information
-and emit a development boot probe; they do not change terminal services or the
-application-only updater described below.
+[the update/upgrade plan](../update_upgrade.md).
+[Image development tools](../zmala_images/README.md) now build locked
+OS-package roots and package experimental host-storage archives. They do not
+change installed terminal services or the application-only updater described below.
 Boot-probe assembly uses the emitted project's `-S` source directory and its
 offline EEPROM mask hook; see the image tools for inspection and remaining
 qualification limits. This does not update or reconfigure an installed terminal.
+
+The experimental shared `zmala_system` policy (`HLR-TERM-MAINT-035` and its LLRs)
+expects a marked read-only root, prevalidated ext4 data with initialized identity
+and RAM work. Package records/alternatives stay in the selected root; fresh `/etc`
+overlay defaults and `/var` state are not imported from another OS generation.
+The RAM upper area is capped at 64 MiB, `/var` at 128 MiB and `/tmp` at 128 MiB.
+The image journald template uses volatile storage capped at 32 MiB/4 MiB files.
+Fixed bindings preserve terminal data, network/Bluetooth state, SSH keys and
+operator settings; `/etc/ssh/keys` and `/etc/zmalacall/operator` are distinct from
+new slot defaults. Saved identity/hostname are exposed read-only. Only declared
+mount operations are invoked; no TV, camera, media, package or service helper runs.
+
+
+The experimental `combined` image role (**Zmala Terminal + Server**) uses the same
+host identity and A/B boot contract, with terminal UID/GID 1000 and server UID/GID
+1001. Their application trees remain separate mode-0700 bindings. Operator
+configuration binds `/etc/zmalacall/operator/terminal` and
+`/etc/zmalacall/operator/server` as root-owned mode-0750 directories readable only
+by their respective groups. SSH and certificate state remain root-private.
+Standalone roles retain UID/GID 1000 and their existing paths. Root, factory data,
+initialized data and boot records reject role substitution; conversion needs a
+separate migration. Offline image provisioning now creates the locked terminal
+account, installs the existing display/application/pairing/CEC/compositor units
+and compiles the video, audio and TURN libraries from retained public inputs.
+ARM64 library loads and TURN regressions are checked without opening hardware
+devices. Combined server sources and bootstrap state remain separate. SSH and
+legacy application updates are masked in these development roots. Onboarding,
+coordinated updates and qualified installation media remain pending.
+
+Unit and real private-namespace tests cover this storage helper. The offline
+archive tool packages its profile, variable-state seed and runtime without
+extracting or booting the result. The separate `device_identity` helper
+(`HLR-TERM-MAINT-040`) initializes identity on an explicitly marked, prevalidated
+ext4 data mount. Linux UID/GID 0, private ownership/modes and a matching factory
+record are required. Kernel entropy supplies the machine ID and default hostname;
+ordered file/directory synchronization and atomic publication allow interrupted
+first boot to resume without changing a committed identity. Unknown or corrupt
+saved state is rejected without resetting data. It never selects/formats disks,
+generates SSH keys, operates TV/USB devices or starts terminal services.
+
+The experimental early-boot path (`HLR-TERM-MAINT-044`) validates selected slot and
+root PARTUUID against actual read-only ext4/GPT/kernel topology, and finds data
+only as its declared same-parent sibling. It then initializes identity and views,
+generates a read-only selected-root entry in the RAM `fstab`, and publishes complete
+current-boot readiness. A separate PID1 gate is required before `sysinit.target`,
+so killed or missing early preparation cannot admit ordinary services. It does
+not operate TV, camera, remote or application services.
+
+Direct LLTs and real GPT/loop namespace HLTs cover both roles. The offline
+initramfs builder checks copied runtime/tool bytes and actual ARM64 imports, but
+does not qualify physical initramfs/PID1 boot. Regular-file A/B assembly now
+requires matched application root, initramfs and pinned loader manifests. The
+development factory boot stops the loader watchdog until joint health transfer
+exists. Data expansion, onboarding and physical qualification remain pending.
+The experimental confirmed/trial controller (`HLR-TERM-MAINT-049`)
+adds one durably consumed candidate attempt and explicit current-slot,
+transaction/generation confirmation. RAUC eligibility is separate from product
+health; unqualified `set-primary` is refused and automatic installed-slot
+activation is disabled by the packaged policy. The later coordinator must stage
+only a completely installed inactive boot/root pair after safe admission.
+
+Native raw environment access requires marked current-boot readiness, the Pi 4
+SD parent, both GPT copies, exact selected root/data topology and the fixed raw
+gap. Root-private configuration, bounded fixed tools, empty defaults, lock/CAS
+and readback prevent ambiguous mutations from being reported as successful.
+The authored selector and real Linux environment tools are tested on new regular
+GPT fixtures. Actual U-Boot/Pi interpretation, physical interruption, bounded
+kernel watchdog handoff and product-health takeover remain pending. PID1 runtime
+watchdog ownership stays disabled until that separate handover is integrated;
+otherwise PID1 could keep an unhealthy trial alive indefinitely. No current
+terminal service or hardware behavior changes through this experiment.
+
+The current manual installer and its 64 MiB journal policy remain as
+described below.
 
 ```sh
 sudo systemctl status zmalacall-terminal zmalacall-display zmalacall-pairing
@@ -1234,9 +1332,11 @@ It binds authenticated requests separately to both interfaces and compares the
 Wi-Fi UUID, terminal identity and boot ID. It neither reboots nor changes network
 settings, and it does not retain credentials. Record the two results together.
 
-The terminal requirements rewrite has a local [verification report](../tests/coverage/terminal-rebaseline/index.html).
-It separates measured LLT coverage, executed HLTs and unverified scenarios. The
-report is generated output, not part of the requirement baseline.
+Historical terminal rewrite evidence used the local generated path
+`tests/coverage/terminal-rebaseline/index.html`; it is not distributed with a fresh
+checkout. Generate current LLT execution evidence with `make coverage-llt` and
+trace/plan reports with `make requirements`. Executed HLT and physical hardware
+evidence remain separate from the plan matrix.
 
 Portable tests do not operate the TV or prove native SDK compatibility. For real
 rendering use `tests/terminal/HLT/render_cache_ui.py` (Linux under Xvfb);

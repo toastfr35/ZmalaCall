@@ -14,3 +14,6 @@ It was edited with the built-in image-generation tool. The edit prompt was:
 
 The boot artwork is installed by the trusted terminal installer. Application-only
 automatic updates do not modify the existing Plymouth theme or rebuild boot files.
+The installed theme receives the confirmed software version at boot and overlays
+`Zmala vX.Y.Z` in the bottom-right corner once local storage is available. Version
+changes do not alter the artwork.

@@ -1,7 +1,7 @@
 # @test T-LLT-034
 # @requirements LLR-TERM-COM-004, LLR-TERM-COM-005, LLR-TERM-NAV-003, LLR-TERM-NAV-004, LLR-TERM-NAV-005, LLR-TERM-NAV-006, LLR-TERM-NAV-007, LLR-TERM-UI-014, LLR-TERM-UI-023, LLR-TERM-CALL-011, LLR-TERM-CALL-012, LLR-TERM-CALL-013, LLR-TERM-CALL-014
 # @environment portable
-# @plan Drive model call states, availability changes, configuration validation, localization and carousel geometry with deterministic inputs; assert two-step calling, caller permission checks, cancellation, stable selection and three/five-contact layout. Retarget rapid carousel movements in both directions, across wrap and through reversal; assert continuous position, bounded rendered-card count and the final selected identity, including a two-contact list. Reject malformed configuration types, including non-string photos, and verify script-specific font selection and installed-font fallback.
+# @plan Drive model call states, availability changes, configuration validation, localization and carousel geometry with deterministic inputs; assert two-step calling, caller permission checks, cancellation, stable selection and three/five-contact layout. Retarget rapid carousel movements in both directions, across wrap and through reversal; assert continuous position, bounded rendered-card count and the final selected identity, including a two-contact list. Reject malformed configuration types, including Boolean/fractional/string schema versions and false-like non-string photos, and verify script-specific font selection and installed-font fallback.
 # @pass All named assertion cases must pass; skips and visual/hardware checks are recorded separately.
 
 import copy
@@ -35,13 +35,13 @@ class BehaviourTests(unittest.TestCase):
             self.assertEqual(font_family(language, set()), 'TkDefaultFont')
 
     def test_malformed_config_fields_are_rejected_before_model_application(self):
-        changes = [dict(configuration_version=0), dict(configuration_version=True), dict(video_resolution='4k'),
+        changes = [dict(schema_version=True), dict(schema_version=1.0), dict(schema_version="1"), dict(configuration_version=0), dict(configuration_version=True), dict(video_resolution='4k'),
                    dict(video_fps=True), dict(display_name=42), dict(display_name='x'*81), dict(sip=[]),
                    dict(sip={}), dict(call_auth_key='short'), dict(contacts={}), dict(contacts=[None]),
                    dict(contacts=config()['contacts']*41), dict(callbacks={}), dict(callbacks=[{}]),
                    dict(callbacks=[dict(id='a'*36, status='pending', ready=False, **{'from':'other', 'to':'alice'})])]
         for key, value in [('id', 'bad/id'), ('id', 1), ('name', ' '), ('name', 'x'*81), ('sip_uri', 'sip:alice@other'),
-                           ('can_call', 'yes'), ('online', 1), ('can_receive', False), ('photo', '/tmp/private'), ('photo', True)]:
+                           ('can_call', 'yes'), ('online', 1), ('can_receive', False), ('photo', '/tmp/private'), ('photo', True), ('photo', False), ('photo', 0), ('photo', []), ('photo', {}), ('photo', None)]:
             changes.append({'contacts':[dict(config()['contacts'][0], **{key:value})]})
         changes.append({'contacts':config()['contacts']*2})
         for change in changes:

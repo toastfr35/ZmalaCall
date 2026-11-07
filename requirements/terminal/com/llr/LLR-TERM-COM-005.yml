@@ -27,7 +27,11 @@ reviewed: null
 scope: Core
 text: |
   Contact permissions shall be Boolean values. Automatic answer shall require receive
-  permission. Portrait paths shall use the permitted hash-named PNG, JPEG or GIF format.
+  permission. A missing portrait or empty string shall mean no portrait.
+  Every supplied portrait value shall be a string; a nonempty value shall use
+  /photos/<hash>.<extension>, with a nonempty lowercase hexadecimal hash and
+  png, jpg or gif extension. Null, Boolean, number and collection values shall
+  be rejected even when empty.
   Callback state shall contain no more than 80 valid pending account pairs.
 verification: |
   Supply invalid permissions, image paths and callback pairs. Check bounds and

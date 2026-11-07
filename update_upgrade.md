@@ -15,7 +15,7 @@ their direct LLT/HLT coverage before the corresponding behavior ships.
 
 4 November 2026 — [#140](https://github.com/toastfr35/ZmalaCall/issues/140):
 
-- Added `build_tools/images/` source pins/acquisition, explicit role/package intent,
+- Added `zmala_images/` source pins/acquisition, explicit role/package intent,
   minimal A/B boot-probe configuration, bounded read-only Pi inventory and offline
   root privacy inspection. Source downloads are verified before safe extraction;
   neither the sample backend nor a generic mark-good service is installed.
@@ -73,7 +73,7 @@ closure lock, hardware boot qualification or automatic system updater is claimed
 - Verified actual intent closures: server 170 archives / 77,056,328 bytes;
   terminal 721 archives / 528,545,960 bytes. Host package database hashes were
   unchanged before/after both runs. Retained all archives and signed audit inputs
-  privately; reviewed public lock metadata lives in `build_tools/images/locks/`.
+  privately; reviewed public lock metadata lives in `zmala_images/locks/`.
 - Added mandatory external lock-digest verification and regression coverage for
   altered/missing/extra archives, trust metadata, traversal, download budgets,
   invalid signatures and overlapping archive-key rollover. SHA-256 is checked
@@ -337,6 +337,373 @@ boot-state qualification in progress:
   integration; private probe results are not product verification passes.
 
 
+
+5 November 2026 — [#151](https://github.com/toastfr35/ZmalaCall/issues/151),
+pinned bootloader probe build inputs:
+
+- Added the immutable U-Boot candidate archive to source acquisition. Reviewed its
+  SHA-256, 46,731,588 compressed bytes, 41,465 members and 264,670,480 expanded file
+  bytes. Only this source receives the larger 64 MiB / 384 MiB / 50,000-member
+  budgets; existing sources retain their previous limits. Safe path/link checks
+  and full extracted-tree hashing passed against the real archive. Cached FIFOs,
+  devices and links are rejected before archive reads, which are now bounded.
+- Added a development-only Pi 4 SD profile that emits raw-state Kconfig settings
+  and watchdog/kernel handoff examples into a new directory. It fences alignment,
+  separation from GPT/partitions and bounded watchdog values, omits a boot script
+  and marks its output uncompiled/incomplete/unqualified. The existing native
+  `probe-config` and all deployed runtimes remain unchanged.
+- Added inspection of the resolved Kconfig subset, including actual current
+  option names, local-only default boot, redundancy, raw MMC locations and
+  disabled alternate stores/location overrides. Missing or duplicate settings
+  fail; a passing subset does not establish compilation or hardware behavior.
+- In fresh Linux source/profile/build directories outside any repository,
+  acquired and verified the pinned archive, applied the generated fragment,
+  resolved Kconfig, passed the inspector, and cross-compiled an ARM64 ELF/binary.
+  Retained compiler, source/config/binary hashes and source-commit build epoch
+  privately. The complete resolved configuration matched the previously
+  hardware-tested private candidate byte for byte. The complete toolchain is not
+  locked and the resulting binary was
+  not installed or boot-tested; this is not full reproducibility qualification.
+- All 47 image-tool regressions passed in Linux; Windows passed 37 with ten
+  explicit Linux-only skips. Ruff and profile/whitespace checks passed. These are
+  build-tool changes outside the product runtime baseline; installed integration
+  still requires its own runtime requirements, owning trace comments and LLT/HLT.
+
+
+5 November 2026 — [#155](https://github.com/toastfr35/ZmalaCall/issues/155),
+common-base input locking and local build repositories:
+
+- Captured the selected clean pre-boot image's installed package ledger, with
+  matching A/B copies and an externally anchored ledger digest. The strict parser
+  retains exact installed versions, including a package whose desired action was
+  purge; it rejects unfinished states, ambiguous/duplicate records, other
+  architectures, scalar continuations and linked/special/oversized input files.
+  The earlier private 258-selection inventory omitted that still-installed
+  package and is superseded by the reviewed 259-selection capture.
+- Authenticated and retained all 259 exact base selections and their 259-archive
+  closure (164,614,914 bytes), using signed Debian/Raspberry Pi metadata and the
+  same download-only isolation as role intake. Public intent and lock metadata
+  are anchored in `locks/index.json`; raw ledgers/archives remain private.
+  CI checks base/source/closure synchronization without downloading packages.
+- Added build-only local file-repository assembly from externally hash-anchored
+  caches, with combined budgets, conflict rejection, copied-archive readback and
+  generated-index identity/hash/path checks. Failure never emits its completion
+  marker. No private signing key or host APT configuration is involved; the local
+  unsigned repository must remain a read-only build input, not a deployed or
+  remotely served package source.
+- Combined base/role inputs produced 312 server and 805 terminal archives. Actual
+  isolated, file-only APT download runs consumed every exact selection for both
+  roles; host dpkg database hashes were unchanged. This is APT consumer evidence,
+  not complete image-builder consumption. The native `probe-config` still uses
+  upstream resolution. Full builder/toolchain/npm/model inputs, remote retention,
+  narrow persistent mounts, provisioning and the runtime coordinator remain
+  unfinished. Stages 0/1 and role qualification remain incomplete.
+- Reviewed impact: these are build tools, excluded from the runtime requirement
+  baseline and tested under `tests/adhoc/`. Existing runtime requirements,
+  implementation trace comments and end-user installation guides remain accurate;
+  no deployed workflow or production image/update behavior changed. The image
+  development guide and general implementation guide describe the new limits.
+
+5 November 2026 — [#157](https://github.com/toastfr35/ZmalaCall/issues/157),
+isolated locked OS-root construction:
+
+- Added an explicitly unqualified ARM64 root-tar build path using only externally
+  anchored common/role archive caches and exact installed selections. Builds run
+  as an ordinary Linux user in subordinate-ID user/mount/network/PID namespaces,
+  with no external network interfaces or host APT mutation. Service starts are
+  inhibited. Copied public inputs need not weaken private cache/home permissions.
+- Added a build-only, disposable-marker-gated factory cleanup hook: generated
+  SSH keys, machine/build-host identity, entropy/network seeds, copied resolver and local APT sources
+  are removed; factory passwords must be locked. Package state remains in its
+  root slot. Known EEPROM/APT timers are masked only in this experimental root;
+  this is not a production maintenance policy or runtime coordinator.
+- Added non-extracting archive acceptance with raw-header/extended-header/member
+  budgets, selected real-parent/ownership checks, factory identity/mask checks,
+  and exact final package-version/architecture agreement. Incomplete builds have
+  no READY record. The hook is emitted with LF endings on Windows checkouts.
+  Successful records explicitly keep application, toolchain, production mounts
+  and hardware qualification false. Scratch/log inputs remain private pending
+  review; no factory root or SD image is published by these tools.
+- A first disposable ARM64 server-root experiment completed with exactly 312
+  reviewed installed selections and unchanged host dpkg state. The stricter
+  network-isolated/cleaned server build also passed, producing a 765,826,560-byte
+  root tar; the latest public archive/privacy audit passed against it as well.
+  The public terminal-root build also passed with exactly 805 installed packages,
+  producing a 2,366,328,320-byte tar. Both retained tar hashes and the latest public
+  archive/privacy audits passed; host dpkg hashes remained unchanged. These tar
+  sizes are not filesystem/partition budgets. Tool regressions pass on
+  Linux (67) and Windows (52 passed, 15 explicit Linux-only skips).
+- Runtime requirement/trace and user-guide impact was reviewed: this is offline
+  experimental build tooling, tested under `tests/adhoc/`, not an installed
+  service or a changed supported installation workflow. Production adoption of
+  host storage/update policies still requires synchronized normative items and
+  direct LLT/HLT plans before qualification. Technical guides describe the
+  experimental boundary. Stages 0/1 remain incomplete; full role/application
+  assembly, selected persistent mounts and provisioning are not implemented.
+
+5 November 2026 — [#159](https://github.com/toastfr35/ZmalaCall/issues/159),
+experimental shared host storage and offline root preparation:
+
+- Added experimental image-managed product scope (`PROD017`) separately from the
+  legacy application-only policy. Server HOST and terminal MAINT storage items
+  have direct component LLT/HLT plans and owning shared-runtime `@llr` anchors.
+  `zmala_system` is included in runtime source inventory; its installed policy is
+  not hidden as installer tooling. Existing supported deployments are unchanged.
+- Implemented a UI/media-independent shared helper accepting a marked read-only
+  ext4 root, separate prevalidated writable ext4 data and RAM work. It checks
+  bounded exact role/profile records, initialized identity, owners, modes, links,
+  mount facts and a bounded variable-state seed before preparing mutable views.
+  Physical data-device selection and first identity creation remain caller
+  preconditions, not features claimed by this helper.
+- Fresh `/etc` uses a private 64 MiB RAM upper area; `/var` and `/tmp` use bounded
+  128 MiB RAM mounts. Package status/alternatives stay in the selected immutable
+  slot. Fixed bindings preserve app, network/Bluetooth, host keys, operator and
+  server certificate state. Only the operator subdirectory is bound under
+  `/etc/zmalacall`, leaving new product defaults visible. Journals have a volatile
+  32 MiB/4 MiB template. Existing incompatible state is rejected, not bulk-chowned.
+- Preparation is serialized in private RAM; readiness is published atomically only
+  after its complete status is flushed and closed. Status-sync, mount-inspection
+  and marker-cleanup failures are exercised explicitly.
+  Failures preserve the original error and attempt reverse cleanup of owned
+  mounts, including a command that fails after actually mounting. Input root/data
+  volumes are retained. No package, service, TV or media helper is invoked.
+- Direct LLTs cover controlled data/metadata and operation failures. Real Linux
+  root HLTs use new 32 MiB regular ext4 file images in private mount/network/PID
+  namespaces. Both roles passed two synthetic root generations, app UID 1000
+  permissions, stable selected bytes, fresh defaults, slot package/alternative
+  state, actual RAM capacities, readonly identity, private keys and pre/post-mount
+  failure cleanup. These are not physical boot, reboot or power-cut passes.
+- Added portable `prepare-root` archive rewriting without extraction/mounting.
+  It verifies reviewed raw-root bytes and package input, moves package state and
+  the remaining variable-state seed into immutable slot paths, and packages the
+  exact authored helper/profile/journal policy. Graph/parent/hard-link, ownership,
+  privacy, byte and RAM-seed checks gate readiness; runtime payload hashes record
+  the copied source. Build/packaging regressions stay under `tests/adhoc/`.
+- Both actual role roots were prepared and re-audited: server 312 packages with
+  133 seed entries / 3,713,014 bytes; terminal 805 with 404 / 3,902,775 bytes. Raw
+  source archives remained unchanged. Output explicitly keeps early-boot
+  integration, data initialization, app installation and hardware/production
+  qualification false; no root archive or private data is published.
+- Technical guides and CI root-namespace checks now describe/exercise this helper.
+  Current end-user guides and SSH installers remain accurate because supported
+  installation and user workflows have not changed. Remaining stage-1 work
+  includes early-boot wiring, complete role provisioning and immutable build/source
+  retention; stage 2 still owns initial identity/claim and migration. No new
+  factory image or automatic system updater is claimed; stages 0/1 remain open.
+
+5 November 2026 — [#161](https://github.com/toastfr35/ZmalaCall/issues/161),
+durable first-device identity prerequisite:
+
+- Added experimental server HOST and terminal MAINT first-device HLRs with three
+  direct LLRs each: validated/serialized admission, kernel entropy and durable
+  commit, and identity-preserving retry. Owning anchors and direct component
+  LLT/HLT plans describe the actual helper boundary, separately from full boot.
+- The shared `device_identity` helper accepts prevalidated separate writable
+  ext4 data, explicit matching factory state and Linux UID/GID 0. It does not
+  discover disks or format, expand, import or reset existing data. Fresh unknown
+  files, invalid schemas/roles/owners/modes and unsafe links are rejected.
+- A persistent zero-length private lock uses nonblocking `flock`; its inode is
+  retained so competing invocations cannot lock different files. Kernel entropy
+  supplies a 128-bit machine identifier and a derived role-specific hostname.
+- Identity files and their private staging directory are synchronized before
+  atomic directory publication, then the data parent is synchronized before
+  publishing the initialized-data marker. Readiness follows final validation and
+  directory synchronization. Retries preserve committed identity even if the
+  final marker was interrupted. A short hostname write is not mistaken for a
+  complete stage merely because its prefix is a valid DNS label.
+- Both role LLTs passed entropy, admission, lock, mode/umask, ordered commit,
+  partial-stage, missing-marker and injected write/rename/sync cases. Real
+  namespace HLTs passed process exit/retry at eight actual synchronization
+  boundaries per role on disposable ext4 file images, retaining committed
+  identity/application bytes and refusing application-owned identity. These are
+  not physical power-loss, reboot or complete boot qualification.
+- `prepare-root` packages the initializer. The archive-only `factory-data` tool
+  emits a private data root and exact role factory record without device identity,
+  formatting or mount access. Its ad-hoc regressions check contents, deterministic
+  bytes, permissions, role mismatch, tampering and bounded regular-file inputs.
+- Both actual ARM64 role roots were regenerated with the final initializer and
+  passed their complete runtime-byte, package and archive-graph audits. These
+  remain private unqualified root archives; no new image was flashed or published.
+- Early-boot invocation, correct data-device selection, data expansion, host-key
+  generation, service/application provisioning, owner claim and migration remain
+  unfinished. Current SSH installers/user workflows are unchanged; user guides
+  need no workflow revision yet. Stage-2 initialization remains open until those
+  integration and physical gates are met.
+
+5 November 2026 — [#163](https://github.com/toastfr35/ZmalaCall/issues/163),
+experimental early-boot storage integration:
+
+- Added experimental boot HLRs and four direct LLRs per role, with owning code
+  anchors and direct LLT/HLT plans. The fixed experimental layout is not a frozen
+  production format. The helper accepts a marked read-only ext4 root and exactly
+  one supported slot and canonical kernel root PARTUUID.
+- Native discovery binds the actual root major/minor to kernel sysfs topology,
+  GPT entry, filesystem identity and geometry. Data is only the unique declared
+  sibling on that same parent. No global label search, guessed `mmcblk0` path,
+  formatter, expansion or imported commands are used.
+- The helper mounts only validated data, initializes compatible identity and
+  prepares views in order. It generates a selected-root read-only `fstab` entry
+  in the RAM overlay before publishing complete current-boot readiness. Cleanup
+  preserves the input root, committed identity and original failure, retaining
+  data if dependent views remain.
+- The early Python entry blocks failure without printing saved/private values.
+  A separate PID1 gate required before `sysinit.target` checks private current-boot
+  records, mounted views, fixed bindings and committed identity; killed or missing
+  early preparation cannot silently admit ordinary services. Actual PID1 boot is
+  still a qualification gate, not proven by authoring unit dependencies.
+- Forty direct Linux LLTs passed policy/argument parsing, native topology models,
+  bounded probe processes, admission, ordered operations, dependency failures,
+  cleanup and startup refusal. Two real GPT/loop namespace scenarios passed both
+  root slots, same-parent data, stable identity/application bytes, root mount
+  configuration, missing-readiness/binding gate refusal and injected mount failures.
+  These use controlled boot command lines; they are not physical boot or power cuts.
+- `prepare-root` packages the boot policy, role, runtime and PID1 gate, with an
+  empty data mountpoint. The separate isolated `build-initramfs` path consumes a
+  reviewed prepared-root hash and locked caches. Its worker refuses original host
+  namespaces, uses only fixed harmless character-device binds, and creates
+  temporary RAM state rather than starting services or initializing device data.
+- The target's own initramfs tool copies bounded Python plus extension ELF
+  dependencies and private mount/probe tools. Actual target import checks caught
+  and resolved a missing extension dependency caused by copy ordering. Rootless
+  extraction omits only anchored root `/dev` entries, preserving kernel driver
+  subdirectories also called `dev`. The entry runs in `local-bottom`, before the
+  locked Debian init script moves `/dev` away in `init-bottom`.
+- Both ARM64 components built successfully: server 29,306,767 compressed bytes and
+  terminal 33,750,541. Each checked ten copied runtime/role files and exact target
+  executables, executed target Python imports plus entry `prereqs` inside its
+  extracted image, and passed offline verification against the role's actual
+  vendor-unit graph. Final combined checks passed 182 cases on Linux; Windows
+  completed 176 cases with 64 explicit Linux-only skips. Requirements validation
+  found 307 mapped source files, 291 code anchors, 274 test plans and no unmapped
+  requirements. Failed build/audit outputs have no accepted marker; a pending
+  image may remain for diagnosis.
+- Complete role/card assembly, physical boot/watchdog qualification, data
+  expansion, host keys, application/service provisioning, owner claim, signed
+  update coordination and migration remain unfinished. Legacy deployed hosts and
+  supported installation/user workflows are unchanged; no unqualified component
+  is published as a system image or update candidate.
+
+5 November 2026 — [#165](https://github.com/toastfr35/ZmalaCall/issues/165),
+experimental confirmed/trial boot-control helper implementation:
+
+- Added explicit confirmed/trial state, eligibility, a single remaining attempt,
+  transaction identity and bounded generation. Linux parsing rejects incomplete,
+  corrupt, duplicate, mismatched or inconsistent records without factory guesses.
+  Staging is inactive-only from the confirmed system; confirmation requires the
+  consumed current trial and matching transaction/generation. Generic eligibility
+  changes cannot confirm product health.
+- Authored a small shell-compatible U-Boot selector. It clears stale outputs and
+  saves trial consumption before selecting the candidate. Save failure and a
+  subsequent boot with no remaining attempt select the confirmed system. The
+  caller must refuse an empty selection; common-loader/payload integration and
+  actual U-Boot interpreter qualification remain pending.
+- Added root-controlled Linux raw-environment transport, gated by current image
+  readiness, exact role policy, Pi 4 SD topology, primary/backup GPT integrity,
+  selected root/data identities and geometry, and fixed disjoint raw ranges.
+  A private generated configuration, empty tool defaults, persistent lock inode,
+  complete-state comparison, fixed bounded commands and exact readback fence
+  mutations. No command accepts a disk, offset or arbitrary environment key.
+- Integration review also caught and corrected a path-admission defect in the
+  earlier startup gate: its actual default `/` root was rejected by a helper
+  that had only been exercised with temporary root directories. A direct Linux
+  regression now reaches policy validation using the installed default path;
+  unsafe paths remain refused. This correction is still not a physical PID1 boot
+  qualification.
+- Added the custom backend and explicit stage/confirm/cancel operations. RAUC's
+  unqualified `set-primary` is deliberately refused; eventual installation must
+  disable automatic activation and the coordinator must stage only after its
+  complete-pair, durable-transaction and admission checks. This is a helper API,
+  not a functioning whole-system update coordinator or health evaluator.
+- Packaged experimental policy and PID1 startup runtime-watchdog zero. Taking
+  over a loader-armed watchdog at early PID1 startup would indefinitely pet a
+  failed trial. The supported complete image must qualify a nonzero bounded
+  kernel open deadline and later authenticated product-health transfer before
+  enabling PID1 ownership. Neither handover nor physical recovery is claimed.
+- Retained authenticated ARM64 environment-tool packages in both role closures.
+  Fresh role resolution also selected newer Mesa userspace and Linux development
+  headers for the terminal; these are unqualified build inputs, not deployed
+  updates. The observed common-base intent and its exact package lock remain
+  unchanged. The server root passed its audit with 314 exact installed selections;
+  rebuilding the new terminal root is separate from runtime helper verification.
+- Direct role LLTs cover typed contracts, transitions, authored selector adapters,
+  block/transport refusal, serialization and command failures. Native Linux HLTs
+  passed both roles on NEW regular GPT files: trial consumption, fallback,
+  explicit confirmation in both directions, cancellation/stale-state refusal,
+  one/two damaged copies, and unchanged bytes outside the environment ranges.
+  These run actual `fw_printenv`/`fw_setenv`, with POSIX shell for the authored
+  selector. A further 24 decision cases passed under the pinned U-Boot hush
+  interpreter with `saveenv` explicitly substituted; this does not combine actual
+  U-Boot with SD persistence. Actual Pi transport, boot loading, watchdog and
+  physical power cuts remain separate gates.
+- Final focused checks passed 78 runtime LLTs and all eight isolated HLTs on
+  Linux. Offline image-tool regressions passed 82 cases on Linux; Windows
+  completed those 82 with 18 platform-specific skips. Requirements validation
+  found 313 mapped sources, 301 code anchors, 278 test plans and no unmapped
+  requirements. The initial required portable, Windows and Android Verify jobs
+  all passed; final PR/release evidence is recorded independently.
+- The new server initramfs passed with 15 exact copied runtime/role files, target
+  imports and entry execution, actual vendor-unit graph verification, and actual
+  ARM64 Python/environment-tool read/write checks on new RAM-backed files. This
+  is emulated component validation, not a complete image or physical boot pass.
+  New terminal and combined image artifacts require their own recorded checks.
+- No live Pi, original card, TV, USB device, supported installation workflow or
+  user guide has changed. Complete card assembly, product provisioning, health,
+  signed coordination, migration and release qualification remain unfinished.
+
+5 November 2026 — continuation of [#167](https://github.com/toastfr35/ZmalaCall/issues/167):
+
+- Added an explicit combined package/runtime role with a separately authenticated
+  738-archive closure and 52 requested packages. Shared archive identities and the
+  observed base remain unchanged.
+- Combined terminal UID/GID 1000 and server UID/GID 1001 have separate private
+  application and operator bindings. One combined host/boot identity is shared;
+  exact policies reject implicit role conversion. Host keys remain root-private.
+- Direct component LLT/HLT plans and CI cover combined identity, storage, GPT
+  startup and boot-state transitions. Eight combined namespace HLTs, 240 runtime
+  LLTs and 83 image-tool tests passed on Linux. Windows skips remain explicit.
+- The previously pending standalone terminal root completed with 807 exact
+  selections. Its updated initramfs passed target ARM64 checks. Combined
+  root/component building is underway; neither result is a full application image.
+- Service provisioning, matched loader/card assembly, onboarding and joint
+  coordinator/health remain pending. Existing installation workflows and user
+  guides remain accurate. No live host or card was changed.
+
+6 November 2026 — [#170](https://github.com/toastfr35/ZmalaCall/issues/170),
+offline applications and regular-file media assembly:
+
+- Added committed-source application intake with bounded archives, exact npm
+  integrity verification without lifecycle scripts, and pinned TURN source intake.
+  Offline builders create locked role users and separate combined releases,
+  compile native terminal libraries and validate target imports/service units.
+  Server startup/readiness checks use its service UID, isolated loopback and RAM
+  data; no factory credentials or initialized application data are retained.
+- The server package intent now explicitly includes NetworkManager. Its revised
+  authenticated root contains 333 installed selections; terminal and combined
+  roots contain 807 and 822. Shared package identities remain consistent.
+- Added pinned Pi 4 loader compilation and new regular-file six-partition assembly
+  from exact root/initramfs/loader identities. Matching kernel/module/DT inputs,
+  Pi-specific overlay handling, factory privacy, redundant explicit boot state,
+  bounded payload memory windows and filesystem readback gate artifact readiness.
+  No physical-device argument or flashing operation is provided.
+- Default artifacts use minimal test geometry. An explicit exact-capacity option
+  puts backup GPT at an independently measured target device end; merely writing
+  a smaller GPT image to a larger card would fail the existing runtime admission
+  checks. Automatic capacity discovery, card writing and data expansion remain
+  outside this builder. Builder-source changes during assembly reject readiness.
+- The development factory/confirmed path stops the loader watchdog because joint
+  health transfer is absent; trials retain the bounded early-boot watchdog. This
+  deliberately incomplete policy cannot qualify supported media or automatic
+  updates. Hardware, graphics/CMA, power-cut, major-OS and data compatibility
+  qualification remain required, as do secure owner onboarding and coordination.
+- ARM64 execution here is QEMU user-mode CPU emulation with Linux namespaces,
+  not board emulation. Build artifacts and exact check evidence are retained
+  privately and summarized in `upgrade_system_status.md` and the implementation
+  PR. A WSL backing-volume exhaustion interrupted assembly; physical-volume
+  capacity is now checked in addition to Linux virtual free space.
+- These changes concern build/packaging tooling and reuse existing runtime
+  contracts and service templates. No new runtime requirement is claimed. User
+  installers/workflows remain unchanged, so their Word guides remain accurate.
+
 ## Contents
 
 - [Outcome and scope](#1-outcome-and-agreed-direction)
@@ -359,13 +726,15 @@ boot-state qualification in progress:
 
 ## 1. Outcome and agreed direction
 
-Replace the normal SSH-based installation process with two complete, public,
+Replace the normal SSH-based installation process with three complete, public,
 ready-to-flash SD-card images:
 
 - **Zmala Terminal:** Raspberry Pi OS, terminal application, media runtime,
   supported hardware integration, setup UI and automatic system maintenance.
 - **Zmala Server:** Raspberry Pi OS, server application, required services,
   local first-run administration and automatic system maintenance.
+- **Zmala Terminal + Server:** both components on one Pi and one OS, with separate
+  application identities and one host maintenance transaction.
 
 The installation experience becomes: download the correct image, flash and verify
 the card with Raspberry Pi Imager, insert it into the Pi, power on, and complete
@@ -443,7 +812,7 @@ possible; do not transplant assumptions from application-only updates unchanged.
 
 Both current Pi installers target Raspberry Pi OS Lite 64-bit, Debian 13 Trixie.
 Terminal installation accepts Pi 4 Model B. Server installation accepts Pi 3 Model
-B/B+ and Pi 4 Model B. This plan initially qualifies Pi 4 for both roles; Pi 3
+B/B+ and Pi 4 Model B. This plan initially qualifies Pi 4 for all three image roles; Pi 3
 server support is a separate explicit qualification gate, not silently withdrawn
 or assumed from portable tests. Public compatibility labels must distinguish
 legacy installer support from qualified new-image support.
@@ -504,10 +873,10 @@ does not import Tk, camera, Bluetooth or TV code. Suggested organization, subjec
 to the first architecture PR:
 
 ```text
-build_tools/images/                 # Build configs, package locks, assembly
-build_tools/images/common/          # Shared appliance layers and mount policy
-build_tools/images/terminal/        # Terminal-specific image layers
-build_tools/images/server/          # Server-specific image layers
+zmala_images/                 # Build configs, package locks, assembly
+zmala_images/common/          # Shared appliance layers and mount policy
+zmala_images/terminal/        # Terminal-specific image layers
+zmala_images/server/          # Server-specific image layers
 zmala_system/                       # Small common Pi system-maintenance runtime
   coordinator.py                    # State machine and bounded scheduling
   trust.py                          # Verified metadata and compatibility decisions
@@ -528,7 +897,7 @@ Avoid one large root script and avoid frameworks that obscure boot decisions.
 
 ### 5.1 Proposed layout
 
-Use one versioned partition schema for both roles, with role-specific contents.
+Use one versioned partition schema for all three image roles, with role-specific contents.
 The following is an initial sizing budget for a nominal 32 GB card, not a measured
 fit guarantee:
 
@@ -542,7 +911,7 @@ fit guarantee:
 | Data | Remaining usable space | Identities, selected host state, application data, bounded update metadata/cache/checkpoints |
 
 A nominal 32 GB card provides about 29.8 GiB before layout/filesystem overhead;
-this example leaves roughly 12 GiB for data. Measure both images, the largest
+this example leaves roughly 12 GiB for data. Measure all three images, the largest
 supported portrait/photo collection, bundle staging, migration checkpoints and
 free-space reserve. Adjust budgets before freezing schema v1. Reject cards below
 the measured minimum byte capacity even when their label says 32 GB.
@@ -809,7 +1178,7 @@ Separate build-time package acquisition from first boot:
    compliance. Verify redistributability of every image component.
 8. Sanitize entropy seeds, machine IDs, SSH host keys, pairing data, enrollment,
    credentials, logs, local paths and private development content.
-9. Assemble both role images and matching slot payloads. Initially seed both slots
+9. Assemble all three role images and matching slot payloads. Initially seed both slots
    with the same factory release so a newly installed device has a coherent fallback.
 10. Inspect the mounted image offline and boot-test the exact assembled artifact.
 
@@ -905,6 +1274,28 @@ subnets, and the separate tunnel endpoint unable to grant a server shell. The
 public update download endpoint grants no administration capability. First-run
 setup must enforce the same network boundary even before a domain is configured.
 
+### 8.6 Combined appliance
+
+Issue [#167](https://github.com/toastfr35/ZmalaCall/issues/167) adds the explicit
+`combined` profile, displayed as **Zmala Terminal + Server**. Its authenticated
+package intent is the union of the standalone roles against the same observed
+base; shared archives stay identical across role locks. Role conversion is a
+separate migration, never a normal candidate update.
+
+One machine identity, network/Bluetooth configuration, boot selector and data
+partition serve both components. Terminal UID/GID 1000 and server UID/GID 1001
+own separate private application trees; standalone roles retain 1000. Operator
+configuration is split by component. Root-private host SSH and server TLS keys
+are not made readable by the terminal UI. The storage/boot policy implements
+these boundaries; actual system-user and service provisioning remains pending.
+
+Combined first boot needs both LAN-only server first-owner setup and normal
+terminal QR enrollment, with host networking configured once. Qualify secure
+local terminal-to-local-server registration with the correct TLS authority
+without router NAT loopback. Review listener and account collisions, including
+tunnel listeners versus developer shell access. Keeping the television in
+standby or restarting the terminal UI must not stop the server.
+
 ## 9. Automatic maintenance policy and call protection
 
 ### 9.1 Proposed scheduling defaults
@@ -986,6 +1377,16 @@ dependent terminal activates, but use bounded scheduling and backward-compatible
 protocol ranges so neither waits forever for the other. Compatibility manifests
 define bridge releases when an upgrade order matters. The server cannot authorize
 an unsigned release merely by forwarding a feed.
+
+### 9.5 Combined admission and health
+
+One coordinator owns RAUC and reboot. Activation waits for both terminal safe-idle
+admission and server admission, including global SIP/TURN activity and protected
+persistence operations. Calls win the final admission race. Confirmation covers
+both local components, including valid unclaimed-server and terminal-setup waiting
+states; external outages do not alone imply a broken candidate. No health probe
+wakes camera or TV. Preserve both application data generations and TV restoration
+state in the same transaction. These coordinator and health paths remain pending.
 
 ## 10. Progress, health and recovery experience
 
@@ -1413,7 +1814,7 @@ artifacts. Use separate test devices/cards where interruption risks data.
 
 | Area | Minimum physical scenarios |
 | --- | --- |
-| Factory installation | Both roles; fresh 32 GB card; minimum measured capacity; flash verification; interrupted first boot; unique identities across two cards |
+| Factory installation | All three image roles; fresh 32 GB card; minimum measured capacity; flash verification; interrupted first boot; unique identities across two cards |
 | Board coverage | Pi 4 supported revisions; Pi 3 server only when explicitly retaining that image support |
 | A/B transitions | A→B and B→A; repeated successful upgrades; already staged candidate; no-op release |
 | Power interruption | Random and targeted cuts during download, each inactive write, data checkpoint/migration, reboot request, trial boot and selector/confirmation commit |
@@ -1447,7 +1848,7 @@ after required Verify checks are clean. Do not push or mirror commits onto `main
 
 ### Stage 0 — Feasibility and safety decisions
 
-- [ ] Inventory shipped OS/boot/host state and service writes for both roles.
+- [ ] Inventory shipped OS/boot/host state and service writes for all three image roles.
 - [ ] Measure root sizes, data/checkpoint/cache budgets and minimum card capacity.
 - [x] Boot a minimal `rpi-image-gen` A/B common-base probe on a spare card in an
       available Pi 4; A → trial B → ordinary A demonstrated. Complete role images
@@ -1466,20 +1867,28 @@ migration yet.
 
 ### Stage 1 — Common image foundation and artifact pipeline
 
-- [ ] Create locked common/role layers and offline image inspection tools.
+- [x] Retain authenticated common/role package closures and exact input locks.
+- [x] Build and audit isolated locked OS-root archives for both standalone roles.
+- [ ] Complete and record the combined OS-root/component build.
+- [ ] Complete factory application/host provisioning in the common/role layers.
 - [ ] Extract reusable provisioning from current installation scripts.
 - [ ] Establish read-only root, selected persistent mounts and low-write policy.
+      Shared runtime, early-boot discovery and archive preparation are
+      namespace-tested; actual complete-image boot/role enforcement remains pending.
 - [ ] Package the common maintenance runtime, units and public trust.
-- [ ] Generate and sanitize both first-install images and slot payloads.
+- [ ] Generate and sanitize all three first-install images and slot payloads.
 - [ ] Add provenance, notices, public digest/signature handling and ad-hoc checks.
 - [ ] Demonstrate reproducible inputs and document remaining output nondeterminism.
 
-Exit: both roles flash and boot on spare cards; no shared identities/secrets;
+Exit: all three image roles flash and boot on spare cards; no shared identities/secrets;
 partition and permissions inspection passes; original deployment is untouched.
 
 ### Stage 2 — First boot and migration tooling
 
 - [ ] Implement durable per-device initialization and resumable data expansion.
+      Identity helper, boot invocation and namespace interruption checks exist;
+      complete-image boot, expansion, keys and physical power-loss qualification
+      are pending.
 - [ ] Reuse terminal remote/camera/Wi-Fi/enrollment stages from the installed image.
 - [ ] Implement server local claim, fresh setup and validated migration import.
 - [ ] Add selected host-secret/config export/import separate from app backup.
@@ -1495,6 +1904,9 @@ usable. Secure-call configuration is fully accounted for.
 - [ ] Implement role/layout/source/data compatibility checks and trusted feed use.
 - [ ] Install only inactive slot groups with durable transaction records.
 - [ ] Implement trial boot, bounded health, watchdog integration and confirmation.
+      The experimental state/selector/native-backend boundary exists; complete
+      loader integration, qualified health/watchdog handover and actual Pi trial
+      qualification remain pending. Generic RAUC mark-good cannot bypass health.
 - [ ] Implement deterministic recovery for every interrupted state.
 - [ ] Implement quarantine, bounded cache/history and supported repair path.
 - [ ] Validate normal and interrupted A→B→A transitions on spare hardware.
@@ -1526,6 +1938,8 @@ Exit: a server updates without interrupting active calls, then reconnects client
 without replayed work; old and new terminal types coexist safely.
 
 ### Stage 6 — Major upgrades and full failure qualification
+
+- [ ] Measure combined 32 GB fit, RAM, CPU, thermals and calls under server relay load.
 
 - [ ] Exercise a real different-major-OS candidate, not merely a new package label.
 - [ ] Qualify media ABI and host config/network/Bluetooth/TLS migrations.
@@ -1567,7 +1981,7 @@ and the first real fleet updates have supporting evidence.
 
 This work is complete only when all of the following have evidence:
 
-1. A user can prepare Terminal and Server cards from the published downloads and
+1. A user can prepare Terminal, Server and Terminal + Server cards from the published downloads and
    guides without an SSH installation procedure.
 2. Installed devices retain unique identities, enrollment, network/pairing state,
    private keys and application data across both update directions.
