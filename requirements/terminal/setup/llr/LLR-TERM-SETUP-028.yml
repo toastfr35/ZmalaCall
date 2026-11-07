@@ -9,6 +9,12 @@ links:
 normative: true
 ref: ''
 references:
+- path: tests/terminal/LLT/test_wifi_feedback.py
+  type: file
+- path: zmala_terminal/common/setup_feedback.py
+  type: file
+- path: zmala_terminal/common/ui/display.py
+  type: file
 - path: tests/terminal/LLT/test_enrollment_lifecycle.py
   type: file
 - path: tests/terminal/LLT/test_provisioning.py
@@ -34,7 +40,10 @@ scope: Core
 text: |
   Each setup stage shall accept only its supported QR format. A malformed, unrelated
   or failed code shall show an error without advancing setup or saving partial
-  enrollment.
+  enrollment. Invalid codes shall explicitly identify the expected Wi-Fi or server
+  code type. A valid code shall show connection progress immediately while its
+  operation runs. Feedback shall contain neither scanned credentials nor raw errors.
 verification: |
   Scan malformed and wrong-stage codes, then a valid code. Check error visibility and
   saved state before success.
+  Check invalid-code and connecting messages, and absence of private QR contents.

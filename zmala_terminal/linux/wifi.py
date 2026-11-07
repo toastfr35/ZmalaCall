@@ -3,17 +3,63 @@
 Secrets enter through D-Bus, never command-line arguments. The
 desktop user needs NetworkManager permission to create/activate connections.
 """
+import os
 import subprocess
 import uuid
 from zmala_terminal.common.connectivity import network_link_available
+from zmala_terminal.common.setup_feedback import WifiSetupError
+
+
+# @llr LLR-TERM-SETUP-029, LLR-TERM-NET-004
+def _activation_failure(diagnostic):
+    """Recognize only known C-locale nmcli reasons; never expose raw output.
+
+    These are NetworkManager's activation/device reason messages. Unknown or
+    changed wording falls back to a generic error, rather than guessing a cause.
+    Authentication failures do not prove the password itself was incorrect.
+    """
+    prefix = 'Error: Connection activation failed: '
+    line = next((line for line in diagnostic.splitlines() if line.startswith(prefix)), '')
+    if not line:
+        return 'connection_failed'
+    reason = line[len(prefix):].rstrip('.')
+    if reason.startswith('No suitable device found for this connection'):
+        return 'wifi_unavailable'
+    return {
+        'The Wi-Fi network could not be found': 'network_not_found',
+        'Secrets were required, but not provided': 'authentication_failed',
+        'No agents were available for this request': 'authentication_failed',
+        'No valid secrets': 'authentication_failed',
+        'Invalid secrets': 'authentication_failed',
+        '802.1X supplicant took too long to authenticate': 'authentication_failed',
+        '802.1X supplicant failed': 'authentication_failed',
+        'Not authorized to control networking': 'permission_denied',
+        'Not authorized to perform this operation': 'permission_denied',
+        'IP configuration could not be reserved (no available address, timeout, etc.)': 'address_failed',
+        'IP configuration could not be reserved (no available address, timeout, etc)': 'address_failed',
+        'DHCP client failed': 'address_failed',
+        'DHCP client failed to start': 'address_failed',
+        'DHCP client error': 'address_failed',
+        'The connection attempt timed out': 'timed_out',
+        'The device was removed': 'wifi_unavailable',
+        'The device disappeared': 'wifi_unavailable',
+        'Networking was disabled': 'wifi_unavailable',
+    }.get(reason, 'connection_failed')
 
 
 def _nmcli(arguments, timeout=40):
-    result = subprocess.run(['nmcli', '--wait', '35', *arguments],
-                            capture_output=True, timeout=timeout, text=True)
+    try:
+        result = subprocess.run(['nmcli', '--wait', '35', *arguments],
+                                capture_output=True, timeout=timeout, text=True,
+                                env=dict(os.environ, LC_ALL='C'))
+    except subprocess.TimeoutExpired:
+        raise WifiSetupError('timed_out') from None
     if result.returncode:
         # Keep potentially sensitive NetworkManager diagnostics out of logs.
-        raise OSError('NetworkManager operation failed; check Wi-Fi and user permissions')
+        reason = 'timed_out' if result.returncode == 3 else 'connection_failed'
+        if arguments[:2] == ['connection', 'up'] and result.returncode == 4:
+            reason = _activation_failure(result.stderr)
+        raise WifiSetupError(reason) from None
     return result.stdout.strip()
 
 
@@ -41,8 +87,12 @@ def _add_connection(wifi, identifier, name):
             'org.freedesktop.NetworkManager.Settings', None)
         proxy.call_sync('AddConnection', variant('(a{sa{sv}})', (settings,)),
                         Gio.DBusCallFlags.NONE, 35000, None)
-    except GLib.Error:
-        raise OSError('Wi-Fi setup failed; check NetworkManager user permissions') from None
+    except GLib.Error as error:
+        remote = Gio.DBusError.get_remote_error(error)
+        denied = remote in ('org.freedesktop.NetworkManager.Settings.PermissionDenied',
+                            'org.freedesktop.NetworkManager.PermissionDenied',
+                            'org.freedesktop.DBus.Error.AccessDenied')
+        raise WifiSetupError('permission_denied' if denied else 'connection_failed') from None
 
 
 def forget_wifi(wifi, profile):

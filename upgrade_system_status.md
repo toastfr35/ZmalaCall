@@ -28,10 +28,36 @@ fixups. Neither check establishes the controller timeout's cause. A private,
 reversible `boot.scr` diagnostic using the complete firmware-provided device
 tree was prepared and sandbox-checked, then installed on the freshly identified
 test card with checksum readback. The original script was backed up privately;
-the next physical result is pending. The user confirmed a full power-off boot
+the user subsequently confirmed that boot, Bluetooth and the remote test work.
+Wi-Fi setup failed after a QR scan, with no useful cause displayed. The user confirmed a full power-off boot
 with the usual supply, so a warm reboot does not explain the earlier failure.
 This diagnostic is not a
 slot-matched device-tree design for future A/B updates.
+
+Issue #178 (`codex/wifi-qr-feedback`) adds a visible 1.5-second amber QR guide
+flash, immediate connection progress and safe Wi-Fi failure explanations. It
+retains the current setup stage, owned UUID cleanup and stale-generation rejection.
+Recognized NetworkManager C-locale messages and D-Bus permission error names map
+to fixed text; unknown output stays generic, and authentication errors do not
+prove an incorrect password. Requirements, direct tests, technical documentation
+and regenerated terminal configuration guide are updated together. Local terminal
+unit tests and Linux display/QR embedding checks passed; no successful physical
+Wi-Fi join is claimed by these mocked and synthetic tests.
+
+The returned 32 GB test card now has a private one-boot Ethernet SSH diagnostic
+in both repaired initramfs files, preserving the working Bluetooth boot script.
+It uses a PC-held client key, a pinned temporary host key, an onboard-Ethernet-bound
+socket and a 45-minute expiry. A persistent consumed marker prevents re-enabling
+on subsequent boots; normal SSH masks remain unchanged. The user permits temporary
+`zmala` password access, but the prepared diagnostic uses key authentication instead.
+Target ARM64 login, incorrect-key rejection, effective configuration and systemd
+unit checks passed in an isolated namespace. Both on-card files passed checksum
+readback; physical SSH access is pending the user's next Ethernet boot on the same
+router/LAN as the PC. Private `build_tools/tmp/ethernet-debug-prepared.json` and
+`ethernet-debug-card-write.json` retain paths, hashes and validation evidence;
+never include diagnostic private keys in a commit or release. Obtain sanitized
+Wi-Fi failure evidence and the running firmware device tree through this access
+before declaring either Wi-Fi repaired or the compact image Bluetooth-qualified.
 
 The user also requested a subsequent 16 GB-compatible candidate. Measured current
 system filesystem allocations are about 2.40 GiB terminal, 0.99 GiB server and

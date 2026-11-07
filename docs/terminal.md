@@ -427,7 +427,23 @@ Each asynchronous completion is checked against the current setup generation.
 Before enrollment, prompts use English. Enrollment applies the selected language;
 detailed diagnostic catalogs use English fallback where a translation is absent.
 Invalid codes, unreachable servers and rejected credentials retain the current
-stage with retry feedback. Both QR stages show mint corner guides with a dark
+stage with retry feedback. The visible positioning guides flash amber for 1.5
+seconds when the camera worker reports a QR, then return to mint. This indicates
+detection, not successful enrollment. Valid codes immediately show connection
+progress; invalid codes identify the expected QR type. Wi-Fi failures distinguish
+recognized missing networks, authentication failures, denied permissions,
+unavailable adapters, address allocation failures and timeouts. Authentication
+feedback asks the helper to check the password and router security settings;
+it does not assert that the password alone is wrong. Unknown causes use a generic
+retry message. Error text remains visible until a new operation or stage change.
+`setup_feedback.py` owns the allowlisted English messages. The Linux adapter forces
+nmcli's C locale and matches known activation reasons; unfamiliar output stays
+generic. D-Bus permission errors use their error names. Raw diagnostics and QR
+credentials never become UI text or setup logs, and failed joins still clean up
+only their owned UUID. Temporary Ethernet debugging is separate from normal image
+SSH policy and does not bypass this Wi-Fi join stage.
+
+Both QR stages show mint corner guides with a dark
 outline around a centred square in the unmirrored camera picture. Hold the whole
 code inside the guides; the centre stays clear. Guides resize with the displayed
 picture, including letterboxing, and are added only to its display copy: decoding

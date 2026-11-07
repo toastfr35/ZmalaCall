@@ -7,6 +7,7 @@ from zmala_terminal.common.model import State, TerminalModel
 from zmala_terminal.common.provisioning import parse_wifi, parse_server
 from zmala_terminal.common.wifi import connect_wifi, forget_wifi
 from zmala_terminal.common.theme import RED, ACCENT, GREEN
+from zmala_terminal.common.setup_feedback import MESSAGES, WifiSetupError
 
 
 class ProvisioningFlow:
@@ -24,7 +25,7 @@ class ProvisioningFlow:
             logging.exception('Camera QR worker failed; keeping the setup screen open')
             self.stop_scanner()
             self.setup_error_until = time.monotonic() + 5
-            self.setup_feedback = True
+            self.setup_feedback = 'camera_failed'
             self.render()
 
     def update_setup_display(self, now):
@@ -70,7 +71,7 @@ class ProvisioningFlow:
         except Exception:
             self.setup_error_until = time.monotonic() + 5
             logging.exception('Camera QR scanner could not start')
-            self.setup_feedback = True
+            self.setup_feedback = 'camera_failed'
             self.render()
 
     # @llr LLR-TERM-SETUP-033, LLR-TERM-SETUP-034
@@ -149,12 +150,14 @@ class ProvisioningFlow:
         except (ValueError, TypeError, KeyError):
             self.setup_error_until = now + 2
             logging.warning('QR code is not valid for the current setup step')
-            self.setup_feedback = True
+            self.setup_feedback = 'invalid_wifi_qr' if self.setup_stage == 'wifi' else 'invalid_server_qr'
             self.render()
             return
         stage, generation, cancelled = self.setup_stage, self.generation, self.setup_cancelled
         self.setup_busy = True
         self.setup_error_until = 0
+        self.setup_feedback = 'connecting' if stage == 'wifi' else 'server_connecting'
+        self.render()
         def setup_worker():
             try:
                 if stage == 'wifi':
@@ -166,7 +169,8 @@ class ProvisioningFlow:
             except Exception as error:
                 # Do not log QR contents, network passwords or device tokens.
                 logging.warning('Terminal %s setup failed (%s)', stage, type(error).__name__)
-                self.messages.put(('setup', (generation, 'error', 'server' if stage == 'server' else None)))
+                reason = error.reason if isinstance(error, WifiSetupError) else 'connection_failed'
+                self.messages.put(('setup', (generation, 'error', 'server' if stage == 'server' else reason)))
         threading.Thread(target=setup_worker, daemon=True).start()
 
     def setup_result(self, generation, kind, result):
@@ -201,6 +205,8 @@ class ProvisioningFlow:
             self.setup_error_until = time.monotonic() + 3
             if result == 'server':
                 self.setup_feedback = 'server_unavailable'
+            elif self.setup_stage == 'wifi':
+                self.setup_feedback = result if result in MESSAGES else 'connection_failed'
         self.render()
         if kind == 'forgot':
             self.start_scanner()
