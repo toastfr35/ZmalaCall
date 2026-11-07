@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock
 
-from zmala_images import application_provision as provision, image_case, project
+from zmala_images import application_provision as provision, application_host, image_case, project
 
 
 class ArgonImageTests(unittest.TestCase):
@@ -31,6 +31,7 @@ class ArgonImageTests(unittest.TestCase):
     @unittest.skipIf(os.name == 'nt', 'Offline Unix roots require Linux symlinks')
     def test_case_provisioning_and_assembly_agree_for_both_terminal_roles(self):
         names = set(provision.HOST_FILES.values())
+        names.update(application_host.SOURCES)
         names.update('build_tools/linux/zmalacall-'+name+'.service' for name in
                      ('terminal', 'display', 'pairing', 'cec', 'compositor', 'server'))
         names.update(('build_tools/linux/low-wear-swap.conf', 'build_tools/linux/70-zmalacall-presenter.rules',

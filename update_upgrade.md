@@ -13,6 +13,26 @@ their direct LLT/HLT coverage before the corresponding behavior ships.
 
 ### Implementation log
 
+7 November 2026 — current image acceptance decisions:
+
+The latest [image acceptance contract](zmala_images/README.md#next-image-acceptance-contract)
+and [remaining-work checklist](sd_card_imager_todo_left.md) supersede older
+capacity, pending-build and optional-case notes below. Terminal and combined
+images require the Argon ONE Pi 4 V2 case. The next test artifact targets both
+16 GB and 32 GB cards with the compact 14,001,635,328-byte layout, permanent Wi-Fi
+and QR feedback fixes, working Bluetooth behavior, call-only fan control,
+restored boot artwork and server-triggered Developer Access while ordinary SSH
+stays off. Generic images contain no login credentials; private test copies
+use a separately recorded immutable public-key overlay in both system roots,
+without changing factory data or relaxing first-identity admission. This lab
+authorization does not survive replacement by a generic system image; supported
+operator enrollment remains open. The accepted Wi-Fi/Argon
+baseline has passed file-based capacity checks; the complete next candidate and
+its physical checks remain pending. The user will flash manually after receiving
+the verified artifact, checksum and Raspberry Pi Imager instructions; the agent
+does not write the card. These are packaging and qualification gates,
+not additional installer requirements in the runtime Doorstop baseline.
+
 4 November 2026 — [#140](https://github.com/toastfr35/ZmalaCall/issues/140):
 
 - Added `zmala_images/` source pins/acquisition, explicit role/package intent,

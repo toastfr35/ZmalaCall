@@ -9,6 +9,37 @@ For the current remaining-work checklist, including the next compact card test
 and Raspberry Pi Imager distribution, see [SD-card image work left](sd_card_imager_todo_left.md).
 The dated entries below retain historical evidence and may describe older states.
 
+## Next-image checkpoint — 7 November 2026
+
+The locked Wi-Fi OS root and the Wi-Fi/QR/mandatory-Argon compact baseline finished
+successfully. The baseline image SHA-256 is
+`b397645917f82a296b27eedd2c3243c68c3412f10d2cc195068e18bb5b3351e2`.
+Its 14,001,635,328-byte image passed 16,000,000,000-byte and 32,000,000,000-byte
+regular-file relocation checks, preserving partition identities/payloads and
+repeating from both slots without additional metadata writes. Each 4 GiB root
+has 2,494,590,976 allocated bytes including metadata and 1,800,376,320 free bytes;
+the 4 GiB data filesystem has 151,318,528 allocated and 4,143,648,768 free bytes.
+Private evidence is retained in `terminal-fan-image.json` and
+`terminal-fan-capacity-checks.json`. This is baseline evidence, not a final flash
+candidate or a physical 16 GB/32 GB boot result.
+
+Issue #186 adds omitted Developer Access host services and the Zmala boot theme.
+The next candidate must include these alongside the working Bluetooth development
+adjustment and all baseline fixes. Ordinary SSH remains disabled. The controlled
+terminal shell uses a separately provisioned operator public key; generic images
+contain no login credentials. The private candidate must retain its own manifest
+and digest after key/boot-script adaptation. For this lab copy the key and fixed
+reader configuration live in both immutable system roots, while factory data
+stays unchanged: preseeding `host/ssh` would violate first-identity admission.
+The generic image retains its persistent-key reader but has no factory operator
+key or supported credential-onboarding path yet. The server-admin enable/connect/
+disable path and logo visibility need physical verification on that candidate.
+The [image acceptance contract](zmala_images/README.md#next-image-acceptance-contract)
+records all current packaging gates without moving installer checks into the
+normative runtime requirements. No final candidate flash is recorded here.
+The user will perform the next flash manually; deliver the verified artifact,
+checksum and Imager instructions without writing the physical card.
+
 ## Physical boot diagnosis — 6 November 2026
 
 ### Live Wi-Fi repair — 7 November 2026

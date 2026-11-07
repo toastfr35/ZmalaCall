@@ -745,9 +745,42 @@ Physical idle/call/hangup fan transitions still require hardware qualification.
 Combined releases have separate `/opt/zmalacall` and `/opt/zmalacall-server`
 source trees. The server's sibling terminal-bootstrap path points to its own
 private `bootstrap` directory, never the terminal's application state. All roles
-use NetworkManager; the server intent/lock includes it explicitly. SSH and legacy
+use NetworkManager; the server intent/lock includes it explicitly. Ordinary SSH and legacy
 application updaters are masked. Secure relay/TLS onboarding and first-owner
 claim are not supplied by this development provisioning path.
+
+Developer Access has separate service units. Preparation creates a unique host
+key after persistent storage mounts; generic artifacts contain neither host keys
+nor operator login credentials. The terminal shell binds only to loopback and
+accepts the separate `zmala` operator's public key through a fixed root-owned
+reader of `/etc/ssh/keys/authorized_keys`. Password authentication is disabled;
+the operator has diagnostic sudo privileges, while the application retains only
+its fixed-action helper permission. The shell and reverse tunnel are not enabled
+at boot: a fresh enrolled-server HTTPS setting starts them. Server activation
+state is retained privately, with the restricted tunnel password restored after
+reboot only from a valid activation. Combined hosts distinguish the service
+callers. Ordinary port 22 remains closed; generic server-image operator entry and
+onboarding still need a supported path before distribution.
+
+Do not preseed `host/ssh/authorized_keys` into uninitialized factory data: the
+first-identity admission whitelist correctly rejects that additional state. For
+the next private lab copy, retain the factory data unchanged and place only the
+intended operator's public key in the root-owned, immutable
+`/usr/lib/zmala-development-operator.pub` in both system slots. That copy's fixed
+`AuthorizedKeysCommand` reads this file through `/usr/bin/cat` as root. This is a
+private artifact adjustment, not the generic builder's credential policy or a
+supported enrollment mechanism. It changes neither server-controlled activation
+nor loopback-only shell binding. A later generic system-slot replacement will
+remove this lab authorization; it is not a persistent credential migration path.
+
+The application worker executes the installed ARM64 SSH configuration in its
+private network namespace, with throwaway keys and RAM storage. It checks operator
+authentication, rejection after removing the authorized key and connection
+failure after listener shutdown. This does not exercise a real server-admin
+enable/disable exchange or qualify physical network behavior. The terminal and
+combined roots also select the Zmala Plymouth theme. Initramfs acceptance verifies
+the retained theme, artwork and script plugin; their U-Boot command line requests
+quiet splash rendering. Physical logo visibility still needs a card boot.
 
 Pass the resulting application root through `prepare-root`, then
 `build-initramfs`. `build-loader --output NEW_DIR` acquires the pinned U-Boot
@@ -815,3 +848,55 @@ outputs. On WSL, check free space on the Windows volume holding the VHD as well
 as Linux `df`: the virtual capacity can exceed physical free space. Keep the VHD
 on a sufficiently large volume before starting concurrent builds. A failed build
 has no READY marker; preserve its log and use a new output directory after repair.
+
+## Next-image acceptance contract
+
+These are image packaging and test-delivery gates, kept outside the normative
+runtime baseline in `requirements/`. A candidate is ready for the next physical
+test only when all applicable gates are evidenced for its final artifact:
+
+- Build terminal and combined profiles with mandatory Argon ONE Pi 4 V2 support,
+  including I2C ownership, module loading and matching firmware/slot settings.
+  Preserve the call-only fan controller; qualify actual fan transitions on the Pi.
+- Use the compact 14,001,635,328-byte layout for both 16 GB and 32 GB cards,
+  check the actual target capacity, and rerun first-boot GPT relocation and
+  repeat-boot checks against that candidate. Record filesystem allocations and
+  free space; leave excess card capacity unallocated until expansion is designed.
+- Include permanent Wi-Fi supplicant activation, QR guide colour feedback and
+  specific safe setup errors. Do not depend on earlier RAM repairs. Require
+  Bluetooth pairing and remote operation on a cold boot. A private full-firmware
+  device-tree workaround can be labelled as a development-only test adjustment,
+  but cannot qualify production A/B tree compatibility; retain the original
+  script and record the adjusted artifact's hash separately.
+- Include the Plymouth artwork, theme and required initramfs plugin, with quiet
+  splash arguments in the actual U-Boot command path. Check the visible logo on
+  the Pi; configuration presence alone is insufficient.
+- Keep ordinary SSH disabled and temporary Ethernet diagnostic services absent.
+  Include the server-triggered Developer Access helper and isolated units. For a
+  private lab candidate, install only the intended operator's public key at the
+  immutable development-key path in both roots and make the dedicated SSH
+  configuration read that exact path. Preserve the factory data byte-for-byte.
+  Check root ownership, non-writable file modes, exact key/configuration bytes,
+  target sshd configuration and authentication through the private command;
+  reject another operator key. Keep that candidate separate from generic images,
+  which contain no operator key, shared password or private key. Confirm actual
+  server-admin enable, shell connection, disable, failed reconnection and reboot
+  behavior before relying on this as the main debugging path.
+- Retain source/version, package locks, component READY digests, final raw and
+  compressed hashes and byte sizes. Verify both boot slots and filesystem
+  payloads after any private adaptation. Deliver the artifact, checksum and
+  Raspberry Pi Imager custom-image instructions for the user's manual flash;
+  the agent does not write the physical card. The user must confirm storage
+  selection and actual capacity before writing, then complete Imager verification.
+
+The emulator cannot qualify the operator's real setuid elevation. The build checks
+sudo policy, ownership and setuid mode; the physical controlled-tunnel check must
+also run `sudo -n id -u` and obtain `0` before declaring debugging access usable.
+
+Runtime traceability: QR capture/errors are `LLR-TERM-SETUP-027/028/029`, fan
+control is `LLR-TERM-POWER-011`, boot presentation is `LLR-TERM-START-004`,
+Developer Access is `LLR-TERM-NET-009` and `LLR-SRV-HOST-007`, and compact media
+admission is `LLR-TERM-MAINT-058` and `LLR-SRV-HOST-031`. Their direct LLT/HLT
+plans remain the source of runtime verification scope. See the
+[remaining-work checklist](../sd_card_imager_todo_left.md) for physical and release
+gates; an accepted development artifact is not a production image release.

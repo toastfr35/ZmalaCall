@@ -731,8 +731,15 @@ has passwordless sudo for diagnostics. Store authorized public keys in the
 root-owned persistent `/etc/ssh/keys/authorized_keys`; the fixed root-owned key
 reader supplies them to sshd without making the private key directory readable
 by the operator. Generic image artifacts contain no authorized keys or shared
-passwords. A private test image needs its operator public key provisioned before
-flashing; enabling Developer Access alone does not provision that credential.
+passwords. Enabling Developer Access alone does not provision that credential.
+Do not add `host/ssh` to an uninitialized factory data partition: the identity
+initializer deliberately rejects that extra state. The private development
+candidate instead carries only this PC's public key in both read-only system
+slots, at `/usr/lib/zmala-development-operator.pub`, with its isolated SSH
+configuration selecting a fixed root `cat` command for that file. It leaves the
+factory data partition untouched. This private authorization follows the root
+slot and is removed by a later generic system image; it is not the public-image
+operator enrollment workflow.
 
 The preparation service generates the per-device Ed25519 host identity under
 `/etc/ssh/keys` after persistent storage mounts. Only a fresh server setting starts

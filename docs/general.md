@@ -66,6 +66,10 @@ The released Pi installers still deploy over SSH. The separate
 [`zmala_images/` builder](../zmala_images/README.md) produces experimental offline
 ARM64 roots and regular-file A/B media for `terminal`, `server` and `combined`
 roles. It is not a supported SD installer or an automatic OS-update service.
+Terminal and combined image profiles always include Argon ONE Pi 4 V2 support.
+The compact raw layout is 14,001,635,328 bytes and targets both 16 GB and 32 GB
+cards whose actual byte capacity is sufficient. Larger cards retain the fixed
+data partition; compatibility does not imply automatic filesystem expansion.
 Use its [build sequence](../zmala_images/README.md#build-sequence-and-ownership)
 for the current commands; the [system-update plan](../update_upgrade.md) retains
 the design decisions and historical evidence.
@@ -80,6 +84,13 @@ The combined role uses one host identity and boot contract, with terminal
 UID/GID 1000 and server UID/GID 1001. Application state and operator configuration
 remain separate; standalone roles retain UID/GID 1000. Role substitution is
 rejected rather than treated as a migration.
+
+Image host provisioning includes the Zmala Plymouth theme and controlled
+Developer Access services. Ordinary SSH remains masked. The private lab image
+uses an explicitly recorded immutable operator-public-key overlay in both roots;
+factory data remains unchanged and generic inputs contain no login key or shared
+password. The [image acceptance contract](../zmala_images/README.md#next-image-acceptance-contract)
+distinguishes packaging checks from runtime requirements and physical evidence.
 
 Source/package locks, archive inspection, isolated application builds, initramfs
 checks and disk assembly provide development evidence. Physical boot, power-loss

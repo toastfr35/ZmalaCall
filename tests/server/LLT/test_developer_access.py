@@ -17,7 +17,7 @@ class DeveloperAccessTests(unittest.TestCase):
         helper = module('developer-access')
         settings = {'role': 'combined', 'image': True}
         self.assertEqual(helper.image_settings(settings, 'status', 'zmalaserver')['role'], 'server')
-        self.assertEqual(str(helper.STATE), '/etc/ssh/keys/developer-session.json')
+        self.assertEqual(helper.STATE.as_posix(), '/etc/ssh/keys/developer-session.json')
         with self.assertRaises(PermissionError):
             helper.image_settings({'role': 'terminal', 'image': True}, 'on', 'zmalaserver')
         with tempfile.TemporaryDirectory() as folder, patch.object(helper, 'run') as run:

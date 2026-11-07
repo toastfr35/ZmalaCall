@@ -15,6 +15,13 @@ def check(root, role):
         command(['ip', 'link', 'set', 'lo', 'up'])
         command(['chroot', root, '/usr/local/libexec/zmala-developer-access', 'prepare'])
         command(['chroot', root, '/usr/sbin/visudo', '-cf', '/etc/sudoers.d/zmalacall-developer'])
+        if role in ('terminal', 'combined'):
+            # QEMU user emulation cannot exercise setuid elevation. Check the
+            # target binary mode and resolved policy here; run sudo over the
+            # server-controlled tunnel in the physical acceptance test.
+            if (root/'usr/bin/sudo').stat().st_mode & 0o7777 != 0o4755:
+                raise ValueError('Target sudo is not installed setuid')
+            command(['chroot', root, '/usr/bin/sudo', '-l', '-U', 'zmala'])
         (root/'run/sshd').mkdir(exist_ok=True)
         for side in ('terminal', 'server'):
             if role in (side, 'combined'):
@@ -29,7 +36,7 @@ def check(root, role):
         args = ['/usr/bin/ssh', '-F', '/dev/null', '-i', str(root/'tmp/operator'), '-p', '2223',
                 '-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'StrictHostKeyChecking=yes',
                 '-o', 'UserKnownHostsFile='+str(pin), '-o', 'GlobalKnownHostsFile=/dev/null',
-                '-o', 'ConnectTimeout=2', 'zmala@127.0.0.1', 'id -un; sudo -n id -u']
+                '-o', 'ConnectTimeout=2', 'zmala@127.0.0.1', 'id -un']
         with (root/'tmp/sshd-check.log').open('w+') as log:
             process = subprocess.Popen(['chroot', str(root), '/usr/sbin/sshd', '-D', '-e', '-f',
                                         '/etc/ssh/zmala-developer-terminal.conf'], stdout=log, stderr=log)
@@ -40,7 +47,7 @@ def check(root, role):
                 if process.poll() is not None:
                     break
                 time.sleep(.2)
-            if result.returncode or result.stdout.splitlines() != ['zmala', '0']:
+            if result.returncode or result.stdout.splitlines() != ['zmala']:
                 log.seek(0)
                 raise ValueError('Target developer shell failed: '+result.stderr+log.read())
             (keys/'authorized_keys').unlink()

@@ -27,6 +27,14 @@ text: |
   to a dedicated terminal-loopback SSH listener and reconnect while manually
   enabled. Deactivation shall stop the tunnel and shell listener and remove
   runtime secrets. Developer-control failures shall not prevent normal calls.
+  On image-managed hosts, terminal control actions shall admit only the terminal
+  service identity, including when the server shares the host. Host preparation
+  shall create a per-device Ed25519 identity in persistent private storage when
+  absent and retain that identity on subsequent preparations. It shall not restore
+  terminal tunnel credentials from persistent storage after reboot.
 verification: |
   Exercise authorization, credential scope, process lifecycle and failure paths;
   verify the configured SSH and firewall boundaries and secret cleanup.
+  Check legacy and image-managed role selection, reject wrong service callers,
+  and verify first preparation requests key generation while repeated preparation
+  preserves the existing key and creates no terminal activation.
