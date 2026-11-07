@@ -117,6 +117,26 @@ print('ARM64 terminal service UID native core startup, iteration and shutdown pa
     data.rmdir()
 
 
+def wifi_smoke(root):
+    """Reject images that have NetworkManager but cannot start its Wi-Fi backend."""
+    required = (
+        'usr/sbin/wpa_supplicant',
+        'usr/share/dbus-1/system-services/fi.w1.wpa_supplicant1.service',
+        'usr/share/dbus-1/system.d/wpa_supplicant.conf',
+        'usr/lib/systemd/system/wpa_supplicant.service',
+    )
+    if any(not (root/name).is_file() for name in required):
+        raise ValueError('Terminal image lacks the Wi-Fi supplicant or its activation configuration')
+    activation = (root/required[1]).read_text()
+    if ('Name=fi.w1.wpa_supplicant1' not in activation
+            or 'SystemdService=wpa_supplicant.service' not in activation):
+        raise ValueError('Unexpected Wi-Fi D-Bus activation configuration')
+    # Target execution catches missing shared libraries as well as missing files.
+    command(['chroot', root, '/usr/sbin/wpa_supplicant', '-v'], timeout=30)
+    command(['chroot', root, '/usr/bin/systemd-analyze', '--man=no', 'verify',
+             'wpa_supplicant.service'], timeout=60)
+
+
 def worker(request_path):
     request = json.loads(Path(request_path).read_text())
     output = validate_request(request, request_path)
@@ -140,6 +160,7 @@ def worker(request_path):
         result = provision.provision(root, records, role)
         native = {}
         if role in ('terminal', 'combined'):
+            wifi_smoke(root)
             prefix = '/'+provision.TERMINAL
             command(['chroot', root, '/bin/sh', prefix+'/build_tools/linux/build-media.sh'], timeout=900)
             command(['chroot', root, '/usr/bin/env', 'ZMALA_OFFLINE_BUILD=1', 'PYTHONDONTWRITEBYTECODE=1',
@@ -173,6 +194,7 @@ def worker(request_path):
                       applications_sha256=request['applications_sha256'],
                       server_namespace_readiness_checked=role in ('server', 'combined'),
                       terminal_namespace_core_checked=role in ('terminal', 'combined'),
+                      target_wifi_supplicant_checked=role in ('terminal', 'combined'),
                       hardware_services_started=False)
         provision.put(root, 'usr/lib/zmala-application-build.json', json.dumps(result, indent=2)+'\n')
         unmount(root)

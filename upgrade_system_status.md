@@ -7,6 +7,35 @@ This document is a handoff, not a claim of completion.
 
 ## Physical boot diagnosis — 6 November 2026
 
+### Live Wi-Fi repair — 7 November 2026
+
+The private Ethernet diagnostic accepted the pinned SSH key on the test terminal.
+NetworkManager reported the radio enabled and firmware present, but `wlan0`
+unavailable: `wpasupplicant`, its D-Bus activation file and unit were absent from
+the image. Issue #180 adds the package explicitly to terminal intent (and the
+combined union), regenerates authenticated closures while retaining every existing
+package version, and checks target supplicant loading plus activation files/unit.
+Only `wpasupplicant` and `libpcsclite1` are added: 1,786,248 archive bytes per role.
+The locked terminal/combined closures now contain 725/740 archives respectively.
+This is a packaging correction; its regression tests remain under `tests/adhoc/`.
+
+A temporary, authenticated-package repair in RAM started the missing backend;
+reprobing only `wlan0` made it available. The QR feedback patch from #179 was
+applied to the existing application through temporary bind mounts after checking
+that its diff applied and that target service-user imports passed. The user then
+confirmed “Wi-Fi connected”; NetworkManager also reported an active wireless
+connection and a DHCP address. Neither the backend nor the feedback patch is
+persistent on this test card, and no reboot-survival claim is made.
+
+The next enrollment failure came from an old server QR pointing to this PC's
+HTTP development endpoint, not the Pi server, which requires HTTPS. The user is
+obtaining a fresh server QR. This is separate from Wi-Fi. The running firmware
+device tree was retained privately: compared with the static slot tree, its
+Bluetooth UART pin configuration also includes RTS/CTS pins 30/31 and their pulls.
+This is a candidate explanation for the Bluetooth fix, not yet an isolated
+hardware test. The broader firmware-tree differences and slot compatibility still
+need review before adopting a production A/B loader correction.
+
 The user booted the verified, exact-capacity terminal development card after
 PR #171. Linux reached PID1 but `zmala-host-storage.service` failed and fenced
 ordinary services into emergency mode. The locked root account prevented an
