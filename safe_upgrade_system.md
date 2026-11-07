@@ -1,9 +1,21 @@
 # Safe updates and upgrades
 
-Status: **7 November 2026**. Existing protections reduce the risk of an unusable
-system, but OS/package upgrades are **not yet fully brick-proof**. An unbootable
-SD card is different from damaged hardware; software rollback cannot guarantee
-recovery from failed storage or power hardware.
+Status: **7 November 2026**.
+
+> **The automatic OS/package upgrade system is unfinished. The current SD image
+> is ready for a manual installation test, not for automatic system upgrades.**
+>
+> **Automatic OS, package and application updates are disabled in this image.
+> Its A/B layout does not yet provide a complete, qualified automatic rollback
+> service. An unsuccessful manual OS/package upgrade may leave it unable to boot
+> and require SD-card recovery. We do not claim that upgrades cannot brick it.**
+
+The existing terminal application updater described below belongs to
+installer-based systems. **Those application rollback protections are not enabled
+in the new SD image and do not protect OS/package upgrades.**
+
+An unbootable SD card is different from damaged hardware; software rollback
+cannot guarantee recovery from failed storage or power hardware.
 
 ## Protections in place
 
