@@ -25,6 +25,7 @@ gir1.2-pango-1.0
 fonts-noto-core
 fonts-noto-cjk
 network-manager
+wpasupplicant
 v4l-utils
 alsa-utils
 bluez

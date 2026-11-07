@@ -5,6 +5,146 @@ resumption. The sections below retain the original checkpoint evidence; the
 continuation entry supersedes its pending-build and unsupported-combined statements.
 This document is a handoff, not a claim of completion.
 
+## Physical boot diagnosis — 6 November 2026
+
+### Live Wi-Fi repair — 7 November 2026
+
+The private Ethernet diagnostic accepted the pinned SSH key on the test terminal.
+NetworkManager reported the radio enabled and firmware present, but `wlan0`
+unavailable: `wpasupplicant`, its D-Bus activation file and unit were absent from
+the image. Issue #180 adds the package explicitly to terminal intent (and the
+combined union), regenerates authenticated closures while retaining every existing
+package version, and checks target supplicant loading plus activation files/unit.
+Only `wpasupplicant` and `libpcsclite1` are added: 1,786,248 archive bytes per role.
+The locked terminal/combined closures now contain 725/740 archives respectively.
+This is a packaging correction; its regression tests remain under `tests/adhoc/`.
+
+A temporary, authenticated-package repair in RAM started the missing backend;
+reprobing only `wlan0` made it available. The QR feedback patch from #179 was
+applied to the existing application through temporary bind mounts after checking
+that its diff applied and that target service-user imports passed. The user then
+confirmed “Wi-Fi connected”; NetworkManager also reported an active wireless
+connection and a DHCP address. Neither the backend nor the feedback patch is
+persistent on this test card, and no reboot-survival claim is made.
+
+The next enrollment failure came from an old server QR pointing to this PC's
+HTTP development endpoint, not the Pi server, which requires HTTPS. The user
+scanned a fresh server QR and confirmed success; the saved HTTPS bootstrap was
+also verified remotely. This is separate from Wi-Fi. The running firmware
+device tree was retained privately: compared with the static slot tree, its
+Bluetooth UART pin configuration also includes RTS/CTS pins 30/31 and their pulls.
+This is a candidate explanation for the Bluetooth fix, not yet an isolated
+hardware test. The broader firmware-tree differences and slot compatibility still
+need review before adopting a production A/B loader correction.
+
+The user then reported a continuously running fan and confirmed the case is an
+Argon ONE Pi 4 V2. Live read-only inspection found the image's fan flag disabled,
+no I2C group membership/device, and disabled I2C1 in the running device tree.
+The user clarified that terminal and terminal+server images always use this case;
+it is not optional. Issue #182 therefore provisions Argon support automatically
+for both roles and rejects incomplete root/boot configuration. Server-only images
+do not enable this controller. The existing call-only policy (LLR-TERM-POWER-011), implementation
+and runtime test plans remain unchanged. Packaging checks belong in ad-hoc tests;
+this image-build correction does not change the distributed user installation
+workflow or its Word guide. The next compact candidate includes it automatically.
+No physical idle/call/hangup fan test has passed yet, and the current live Pi has
+not been changed for this fan investigation.
+Linux image-tool regressions passed (108 cases), as did the nine existing fan
+policy unit cases. The running Pi's target `dtmerge` successfully enabled I2C1
+in a disposable copy of the static slot tree, and its I2C device kernel module
+was present. That check did not apply an overlay to the running system or control
+the physical fan.
+
+The user booted the verified, exact-capacity terminal development card after
+PR #171. Linux reached PID1 but `zmala-host-storage.service` failed and fenced
+ordinary services into emergency mode. The locked root account prevented an
+interactive recovery login. Photos also show undervoltage and Bluetooth errors;
+those observations do not establish their cause or successful peripheral operation.
+
+Inspection of the exact initramfs found an empty `scripts/local-bottom/ORDER`,
+despite the copied Python entry being present. The vendor ordering generator
+requires a registered executable shell source; the hook-only Python copy was
+never scheduled. Issue #174 fixes source registration with a shell dispatcher,
+checks the extracted execution list and traces the actual target dispatcher in
+harmless `prereqs` mode. Earlier import/presence checks missed this integration
+failure. Both boot-slot initramfs files were replaced and their checksums verified.
+The next user photo shows the full-screen Zmala interface, confirming basic UI
+startup after this repair. It reports **Bluetooth is unavailable**; pairing,
+calls and complete peripheral operation have not passed. The exact root contains
+the Broadcom Bluetooth firmware, and the pinned loader includes clock/address
+fixups. Neither check establishes the controller timeout's cause. A private,
+reversible `boot.scr` diagnostic using the complete firmware-provided device
+tree was prepared and sandbox-checked, then installed on the freshly identified
+test card with checksum readback. The original script was backed up privately;
+the user subsequently confirmed that boot, Bluetooth and the remote test work.
+Wi-Fi setup failed after a QR scan, with no useful cause displayed. The user confirmed a full power-off boot
+with the usual supply, so a warm reboot does not explain the earlier failure.
+This diagnostic is not a
+slot-matched device-tree design for future A/B updates.
+
+Issue #178 (`codex/wifi-qr-feedback`) adds a visible 1.5-second amber QR guide
+flash, immediate connection progress and safe Wi-Fi failure explanations. It
+retains the current setup stage, owned UUID cleanup and stale-generation rejection.
+Recognized NetworkManager C-locale messages and D-Bus permission error names map
+to fixed text; unknown output stays generic, and authentication errors do not
+prove an incorrect password. Requirements, direct tests, technical documentation
+and regenerated terminal configuration guide are updated together. Local terminal
+unit tests and Linux display/QR embedding checks passed; no successful physical
+Wi-Fi join is claimed by these mocked and synthetic tests.
+
+The returned 32 GB test card now has a private one-boot Ethernet SSH diagnostic
+in both repaired initramfs files, preserving the working Bluetooth boot script.
+It uses a PC-held client key, a pinned temporary host key, an onboard-Ethernet-bound
+socket and a 45-minute expiry. A persistent consumed marker prevents re-enabling
+on subsequent boots; normal SSH masks remain unchanged. The user permits temporary
+`zmala` password access, but the prepared diagnostic uses key authentication instead.
+Target ARM64 login, incorrect-key rejection, effective configuration and systemd
+unit checks passed in an isolated namespace. Both on-card files passed checksum
+readback; physical SSH access is pending the user's next Ethernet boot on the same
+router/LAN as the PC. Private `build_tools/tmp/ethernet-debug-prepared.json` and
+`ethernet-debug-card-write.json` retain paths, hashes and validation evidence;
+never include diagnostic private keys in a commit or release. Obtain sanitized
+Wi-Fi failure evidence and the running firmware device tree through this access
+before declaring either Wi-Fi repaired or the compact image Bluetooth-qualified.
+
+The user also requested a subsequent 16 GB-compatible candidate. Measured current
+system filesystem allocations are about 2.40 GiB terminal, 0.99 GiB server and
+2.51 GiB combined per slot, including filesystem overhead. Two 4 GiB system slots
+were subsequently checked by shrinking disposable copies of all three actual
+filesystems to 4 GiB and running full read-only filesystem checks afterward.
+All passed; combined retained 1,675,853,824 bytes free. Those are the existing
+0.3.91 application roots, not rebuilt PR #173 inputs or future update payloads.
+The proposed layout totals 14,001,635,328 bytes including the GPT end allowance.
+The user explicitly requires the next candidate to work on both 16 GB and 32 GB
+cards. Issue #176 now implements factory-only GPT metadata relocation with fixed
+partition sizes. Direct tests cover both selected slots on sparse 16 GB/32 GB
+files, modeled partial/complete writes, repeat no-op, native GPT verification and
+preservation of partition IDs/extents and boot-state sentinels. Larger-card space
+remains unallocated; filesystem expansion is deliberately deferred for the next
+hardware attempt. The terminal image was rebuilt from source `dc6cd0d`, including
+PR #173's application changes and the dispatch fix. Its raw size is
+14,001,635,328 bytes and SHA-256 is
+`b627dd7ef75a9e30677b715b91201794d2de9819c4808dfb137e17e04b2ac43d`.
+Copies of that actual image passed relocation on 16,000,000,000-byte and
+32,000,000,000-byte regular files, native GPT/FAT checks, both-slot repeat no-op
+and byte-for-byte preservation from offset 1024 through the original image end.
+The new system filesystem has 1,804,566,528 bytes free per slot; data has
+4,143,648,768 bytes free. The target ARM64 application/core, initramfs imports,
+unit graph, environment tools and real prerequisite dispatcher also passed.
+These are build/file tests: physical compact-card and Bluetooth qualification,
+update/data headroom and physical power-loss recovery remain separate work.
+The compact image still uses the ordinary slot DTB; the separate firmware-DTB
+Bluetooth diagnostic on the existing 32 GB-layout card must not be mistaken for
+a confirmed fix in this rebuilt image. PR #177 remains a draft stacked on
+PR #173 and #175. Private `build_tools/tmp/terminal-compact-image.json`,
+`terminal-compact-capacity-checks.json`,
+`build_tools/tmp/four-gib-slot-measurements.json`,
+`card5-ui-after-dispatch-repair.json`,
+`build_tools/tmp/image-storage-measurements.json`, `next-image-capacity-plan.json`
+and `card5-terminal-write-verified.json` preserve measurement and write evidence.
+PR #173 relocates the builder to `zmala_images`; incorporate its merge when
+continuing and preserve unchanged, hash-verified package caches.
+
 ## Autonomous continuation — 6 November 2026
 
 The user authorized continued autonomous work while asleep. This entry supersedes

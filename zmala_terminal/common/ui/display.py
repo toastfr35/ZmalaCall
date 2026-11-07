@@ -6,7 +6,7 @@ import tkinter as tk
 import tkinter.font as tkfont
 from zmala_terminal.common.model import State
 from zmala_terminal.common.localization import translate
-from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED, BUTTON_GREEN, BUTTON_RED
+from zmala_terminal.common.theme import BG, FG, MUTED, GREEN, RED, ACCENT, BUTTON_GREEN, BUTTON_RED
 from zmala_terminal.common.ui.carousel import CarouselView
 from zmala_terminal.common.ui.confirmation import ConfirmationView
 from zmala_terminal.common.ui.remote_help import RemoteHelpView
@@ -298,19 +298,24 @@ class TerminalDisplay(CarouselView, ConfirmationView, RemoteHelpView, SettingsVi
             self.usb_image = self.icon_renderer.usb_power(powered, BG)
             c.create_image(0, 4, anchor='nw', image=self.usb_image, tags='usb-power')
 
-    # @llr LLR-TERM-SETUP-027
+    # @llr LLR-TERM-SETUP-027, LLR-TERM-SETUP-028, LLR-TERM-SETUP-029
     def render_setup_feedback(self):
+        from zmala_terminal.common.setup_feedback import MESSAGES
         label = self.setup_feedback_label
         if self.setup_stage not in ('wifi', 'server') or not getattr(self, 'setup_feedback', False):
             label.pack_forget()
             return
         width = max(400, self.root.winfo_width()-80)
         text = self.text('help')
-        if self.setup_stage == 'server':
+        if self.setup_feedback in MESSAGES:
+            # Network enrollment intentionally stays in English until server setup.
+            text = MESSAGES[self.setup_feedback]
+        elif self.setup_stage == 'server':
             text = self.text('server') + ' — ' + (self.text('offline') if self.setup_feedback == 'server_unavailable' else text)
-        picture = self.text_renderer.photo(text, self.font_family, 20, BG, RED, width, True)
+        color = ACCENT if self.setup_feedback in ('connecting', 'server_connecting') else RED
+        picture = self.text_renderer.photo(text, self.font_family, 20, BG, color, width, True)
         label.configure(text=text, image=picture if picture else '', wraplength=width,
-                        font=(self.font_family, 20, 'bold'))
+                        fg=color, font=(self.font_family, 20, 'bold'))
         label.image = picture
         label.pack(before=self.body, pady=(0, 10))
 

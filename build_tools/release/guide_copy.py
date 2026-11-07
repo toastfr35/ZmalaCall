@@ -248,7 +248,19 @@ REVISIONS = {
             'QR document ready. For Wi-Fi, use an Android phone already connected to the network: '
             'open Settings > Wi-Fi (or Internet), select the connected network and choose Share or QR code. '
             'Unlock if asked and show it to the terminal camera at Scan the Wi-Fi QR code. '
-            'Menu names vary. A printed Wi-Fi QR from the server is another option; Ethernet skips Wi-Fi setup.',
+            'Menu names vary. A printed Wi-Fi QR from the server is another option. '
+            'Ethernet alone does not complete this Wi-Fi setup step.',
+        ],
+        'Hold the Wi-Fi QR steadily': [
+            'Hold the Wi-Fi QR steadily in front of the C10/C20, with the whole code inside the camera guides. '
+            'Move it closer or farther away until it fits clearly. The guides briefly turn amber when a '
+            'code is read. This confirms the scan; wait for Wi-Fi connected and the ten-second confirmation. '
+            'When the server QR screen appears, show the setup code made for this terminal.',
+            'If setup fails, read the message above the camera. For an invalid code, show a Wi-Fi sharing QR. '
+            'For a network not found, check the name and move closer to the router. For an authentication '
+            'failure, check the password and router security settings. If the terminal reports a permission '
+            'or wireless adapter problem, ask your helper to check its configuration. For an address or '
+            'timeout error, check the router and signal, then scan again.',
         ],
         'Keep the QR documents private.': [
             'Keep both QR documents private: they grant access to the Wi-Fi and this terminal account. '

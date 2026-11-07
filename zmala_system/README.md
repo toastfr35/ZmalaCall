@@ -8,6 +8,7 @@ server, terminal and combined roles. It has no UI, media or image-build dependen
 | Role layouts and persistent paths | `host_layout.py`, `host_storage.py` |
 | Durable first-device identity | `device_identity.py` |
 | Boot media and selected-root validation | `boot_media.py`, `boot_devices.py`, `boot_layout.py` |
+| Factory compact-card GPT relocation (fixed partition sizes) | `boot_capacity.py` |
 | Confirmed/trial boot records and admission | `boot_state.py`, `boot_backend.py`, `boot_select.sh` |
 | Early boot and startup gate | `boot_entry.py`, `boot_storage.py`, `boot_gate.py`, service/configuration files |
 

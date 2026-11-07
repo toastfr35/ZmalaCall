@@ -20,7 +20,7 @@ from zmala_system import boot_media, boot_state
 class ImageAssemblyTests(unittest.TestCase):
     def test_exact_media_capacity_is_bounded_and_sector_aligned(self):
         minimum = image_payload.disk_bytes()
-        self.assertEqual(minimum, 22591569920)
+        self.assertEqual(minimum, 14001635328)
         self.assertEqual(image_payload.disk_bytes(32*1024**3), 32*1024**3)
         for capacity in (True, '32000000000', minimum-512, minimum+1, 129*1024**3):
             with self.assertRaises(ValueError):

@@ -7,10 +7,11 @@ import re
 import subprocess
 import sys
 
-from . import application_inputs, build_space, local_repo, package_lock, project, root_build
+from . import application_inputs, application_provision, build_space, local_repo, package_lock, project, root_build
 
 
 def build(role, source, expected_root, applications, expected_applications, base_cache, role_cache, output):
+    argon_one = application_provision.uses_argon(role)
     if platform.system() != 'Linux' or os.geteuid() == 0:
         raise ValueError('Use an ordinary Linux user with subordinate UID/GID mappings')
     index = project.package_locks()
@@ -51,7 +52,7 @@ def build(role, source, expected_root, applications, expected_applications, base
         raise ValueError('Host package state or application build inputs changed')
     audit = root_build.audit(output/'root.tar', selected)
     result = json.loads((output/'worker-result.json').read_text())
-    if result['role'] != role:
+    if result['role'] != role or result.get('argon_one') is not argon_one:
         raise ValueError('Application worker role mismatch')
     result.update(schema=1, packages=audit['packages'], source_root_sha256=expected_root,
                   applications_sha256=expected_applications, source_commit=manifest['source_commit'],

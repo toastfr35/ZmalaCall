@@ -90,7 +90,13 @@ archives must be regular files; FIFOs/devices/links are rejected before reading.
 
 `profiles.json` records the common base and role package **intent**, not a complete
 resolved package lock. The terminal intent reuses the existing dependency list;
-server npm/build dependencies and full secure-relay provisioning remain to be
+it explicitly includes `wpasupplicant` because the isolated APT intake disables
+recommendations. The combined role inherits that dependency. Offline application
+validation executes the target supplicant version command and checks its D-Bus
+activation/policy files and systemd unit, catching missing backend libraries
+before a root is accepted. These packaging checks do not claim a real Wi-Fi join.
+
+Server npm/build dependencies and full secure-relay provisioning remain to be
 separated into build/runtime sets. The selected RAUC package is Debian Trixie's
 `1.13-3+deb13u1`; its role dependency closures are now retained and reviewed.
 Complete builder/toolchain inputs and use of the locks in factory builds still
@@ -504,11 +510,19 @@ from extraction, preserving kernel driver directories also named `dev`.
 
 The target's own `mkinitramfs` builds the component. Its hook copies the bounded
 Python 3.13 tree, ELF extension dependencies and authored runtime, plus fixed
-private mount/probe binaries with special permission bits removed. The entry runs
-in `local-bottom`, before `init-bottom` moves `/dev`. The output audit accepts the
+private mount/probe binaries with special permission bits removed. Before invoking
+`mkinitramfs`, the worker registers a shell entry in
+`/etc/initramfs-tools/scripts/local-bottom/zmala-host`; it delegates to the isolated
+Python runtime. The vendor ordering generator resolves source entries and checks
+shell syntax, so copying a Python file only into the generated tree is insufficient.
+The entry runs in `local-bottom`, before `init-bottom` moves `/dev`. The output audit accepts the
 locked extractor's direct or `main` layout, checks exact runtime/tool bytes and
-modes, and executes target Python imports and the entry's `prereqs` in the
-extracted initramfs. No data initialization or ordinary services run during build.
+modes, requires exactly one invocation in the generated `ORDER`, and executes
+target Python imports and the entry's `prereqs` through the real vendor dispatcher
+in the extracted initramfs. `target_dispatch_checked` records that limited check.
+No data initialization or ordinary services run during build. Issue #174 records
+the first physical boot failure caused by an omitted dispatch entry; earlier
+presence/import-only audits do not establish that the entry ran during boot.
 
 `READY.json` appears only after successful checks and worker cleanup. A failed
 inspection can retain `initramfs.pending.img` for diagnosis without accepting it.
@@ -716,6 +730,18 @@ start target Node under the service
 UID on isolated loopback, check `/ready` and bootstrap publication, and discard
 all smoke-test data from a temporary RAM filesystem before packaging.
 
+Terminal and combined appliances always use the Argon ONE Pi 4 V2 case.
+`provision-applications` automatically enables the existing call-only fan
+controller, adds the terminal to the I2C group, loads `i2c-dev` and restricts bus 1
+access to that group. There is no optional case flag. Assembly requires this root configuration
+and applies `i2c_arm=on` with the locked target `dtmerge`, verifying the bus 1
+alias is enabled in the resulting slot tree. Both slots use that tree; firmware
+configuration receives the same parameter. The hardware configuration is recorded
+in both application and image manifests. Missing or disabled Argon configuration
+in a terminal/combined root is rejected. Server-only images do not enable this
+fan controller. No vendor power daemon is installed.
+Physical idle/call/hangup fan transitions still require hardware qualification.
+
 Combined releases have separate `/opt/zmalacall` and `/opt/zmalacall-server`
 source trees. The server's sibling terminal-bootstrap path points to its own
 private `bootstrap` directory, never the terminal's application state. All roles
@@ -739,7 +765,7 @@ initramfs belonging to a different role/root. No command accepts a device path,
 flashes a card or alters a running Pi.
 
 The six GPT partitions are 32 MiB common FAT16, two 512 MiB FAT32 boot slots,
-two 8 GiB ext4 system slots and 4 GiB ext4 factory data, preceded by the fixed
+two 4 GiB ext4 system slots and 4 GiB ext4 factory data, preceded by the fixed
 8 MiB boot-state gap. Each slot has its matched kernel, checked initramfs and
 Pi 4 device tree. The locked target `dtmerge` applies the Pi-specific KMS overlay;
 generic `fdtoverlay` cannot substitute for Raspberry Pi dormant-fragment handling.
@@ -748,15 +774,31 @@ factory state explicitly confirms A in two CRC-protected raw environment copies;
 the compiled fallback cannot fabricate it. Factory data is mode 0700 with a
 mode-0600 role marker and no device identity. Data expansion is not implemented.
 
-The default 22,591,569,920-byte image is **test geometry**, not a generic 32 GB
-card image. For a card-bound candidate, pass `--media-bytes EXACT_CAPACITY` using
-an independently measured target capacity. Assembly then puts the backup GPT at
-that exact end and leaves remaining space unallocated. The runtime deliberately
-rejects a GPT whose backup is not at the actual device end; merely writing the
-smaller default image to a larger card is insufficient. This tool neither
-measures a physical device nor repairs/expands a card after writing. The result
-records `required_device_bytes`; exact-capacity preparation is still separate
-from physical boot qualification and the eventual user-facing flashing flow.
+The default compact image is 14,001,635,328 bytes, intended for 16 GB and 32 GB
+cards whose measured capacity is at least that value. New prepared roots carry
+the immutable `compact-fixed-data-v1` policy. Before device identity is created,
+early boot validates the Pi 4 onboard SD parent, kernel root/data extents and
+UUIDs, fixed six-partition layout and factory data. It moves backup GPT metadata
+to the actual card end, commits the primary header and protective-MBR length,
+and synchronizes/read-checks each write. It never changes partition extents or
+filesystems; space beyond the fixed data partition remains unallocated.
+Interrupted metadata commits require the intact original GPT pair or a complete
+new backup matching the unchanged primary partition array. Initialized media
+requiring repair is refused. Once consistent, repeated boots do not write GPT.
+The native tests cover sparse 16 GB/32 GB files and simulated interruption; they
+do not qualify physical power loss, firmware boot or Bluetooth operation.
+
+`--media-bytes EXACT_CAPACITY` remains available for an exact-capacity development
+candidate. The result records `required_device_bytes`, `factory_gpt_relocation`
+and the fixed `data_partition_bytes`; `automatic_media_expansion` remains false.
+Older prepared roots without the compact policy retain their existing behavior.
+Rebuild prepared roots and initramfs together; changing only image dimensions
+does not add this early-boot adaptation to an old root.
+
+Disposable copies of the existing 0.3.91 system filesystems were shrunk to 4 GiB
+and passed full filesystem checks for all roles. The combined role retained
+1,675,853,824 bytes free. New application/OS inputs must still be measured and
+checked; this result is not a minimum-size guarantee for future updates.
 
 The assembler bounds the uncompressed ARM64 Image to 32 MiB at `0x00080000`,
 initramfs to 48 MiB at `0x02100000`, and expanded device tree to 2 MiB at

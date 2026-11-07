@@ -23,7 +23,7 @@ class SetupOwnershipTests(unittest.TestCase):
             self.assertEqual(wifi._nmcli(['connection', 'show']), 'ready')
             self.assertEqual(run.call_args.kwargs['timeout'], 40)
             run.return_value = Mock(returncode=1, stderr='private password')
-            with self.assertRaisesRegex(OSError, '^NetworkManager operation failed;'):
+            with self.assertRaisesRegex(OSError, r'^Wi-Fi setup failed \(connection_failed\)$'):
                 wifi._nmcli(['connection', 'show'])
         with patch.object(wifi, 'network_link_available', return_value=False):
             with self.assertRaisesRegex(OSError, 'Connect the terminal'):
@@ -47,12 +47,12 @@ class SetupOwnershipTests(unittest.TestCase):
             command.reset_mock()
             wifi.forget_wifi(result, 'term')
             self.assertEqual(command.call_count, 1, 'An already deleted UUID needs no second deletion')
-        gio = SimpleNamespace(DBusProxy=Mock(), BusType=SimpleNamespace(SYSTEM=1),
+        gio = SimpleNamespace(DBusProxy=Mock(), DBusError=Mock(get_remote_error=Mock(return_value=None)), BusType=SimpleNamespace(SYSTEM=1),
                               DBusProxyFlags=SimpleNamespace(NONE=0), DBusCallFlags=SimpleNamespace(NONE=0))
         gio.DBusProxy.new_for_bus_sync.side_effect = RuntimeError('private D-Bus diagnostic')
         glib = SimpleNamespace(Variant=lambda signature, value: value, Error=RuntimeError)
         with patch.dict(sys.modules, {'gi.repository':SimpleNamespace(Gio=gio, GLib=glib)}):
-            with self.assertRaisesRegex(OSError, '^Wi-Fi setup failed; check NetworkManager user permissions$'):
+            with self.assertRaisesRegex(OSError, r'^Wi-Fi setup failed \(connection_failed\)$'):
                 wifi._add_connection({'ssid':'unit', 'security':'nopass', 'hidden':False}, 'id', 'name')
 
     def flow(self):

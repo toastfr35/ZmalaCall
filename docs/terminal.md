@@ -433,7 +433,30 @@ Each asynchronous completion is checked against the current setup generation.
 Before enrollment, prompts use English. Enrollment applies the selected language;
 detailed diagnostic catalogs use English fallback where a translation is absent.
 Invalid codes, unreachable servers and rejected credentials retain the current
-stage with retry feedback. Both QR stages show mint corner guides with a dark
+stage with retry feedback. The visible positioning guides flash amber for 1.5
+seconds when the camera worker reports a QR, then return to mint. This indicates
+detection, not successful enrollment. Valid codes immediately show connection
+progress; invalid codes identify the expected QR type. Wi-Fi failures distinguish
+recognized missing networks, authentication failures, denied permissions,
+unavailable adapters, address allocation failures and timeouts. Authentication
+feedback asks the helper to check the password and router security settings;
+it does not assert that the password alone is wrong. Unknown causes use a generic
+retry message. Error text remains visible until a new operation or stage change.
+`setup_feedback.py` owns the allowlisted English messages. The Linux adapter forces
+nmcli's C locale and matches known activation reasons; unfamiliar output stays
+generic. D-Bus permission errors use their error names. Raw diagnostics and QR
+credentials never become UI text or setup logs, and failed joins still clean up
+only their owned UUID. Temporary Ethernet debugging is separate from normal image
+SSH policy and does not bypass this Wi-Fi join stage.
+
+The offline terminal and combined images explicitly include `wpasupplicant`.
+Their package intake disables APT recommendations, so NetworkManager alone does
+not supply this backend. Application validation checks the target executable,
+shared-library loading, D-Bus activation/policy files and systemd unit before
+accepting a root. Without the backend, the radio can report enabled with firmware
+present while the device remains unavailable and every QR-based join fails.
+
+Both QR stages show mint corner guides with a dark
 outline around a centred square in the unmirrored camera picture. Hold the whole
 code inside the guides; the centre stays clear. Guides resize with the displayed
 picture, including letterboxing, and are added only to its display copy: decoding
@@ -1129,15 +1152,27 @@ generates SSH keys, operates TV/USB devices or starts terminal services.
 
 The experimental early-boot path (`HLR-TERM-MAINT-044`) validates selected slot and
 root PARTUUID against actual read-only ext4/GPT/kernel topology, and finds data
-only as its declared same-parent sibling. It then initializes identity and views,
+only as its declared same-parent sibling. Compact-policy roots first run the
+factory capacity check (`HLR-TERM-MAINT-057`): the 14,001,635,328-byte layout has
+two 4 GiB system slots and fixed 4 GiB data. On larger supported Pi 4 SD cards,
+backup GPT metadata is relocated with durable readback before identity creation.
+Partition sizes and boot state remain unchanged; extra space is unallocated.
+Unknown or initialized media needing repair is fenced. An interrupted metadata
+commit can retry from a complete original GPT pair or a complete new backup
+matching the unchanged primary array. Physical interruption is not qualified.
+The path then initializes identity and views,
 generates a read-only selected-root entry in the RAM `fstab`, and publishes complete
 current-boot readiness. A separate PID1 gate is required before `sysinit.target`,
 so killed or missing early preparation cannot admit ordinary services. It does
 not operate TV, camera, remote or application services.
 
 Direct LLTs and real GPT/loop namespace HLTs cover both roles. The offline
-initramfs builder checks copied runtime/tool bytes and actual ARM64 imports, but
-does not qualify physical initramfs/PID1 boot. Regular-file A/B assembly now
+initramfs builder checks copied runtime/tool bytes and actual ARM64 imports. It
+also requires the registered storage entry in the generated execution list and
+traces its harmless prerequisite call through the target dispatcher. The first
+physical development boot exposed a missing dispatch entry (issue #174); the
+startup gate blocked ordinary services as intended. These build checks
+do not qualify physical initramfs/PID1 boot. Regular-file A/B assembly now
 requires matched application root, initramfs and pinned loader manifests. The
 development factory boot stops the loader watchdog until joint health transfer
 exists. Data expansion, onboarding and physical qualification remain pending.
@@ -1209,6 +1244,11 @@ to stop early. The filesystem remains writable; this is not a read-only overlay.
 ### Argon fan
 
 The Windows installer enables fan control; manual installs use `--argon-one`.
+Terminal and terminal+server images always use the Argon ONE Pi 4 V2 case.
+Their build automatically provisions the call-only controller, I2C group/device
+permissions and module loading. Assembly requires this configuration and enables
+I2C in both slot device trees and the firmware configuration. There is no case
+selection option for these images. Server-only images do not enable this control.
 It is off outside connected calls, 55% during calls and 100% at 65°C during calls.
 Hangup/stop requests fan-off. Reads/writes run off the UI thread. There is no
 outside-call thermal override; firmware throttling remains active. Only I2C bus 1,

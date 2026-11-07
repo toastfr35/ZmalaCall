@@ -26,7 +26,10 @@ def copied_tree(base, main_subdirectory=True):
         target = main/name; target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(body); target.chmod(0o644)
     entry = main/'scripts/local-bottom/zmala-host'; entry.parent.mkdir(parents=True)
-    entry.write_bytes(image_state.payloads('server')[image_state.INSTALLED+'/boot_entry.py']); entry.chmod(0o755)
+    entry.write_bytes(Path(worker.__file__).with_name('initramfs_entry.sh').read_bytes()); entry.chmod(0o755)
+    order = entry.parent/'ORDER'
+    order.write_text('/scripts/local-bottom/zmala-host "$@"\n[ -e /conf/param.conf ] && . /conf/param.conf\n')
+    order.chmod(0o644)
     for name, source, target in [('python', 'usr/bin/python3.13', 'usr/bin/python3.13')]+[
             (name, 'usr/bin/'+name, 'usr/lib/zmala/bin/'+name) for name in ('mount', 'umount', 'blkid')]:
         body = ('synthetic executable-byte fixture '+name).encode()
@@ -111,4 +114,20 @@ class InitramfsToolTests(unittest.TestCase):
                 else:
                     (root/'usr/bin/mount').unlink(); (root/'usr/bin/mount').symlink_to(main/'usr/lib/zmala/bin/mount')
                 with self.assertRaises(ValueError):
+                    worker.inspect_initramfs(root, extracted, 'server')
+
+    @unittest.skipIf(os.name == 'nt', 'Unix extracted dispatch metadata')
+    def test_entry_present_but_missing_skipped_or_duplicate_dispatch_is_rejected(self):
+        for body in (None, '', '# /scripts/local-bottom/zmala-host "$@"\n',
+                     '/scripts/local-bottom/other "$@"\n',
+                     '/scripts/local-bottom/zmala-host "$@"\n'*2,
+                     'false && /scripts/local-bottom/zmala-host "$@"\n'):
+            with self.subTest(body=body), tempfile.TemporaryDirectory() as temporary, controlled_ownership():
+                root, extracted, main = copied_tree(Path(temporary))
+                order = main/'scripts/local-bottom/ORDER'
+                if body is None:
+                    order.unlink()
+                else:
+                    order.write_text(body)
+                with self.assertRaises((OSError, ValueError)):
                     worker.inspect_initramfs(root, extracted, 'server')

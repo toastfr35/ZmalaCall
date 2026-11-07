@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageTk
 
 
 # @llr LLR-TERM-SETUP-027
-def scan_guides(image):
+def scan_guides(image, detected=False):
     """Draw positioning brackets on the displayed copy, never the decoder input."""
     preview = image.copy()
     width, height = preview.size
@@ -27,7 +27,7 @@ def scan_guides(image):
     draw = ImageDraw.Draw(preview)
     for points in corners:
         draw.line(points, fill='#0d121c', width=stroke+4, joint='curve')
-        draw.line(points, fill='#83dfc5', width=stroke, joint='curve')
+        draw.line(points, fill='#ffca66' if detected else '#83dfc5', width=stroke, joint='curve')
     return preview
 
 
@@ -84,6 +84,7 @@ class NativeQRScanner:
     def __init__(self, on_qr, video_window=0, profile='terminal', camera=None):
         self.on_qr, self.capture, self.picture = on_qr, None, None
         self.last_qr, self.next_frame, self.next_decode = ('', 0), 0, 0
+        self.detected_until = 0
         self.decoder, self.root = None, None
         self.x11, self.display, self.parent = None, None, video_window
         try:
@@ -166,16 +167,18 @@ class NativeQRScanner:
                                  C.byref(w), C.byref(h), C.byref(border), C.byref(depth))
             width, height = max(1, w.value), max(1, h.value)
             self.root.geometry(f'{width}x{height}+0+0')
-        image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        image.thumbnail((width, height), Image.Resampling.BILINEAR)
-        self.photo = ImageTk.PhotoImage(scan_guides(image), master=self.root)
-        self.label.configure(image=self.photo)
+        # @llr LLR-TERM-SETUP-027
         if now >= self.next_decode:
             self.next_decode = now + .4
             for value in self.decoder.decode(frame):
                 if value != self.last_qr[0] or now - self.last_qr[1] >= 3:
                     self.last_qr = (value, now)
+                    self.detected_until = now + 1.5
                     self.on_qr(value)
+        image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        image.thumbnail((width, height), Image.Resampling.BILINEAR)
+        self.photo = ImageTk.PhotoImage(scan_guides(image, now < self.detected_until), master=self.root)
+        self.label.configure(image=self.photo)
 
     def close(self):
         if self.capture is not None:
