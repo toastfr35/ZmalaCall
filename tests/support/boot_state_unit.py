@@ -185,7 +185,7 @@ class BootStateScenario(unittest.TestCase):
                 self.assertEqual(select(fields)[0], '')
 
     def test_packaged_policy_does_not_enable_health_or_automatic_activation(self):
-        from build_tools.images import image_state
+        from zmala_images import image_state
         payload = image_state.payloads(self.role)
         policy = boot_state.decode_policy(payload[boot_state.PROFILE], self.role)
         self.assertFalse(policy['activate_installed'])

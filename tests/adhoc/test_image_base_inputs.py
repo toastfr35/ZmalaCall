@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_tools.images import base_intent, local_repo, package_lock, project
+from zmala_images import base_intent, local_repo, package_lock, project
 from tests.adhoc.test_image_packages import fixture
 
 
@@ -64,8 +64,8 @@ class BaseCaptureTests(unittest.TestCase):
         self.assertEqual(len(project.common_base()['requested']), 259)
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            folder = root/'build_tools/images/locks'
-            shutil.copytree(project.ROOT/'build_tools/images/locks', folder)
+            folder = root/'zmala_images/locks'
+            shutil.copytree(project.ROOT/'zmala_images/locks', folder)
             for name in ('base-intent.json', 'base.json'):
                 path = folder/name
                 original = path.read_bytes()

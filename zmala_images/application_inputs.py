@@ -28,9 +28,13 @@ TEXT = {'.py', '.sh', '.js', '.cjs', '.json', '.service', '.conf', '.rules', '.t
 
 
 def path_name(value):
+    """Keep archive names relative and unambiguous on Linux and Windows hosts."""
     path = PurePosixPath(value)
     if (not value or path.is_absolute() or path.as_posix() != value or '..' in path.parts
-            or '\\' in value or '\0' in value or len(value.encode()) > 4096):
+            or '\\' in value or '\0' in value or len(value.encode()) > 4096
+            or any(':' in part or part.rstrip(' .') != part for part in path.parts)):
+        # A POSIX-relative name can still be a Windows drive/alternate stream;
+        # trailing dots/spaces can alias a different path on Windows as well.
         raise ValueError('Unsafe application input path')
     return path
 

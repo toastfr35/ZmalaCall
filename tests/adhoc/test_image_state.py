@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_tools.images import image_state, package_lock
+from zmala_images import image_state, package_lock
 from tests.adhoc.test_image_root_build import SELECTED, write_tar
 from zmala_system import host_layout as layout
 

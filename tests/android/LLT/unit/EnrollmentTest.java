@@ -3,7 +3,7 @@
 // @environment portable
 // @plan Parse valid and malformed QR payloads and app configurations; reject terminal identity,
 // credentials in URLs, mismatched account identity, unsupported secure mode and oversized input.
-// Reject null/non-object contacts, missing or invalid identity/name and duplicate contact identities.
+// Reject coerced versions, invalid ports, malformed contact names/URIs/permissions/photos and duplicates.
 // Serve redirects from a local HTTP fixture and verify no credentials reach the redirect target.
 // Download a GIF larger than the static cap, reject the same oversized JPEG and invalid photo paths.
 // Test setup storage round trips, invalidation of old work and SDK-specific denied permission policy.
@@ -71,13 +71,22 @@ public class EnrollmentTest {
         new JSONObject[] {
           qr().put("account_type", "terminal"),
           qr().put("version", 2),
+          qr().put("version", "1"),
+          qr().put("version", 1.5),
+          qr().put("version", true),
           qr().put("device_token", "short"),
           qr().put("device_id", "ZM-terminal"),
           qr().put("server_url", "http://user:pass@localhost"),
           qr().put("server_url", "https://localhost/path"),
-          qr().put("server_url", "file:///private")
+          qr().put("server_url", "file:///private"),
+          qr().put("server_url", "http://localhost:0"),
+          qr().put("server_url", "http://localhost:65536")
         }) assertThrows(Exception.class, () -> new Enrollment(bad.toString()));
     assertThrows(Exception.class, () -> new Enrollment("x".repeat(8193)));
+    for (Object version : new Object[]{"1", 1.5, true, JSONObject.NULL})
+      assertThrows(Exception.class, () -> e.validate(config().put("schema_version", version)));
+    for (int port : new int[]{1, 65535})
+      assertEquals(port, new Enrollment(qr().put("server_url", "http://localhost:" + port).toString()).server.getPort());
     assertThrows(Exception.class, () -> e.validate(config().put("device_id", "other")));
     assertThrows(Exception.class, () -> e.validate(config().put("call_auth_key", "other")));
     assertThrows(
@@ -89,7 +98,7 @@ public class EnrollmentTest {
   public void malformedContactsAreRejectedBeforeRendering() throws Exception {
     Enrollment enrollment = new Enrollment(qr().toString());
     JSONObject contact = new JSONObject().put("id", "phone2").put("name", "Family member")
-        .put("sip_uri", "sip:phone2@localhost").put("can_call", true);
+        .put("sip_uri", "sip:phone2@localhost").put("can_call", true).put("can_receive", false);
     enrollment.validate(config().put("contacts", new org.json.JSONArray().put(contact)));
     for (Object invalid : new Object[]{JSONObject.NULL, "not an object", new org.json.JSONArray(),
         new JSONObject(), new JSONObject(contact.toString()).put("id", "bad id"),
@@ -102,8 +111,34 @@ public class EnrollmentTest {
     }
     assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts",
         new org.json.JSONArray().put(contact).put(contact))));
+    for (String field : new String[]{"can_call", "can_receive"}) {
+      for (Object value : new Object[]{"true", "false", 1, JSONObject.NULL}) {
+        JSONObject invalid = new JSONObject(contact.toString()).put(field, value);
+        assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts",
+            new org.json.JSONArray().put(invalid))));
+      }
+      JSONObject missing = new JSONObject(contact.toString()); missing.remove(field);
+      assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts",
+          new org.json.JSONArray().put(missing))));
+    }
+    for (Object value : new Object[]{false, 0, JSONObject.NULL, new JSONObject(),
+        new org.json.JSONArray(), "/photos/../private.png", "https://other.test/portrait.png"}) {
+      JSONObject invalid = new JSONObject(contact.toString()).put("photo", value);
+      assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts",
+          new org.json.JSONArray().put(invalid))));
+    }
+    for (JSONObject invalid : new JSONObject[]{
+        new JSONObject(contact.toString()).put("name", "n".repeat(81)),
+        new JSONObject(contact.toString()).put("sip_uri", "sip:phone2@other.test"),
+        new JSONObject(contact.toString()).put("sip_uri", "sip:other@localhost")}) {
+      assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts",
+          new org.json.JSONArray().put(invalid))));
+    }
+    for (String photo : new String[]{"", "/photos/abcd.png", "/photos/abcd.jpg", "/photos/abcd.gif"})
+      enrollment.validate(config().put("contacts", new org.json.JSONArray().put(
+          new JSONObject(contact.toString()).put("photo", photo).put("name", "n".repeat(80)))));
     org.json.JSONArray tooMany = new org.json.JSONArray();
-    for (int i = 0; i < 41; i++) tooMany.put(new JSONObject(contact.toString()).put("id", "phone" + i));
+    for (int i = 0; i < 41; i++) tooMany.put(new JSONObject(contact.toString()).put("id", "phone" + i).put("sip_uri", "sip:phone" + i + "@localhost"));
     assertThrows(Exception.class, () -> enrollment.validate(config().put("contacts", tooMany)));
   }
 

@@ -1,18 +1,3 @@
-## Photos during calls
-
-When server configuration advertises `call_photo_sharing`, `common/call_photo.py`
-polls the authenticated current SIP Call-ID while IN_CALL. Network and JPEG decode
-run off Tk; Tk owns the full-window, aspect-preserving black-backed image layer.
-It covers received video and self-view while retaining both native surfaces and
-the voice call. Remote volume/hangup controls remain available. The app sender
-stops sharing; call end/change and expired leases also remove the layer.
-
-The receiver accepts only bounded JPEGs (2 MiB, 1600 pixels per side), checks
-revision and owner identity, and never extends its local deadline after a failed
-request. Old servers without the capability flag are not polled. Display-fixture
-tests cover resizing and retained surfaces; physical audio/video continuity must
-be qualified separately on the deployed Pi.
-
 # Zmala Terminal implementation
 
 A1 dark supplies the terminal/window mark and updated family-word-cloud boot artwork.
@@ -24,7 +9,7 @@ Windows adapters. It is for developers and maintainers. Preparation, enrollment
 and everyday operation are covered by the release's `ZmalaTerminal-Installation.pdf`
 and `ZmalaTerminal-Guide.pdf`. Their editable sources are `terminal_prep.docx`,
 `terminal_config.docx` and `terminal_use.docx`.
-See [general.md](general.md) for build/network conventions and [server.md](server.md)
+See [system overview](general.md) for build/network conventions and [server.md](server.md)
 for the authenticated configuration and SIP services.
 
 Contents: [purpose and functions](#terminal-purpose-and-functions),
@@ -406,6 +391,17 @@ Use the system Python on Pi: apt-installed GI, Cairo, Tk and OpenCV are not
 automatically visible in a pip virtual environment. The installer supplies Xorg,
 Openbox, Picom, BlueZ, NetworkManager, Liblinphone 5.3, native media plugins,
 framing runtime/model and fonts. Linux packages include shared/Linux source only.
+
+## Configuration validation
+
+`common/config_validation.py` validates the complete server reply before it reaches
+the model or persistent configuration cache. Schema version 1 and the revision
+are JSON integers; Python's equality between `True`, `1.0` and `1` is not used
+as a type check. Contact permissions are Boolean, SIP addresses match the account
+and configured domain, and names and collections are bounded. An omitted portrait
+or empty string means no picture; null, numbers, Booleans and collections are
+invalid even when empty. Nonempty paths identify local hash-named PNG/JPEG/GIF files.
+Polling and settings responses share these checks through `Configuration`.
 
 ## Onboarding and reset state
 
@@ -862,6 +858,21 @@ mid-call. Check TV input, cable, EDID, display service and observer selection be
 forcing HDMI boot modes. A fresh supported image is preferable to Pi 3 migration
 settings, which can retain obsolete display and Bluetooth configuration.
 
+## Photos during calls
+
+When server configuration advertises `call_photo_sharing`, `common/call_photo.py`
+polls the authenticated current SIP Call-ID while IN_CALL. Network and JPEG decode
+run off Tk; Tk owns the full-window, aspect-preserving black-backed image layer.
+It covers received video and self-view while retaining both native surfaces and
+the voice call. Remote volume/hangup controls remain available. The app sender
+stops sharing; call end/change and expired leases also remove the layer.
+
+The receiver accepts only bounded JPEGs (2 MiB, 1600 pixels per side), checks
+revision and owner identity, and never extends its local deadline after a failed
+request. Old servers without the capability flag are not polled. Display-fixture
+tests cover resizing and retained surfaces; physical audio/video continuity must
+be qualified separately on the deployed Pi.
+
 ## Video and audio
 
 Fresh profiles use 720p at 15 fps. Each terminal independently selects 480p
@@ -1064,7 +1075,7 @@ Source archives omit downloaded models/runtime; calls never download them.
 
 The proposed image-installed system update path is tracked in
 [the update/upgrade plan](../update_upgrade.md).
-[Image development tools](../build_tools/images/README.md) now build locked
+[Image development tools](../zmala_images/README.md) now build locked
 OS-package roots and package experimental host-storage archives. They do not
 change installed terminal services or the application-only updater described below.
 Boot-probe assembly uses the emitted project's `-S` source directory and its
@@ -1319,9 +1330,11 @@ It binds authenticated requests separately to both interfaces and compares the
 Wi-Fi UUID, terminal identity and boot ID. It neither reboots nor changes network
 settings, and it does not retain credentials. Record the two results together.
 
-The terminal requirements rewrite has a local [verification report](../tests/coverage/terminal-rebaseline/index.html).
-It separates measured LLT coverage, executed HLTs and unverified scenarios. The
-report is generated output, not part of the requirement baseline.
+Historical terminal rewrite evidence used the local generated path
+`tests/coverage/terminal-rebaseline/index.html`; it is not distributed with a fresh
+checkout. Generate current LLT execution evidence with `make coverage-llt` and
+trace/plan reports with `make requirements`. Executed HLT and physical hardware
+evidence remain separate from the plan matrix.
 
 Portable tests do not operate the TV or prove native SDK compatibility. For real
 rendering use `tests/terminal/HLT/render_cache_ui.py` (Linux under Xvfb);

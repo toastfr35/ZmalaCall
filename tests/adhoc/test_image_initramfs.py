@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_tools.images import image_state, initramfs_build as build, initramfs_worker as worker, package_lock
+from zmala_images import image_state, initramfs_build as build, initramfs_worker as worker, package_lock
 from tests.adhoc.test_image_root_build import SELECTED
 from tests.adhoc.test_image_state import fixture
 from tests.support.appliance_storage_unit import controlled_ownership

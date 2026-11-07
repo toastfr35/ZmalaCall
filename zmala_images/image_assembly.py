@@ -59,7 +59,7 @@ def build(role, source, expected, initramfs, initramfs_manifest, loader, loader_
     if bootloader.audit(loader/'resolved.config')['violations']:
         raise ValueError('Loader configuration failed review')
     output = Path(output).absolute()
-    checkout = Path(__file__).resolve().parents[2]
+    checkout = Path(__file__).resolve().parents[1]
     if output.exists() or output.resolve() != output or output.is_relative_to(checkout):
         raise ValueError('Use a new absolute output directory outside the checkout')
     for tool in ('unshare', 'tar', 'chroot', 'sfdisk', 'mkfs.vfat', 'mkfs.ext4', 'mcopy', 'mtype', 'debugfs'):
@@ -78,7 +78,7 @@ def build(role, source, expected, initramfs, initramfs_manifest, loader, loader_
     with (output/'build.log').open('x') as log:
         subprocess.run(['unshare', '--user', '--map-root-user', '--map-auto', '--net', '--mount', '--pid',
                         '--fork', '--kill-child=TERM', '--mount-proc', sys.executable,
-                        '-m', 'build_tools.images.image_worker', str(request_file)],
+                        '-m', 'zmala_images.image_worker', str(request_file)],
                        cwd=checkout, env={'PATH': '/usr/sbin:/usr/bin:/sbin:/bin', 'PYTHONPATH': str(checkout),
                                          'LC_ALL': 'C', 'SOURCE_DATE_EPOCH': '1793836800'},
                        check=True, timeout=1800, stdout=log, stderr=subprocess.STDOUT)

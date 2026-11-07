@@ -38,24 +38,30 @@ references:
   type: file
 reviewed: null
 scope: Experimental
-text: The app shall own at most one main-thread Linphone call through application-scoped call ownership,
+text: |
+  The app shall own at most one main-thread Linphone call through application-scoped call ownership,
   use the configured SIP proxy and credentials,
   negotiate audio and video without RTP bundle in LAN mode, and reject incoming calls unless the contact
   permits reception and X-Family-Auth matches the HMAC over call ID and caller. Answer, hangup, mute,
   audio output and camera controls shall operate on the current call, and stopping shall release registration
   and media.
+
   New calls shall default to the built-in loudspeaker without raising the user's Android call volume.
   The listening control shall cycle loudspeaker, earpiece and muted call sound, skipping an unavailable
   earpiece. Microphone mute and received-audio mute shall be independent. Both the native future-call
   default and current-call device shall follow the selected audible route; call state transitions shall
   retain the selection.
+
   Camera switching shall alternate the available front and back cameras without starting a new
   SIP offer/answer; two successive switches shall restore the original camera.
+
   The native core shall enable AVPF feedback and NACK retransmission so peers can request recovery
   from lost video packets and decoder initialization data.
+
   The foreground-owned core shall explicitly enter foreground mode after startup so active
   signalling and media negotiation use the SDK foreground iteration cadence.
   Display rotation shall update the native video orientation without recreating the core or call.
+
   User-started/answered calls shall use a microphone/camera foreground service started while the
   activity is visible. Home, screen lock and activity recreation shall retain the core/call and audio
   focus. Hidden views shall detach native surfaces and disable the current call's camera; returning

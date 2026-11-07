@@ -15,7 +15,7 @@ their direct LLT/HLT coverage before the corresponding behavior ships.
 
 4 November 2026 — [#140](https://github.com/toastfr35/ZmalaCall/issues/140):
 
-- Added `build_tools/images/` source pins/acquisition, explicit role/package intent,
+- Added `zmala_images/` source pins/acquisition, explicit role/package intent,
   minimal A/B boot-probe configuration, bounded read-only Pi inventory and offline
   root privacy inspection. Source downloads are verified before safe extraction;
   neither the sample backend nor a generic mark-good service is installed.
@@ -73,7 +73,7 @@ closure lock, hardware boot qualification or automatic system updater is claimed
 - Verified actual intent closures: server 170 archives / 77,056,328 bytes;
   terminal 721 archives / 528,545,960 bytes. Host package database hashes were
   unchanged before/after both runs. Retained all archives and signed audit inputs
-  privately; reviewed public lock metadata lives in `build_tools/images/locks/`.
+  privately; reviewed public lock metadata lives in `zmala_images/locks/`.
 - Added mandatory external lock-digest verification and regression coverage for
   altered/missing/extra archives, trust metadata, traversal, download budgets,
   invalid signatures and overlapping archive-key rollover. SHA-256 is checked
@@ -873,10 +873,10 @@ does not import Tk, camera, Bluetooth or TV code. Suggested organization, subjec
 to the first architecture PR:
 
 ```text
-build_tools/images/                 # Build configs, package locks, assembly
-build_tools/images/common/          # Shared appliance layers and mount policy
-build_tools/images/terminal/        # Terminal-specific image layers
-build_tools/images/server/          # Server-specific image layers
+zmala_images/                 # Build configs, package locks, assembly
+zmala_images/common/          # Shared appliance layers and mount policy
+zmala_images/terminal/        # Terminal-specific image layers
+zmala_images/server/          # Server-specific image layers
 zmala_system/                       # Small common Pi system-maintenance runtime
   coordinator.py                    # State machine and bounded scheduling
   trust.py                          # Verified metadata and compatibility decisions

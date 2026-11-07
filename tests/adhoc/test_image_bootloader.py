@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_tools.images import bootloader, sources
+from zmala_images import bootloader, sources
 
 
 def config_file(path, replacements=None, removed=()):
