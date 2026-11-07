@@ -30,6 +30,7 @@ def main():
     applications.add_argument('--commit', default='HEAD')
     app_root = sub.add_parser('provision-applications', help='Build and check applications in an isolated offline root')
     app_root.add_argument('role', choices=ROLES)
+    app_root.add_argument('--argon-one', action='store_true', help='Configure the Argon ONE Pi 4 V2 call-only fan')
     app_root.add_argument('--source', required=True, type=Path)
     app_root.add_argument('--expected-root-sha256', required=True)
     app_root.add_argument('--applications', required=True, type=Path)
@@ -120,7 +121,7 @@ def main():
         elif args.command == 'provision-applications':
             print(json.dumps(application_build.build(args.role, args.source, args.expected_root_sha256,
                              args.applications, args.expected_applications_sha256, args.base_cache,
-                             args.role_cache, args.output), indent=2))
+                             args.role_cache, args.output, argon_one=args.argon_one), indent=2))
         elif args.command == 'fetch':
             print(sources.acquire(args.source, args.cache))
         elif args.command == 'probe-config':

@@ -54,9 +54,16 @@ def enable(root, unit):
     link(root, 'etc/systemd/system/multi-user.target.wants/'+unit, '/usr/lib/systemd/system/'+unit)
 
 
-def accounts(records, role):
-    """Return fixed locked service identities, rejecting UID/name collisions."""
+def case_selection(role, argon_one):
     host_layout.profile(role)
+    if type(argon_one) is not bool or (argon_one and role == 'server'):
+        raise ValueError('Argon ONE selection requires a terminal or combined image')
+    return argon_one
+
+
+def accounts(records, role, argon_one=False):
+    """Return fixed locked service identities, rejecting UID/name collisions."""
+    case_selection(role, argon_one)
     parsed = {}
     for name, width in (('passwd', 7), ('group', 4), ('shadow', 9), ('gshadow', 4)):
         parsed[name] = [line.split(':') for line in records[name].splitlines()]
@@ -76,7 +83,7 @@ def accounts(records, role):
         parsed['shadow'].append([name, '!', '1', '0', '99999', '7', '', '', ''])
         parsed['gshadow'].append([name, '!', '', ''])
     if role in ('terminal', 'combined'):
-        for group in ('audio', 'video', 'render', 'input'):
+        for group in ('audio', 'video', 'render', 'input') + (('i2c',) if argon_one else ()):
             row = next((row for row in parsed['group'] if row[0] == group), None)
             if row is None:
                 used = {int(row[2]) for row in parsed['group']}
@@ -90,13 +97,14 @@ def accounts(records, role):
     return {name: ''.join(':'.join(row)+'\n' for row in rows) for name, rows in parsed.items()}
 
 
-def provision(root, records, role):
+def provision(root, records, role, argon_one=False):
+    case_selection(role, argon_one)
     root = Path(root)
     if root.is_symlink() or not root.is_dir() or root.resolve() != root or root == Path('/'):
         raise ValueError('Expected a new absolute disposable offline root')
     host_layout.profile(role)
     ledgers = {name: host_storage.safe(root, 'etc/'+name).read_text() for name in ('passwd', 'group', 'shadow', 'gshadow')}
-    changed = accounts(ledgers, role)
+    changed = accounts(ledgers, role, argon_one)
     for name, body in changed.items():
         path = host_storage.safe(root, 'etc/'+name)
         # Retain the distribution's root/shadow group ownership and restrictive modes.
@@ -132,7 +140,12 @@ def provision(root, records, role):
             put(root, 'usr/lib/systemd/system/'+unit, body)
             units.append(unit)
         put(root, 'etc/zmalacall/terminal.conf',
-            'ZMALA_USER=zmalaterminal\nZMALA_WIFI_MODE=connect\nZMALA_DISPLAY_MODE=1280x720\nZMALA_ARGON_ONE_FAN=0\n')
+            'ZMALA_USER=zmalaterminal\nZMALA_WIFI_MODE=connect\nZMALA_DISPLAY_MODE=1280x720\n'
+            + 'ZMALA_ARGON_ONE_FAN='+str(int(argon_one))+'\n')
+        if argon_one:
+            put(root, 'etc/modules-load.d/zmala-i2c.conf', 'i2c-dev\n')
+            put(root, 'etc/udev/rules.d/99-zmalacall-i2c.rules',
+                'SUBSYSTEM=="i2c-dev", KERNEL=="i2c-1", GROUP="i2c", MODE="0660"\n')
         for original, destination in (
                 ('build_tools/linux/70-zmalacall-presenter.rules', 'etc/udev/rules.d/70-zmalacall-presenter.rules'),
                 ('zmala_terminal/linux/99-zmalacall-c20.rules', 'etc/udev/rules.d/99-zmalacall-c20.rules')):
@@ -172,7 +185,7 @@ def provision(root, records, role):
         path = target(root, 'etc/systemd/system/multi-user.target.wants/bluetooth.service')
         if not path.exists() and not path.is_symlink():
             path.symlink_to('/usr/lib/systemd/system/bluetooth.service')
-    result = {'role': role, 'units': units, 'legacy_app_updater_enabled': False,
+    result = {'role': role, 'units': units, 'argon_one': argon_one, 'legacy_app_updater_enabled': False,
               'ssh_enabled': False, 'joint_health_implemented': False, 'secure_relay_configured': False}
     put(root, 'usr/lib/zmala-application-build.json', json.dumps(result, indent=2)+'\n')
     return result

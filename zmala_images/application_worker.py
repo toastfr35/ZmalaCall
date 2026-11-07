@@ -27,9 +27,10 @@ def unmount(root):
 
 def validate_request(request, request_path):
     if (os.geteuid() != 0 or request.get('schema') != 1
-            or set(request) != {'schema', 'role', 'source', 'root_sha256', 'applications',
+            or set(request) != {'schema', 'role', 'argon_one', 'source', 'root_sha256', 'applications',
                                'applications_sha256', 'output', 'host_namespaces'}):
         raise ValueError('Unsupported namespace worker invocation')
+    provision.case_selection(request['role'], request['argon_one'])
     namespaces = request['host_namespaces']
     if (set(namespaces) != {'user', 'mnt', 'pid', 'net'}
             or any(os.readlink('/proc/self/ns/'+name) == value for name, value in namespaces.items())):
@@ -157,7 +158,7 @@ def worker(request_path):
             path = root/'dev'/name
             path.touch()
             command(['mount', '--bind', '/dev/'+name, path])
-        result = provision.provision(root, records, role)
+        result = provision.provision(root, records, role, request['argon_one'])
         native = {}
         if role in ('terminal', 'combined'):
             wifi_smoke(root)

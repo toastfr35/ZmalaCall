@@ -1238,6 +1238,10 @@ to stop early. The filesystem remains writable; this is not a read-only overlay.
 ### Argon fan
 
 The Windows installer enables fan control; manual installs use `--argon-one`.
+Development terminal/combined images select the same case explicitly with
+`provision-applications --argon-one`. This provisions the call-only controller,
+I2C group/device permissions and module loading. Assembly enables I2C in both
+slot device trees and the firmware configuration; generic images leave it off.
 It is off outside connected calls, 55% during calls and 100% at 65°C during calls.
 Hangup/stop requests fan-off. Reads/writes run off the UI thread. There is no
 outside-call thermal override; firmware throttling remains active. Only I2C bus 1,

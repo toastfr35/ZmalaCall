@@ -7,10 +7,12 @@ import re
 import subprocess
 import sys
 
-from . import application_inputs, build_space, local_repo, package_lock, project, root_build
+from . import application_inputs, application_provision, build_space, local_repo, package_lock, project, root_build
 
 
-def build(role, source, expected_root, applications, expected_applications, base_cache, role_cache, output):
+def build(role, source, expected_root, applications, expected_applications, base_cache, role_cache, output,
+          argon_one=False):
+    application_provision.case_selection(role, argon_one)
     if platform.system() != 'Linux' or os.geteuid() == 0:
         raise ValueError('Use an ordinary Linux user with subordinate UID/GID mappings')
     index = project.package_locks()
@@ -29,7 +31,7 @@ def build(role, source, expected_root, applications, expected_applications, base
     if build_space.available(output.parent) < root_build.MIN_BUILD_FREE_BYTES:
         raise ValueError('At least 32 GiB free is required for application construction')
     output.mkdir()
-    request = {'schema': 1, 'role': role, 'source': str(source), 'root_sha256': expected_root,
+    request = {'schema': 1, 'role': role, 'argon_one': argon_one, 'source': str(source), 'root_sha256': expected_root,
                'applications': str(applications), 'applications_sha256': expected_applications,
                'output': str(output), 'host_namespaces': {name: os.readlink('/proc/self/ns/'+name)
                                                        for name in ('user', 'mnt', 'pid', 'net')}}
@@ -51,7 +53,7 @@ def build(role, source, expected_root, applications, expected_applications, base
         raise ValueError('Host package state or application build inputs changed')
     audit = root_build.audit(output/'root.tar', selected)
     result = json.loads((output/'worker-result.json').read_text())
-    if result['role'] != role:
+    if result['role'] != role or result.get('argon_one') is not argon_one:
         raise ValueError('Application worker role mismatch')
     result.update(schema=1, packages=audit['packages'], source_root_sha256=expected_root,
                   applications_sha256=expected_applications, source_commit=manifest['source_commit'],
