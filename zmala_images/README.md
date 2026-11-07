@@ -1,26 +1,63 @@
 # Appliance image development tools
 
 Implementation issue [#140](https://github.com/toastfr35/ZmalaCall/issues/140).
-See [the staged system-update plan](../../update_upgrade.md). These tools are
+See [the staged system-update plan](../update_upgrade.md). These tools are
 build/deployment tooling, not an installed updater. **There is no production SD
 installer or automatic system-update feed yet.**
+
+## Build sequence and ownership
+
+Run commands from the repository root with `python3 -m zmala_images`. The builder
+has its own top-level package; old development commands using
+`python3 -m build_tools.images` need the new module name. Output/cache paths under
+`build_tools/tmp/` remain usable, and committed input-lock bytes are unchanged.
+
+| Stage | Command/module | Result and boundary |
+| --- | --- | --- |
+| Check reviewed inputs | `check`, `project.py`, `sources.py` | Source pins and base/role lock consistency; no package install |
+| Retain external inputs | `fetch`, `lock-base`, `lock-packages`, `application-inputs` | Authenticated OS archives and committed application sources/dependencies |
+| Build package root | `build-root`, `root_build.py` | Locked OS root tar; no application or bootable media yet |
+| Add applications | `provision-applications`, `application_build.py` | Offline role-specific application root |
+| Add host runtime | `prepare-root`, `image_state.py` | Packages `zmala_system/` policy and role seed into the root |
+| Build boot components | `build-initramfs`, `build-loader` | Checked target runtime and pinned loader manifests |
+| Assemble development media | `assemble-image`, `image_assembly.py` | New regular-file A/B image plus READY/digest evidence |
+| Inspect independently | `inspect-root`, `inspect-disk`, `inspect-bootfs` | Bounded structural/privacy checks, not physical boot qualification |
+
+The [complete application/media walkthrough](#offline-applications-and-development-media)
+shows the dependent build order and required digests. Earlier sections describe
+individual stages and the smaller `probe-config` experiment; the probe is not
+an alternative production image recipe. Each build uses a new output directory.
+A READY record is accepted only with independently checked input/output hashes.
+
+Module responsibilities follow the stage names. `*_worker.py` executes inside
+isolated Linux namespaces; its parent validates inputs and completion before
+publishing READY. `application_inputs.py` accepts bounded file-only archives and
+rejects traversal, links, file/parent conflicts and Windows drive/stream or
+trailing-dot/space path aliases. Build/runtime policy is deliberately separate:
+installed identity, storage and boot admission live in `../zmala_system/` and
+are traced to product requirements there. Builder regressions live in
+`../tests/adhoc/test_image_*.py` and do not count as runtime verification.
+
+For a fast local check, run `python3 -m zmala_images check`, then
+`make test-adhoc`. Linux CI exercises namespace/filesystem cases unavailable on
+Windows. No command in this guide qualifies a physical card, TV or power-loss run.
 
 ## Current commands
 
 Run from the repository root:
 
 ```sh
-python3 -m build_tools.images check
-python3 -m build_tools.images probe-config terminal --output build_tools/tmp/terminal-probe
-python3 -m build_tools.images probe-config server --output build_tools/tmp/server-probe
-python3 -m build_tools.images fetch imagegen --cache build_tools/tmp/image-sources
-python3 -m build_tools.images fetch backend_audit --cache build_tools/tmp/image-sources
-python3 -m build_tools.images fetch bootloader_audit --cache /path/to/new/outside-checkout-cache
-python3 -m build_tools.images bootloader-config --output /path/to/new/bootloader-profile
-python3 -m build_tools.images inspect-bootloader /path/to/resolved-build/.config
-python3 -m build_tools.images inspect-root /path/to/offline/root
-python3 -m build_tools.images inspect-disk /path/to/uncompressed-probe.img
-python3 -m build_tools.images inspect-bootfs /path/to/uncompressed-probe.img
+python3 -m zmala_images check
+python3 -m zmala_images probe-config terminal --output build_tools/tmp/terminal-probe
+python3 -m zmala_images probe-config server --output build_tools/tmp/server-probe
+python3 -m zmala_images fetch imagegen --cache build_tools/tmp/image-sources
+python3 -m zmala_images fetch backend_audit --cache build_tools/tmp/image-sources
+python3 -m zmala_images fetch bootloader_audit --cache /path/to/new/outside-checkout-cache
+python3 -m zmala_images bootloader-config --output /path/to/new/bootloader-profile
+python3 -m zmala_images inspect-bootloader /path/to/resolved-build/.config
+python3 -m zmala_images inspect-root /path/to/offline/root
+python3 -m zmala_images inspect-disk /path/to/uncompressed-probe.img
+python3 -m zmala_images inspect-bootfs /path/to/uncompressed-probe.img
 python3 -m unittest tests.adhoc.test_image_foundation -v
 python3 -m unittest tests.adhoc.test_image_disk -v
 python3 -m unittest tests.adhoc.test_image_boot -v
@@ -174,12 +211,12 @@ separate gate.
 On Linux, download a role's package intent into a **new** isolated cache:
 
 ```sh
-python3 -m build_tools.images lock-packages server \
+python3 -m zmala_images lock-packages server \
   --output /path/to/new/server-intake \
   --debian-keyring /usr/share/keyrings/debian-archive-keyring.gpg \
   --raspberrypi-keyring /path/to/verified/imagegen/keydir/raspberrypi-archive-keyring.gpg
 
-python3 -m build_tools.images verify-packages /path/to/new/server-intake \
+python3 -m zmala_images verify-packages /path/to/new/server-intake \
   --expected-lock-sha256 <reviewed-lock-file-digest>
 ```
 
@@ -238,12 +275,12 @@ installed package and is retained. Linked/special/oversized ledger files are
 refused before reading. Output creation is exclusive.
 
 ```sh
-python3 -m build_tools.images capture-base /path/to/clean/status \
+python3 -m zmala_images capture-base /path/to/clean/status \
   --expected-ledger-sha256 <reviewed-ledger-digest> --output /path/to/new/base-intent.json
-python3 -m build_tools.images lock-base --output /path/to/new/base-intake \
+python3 -m zmala_images lock-base --output /path/to/new/base-intake \
   --debian-keyring /usr/share/keyrings/debian-archive-keyring.gpg \
   --raspberrypi-keyring /path/to/verified/imagegen/keydir/raspberrypi-archive-keyring.gpg
-python3 -m build_tools.images local-repo \
+python3 -m zmala_images local-repo \
   --cache /path/to/base-intake <base-lock-sha256> \
   --cache /path/to/server-intake <server-lock-sha256> \
   --output /path/to/new/server-repository
@@ -292,7 +329,7 @@ not fully locked yet; an exact package ledger does not make every output byte
 reproducible or qualify a complete appliance.
 
 ```sh
-python3 -m build_tools.images build-root server \
+python3 -m zmala_images build-root server \
   --base-cache /path/to/reviewed/base-intake \
   --role-cache /path/to/reviewed/server-intake \
   --output /path/to/new/server-root-build
@@ -359,7 +396,7 @@ raw tar sizes, not partition-capacity measurements or boot/call qualification.
 base/role caches. It rewrites a **new tar without extracting or mounting it**:
 
 ```sh
-python3 -m build_tools.images prepare-root server \
+python3 -m zmala_images prepare-root server \
   --source /path/to/server-root-build/root.tar \
   --expected-root-sha256 <digest-from-reviewed-root-build-record> \
   --base-cache /path/to/reviewed/base-intake \
@@ -396,8 +433,8 @@ update coordinator remain unfinished.
 ## Empty factory data and first-device identity
 
 ```sh
-python3 -m build_tools.images factory-data server --output /path/to/new/server-data
-python3 -m build_tools.images factory-data terminal --output /path/to/new/terminal-data
+python3 -m zmala_images factory-data server --output /path/to/new/server-data
+python3 -m zmala_images factory-data terminal --output /path/to/new/terminal-data
 python3 -m unittest tests.adhoc.test_image_factory_data -v
 ```
 
@@ -447,7 +484,7 @@ preparation does not silently allow ordinary services to start.
 Its data mountpoint must be empty. The root's stock initramfs still needs rebuilding:
 
 ```sh
-python3 -m build_tools.images build-initramfs server \
+python3 -m zmala_images build-initramfs server \
   --source /path/to/reviewed/server-storage-root/root.tar \
   --expected-root-sha256 <digest-from-prepared-root-record> \
   --base-cache /path/to/reviewed/base-intake \

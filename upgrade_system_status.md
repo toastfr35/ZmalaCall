@@ -157,14 +157,14 @@ feature; Android version bumps in these PRs follow repository release rules.
 - [AGENTS.md](AGENTS.md): issue/branch/PR, version, requirements, tests and trace rules.
 - [update_upgrade.md](update_upgrade.md): detailed design, decisions, implementation
   history, staged checklist, recovery/qualification matrix and completion criteria.
-- [build_tools/images/README.md](build_tools/images/README.md): implemented build
+- [zmala_images/README.md](zmala_images/README.md): implemented build
   commands, source audits, tool boundaries and important limitations.
 - [docs/general.md](docs/general.md): requirement/test conventions, build/release
   conventions and experimental root integration commands.
 - [docs/server.md](docs/server.md) and [docs/terminal.md](docs/terminal.md): current
   deployed behavior and the separately identified experimental host/image paths.
-- `build_tools/images/{profiles.json,sources.lock.json,bootloader-profile.json}`
-  and `build_tools/images/locks/`: actual checked-in build intent and locks.
+- `zmala_images/{profiles.json,sources.lock.json,bootloader-profile.json}`
+  and `zmala_images/locks/`: actual checked-in build intent and locks.
 - `zmala_system/`: the new shared experimental runtime implementation.
 
 The latest combined-image request is recorded in
@@ -566,7 +566,7 @@ until their identities/results have been recorded. A file named `root.tar` or
 
 Private helper scripts in this folder use existing authenticated access and may
 refer to private paths. They are conveniences, **not required public tooling and
-not files to commit**. Public continuation must use the actual `build_tools.images`
+not files to commit**. Public continuation must use the actual `zmala_images`
 commands and checked-in code, or deliberately replace the helper with reviewed
 public tooling. Never print authentication material from helpers.
 
@@ -599,7 +599,7 @@ than rebuilding it for every runtime-source change.
 From a clean checkout:
 
 ```sh
-python3 -m build_tools.images check
+python3 -m zmala_images check
 python3 -m unittest discover -s tests/adhoc -t . -p 'test_image*.py' -q
 
 python3 -m unittest \
@@ -626,21 +626,21 @@ Build commands, using retained cache directories whose lock hashes match the
 checked-in index (substitute actual new absolute output paths):
 
 ```sh
-python3 -m build_tools.images build-root server \
+python3 -m zmala_images build-root server \
   --base-cache /path/to/base-cache --role-cache /path/to/server-cache \
   --output /path/to/new/server-root
 
-python3 -m build_tools.images prepare-root server \
+python3 -m zmala_images prepare-root server \
   --source /path/to/server-root/root.tar --expected-root-sha256 ROOT_SHA256 \
   --base-cache /path/to/base-cache --role-cache /path/to/server-cache \
   --output /path/to/new/server-prepared
 
-python3 -m build_tools.images build-initramfs server \
+python3 -m zmala_images build-initramfs server \
   --source /path/to/server-prepared/root.tar --expected-root-sha256 PREPARED_SHA256 \
   --base-cache /path/to/base-cache --role-cache /path/to/server-cache \
   --output /path/to/new/server-initramfs
 
-python3 -m build_tools.images factory-data server --output /path/to/new/server-data
+python3 -m zmala_images factory-data server --output /path/to/new/server-data
 ```
 
 Use `terminal` with its own matching inputs for the other implemented role.

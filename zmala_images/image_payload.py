@@ -45,7 +45,7 @@ def environment(initial, role, flag):
 
 
 def boot_script():
-    selector = (Path(__file__).resolve().parents[2]/'zmala_system/boot_select.sh').read_text()
+    selector = (Path(__file__).resolve().parents[1]/'zmala_system/boot_select.sh').read_text()
     return selector+'''
 if test -z "${zm_selected}"; then reset; fi
 if test "${zm_selected}" = "A"; then

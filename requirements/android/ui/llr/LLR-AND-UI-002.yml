@@ -68,12 +68,16 @@ text: |
   The interface shall present labeled controls for setup, permitted outgoing contacts and current
   call actions, use at least 60 dp action heights, dark terminal background and panels, green call/answer
   and red decline/end controls, and preserve readable layout within system insets.
+
   Welcome instructions shall describe scanning a supplied setup QR code, received by email or on paper,
   without requiring the phone user to access server administration.
+
   Contacts shall use compact horizontal rows with a rounded portrait beside the name.
+
   Portrait downloads shall use a bounded background queue separate from configuration and callback
   requests. Decoded static portraits shall be reused within a bounded memory cache, isolated by
   enrollment and cleared when the screen owner is destroyed. Replacing or leaving the contact view shall discard obsolete queued work and results.
+
   Name buttons shall include a smaller status label: Available on green for recently confirmed
   activity, Try calling on blue for unconfirmed push eligibility, and Offline on red
   otherwise. Each row shall be one tappable card opening a dedicated contact page, including
@@ -82,35 +86,46 @@ text: |
   or push-eligible. Returning to Contacts or pressing Back shall return to the list without calling.
   Status shall also be exposed to accessibility services.
   Rows shall omit a separate call button to show more contacts.
+
   The contact screen shall stay in portrait orientation; starting a call shall restore display rotation and returning to contacts shall restore portrait.
   The contact screen shall omit the phone account name, the ready-to-call status line and any in-app reset action.
+
   Incoming calls shall show a large rounded caller portrait (logo fallback), name and Incoming video call
   wording with separate Answer and Decline actions. The screen shall scroll when enlarged text needs space.
+
   Contact rows shall be vertically centered in the available contact area when they fit;
   longer lists shall scroll from the top without clipping or inaccessible rows.
+
   The outgoing and connected call view shall devote the screen to video without a logo banner or
   contact name, with the local preview at bottom right. Four round icon controls for microphone,
   audio output, camera switching and hangup shall share one row with accessible action labels.
   The microphone icon shall use a slash only when the microphone is muted. The listening icon shall
   distinguish a speaker with sound waves, a handset/earpiece and a crossed speaker, with an accessible
   label naming the current state and next action. Brief text feedback shall confirm audio changes.
+
   A single-finger vertical swipe on video shall change Android call listening volume in bounded steps;
   upward shall increase and downward decrease, without changing microphone/output mute or triggering
   a video tap. Horizontal, cancelled or multi-finger gestures shall not change volume. Hardware volume
   keys during calls shall control the call stream, and the previous system stream policy shall resume afterward.
+
   Controls shall start hidden, appear on a video tap, and hide after five seconds without interaction.
   Short visible labels shall accompany revealed icons; the first call shall briefly explain tap and
   volume-swipe gestures. Microphone/listening mute shall remain visibly indicated while controls hide.
+
   UI wording shall use Android English/French resources selected by the phone/app locale, with English
   fallback, localized plural counts and readable long-name/enlarged-font layouts. Setup, contact
   actions, incoming calls and update explanations shall remain scrollable when needed.
+
   Control visibility shall honor Android's accessibility timeout recommendation and shall not expire
   while keyboard focus is inside controls or touch exploration is active.
+
   The preview shall move above visible controls to avoid overlap and return to the corner when hidden.
   The corner surface itself shall fit the current camera aspect ratio inside a bounded preview area,
   updating when native capture reports a different size after rotation or camera switching.
+
   Portrait and landscape layouts shall retain the same video surfaces and call. The local preview shall preserve the captured image aspect ratio and apply camera sensor/display rotation without stretching or showing a sideways image. A pulsing phone
   indicator shall show outgoing calling/ringing progress and stop on connection or leaving the view.
+
   After answer, a Connecting video indicator shall remain visible for up to fifteen seconds;
   if no frame has arrived, a calm delayed-video message shall replace its spinner without ending
   the call. It shall disappear when the current call decodes a frame, including through initial stream restarts. Stale callbacks

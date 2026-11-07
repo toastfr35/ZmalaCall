@@ -8,8 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_tools.images import package_lock as packages
-from build_tools.images import project
+from zmala_images import package_lock as packages
+from zmala_images import project
 
 
 def fixture(root):
@@ -115,7 +115,7 @@ class RetainedPackageTests(unittest.TestCase):
             git('init', '-q')
             git('config', 'core.autocrlf', 'true')
             shutil.copyfile(project.ROOT/'.gitattributes', root/'.gitattributes')
-            names = ('build_tools/images/locks/server.json', 'build_tools/images/bootloader-profile.json')
+            names = ('zmala_images/locks/server.json', 'zmala_images/bootloader-profile.json')
             body = b'{\n  "fixture": true\n}\n'
             for name in names:
                 path = root/name
@@ -131,14 +131,14 @@ class RetainedPackageTests(unittest.TestCase):
     def test_role_lock_index_detects_intent_drift(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            for name in ('build_tools/images/profiles.json', 'build_tools/linux/dependencies.txt'):
+            for name in ('zmala_images/profiles.json', 'build_tools/linux/dependencies.txt'):
                 target = root/name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(project.ROOT/name, target)
-            shutil.copytree(project.ROOT/'build_tools/images/locks', root/'build_tools/images/locks')
+            shutil.copytree(project.ROOT/'zmala_images/locks', root/'zmala_images/locks')
             with patch.object(project, 'ROOT', root):
                 self.assertEqual(set(project.package_locks()['roles']), {'server', 'terminal', 'combined'})
-                path = root/'build_tools/images/profiles.json'
+                path = root/'zmala_images/profiles.json'
                 profile = json.loads(path.read_text())
                 profile['roles']['server']['extra_packages'].append('unexpected-dependency')
                 path.write_text(json.dumps(profile))
@@ -202,7 +202,7 @@ if __name__ == '__main__':
 
 class CombinedIntentTests(unittest.TestCase):
     def test_combined_resolves_exact_union_and_reviewed_shared_versions(self):
-        from build_tools.images import project
+        from zmala_images import project
         self.assertEqual(project.packages('combined'),
                          sorted(set(project.packages('terminal')) | set(project.packages('server'))))
         index = project.package_locks()
@@ -211,12 +211,12 @@ class CombinedIntentTests(unittest.TestCase):
     def test_reanchored_role_lock_cannot_change_a_shared_archive(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            for name in ('build_tools/images/profiles.json', 'build_tools/linux/dependencies.txt'):
+            for name in ('zmala_images/profiles.json', 'build_tools/linux/dependencies.txt'):
                 target = root/name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(project.ROOT/name, target)
-            folder = root/'build_tools/images/locks'
-            shutil.copytree(project.ROOT/'build_tools/images/locks', folder)
+            folder = root/'zmala_images/locks'
+            shutil.copytree(project.ROOT/'zmala_images/locks', folder)
             manifest = json.loads((folder/'combined.json').read_text())
             shared = json.loads((folder/'server.json').read_text())['packages'][0]['package']
             next(p for p in manifest['packages'] if p['package'] == shared)['sha256'] = 'f'*64
