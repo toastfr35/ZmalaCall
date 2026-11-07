@@ -1,0 +1,90 @@
+{
+  "title": "Configure e use o terminal",
+  "blurb": "Videochamadas em família, no conforto do seu sofá.",
+  "scope": "Veja familiares e amigos no televisor. Escolha um rosto conhecido com o comando, confirme a chamada e converse. A família pode usar o Zmala Phone ou outro terminal.",
+  "ready": "Tenha à mão o comando do televisor e os códigos QR de Wi-Fi e servidor fornecidos. Estas páginas mostram como ligar o terminal, configurá-lo e fazer chamadas.",
+  "connect": "Ligue o terminal",
+  "equipment": [
+    "Terminal",
+    "Câmara",
+    "Comando"
+  ],
+  "connections": [
+    [
+      "Primeiro a câmara",
+      "Ligue o cabo da câmara a uma porta USB azul do terminal. Oriente a câmara para o seu lugar."
+    ],
+    [
+      "Carregador do comando",
+      "Ligue a base de carregamento do comando a uma porta USB preta. Coloque o comando na base para carregar."
+    ],
+    [
+      "Televisor",
+      "Ligue o terminal ao televisor com o cabo HDMI. Selecione essa entrada HDMI no televisor."
+    ],
+    [
+      "Alimentação por último",
+      "Ligue a fonte de alimentação fornecida ao terminal e depois a uma tomada de parede. O terminal inicia automaticamente."
+    ]
+  ],
+  "setup_title": "Configure o Wi-Fi e o servidor",
+  "setup": [
+    [
+      "Emparelhe o comando",
+      "Ligue-o na parte de trás. Mantenha o botão Bluetooth traseiro premido durante 3 segundos até a luz branca piscar. Aguarde a ligação."
+    ],
+    [
+      "Teste os cinco botões",
+      "Prima e solte cada botão pela ordem indicada no televisor: esquerda, direita, verde, vermelho e centro."
+    ],
+    [
+      "Leia o QR do Wi-Fi",
+      "Peça o QR da rede a quem o ajuda ou partilhe-o nas definições Wi-Fi de um Android ligado. Coloque o código inteiro dentro das marcas da câmara. Aguarde o sucesso e os 10 segundos de confirmação."
+    ],
+    [
+      "Leia o QR de servidor deste terminal",
+      "Use o QR de servidor fornecido para este terminal. Mostre-o à câmara quando solicitado."
+    ],
+    [
+      "Faça uma chamada de teste",
+      "Ligue a um contacto e verifique vídeo em movimento e som nos dois sentidos. Verifique se o Wi-Fi continua ligado. O terminal usa Wi-Fi nas chamadas do dia a dia."
+    ]
+  ],
+  "private": "Guarde os dois QR em privado: dão acesso à rede e à conta do terminal. Se ocorrer um erro, verifique o código e a ligação e tente novamente.",
+  "operate": "Use o comando",
+  "controls": [
+    [
+      "Esquerda e direita",
+      "Escolha a pessoa apresentada no centro."
+    ],
+    [
+      "Verde",
+      "Prima para verificar a pessoa, solte e prima novamente para ligar. Numa chamada recebida, verde atende."
+    ],
+    [
+      "Vermelho",
+      "Cancele, recuse ou termine a chamada. Com atendimento automático, vermelho recusa antes de terminar a contagem."
+    ],
+    [
+      "Centro",
+      "Abra o volume da chamada. Esquerda baixa; direita aumenta. Vermelho ou centro fecha a barra. Enquanto estiver aberta, vermelho só fecha a barra, sem terminar a chamada."
+    ]
+  ],
+  "settings_title": "Altere as definições locais",
+  "settings": [
+    [
+      "Abra",
+      "No ecrã de contactos, mantenha vermelho premido durante 7 segundos. Continue quando aparecer a barra de progresso."
+    ],
+    [
+      "Escolha e guarde",
+      "Esquerda/direita escolhe a definição; verde abre-a. Esquerda/direita altera o valor; verde guarda, vermelho descarta. Opções: idioma, atendimento automático, enquadramento, toque, volumes, retratos e regresso à TV."
+    ],
+    [
+      "Saia",
+      "Prima vermelho na lista de definições e depois verde para sair ou vermelho para ficar."
+    ]
+  ],
+  "help": "Com controlo TV ativo, a primeira pressão pode apenas mostrar o Zmala. Caso contrário, escolha a entrada HDMI com o comando TV. Se o comando não responder, verifique o interruptor traseiro e carregue-o. Peça ajuda se falhar uma chamada ou gravação.",
+  "setup_intro": "Quando o terminal iniciar pela primeira vez, siga as instruções no ecrã."
+}

@@ -28,8 +28,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Install packaging dependencies
-        run: python -m pip install -r build_tools/windows_installer/requirements.txt -r build_tools/release/requirements.txt
+        run: |
+          python -m pip install -r build_tools/windows_installer/requirements.txt -r build_tools/release/requirements.txt -r build_tools/leaflet/requirements.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npx playwright install chromium
       - name: Check release version and installer regressions
         env:
           RELEASE_TAG: ${{ inputs.tag }}
@@ -63,6 +71,8 @@ jobs:
           }
       - name: Generate the six PDF manuals
         run: python build_tools/release/guides.py
+      - name: Generate all terminal leaflet editions and the release ZIP
+        run: python build_tools/leaflet/generate.py --language all --bundle
       - uses: actions/upload-artifact@v4
         with:
           name: release-windows
@@ -70,6 +80,7 @@ jobs:
             build_tools/dist/ZmalaTerminal-Pi4-setup.exe
             build_tools/dist/ZmalaServer-Pi4-setup.exe
             build_tools/dist/guides/*.pdf
+            build_tools/dist/leaflets/ZmalaTerminal-Leaflets.zip
           if-no-files-found: error
           retention-days: 7
 
@@ -154,7 +165,7 @@ jobs:
           name: release-terminal-update
           path: build_tools/dist
       - run: python3 -m pip install cryptography==50.0.2
-      - name: Verify machine updates and collect nine user downloads plus two machine assets
+      - name: Verify machine updates and collect ten user downloads plus two machine assets
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: |

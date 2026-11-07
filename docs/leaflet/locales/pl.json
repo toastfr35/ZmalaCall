@@ -1,0 +1,90 @@
+{
+  "title": "Skonfiguruj i używaj terminala",
+  "blurb": "Rodzinne rozmowy wideo z wygodnej kanapy.",
+  "scope": "Zobacz rodzinę i znajomych na telewizorze. Wybierz znajomą twarz pilotem, potwierdź połączenie i rozmawiaj. Bliscy mogą korzystać ze Zmala Phone lub innego terminala.",
+  "ready": "Przygotuj pilot telewizora oraz dołączone kody QR Wi-Fi i serwera. Te strony pokazują, jak podłączyć terminal, skonfigurować go i dzwonić.",
+  "connect": "Podłącz terminal",
+  "equipment": [
+    "Terminal",
+    "Kamera",
+    "Pilot"
+  ],
+  "connections": [
+    [
+      "Najpierw kamera",
+      "Podłącz kabel kamery do niebieskiego portu USB terminala. Skieruj kamerę na swoje miejsce."
+    ],
+    [
+      "Ładowarka pilota",
+      "Podłącz stację ładującą pilota do czarnego portu USB. Umieść na niej pilot, aby go naładować."
+    ],
+    [
+      "Telewizor",
+      "Połącz terminal z telewizorem kablem HDMI. Wybierz to wejście HDMI w telewizorze."
+    ],
+    [
+      "Zasilanie na końcu",
+      "Podłącz dostarczony zasilacz do terminala, a następnie do gniazdka ściennego. Terminal uruchomi się automatycznie."
+    ]
+  ],
+  "setup_title": "Skonfiguruj Wi-Fi i serwer",
+  "setup": [
+    [
+      "Sparuj pilot",
+      "Włącz go z tyłu. Przytrzymaj tylny przycisk Bluetooth przez 3 sekundy, aż białe światło zacznie migać. Poczekaj na połączenie."
+    ],
+    [
+      "Sprawdź pięć przycisków",
+      "Naciskaj i zwalniaj przyciski w kolejności podanej na ekranie: lewy, prawy, zielony, czerwony i środkowy."
+    ],
+    [
+      "Zeskanuj QR Wi-Fi",
+      "Poproś o kod sieci lub udostępnij go z ustawień Wi-Fi połączonego telefonu Android. Trzymaj cały kod w znacznikach kamery. Poczekaj na sukces i 10-sekundowe potwierdzenie."
+    ],
+    [
+      "Zeskanuj QR serwera tego terminala",
+      "Użyj kodu QR serwera dostarczonego dla tego terminala. Pokaż go kamerze, gdy pojawi się prośba."
+    ],
+    [
+      "Wykonaj połączenie próbne",
+      "Zadzwoń do jednego z kontaktów i sprawdź ruchomy obraz oraz dźwięk w obu kierunkach. Sprawdź, czy Wi-Fi pozostaje połączone. Terminal używa Wi-Fi do codziennych rozmów."
+    ]
+  ],
+  "private": "Zachowaj oba kody QR w tajemnicy: dają dostęp do sieci i konta terminala. Przy błędzie sprawdź kod i połączenie, po czym spróbuj ponownie.",
+  "operate": "Korzystaj z pilota",
+  "controls": [
+    [
+      "Lewy i prawy",
+      "Wybierz osobę widoczną pośrodku."
+    ],
+    [
+      "Zielony",
+      "Naciśnij, sprawdź osobę, zwolnij i naciśnij ponownie, aby zadzwonić. Przy połączeniu przychodzącym zielony odbiera."
+    ],
+    [
+      "Czerwony",
+      "Anuluj, odrzuć lub zakończ rozmowę. Przy automatycznym odbieraniu czerwony odrzuca przed końcem odliczania."
+    ],
+    [
+      "Środkowy",
+      "Otwórz głośność rozmowy. Lewy ścisza, prawy podgłaśnia. Czerwony lub środkowy zamyka pasek. Gdy pasek jest otwarty, czerwony tylko go zamyka i nie kończy rozmowy."
+    ]
+  ],
+  "settings_title": "Zmień ustawienia lokalne",
+  "settings": [
+    [
+      "Otwórz",
+      "Na ekranie kontaktów przytrzymaj czerwony przez 7 sekund. Trzymaj nadal, gdy pojawi się pasek postępu."
+    ],
+    [
+      "Wybierz i zapisz",
+      "Lewy/prawy wybiera ustawienie, zielony je otwiera. Lewy/prawy zmienia wartość, zielony zapisuje, czerwony odrzuca. Opcje: język, automatyczny odbiór, kadrowanie, dzwonek, głośności, portrety i powrót do TV."
+    ],
+    [
+      "Wyjdź",
+      "Na liście ustawień naciśnij czerwony, potem zielony, aby wyjść, lub czerwony, aby zostać."
+    ]
+  ],
+  "help": "Przy włączonym sterowaniu TV pierwsze naciśnięcie może tylko pokazać Zmala. W innym razie wybierz wejście HDMI pilotem TV. Gdy pilot nie reaguje, sprawdź przełącznik z tyłu i naładuj go. Poproś o pomoc przy błędzie zapisu lub połączenia.",
+  "setup_intro": "Przy pierwszym uruchomieniu terminala postępuj zgodnie z instrukcjami na ekranie."
+}

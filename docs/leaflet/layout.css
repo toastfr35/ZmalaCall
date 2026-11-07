@@ -1,0 +1,51 @@
+@page { size: 148.5mm 210mm; margin: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #192a2a; background: #edf0ed; font: 10.5pt/1.32 Arial, sans-serif; }
+html[lang="hi"] body, html[lang="bn"] body { font-family: "Noto Sans Devanagari", "Noto Sans Bengali", "Nirmala UI", sans-serif; }
+html[lang="th"] body { font-family: "Noto Sans Thai", "Leelawadee UI", sans-serif; }
+html[lang="ja"] body { font-family: "Noto Sans CJK JP", "Yu Gothic", "MS Gothic", sans-serif; }
+html[lang="ko"] body { font-family: "Noto Sans CJK KR", "Malgun Gothic", sans-serif; }
+html[lang="zh-Hans"] body { font-family: "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; }
+html[dir="rtl"] body { font-family: "Noto Sans Arabic", "Segoe UI", sans-serif; }
+.page { width: 148.5mm; height: 210mm; position: relative; padding: 11mm 11mm 15mm; background: #fffefb; break-after: page; }
+.page:last-child { break-after: auto; }
+main { display: flow-root; }
+h1, h2, h3, p, figure { margin: 0; }
+h1 { font-size: 24pt; line-height: 1.13; font-weight: 700; margin: 7mm 0 6mm; color: #142d29; }
+h2 { font-size: 19pt; line-height: 1.16; margin-bottom: 3mm; color: #142d29; }
+h3 { font-size: 10.7pt; line-height: inherit; font-weight: 700; }
+p { margin-top: .6mm; }
+.eyebrow { color: #227759; font-size: 10pt; font-weight: 700; letter-spacing: 1pt; margin-bottom: 2mm; }
+.cover { background: #ffffff; }
+.brand { display: block; width: 42mm; height: auto; }
+.cover h1 { margin: 5mm 0; }
+.hero { width: calc(100% + 10mm); max-height: 66mm; object-fit: contain; margin: 0 -5mm 5mm; }
+.blurb { font-size: 14pt; line-height: 1.3; font-weight: 700; margin-bottom: 4mm; }
+.cover p:not(.blurb) { font-size: 11pt; margin-top: 4mm; }
+.ready { color: #426058; }
+footer { position: absolute; bottom: 7mm; inset-inline: 11mm; display: flex; justify-content: space-between; border-top: .3mm solid #cddfd6; padding-top: 2mm; font-size: 8pt; color: #51625c; }
+.equipment { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3mm; direction: ltr; margin-bottom: 4mm; }
+figure { text-align: center; }
+figure img { width: 100%; height: 20mm; object-fit: contain; }
+figcaption { font-size: 8.4pt; line-height: 1.2; margin-top: 1.5mm; }
+.ports { position: relative; padding-bottom: 4.5mm; margin: 0 0 4mm; direction: ltr; }
+.ports img { display: block; width: 100%; height: auto; }
+.markers { position: absolute; bottom: 0; width: 100%; height: 4.5mm; }
+.markers span { position: absolute; transform: translateX(-50%); font-size: 8pt; font-weight: bold; color: #fff; background: #176a4c; width: 4.5mm; height: 4.5mm; border-radius: 50%; text-align: center; line-height: 4.5mm; }
+ol { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+ol li { counter-increment: step; padding-inline-start: 7mm; position: relative; margin-bottom: 3mm; }
+ol li::before { content: counter(step, decimal-leading-zero); position: absolute; inset-inline-start: 0; top: .3mm; color: #227759; font-size: 8.5pt; font-weight: 700; }
+.connections li { margin-bottom: 2.3mm; }
+.pairing { float: right; width: 15mm; height: 38mm; margin: 0 0 2mm 4mm; }
+html[dir="rtl"] .pairing { float: left; margin: 0 4mm 2mm 0; }
+.setup li { margin-bottom: 3.3mm; }
+.setup-intro { margin: 0 0 5mm; font-size: 11pt; }
+.private, .help { color: #426058; font-size: 9.2pt; margin-top: 2mm; }
+.controls { padding: 0; margin: 0; list-style: none; }
+.controls li { display: flex; gap: 3mm; margin-bottom: 2.2mm; align-items: flex-start; }
+.button { flex: 0 0 12mm; width: 12mm; height: 7mm; display: flex; align-items: center; justify-content: center; margin-top: .5mm; }
+.button img { display: block; width: 12mm; max-height: 7mm; object-fit: contain; }
+.settings-heading { font-size: 16pt; margin: 3mm 0 3mm; }
+.settings li { margin-bottom: 2.2mm; }
+@media screen { .page { margin: 8mm auto; box-shadow: 0 2mm 6mm #0002; } }
+@media print { body { background: white; } }

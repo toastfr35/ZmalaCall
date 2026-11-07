@@ -5,10 +5,13 @@ import json
 import os
 import tempfile
 import unittest
+import warnings
+import zipfile
 from unittest.mock import patch
 
-from build_tools.release.assemble import ASSETS, collect
+from build_tools.release.assemble import ASSETS, LEAFLETS, collect, validate_leaflet_bundle
 from build_tools.release import github_release
+from tests.support.leaflet_release import leaflet_entries, write_leaflet_bundle
 
 
 class ReleaseAssetTests(unittest.TestCase):
@@ -17,6 +20,9 @@ class ReleaseAssetTests(unittest.TestCase):
         (dist / 'guides').mkdir(parents=True)
         apk = root / 'verified.apk'
         for name in ASSETS:
+            if name == LEAFLETS:
+                write_leaflet_bundle(dist / 'leaflets' / name)
+                continue
             path = apk if name.endswith('.apk') else (
                 dist / 'guides' / name if name.endswith('.pdf') else dist / name)
             header = (b'%PDF' if name.endswith('.pdf') else b'MZ' if name.endswith('.exe') else
@@ -33,7 +39,50 @@ class ReleaseAssetTests(unittest.TestCase):
             result = root / 'release'
             collect(dist, apk, result)
             self.assertEqual({p.name for p in result.iterdir()}, set(ASSETS))
-            self.assertEqual(len(ASSETS), 11)
+            self.assertEqual(len(ASSETS), 12)
+            validate_leaflet_bundle(result / LEAFLETS)
+
+    def test_missing_leaflet_zip_fails_before_creating_partial_release(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            dist, apk = self.fixtures(root)
+            (dist / 'leaflets' / LEAFLETS).unlink()
+            with self.assertRaisesRegex(ValueError, 'Missing release input'):
+                collect(dist, apk, root / 'release')
+            self.assertFalse((root / 'release').exists())
+
+    def test_leaflet_zip_rejects_missing_languages_extra_files_and_invalid_pdfs(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            dist, apk = self.fixtures(root)
+            complete = leaflet_entries()
+            missing = {key: value for key, value in complete.items() if key != 'ZmalaTerminal-Leaflet-fr-A4.pdf'}
+            invalid = {**complete, 'ZmalaTerminal-Leaflet-en.pdf': b'not a PDF'}
+            for entries in (missing, {**complete, 'account-qr.pdf': b'%PDF private'}, invalid,
+                            {**complete, 'PRINTING.txt': b''}):
+                write_leaflet_bundle(dist / 'leaflets' / LEAFLETS, entries)
+                with self.assertRaisesRegex(ValueError, 'Leaflet bundle'):
+                    collect(dist, apk, root / 'release')
+                self.assertFalse((root / 'release').exists())
+
+    def test_leaflet_zip_rejects_corrupt_archives_and_duplicate_entries(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / LEAFLETS
+            path.write_bytes(b'PK corrupt')
+            with self.assertRaisesRegex(ValueError, 'Invalid leaflet bundle'):
+                validate_leaflet_bundle(path)
+            write_leaflet_bundle(path)
+            damaged = bytearray(path.read_bytes())
+            damaged[damaged.index(b'%PDF fixture') + 8] ^= 1
+            path.write_bytes(damaged)
+            with self.assertRaisesRegex(ValueError, 'Invalid leaflet bundle'):
+                validate_leaflet_bundle(path)
+            write_leaflet_bundle(path)
+            with warnings.catch_warnings(), zipfile.ZipFile(path, 'a') as archive:
+                warnings.simplefilter('ignore', UserWarning)
+                archive.writestr('PRINTING.txt', b'duplicate')
+            with self.assertRaisesRegex(ValueError, 'exactly all language PDFs'):
+                validate_leaflet_bundle(path)
 
     def test_missing_guide_fails_before_creating_partial_release(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -105,8 +154,20 @@ class ReleaseAssetTests(unittest.TestCase):
             for name in ASSETS:
                 (root / name).write_bytes(b'fixture')
             (root / 'source.zip').write_bytes(b'must not publish')
-            with self.assertRaisesRegex(ValueError, 'exactly the eleven'):
+            with self.assertRaisesRegex(ValueError, 'exactly the approved'):
                 github_release.checked_assets(root)
+
+    def test_publication_rejects_invalid_leaflet_zip_before_contacting_github(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            dist, apk = self.fixtures(root)
+            output = root / 'release'
+            collect(dist, apk, output)
+            (output / LEAFLETS).write_bytes(b'PK broken')
+            with patch.object(github_release.subprocess, 'run') as run, \
+                    self.assertRaisesRegex(ValueError, 'Invalid leaflet bundle'):
+                github_release.publish(output, root / 'notes.md')
+            run.assert_not_called()
 
 
 if __name__ == '__main__':

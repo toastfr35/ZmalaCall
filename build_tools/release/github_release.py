@@ -11,7 +11,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from build_tools.release.assemble import ASSETS  # noqa: E402
+from build_tools.release.assemble import ASSETS, LEAFLETS, validate_leaflet_bundle  # noqa: E402
 
 
 def android_version(text):
@@ -84,10 +84,11 @@ def prepare_signing():
 
 def checked_assets(folder):
     if {p.name for p in folder.iterdir()} != set(ASSETS):
-        raise ValueError('Release directory must contain exactly the eleven approved assets')
+        raise ValueError('Release directory must contain exactly the approved assets')
     paths = [folder / name for name in ASSETS]
     if any(p.is_symlink() or not p.is_file() or not p.stat().st_size for p in paths):
         raise ValueError('Invalid release asset')
+    validate_leaflet_bundle(folder / LEAFLETS)
     return paths
 
 
@@ -100,6 +101,7 @@ def notes(folder, output):
 Download the **Installation.pdf**, **Guide.pdf** and installer for the product you need below.
 The two `.exe` files run on a Windows PC and install onto the Pi over wired Ethernet.
 The APK installs directly on Android 9 or newer (64-bit ARM phones).
+`ZmalaTerminal-Leaflets.zip` contains the terminal end user leaflet in every supported language, with reading PDFs, folded A4 print PDFs and printing notes.
 The two `ZmalaTerminal-Update` files are signed machine-update assets, downloaded automatically by supported Pi terminals; users do not install these manually.
 
 - Pi OS: Raspberry Pi OS Lite 64-bit, Debian 13 Trixie. Terminal: Pi 4 Model B; server: Pi 3 B/B+ or Pi 4 B.

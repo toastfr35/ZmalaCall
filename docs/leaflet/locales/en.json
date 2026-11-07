@@ -1,0 +1,90 @@
+{
+  "title": "Set up and use your terminal",
+  "blurb": "Easy family video calls, from the comfort of your sofa.",
+  "scope": "See family and friends on your TV. Choose a familiar face with the remote, confirm the call and enjoy the conversation. Family can join from Zmala Phone or another terminal.",
+  "ready": "Have your TV remote and the supplied Wi-Fi and server QR codes ready. These pages show you how to connect your terminal, complete setup and make calls.",
+  "connect": "Connect the terminal",
+  "equipment": [
+    "Terminal",
+    "Camera",
+    "Remote control"
+  ],
+  "connections": [
+    [
+      "Camera first",
+      "Connect the camera cable to a blue USB port on the terminal. Point the camera towards your seat."
+    ],
+    [
+      "Remote charger",
+      "Connect the remote control’s charging cradle to a black USB port. Place the remote control on it to charge."
+    ],
+    [
+      "Television",
+      "Connect the terminal to your TV with the HDMI cable. Select that HDMI input on the TV."
+    ],
+    [
+      "Power last",
+      "Connect the supplied power supply to the terminal and then to a wall socket. The terminal starts automatically."
+    ]
+  ],
+  "setup_title": "Wi-Fi and server setup",
+  "setup": [
+    [
+      "Pair the remote",
+      "Switch it on at the back. Hold the rear Bluetooth button for 3 seconds until the white light flashes. Wait for connection."
+    ],
+    [
+      "Test all five buttons",
+      "Press and release each button in the order shown on the TV: left, right, green, red and middle."
+    ],
+    [
+      "Scan the Wi-Fi QR",
+      "Ask your helper for the network QR, or share it from a connected Android phone's Wi-Fi settings. Hold the whole code inside the camera guides. Wait for success and the 10-second confirmation."
+    ],
+    [
+      "Scan this terminal's server QR",
+      "Use the server QR supplied for this terminal. Show it to the camera when requested."
+    ],
+    [
+      "Make a test call",
+      "Call one of your contacts and check moving video and sound both ways. Check that Wi-Fi stays connected. Your terminal uses Wi-Fi for everyday calls."
+    ]
+  ],
+  "private": "Keep both QR codes private: they give access to your network and terminal account. On an error, check the code and connection, then try again.",
+  "operate": "Use the remote",
+  "controls": [
+    [
+      "Left and right",
+      "Choose the person in the centre."
+    ],
+    [
+      "Green",
+      "Press to check the person, then release and press again to call. For an incoming call, press green to answer."
+    ],
+    [
+      "Red",
+      "Cancel, decline or end a call. If automatic answering is enabled, red declines before the countdown ends."
+    ],
+    [
+      "Middle",
+      "Open call volume. Left is quieter; right is louder. Red or middle closes the bar. While it is open, red only closes the bar; it does not hang up."
+    ]
+  ],
+  "settings_title": "Change local settings",
+  "settings": [
+    [
+      "Open",
+      "From the contact screen, hold red for 7 seconds. Keep holding when the progress bar appears."
+    ],
+    [
+      "Choose and save",
+      "Left/right chooses a setting; green opens it. Left/right changes the value; green saves, red discards. Options include language, automatic answer, framing, ringtone, sound volumes, portraits and return to TV."
+    ],
+    [
+      "Leave",
+      "Press red on the settings list, then green to exit or red to stay."
+    ]
+  ],
+  "help": "If TV control is enabled, the first press may only show Zmala. Otherwise select its HDMI input with the TV remote. If the remote stops responding, check its rear switch and charge it. Ask your helper if saving or calling fails.",
+  "setup_intro": "When the terminal starts for the first time, follow the on-screen instructions."
+}

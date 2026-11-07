@@ -1,0 +1,90 @@
+{
+  "title": "Configure y use su terminal",
+  "blurb": "Videollamadas en familia desde la comodidad del sofá.",
+  "scope": "Vea a familiares y amigos en el televisor. Elija una cara conocida con el mando, confirme la llamada y disfrute de la conversación. Su familia puede usar Zmala Phone u otro terminal.",
+  "ready": "Tenga preparados el mando del televisor y los códigos QR de Wi-Fi y servidor suministrados. Estas páginas explican cómo conectar el terminal, configurarlo y hacer llamadas.",
+  "connect": "Conecte el terminal",
+  "equipment": [
+    "Terminal",
+    "Cámara",
+    "Mando a distancia"
+  ],
+  "connections": [
+    [
+      "Primero la cámara",
+      "Conecte el cable de la cámara a un puerto USB azul del terminal. Oriente la cámara hacia su asiento."
+    ],
+    [
+      "Cargador del mando",
+      "Conecte la base de carga del mando a un puerto USB negro. Coloque el mando en ella para cargarlo."
+    ],
+    [
+      "Televisor",
+      "Conecte el terminal al televisor con el cable HDMI. Seleccione esa entrada HDMI en el televisor."
+    ],
+    [
+      "La corriente al final",
+      "Conecte la fuente de alimentación suministrada al terminal y después a una toma de pared. El terminal se inicia automáticamente."
+    ]
+  ],
+  "setup_title": "Configure el Wi-Fi y el servidor",
+  "setup": [
+    [
+      "Empareje el mando",
+      "Enciéndalo por detrás. Mantenga pulsado el botón Bluetooth trasero 3 segundos hasta que parpadee la luz blanca. Espere la conexión."
+    ],
+    [
+      "Pruebe los cinco botones",
+      "Pulse y suelte cada botón en el orden indicado en el televisor: izquierda, derecha, verde, rojo y centro."
+    ],
+    [
+      "Escanee el QR del Wi-Fi",
+      "Pida el QR de la red a quien le ayuda o compártalo desde los ajustes Wi-Fi de un Android conectado. Mantenga el código entero dentro de las guías de la cámara. Espere el éxito y los 10 segundos de confirmación."
+    ],
+    [
+      "Escanee el QR de servidor de este terminal",
+      "Use el QR de servidor suministrado para este terminal. Muéstrelo a la cámara cuando se solicite."
+    ],
+    [
+      "Haga una llamada de prueba",
+      "Llame a un contacto y compruebe el vídeo en movimiento y el sonido en ambos sentidos. Compruebe que el Wi-Fi sigue conectado. El terminal usa Wi-Fi para las llamadas diarias."
+    ]
+  ],
+  "private": "Guarde los dos QR en privado: dan acceso a su red y cuenta del terminal. Si hay un error, compruebe el código y la conexión, y vuelva a intentarlo.",
+  "operate": "Use el mando",
+  "controls": [
+    [
+      "Izquierda y derecha",
+      "Sitúe a la persona elegida en el centro."
+    ],
+    [
+      "Verde",
+      "Pulse para comprobar la persona, suelte y pulse de nuevo para llamar. En una llamada entrante, verde responde."
+    ],
+    [
+      "Rojo",
+      "Cancele, rechace o termine la llamada. Con respuesta automática, rojo rechaza antes de acabar la cuenta atrás."
+    ],
+    [
+      "Centro",
+      "Abra el volumen de llamada. Izquierda baja y derecha sube. Rojo o centro cierra la barra. Mientras esté abierta, rojo solo cierra la barra; no cuelga."
+    ]
+  ],
+  "settings_title": "Cambie los ajustes locales",
+  "settings": [
+    [
+      "Abra los ajustes",
+      "Desde los contactos, mantenga rojo 7 segundos. Siga pulsando cuando aparezca la barra de progreso."
+    ],
+    [
+      "Elija y guarde",
+      "Izquierda/derecha elige el ajuste; verde lo abre. Izquierda/derecha cambia el valor; verde guarda y rojo descarta. Opciones: idioma, respuesta automática, encuadre, tono, volúmenes, retratos y regreso al televisor."
+    ],
+    [
+      "Salga",
+      "Pulse rojo en la lista de ajustes y luego verde para salir o rojo para quedarse."
+    ]
+  ],
+  "help": "Con el control TV activo, la primera pulsación puede solo mostrar Zmala. Si no, elija su entrada HDMI con el mando TV. Si el mando no responde, revise su interruptor trasero y cárguelo. Pida ayuda si falla una llamada o no puede guardar.",
+  "setup_intro": "Cuando el terminal se inicie por primera vez, siga las instrucciones en pantalla."
+}

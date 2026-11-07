@@ -1,0 +1,90 @@
+{
+  "title": "Terminal einrichten und verwenden",
+  "blurb": "Videoanrufe mit der Familie, bequem vom Sofa aus.",
+  "scope": "Sehen Sie Familie und Freunde auf Ihrem Fernseher. Wählen Sie mit der Fernbedienung ein vertrautes Gesicht, bestätigen Sie den Anruf und unterhalten Sie sich. Ihre Familie nutzt Zmala Phone oder ein weiteres Terminal.",
+  "ready": "Halten Sie die TV-Fernbedienung und die mitgelieferten WLAN- und Server-QR-Codes bereit. Diese Seiten zeigen Anschluss, Einrichtung und Anrufe mit Ihrem Terminal.",
+  "connect": "Terminal anschließen",
+  "equipment": [
+    "Terminal",
+    "Kamera",
+    "Fernbedienung"
+  ],
+  "connections": [
+    [
+      "Zuerst die Kamera",
+      "Schließen Sie das Kamerakabel an einen blauen USB-Anschluss des Terminals an. Richten Sie die Kamera auf Ihren Sitzplatz."
+    ],
+    [
+      "Ladestation",
+      "Schließen Sie die Ladestation der Fernbedienung an einen schwarzen USB-Anschluss an. Legen Sie die Fernbedienung zum Laden darauf."
+    ],
+    [
+      "Fernseher",
+      "Verbinden Sie das Terminal über das HDMI-Kabel mit dem Fernseher. Wählen Sie dort diesen HDMI-Eingang."
+    ],
+    [
+      "Strom zuletzt",
+      "Schließen Sie das mitgelieferte Netzteil zuerst an das Terminal und dann an eine Steckdose an. Das Terminal startet automatisch."
+    ]
+  ],
+  "setup_title": "WLAN und Server einrichten",
+  "setup": [
+    [
+      "Fernbedienung koppeln",
+      "Hinten einschalten. Die rückseitige Bluetooth-Taste 3 Sekunden halten, bis das weiße Licht blinkt. Verbindung abwarten."
+    ],
+    [
+      "Alle fünf Tasten testen",
+      "Jede Taste in der am Fernseher gezeigten Reihenfolge drücken und loslassen: links, rechts, grün, rot und Mitte."
+    ],
+    [
+      "WLAN-QR scannen",
+      "Netzwerk-QR von Ihrer helfenden Person anfordern oder über die WLAN-Einstellungen eines verbundenen Android-Handys teilen. Den ganzen Code innerhalb der Kameramarkierungen halten. Erfolg und 10 Sekunden Bestätigung abwarten."
+    ],
+    [
+      "Server-QR dieses Terminals scannen",
+      "Verwenden Sie den für dieses Terminal mitgelieferten Server-QR. Halten Sie ihn auf Aufforderung vor die Kamera."
+    ],
+    [
+      "Testanruf machen",
+      "Rufen Sie einen Kontakt an und prüfen Sie bewegtes Bild und Ton in beide Richtungen. Prüfen Sie, ob WLAN verbunden bleibt. Das Terminal nutzt WLAN für alltägliche Anrufe."
+    ]
+  ],
+  "private": "Beide QR-Codes vertraulich aufbewahren: Sie gewähren Zugang zu Netzwerk und Terminal-Konto. Bei Fehlern Code und Verbindung prüfen und erneut versuchen.",
+  "operate": "Fernbedienung verwenden",
+  "controls": [
+    [
+      "Links und rechts",
+      "Die gewünschte Person in die Mitte holen."
+    ],
+    [
+      "Grün",
+      "Drücken, Person prüfen, loslassen und erneut drücken, um anzurufen. Bei eingehendem Anruf mit Grün antworten."
+    ],
+    [
+      "Rot",
+      "Abbrechen, ablehnen oder auflegen. Bei automatischer Annahme lehnt Rot vor Ende des Countdowns ab."
+    ],
+    [
+      "Mitte",
+      "Anruflautstärke öffnen. Links leiser, rechts lauter. Rot oder Mitte schließt den Balken. Solange er offen ist, schließt Rot nur den Balken und legt nicht auf."
+    ]
+  ],
+  "settings_title": "Lokale Einstellungen ändern",
+  "settings": [
+    [
+      "Öffnen",
+      "In der Kontaktansicht Rot 7 Sekunden halten. Beim Fortschrittsbalken weiter gedrückt halten."
+    ],
+    [
+      "Wählen und speichern",
+      "Links/rechts wählt die Einstellung, Grün öffnet sie. Links/rechts ändert den Wert, Grün speichert, Rot verwirft. Optionen: Sprache, automatische Annahme, Bildausschnitt, Klingelton, Lautstärken, Porträts und Rückkehr zum TV."
+    ],
+    [
+      "Verlassen",
+      "Drücken Sie in der Einstellungsliste Rot, dann Grün zum Verlassen oder Rot zum Bleiben."
+    ]
+  ],
+  "help": "Bei aktivierter TV-Steuerung zeigt der erste Tastendruck eventuell nur Zmala. Sonst den HDMI-Eingang mit der TV-Fernbedienung wählen. Reagiert die Fernbedienung nicht, Schalter hinten prüfen und laden. Bei Speicher- oder Anruffehlern Ihre helfende Person fragen.",
+  "setup_intro": "Wenn das Terminal zum ersten Mal startet, folgen Sie den Anweisungen auf dem Bildschirm."
+}

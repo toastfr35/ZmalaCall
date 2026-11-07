@@ -1,0 +1,90 @@
+{
+  "title": "Configurer et utiliser votre terminal",
+  "blurb": "Des appels vidéo en famille, confortablement installé dans votre canapé.",
+  "scope": "Retrouvez vos proches sur votre téléviseur. Choisissez un visage avec la télécommande, confirmez l'appel et discutez. Vos proches peuvent utiliser Zmala Phone ou un autre terminal.",
+  "ready": "Préparez la télécommande du téléviseur et les QR Wi-Fi et serveur fournis. Ces pages vous expliquent comment brancher le terminal, le configurer et passer des appels.",
+  "connect": "Brancher le terminal",
+  "equipment": [
+    "Terminal",
+    "Caméra",
+    "Télécommande"
+  ],
+  "connections": [
+    [
+      "La caméra d'abord",
+      "Branchez le câble de la caméra sur un port USB bleu du terminal. Orientez la caméra vers votre siège."
+    ],
+    [
+      "Le chargeur",
+      "Branchez le socle de recharge de la télécommande sur un port USB noir. Posez la télécommande dessus pour la charger."
+    ],
+    [
+      "Le téléviseur",
+      "Reliez le terminal au téléviseur avec le câble HDMI. Sélectionnez cette entrée HDMI sur le téléviseur."
+    ],
+    [
+      "L'alimentation en dernier",
+      "Branchez l’alimentation fournie au terminal, puis à une prise murale. Le terminal démarre automatiquement."
+    ]
+  ],
+  "setup_title": "Configurer le Wi-Fi et le serveur",
+  "setup": [
+    [
+      "Associer la télécommande",
+      "Allumez-la au dos. Maintenez le bouton Bluetooth arrière pendant 3 secondes, jusqu'au clignotement blanc. Attendez la connexion."
+    ],
+    [
+      "Tester les cinq boutons",
+      "Appuyez puis relâchez chaque bouton dans l'ordre indiqué sur le téléviseur : gauche, droite, vert, rouge et milieu."
+    ],
+    [
+      "Scanner le QR Wi-Fi",
+      "Demandez le QR du réseau à votre aidant ou partagez-le depuis les réglages Wi-Fi d'un téléphone Android connecté. Placez tout le code dans les repères de la caméra. Attendez la réussite puis les 10 secondes de confirmation."
+    ],
+    [
+      "Scanner le QR serveur de ce terminal",
+      "Utilisez le QR serveur fourni pour ce terminal. Présentez-le à la caméra lorsqu’il est demandé."
+    ],
+    [
+      "Faire un appel d'essai",
+      "Appelez un de vos contacts et vérifiez l’image animée et le son dans les deux sens. Vérifiez que le Wi-Fi reste connecté. Le terminal utilise le Wi-Fi pour les appels quotidiens."
+    ]
+  ],
+  "private": "Gardez les deux QR confidentiels : ils donnent accès au réseau et au compte du terminal. En cas d'erreur, vérifiez le code et la connexion, puis réessayez.",
+  "operate": "Utiliser la télécommande",
+  "controls": [
+    [
+      "Gauche et droite",
+      "Placez la personne souhaitée au centre."
+    ],
+    [
+      "Vert",
+      "Appuyez pour vérifier la personne, relâchez puis appuyez à nouveau pour appeler. Pour un appel entrant, vert répond."
+    ],
+    [
+      "Rouge",
+      "Annule, refuse ou termine l'appel. Si la réponse automatique est activée, rouge refuse avant la fin du compte à rebours."
+    ],
+    [
+      "Milieu",
+      "Ouvre le volume d'appel. Gauche diminue ; droite augmente. Rouge ou milieu ferme la barre. Tant qu'elle est ouverte, rouge la ferme seulement, sans raccrocher."
+    ]
+  ],
+  "settings_title": "Modifier les réglages locaux",
+  "settings": [
+    [
+      "Ouvrir",
+      "Depuis les contacts, maintenez rouge pendant 7 secondes. Continuez lorsque la barre de progression apparaît."
+    ],
+    [
+      "Choisir et enregistrer",
+      "Gauche/droite choisit un réglage ; vert l'ouvre. Gauche/droite modifie la valeur ; vert enregistre, rouge annule. Réglages : langue, réponse automatique, cadrage, sonnerie, volumes, portraits et retour au téléviseur."
+    ],
+    [
+      "Quitter",
+      "Dans la liste des réglages, appuyez sur rouge, puis vert pour sortir ou rouge pour rester."
+    ]
+  ],
+  "help": "Avec le contrôle TV activé, le premier appui peut seulement afficher Zmala. Sinon, sélectionnez son entrée HDMI avec la télécommande TV. Si la télécommande ne répond plus, vérifiez l'interrupteur au dos et rechargez-la. Demandez de l'aide en cas d'échec d'appel ou d'enregistrement.",
+  "setup_intro": "Au premier démarrage du terminal, suivez les instructions à l’écran."
+}

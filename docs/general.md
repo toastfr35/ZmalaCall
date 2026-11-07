@@ -665,13 +665,22 @@ checksums detect transfer corruption, not an untrusted publisher.
 
 ### Release download layout
 
-Upload these nine user downloads, plus the two machine-update assets listed below:
+Upload the nine component downloads below, the multilingual terminal leaflet ZIP
+and the two machine-update assets: twelve release assets in total.
 
 | Component | Installation | User guide | Installer |
 | --- | --- | --- | --- |
 | Terminal | `ZmalaTerminal-Installation.pdf` | `ZmalaTerminal-Guide.pdf` | `ZmalaTerminal-Pi4-setup.exe` |
 | Server | `ZmalaServer-Installation.pdf` | `ZmalaServer-Guide.pdf` | `ZmalaServer-Pi4-setup.exe` |
 | Phone | `ZmalaPhone-Installation.pdf` | `ZmalaPhone-Guide.pdf` | `ZmalaPhone.apk` |
+
+`ZmalaTerminal-Leaflets.zip` contains both reading and folded A4 PDFs for every
+supported terminal language, plus printing notes. Generate it with
+`python build_tools/leaflet/generate.py --language all --bundle` after installing
+the [leaflet build dependencies](leaflet/README.md#generate). The output is
+`build_tools/dist/leaflets/ZmalaTerminal-Leaflets.zip`. The collector validates the
+exact member names, nonempty PDF entries and ZIP integrity before copying any
+release files. Loose leaflet PDFs and HTML proofs are not release assets.
 
 `ZmalaTerminal-Update.tar.gz` and `ZmalaTerminal-Update.json` support automatic Pi
 application updates. The archive contains the installed application source/assets
@@ -682,7 +691,8 @@ host compatibility using Ed25519. These two files are not manual user installers
 Build both Windows installers from the intended committed source, then render
 the guides using `python build_tools/release/guides.py` with dependencies from
 `build_tools/release/requirements.txt`. Build and verify the signed APK using
-`build_tools/android/release.py`. Finally run:
+`build_tools/android/release.py`. Generate the leaflet ZIP as described above,
+then run:
 
 ```sh
 python build_tools/release/assemble.py --apk build_tools/dist/ZmalaPhone-0.3.6/ZmalaPhone.apk --output build_tools/dist/release-downloads
@@ -714,11 +724,14 @@ a pull request; each change, including documentation, carries a version bump.
 **Publish release** (`.github/workflows/release.yml`) starts on each merge into
 `main`. The tag comes from the committed Android version. Manual dispatch on
 `main` remains available for recovery, with an optional matching tag check.
-Windows builds both Pi installers and all PDFs; Linux builds and verifies the
+Windows builds both Pi installers, the six manuals and the multilingual leaflet
+ZIP, using the pinned Playwright Chromium and Windows fonts. Verify also builds
+the ZIP on Windows and retains it as the `terminal-leaflets` workflow artifact
+for seven days. Linux builds and verifies the
 signed APK. A separate Linux job builds the application update and signs its
 manifest using `ZMALA_TERMINAL_UPDATE_KEY`, available only in the release workflow.
 The publication job waits for all three, verifies the machine payload's signature
-and exact source identity, then collects the eleven named files,
+and exact source identity, then collects the twelve named files,
 creates a draft, uploads and checks its assets, then publishes it by the draft ID
 returned by `gh release view`. It verifies the draft's tag and target commit before
 publication; the REST lookup by tag cannot resolve an unpublished draft. GitHub selects

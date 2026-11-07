@@ -1,0 +1,18 @@
+PRINT THE FOLDED LEAFLET
+
+Choose your language by the code in the filename:
+de Deutsch, en English, es Español, fr Français, pl Polski, pt Português,
+el Ελληνικά, ru Русский, ur اردو, ar العربية الفصحى, hi हिन्दी, bn বাংলা,
+th ไทย, ko 한국어, ja 日本語, zh-Hans 普通话.
+
+For one folded A4 sheet, choose the file ending in -A4.pdf.
+Print both pages on one A4 sheet in landscape, double-sided, actual size (100%).
+Choose flip on the short edge. Do not choose booklet or multiple-pages mode:
+the PDF already places the pages side by side. Fold down the middle.
+For manual duplex, test one sheet first because paper-feed directions vary.
+
+Arabic and Urdu editions open from the right; the other editions open from
+the left. The A4 PDFs already account for this.
+
+The file without -A4 is the four-page reading version in normal page order.
+It is sized at 148.5 x 210 mm, exactly half an A4 sheet.
